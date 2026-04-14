@@ -50,8 +50,6 @@ BetterFontPicker/BetterFontPicker.xcodeproj/xcuserdata
 BetterFontPicker/BetterFontPicker.xcodeproj/project.xcworkspace/xcuserdata/
 
 # AI Plugin
-iTermAI/iTermAI.xcodeproj/project.xcworkspace/xcuserdata/
-iTermAI/iTermAI.xcodeproj/xcuserdata/
 
 SignPlugin/SignPlugin.xcodeproj/project.xcworkspace/xcuserdata/gnachman.xcuserdatad/UserInterfaceState.xcuserstate
 SignPlugin/SignPlugin.xcodeproj/project.xcworkspace/xcuserdata/gnachman.xcuserdatad/UserInterfaceState.xcuserstate
@@ -61,7 +59,6 @@ WebExtensionsFramework/firefox/
 hudsucker-ffi/target/
 hudsucker-ffi/lib/
 
-iTermBrowserPlugin/iTermBrowserPlugin.xcodeproj/project.xcworkspace/xcuserdata/gnachman.xcuserdatad/
 
 # Claude Code local settings
 .claude/

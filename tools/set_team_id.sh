@@ -28,8 +28,6 @@ PROJECT_FILES=(
     "SearchableComboListView/SearchableComboListView.xcodeproj/project.pbxproj"
     "SignedArchive/SignedArchive.xcodeproj/project.pbxproj"
     "SignPlugin/SignPlugin.xcodeproj/project.pbxproj"
-    "iTermAI/iTermAI.xcodeproj/project.pbxproj"
-    "iTermBrowserPlugin/iTermBrowserPlugin.xcodeproj/project.pbxproj"
     "iTermCompanion/iTermCompanion.xcodeproj/project.pbxproj"
     "Companion/iTerm2Companion.xcodeproj/project.pbxproj"
     "submodules/MultiCursor/MultiCursor.xcodeproj/project.pbxproj"

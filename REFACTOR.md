@@ -26,6 +26,7 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Deleted the legacy shell integration installer UI slice from the repo and target (`iTermShellIntegration*` window/controller/panel/root-view files and XIB).
 - Removed the “Install Shell Integration” app tip so the UI stops teaching a feature that this fork no longer intends to keep.
 
+- Deleted the standalone `iTermAI/` project (unreferenced by the main app target) and the standalone `iTermBrowserPlugin/` project (also unreferenced by the main app target), pruning two dead leaf modules.
 ### Current Build Blocker
 
 - `xcodebuild -quiet build -project iTerm2.xcodeproj -scheme iTerm2 -configuration Debug -derivedDataPath /tmp/iTerm2-derived-escalated-quiet CODE_SIGNING_ALLOWED=NO` currently fails in both the working tree and a clean `HEAD` clone with:
