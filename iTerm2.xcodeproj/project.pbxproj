@@ -2417,7 +2417,6 @@
 		A65D7CB321E1EBCB00E3D81C /* StopStatusIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A63F34D321E1EB1B000C9D52 /* StopStatusIcon@2x.png */; };
 		A65D7CB421E1EBCE00E3D81C /* StopStatusIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A63F34D221E1EB1B000C9D52 /* StopStatusIcon.png */; };
 		A65D7CB521E1EBCE00E3D81C /* StopStatusIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A63F34D321E1EB1B000C9D52 /* StopStatusIcon@2x.png */; };
-		A65DF49B28491E5300AA29AB /* ShellIntegrationInjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65DF49A28491E5300AA29AB /* ShellIntegrationInjection.swift */; };
 		A65DF4A12849601A00AA29AB /* .zshenv in Resources */ = {isa = PBXBuildFile; fileRef = A65DF4A02849601A00AA29AB /* .zshenv */; };
 		A65DF4A22849601A00AA29AB /* .zshenv in Resources */ = {isa = PBXBuildFile; fileRef = A65DF4A02849601A00AA29AB /* .zshenv */; };
 		A65DF4A32849601A00AA29AB /* .zshenv in Resources */ = {isa = PBXBuildFile; fileRef = A65DF4A02849601A00AA29AB /* .zshenv */; };
@@ -2428,7 +2427,6 @@
 		A65DF4AA2849F2AA00AA29AB /* iterm2-shell-integration-loader.fish in Resources */ = {isa = PBXBuildFile; fileRef = A65DF4A82849F2AA00AA29AB /* iterm2-shell-integration-loader.fish */; };
 		A65DF4AB2849F2AA00AA29AB /* iterm2-shell-integration-loader.fish in Resources */ = {isa = PBXBuildFile; fileRef = A65DF4A82849F2AA00AA29AB /* iterm2-shell-integration-loader.fish */; };
 		A65DF4AD2849F2FF00AA29AB /* iterm2-shell-integration-loader.fish in CopyFiles */ = {isa = PBXBuildFile; fileRef = A65DF4A82849F2AA00AA29AB /* iterm2-shell-integration-loader.fish */; };
-		A65DF4B2284ACC3A00AA29AB /* Bundle+ShellIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65DF4AE284ACBE200AA29AB /* Bundle+ShellIntegration.swift */; };
 		A65E6F522547F1D5008A4866 /* WindowCornerFull_Square@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A65E6F4E2547F1D4008A4866 /* WindowCornerFull_Square@2x.png */; };
 		A65E6F532547F1D5008A4866 /* WindowCornerFull_Square@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A65E6F4E2547F1D4008A4866 /* WindowCornerFull_Square@2x.png */; };
 		A65E6F542547F1D5008A4866 /* WindowCornerFull_Square@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A65E6F4E2547F1D4008A4866 /* WindowCornerFull_Square@2x.png */; };
@@ -7891,11 +7889,9 @@
 		A65B72A81B3285A300F947A7 /* DisableTips@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "DisableTips@2x.png"; path = "images/DisableTips@2x.png"; sourceTree = "<group>"; };
 		A65B72AF1B33C07D00F947A7 /* NextTip.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = NextTip.png; path = images/NextTip.png; sourceTree = "<group>"; };
 		A65B72B01B33C07D00F947A7 /* NextTip@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "NextTip@2x.png"; path = "images/NextTip@2x.png"; sourceTree = "<group>"; };
-		A65DF49A28491E5300AA29AB /* ShellIntegrationInjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellIntegrationInjection.swift; sourceTree = "<group>"; };
 		A65DF4A02849601A00AA29AB /* .zshenv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .zshenv; path = OtherResources/.zshenv; sourceTree = "<group>"; };
 		A65DF4A42849C11D00AA29AB /* bash-si-loader */ = {isa = PBXFileReference; lastKnownFileType = text; name = "bash-si-loader"; path = "OtherResources/bash-si-loader"; sourceTree = "<group>"; };
 		A65DF4A82849F2AA00AA29AB /* iterm2-shell-integration-loader.fish */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "iterm2-shell-integration-loader.fish"; path = "OtherResources/vendor_conf.d/iterm2-shell-integration-loader.fish"; sourceTree = "<group>"; };
-		A65DF4AE284ACBE200AA29AB /* Bundle+ShellIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+ShellIntegration.swift"; sourceTree = "<group>"; };
 		A65E6F4E2547F1D4008A4866 /* WindowCornerFull_Square@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "WindowCornerFull_Square@2x.png"; path = "images/WindowCornerFull_Square@2x.png"; sourceTree = "<group>"; };
 		A65E6F4F2547F1D4008A4866 /* WindowCorner_Square@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "WindowCorner_Square@2x.png"; path = "images/WindowCorner_Square@2x.png"; sourceTree = "<group>"; };
 		A65E6F502547F1D4008A4866 /* WindowCornerFull_Square.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = WindowCornerFull_Square.png; path = images/WindowCornerFull_Square.png; sourceTree = "<group>"; };
@@ -11331,7 +11327,6 @@
 		A62A77982F986D2D007CAA0B /* ShellIntegration */ = {
 			isa = PBXGroup;
 			children = (
-				A65DF4AE284ACBE200AA29AB /* Bundle+ShellIntegration.swift */,
 				A6E7474B188C6394005355CF /* iTermCommandHistoryCommandUseMO+Additions.h */,
 				A6E7474C188C6394005355CF /* iTermCommandHistoryCommandUseMO+Additions.m */,
 				A6E74746188C6344005355CF /* iTermCommandHistoryEntryMO+Additions.h */,
@@ -11347,7 +11342,6 @@
 				A62C3A901BCAE0ED00B5629D /* iTermRecentDirectoryMO+Additions.m */,
 				A6057C0C187BC4C3004A60AF /* iTermShellHistoryController.h */,
 				A6057C0D187BC4C3004A60AF /* iTermShellHistoryController.m */,
-				A65DF49A28491E5300AA29AB /* ShellIntegrationInjection.swift */,
 			);
 			path = ShellIntegration;
 			sourceTree = "<group>";
@@ -20862,7 +20856,6 @@
 				A62EE251274473C700D57B54 /* iTermProfilePreferencesTabViewWrapperView.m in Sources */,
 				A6F7D5122E05F1790065D09C /* iTermBrowserPasswordWriter.swift in Sources */,
 				A665C1D2243D962C00F623F0 /* TerminalFile.m in Sources */,
-				A65DF4B2284ACC3A00AA29AB /* Bundle+ShellIntegration.swift in Sources */,
 				A6D8CC3220CE417000E79512 /* URLAction.m in Sources */,
 				A65429BA20CE3C9400CE71B1 /* iTermFocusReportingTextField.m in Sources */,
 				A6854FEA2D8B82A60019E96C /* SGRTrigger.swift in Sources */,
@@ -21655,7 +21648,6 @@
 				A6D20C67287CC51F0007F479 /* iTermProcessInfo.swift in Sources */,
 				A6A1BCC029C8F70200646E9F /* ClockWatcher.swift in Sources */,
 				A6905561241E98CB0020EA6A /* iTermFileDescriptorMultiClientChild.m in Sources */,
-				A65DF49B28491E5300AA29AB /* ShellIntegrationInjection.swift in Sources */,
 				A631FC9220EDDBC600EB824F /* iTermFindDriver.m in Sources */,
 				A6A73D4127C7FAED002E4CCA /* NSFileManager+CommonAdditions.m in Sources */,
 				A61A85BA24FC260700B03880 /* iTermTextViewContextMenuHelper.m in Sources */,

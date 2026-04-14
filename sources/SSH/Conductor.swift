@@ -2321,45 +2321,11 @@ extension Conductor {
                 } else {
                     version = ""
                 }
-                if TerminalFirstFeatures.shellIntegrationFeaturesEnabled() &&
-                    !shell.isEmpty &&
+                if !shell.isEmpty &&
                     !home.isEmpty &&
                     shouldInjectShellIntegration && shellSupportsInjection(shell.lastPathComponent, version) {
-                    (modifiedVars, modifiedCommandArgs) = ShellIntegrationInjector.instance.modifyRemoteShellEnvironment(
-                        shellIntegrationDir: "\(home)/.iterm2/shell-integration",
-                        env: varsToSend,
-                        shell: shell,
-                        argv: Array(parsedSSHArguments.commandArgs.dropFirst()))
-                    if let firstArg = parsedSSHArguments.commandArgs.first {
-                        // The user gave an explicit command/shell (`it2ssh host <argv0> …`); keep it
-                        // as argv[0] so the framer runs it (through its `-c` path).
-                        modifiedCommandArgs?.insert(firstArg, at: 0)
-                    } else if modifiedCommandArgs?.isEmpty == false {
-                        // Plain interactive session whose injection modified argv (bash's --posix).
-                        // The shell must be named explicitly so those args take effect, which routes
-                        // through the framer's `-c` path (there the interactive child still honors
-                        // env-based injection like bash's $ENV loader).
-                        modifiedCommandArgs?.insert(shell, at: 0)
-                    }
-                    // Otherwise: a plain interactive session with purely env-based injection
-                    // (zsh/fish/xonsh add no argv). Leave modifiedCommandArgs empty so framerLogin
-                    // passes no args and the framer execs the login shell *interactively*, inheriting
-                    // the injected environment (e.g. ZDOTDIR). If we named the shell here the framer
-                    // would run `login_shell -c "<shell>"`; when the login shell is the same shell
-                    // (notably zsh) the outer non-interactive shell reads and dismantles the injection
-                    // before the inner interactive shell runs -- zsh's injected .zshenv unsets ZDOTDIR
-                    // and skips its interactive-only shell-integration load -- so integration would
-                    // never load.
-                    let dict = ShellIntegrationInjector.instance.files(
-                        destinationBase: URL(fileURLWithPath: "/$HOME/.iterm2/shell-integration"))
-                    for (local, remote) in dict {
-                        payloads.append(Payload(path: local.path,
-                                                destination: remote.path))
-                    }
-                    if var vars = modifiedVars {
-                        activateIT2Proxy(home: home, env: &vars)
-                        modifiedVars = vars
-                    }
+                    modifiedVars = varsToSend
+                    modifiedCommandArgs = parsedSSHArguments.commandArgs
                 }
                 self.shell = shell
                 delegate?.conductorStateDidChange()

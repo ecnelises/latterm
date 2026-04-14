@@ -23,7 +23,6 @@
 #import "iTermScriptConsole.h"
 #import "iTermScriptHistory.h"
 #import "iTermSelection.h"
-#import "iTermShellIntegrationWindowController.h"
 #import "iTermSlowOperationGateway.h"
 #import "iTermSnippetsMenuController.h"
 #import "iTermSnippetsModel.h"
@@ -61,8 +60,7 @@ static const NSUInteger kDragPaneModifiers = (NSEventModifierFlagOption | NSEven
 static const NSUInteger kRectangularSelectionModifiers = (NSEventModifierFlagCommand | NSEventModifierFlagOption);
 static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelectionModifiers | NSEventModifierFlagControl);
 
-@interface PTYTextView (ARCPrivate)<iTermShellIntegrationWindowControllerDelegate,
-iTermCommandInfoViewControllerDelegate>
+@interface PTYTextView (ARCPrivate)<iTermCommandInfoViewControllerDelegate>
 @end
 
 #pragma mark - Batched Render Token
@@ -1579,28 +1577,17 @@ launchProfileInCurrentTerminal:(Profile *)profile
 #pragma mark - Install Shell Integration
 
 - (IBAction)installShellIntegration:(id)sender {
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        return;
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = @"Shell Integration Removed";
+    alert.informativeText =
+        @"Shell integration is not available in the terminal-first fork. "
+        @"Related features should be removed or replaced instead of reinstalling it.";
+    [alert addButtonWithTitle:@"OK"];
+    if (self.window) {
+        [alert beginSheetModalForWindow:self.window completionHandler:nil];
+    } else {
+        [alert runModal];
     }
-    if (_shellIntegrationInstallerWindow.isWindowLoaded &&
-        _shellIntegrationInstallerWindow.window.isVisible) {
-        return;
-    }
-    _shellIntegrationInstallerWindow =
-    [[iTermShellIntegrationWindowController alloc] initWithWindowNibName:@"iTermShellIntegrationWindowController"];
-    [_shellIntegrationInstallerWindow.window makeKeyAndOrderFront:nil];
-    _shellIntegrationInstallerWindow.delegate = self;
-    [_shellIntegrationInstallerWindow.window center];
-}
-
-#pragma mark iTermShellIntegrationWindowControllerDelegate
-
-- (void)shellIntegrationWindowControllerSendText:(NSString *)text {
-    [self.delegate sendTextSlowly:text];
-}
-
-- (iTermExpect *)shellIntegrationExpect {
-    return [self.delegate textViewExpect];
 }
 
 #pragma mark - iTermMouseReportingFrustrationDetectorDelegate

@@ -21,12 +21,18 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Removed AI menu/chat entry points at runtime and hid the AI preferences tab when terminal-first mode is enabled.
 - Disabled shell integration injection, installer/update prompts, and preference/profile controls that advertise shell integration.
 - Reworded remaining shell-integration help surfaces so they stop offering installation and instead report that the fork no longer supports those features.
+- Removed the shell integration injection code path from `PTYSession` and remote SSH setup in `Conductor`.
+- Deleted `ShellIntegrationInjection.swift` and `Bundle+ShellIntegration.swift` from the target and removed the last installer-window cleanup hook from `PTYTextView`.
 
 ### Current Build Blocker
 
 - `xcodebuild -quiet build -project iTerm2.xcodeproj -scheme iTerm2 -configuration Debug -derivedDataPath /tmp/iTerm2-derived-escalated-quiet CODE_SIGNING_ALLOWED=NO` currently fails in both the working tree and a clean `HEAD` clone with:
 - `sources/Browser/Extensions/iTermBrowserStorageProvider.swift:8:8: error: unable to resolve module dependency: 'WebExtensionsFramework'`
 - This is a baseline repository problem, not a regression unique to the terminal-first surface changes. It still needs to be fixed or worked around before compile verification can prove later slices.
+
+### Recent Verification
+
+- `xcodebuild build -quiet -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES ...` passes after the shell integration injection cleanup.
 
 ## Refactor Direction
 

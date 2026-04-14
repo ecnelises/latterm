@@ -26,7 +26,6 @@
 @protocol iTermCancelable;
 @class iTermContentNavigationShortcut;
 @class iTermIdempotentOperationJoiner;
-@class iTermShellIntegrationWindowController;
 @class iTermURLActionHelper;
 @protocol Porthole;
 @class PTYMouseHandler;
@@ -49,7 +48,6 @@ NSPopoverDelegate> {
     NSCursor *cursor_;
     PTYMouseHandler *_mouseHandler;
     iTermURLActionHelper *_urlActionHelper;
-    iTermShellIntegrationWindowController *_shellIntegrationInstallerWindow;
     iTermTextViewContextMenuHelper *_contextMenuHelper;
     iTermTextPopoverViewController* _indicatorMessagePopoverViewController;
     // Child windows that need to have their frames adjusted as you scroll.
@@ -113,4 +111,3 @@ NSPopoverDelegate> {
 - (iTermTextDrawingHelper *)newDrawingHelperForOffscreenRendering;
 
 @end
-

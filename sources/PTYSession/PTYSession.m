@@ -3442,26 +3442,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
                                    completion:(void (^)(NSDictionary<NSString *, NSString *> *,
                                                         NSArray<NSString *> *))completion {
     DLog(@"env=%@ argv=%@", env, argv);
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        completion(env, argv);
-        return;
-    }
-    if (![iTermProfilePreferences boolForKey:KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY inProfile:self.profile]) {
-        DLog(@"Injection disabled in profile %@", self.profile[KEY_GUID]);
-        completion(env, argv);
-        return;
-    }
-    ShellIntegrationInjector *injector = [ShellIntegrationInjector instance];
-    NSString *dir = NSBundle.shellIntegrationDirectory;
-    if (!dir) {
-        DLog(@"Failed to get shell integration directory");
-        completion(env, argv);
-        return;
-    }
-    [injector modifyShellEnvironmentWithShellIntegrationDir:dir
-                                                        env:env
-                                                       argv:argv
-                                                 completion:completion];
+    completion(env, argv);
 }
 
 - (void)setParentScope:(iTermVariableScope *)parentScope {
