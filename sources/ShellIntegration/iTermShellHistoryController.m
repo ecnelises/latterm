@@ -9,6 +9,7 @@
 #import "iTermShellHistoryController.h"
 
 #import "DebugLogging.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSStringITerm.h"
@@ -357,12 +358,26 @@ static NSString *iTermShellIntegrationRemoteHostKey(id<VT100RemoteHostReading> s
 #pragma mark - APIs
 
 + (void)showInformationalMessageInWindow:(NSWindow *)window {
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        alert.messageText = @"Shell Integration Removed";
+        alert.informativeText =
+            @"Command History, Recent Directories, and other shell-integration-dependent features "
+            @"are not available in the terminal-first fork.";
+        [alert addButtonWithTitle:@"OK"];
+        if (window) {
+            [alert beginSheetModalForWindow:window completionHandler:nil];
+        } else {
+            [alert runModal];
+        }
+        return;
+    }
+
     NSResponder *firstResponder = [[NSApp keyWindow] firstResponder];
     SEL selector = @selector(installShellIntegration:);
     if (![firstResponder respondsToSelector:selector]) {
         firstResponder = nil;
     }
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
     alert.messageText = @"About Shell Integration";
     alert.informativeText =
         @"To use shell integration features such as "

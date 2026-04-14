@@ -2321,7 +2321,8 @@ extension Conductor {
                 } else {
                     version = ""
                 }
-                if !shell.isEmpty &&
+                if TerminalFirstFeatures.shellIntegrationFeaturesEnabled() &&
+                    !shell.isEmpty &&
                     !home.isEmpty &&
                     shouldInjectShellIntegration && shellSupportsInjection(shell.lastPathComponent, version) {
                     (modifiedVars, modifiedCommandArgs) = ShellIntegrationInjector.instance.modifyRemoteShellEnvironment(

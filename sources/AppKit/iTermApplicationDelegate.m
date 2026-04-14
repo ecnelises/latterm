@@ -366,6 +366,18 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 #pragma mark - Interface Builder
 
+- (void)it_removeMenuItemsWithAction:(SEL)action fromMenu:(NSMenu *)menu {
+    for (NSInteger i = menu.numberOfItems - 1; i >= 0; i--) {
+        NSMenuItem *item = [menu itemAtIndex:i];
+        if (item.hasSubmenu) {
+            [self it_removeMenuItemsWithAction:action fromMenu:item.submenu];
+        }
+        if (item.action == action) {
+            [menu removeItemAtIndex:i];
+        }
+    }
+}
+
 - (void)awakeFromNib {
     [ArchivesMenuBuilder setShared:[[ArchivesMenuBuilder alloc] initWithMenuItem:_archivesMenuItem]];
 
@@ -406,11 +418,28 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     [[iTermBuriedSessions sharedInstance] setMenus:[NSArray arrayWithObjects:_buriedSessions, _statusIconBuriedSessions, nil]];
     _triggers.submenu.delegate = self;
     _namedMarksMenuItem.submenu.delegate = self;
-    [[iTermMainMenuMangler instance] startWithWeb:_webMenuItem];
+    if ([iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+        [[iTermMainMenuMangler instance] startWithWeb:_webMenuItem];
+    } else {
+        [_webMenuItem.menu removeItem:_webMenuItem];
+    }
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"performNaturalLanguageQuery:") fromMenu:NSApp.mainMenu];
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"explainOutputWithAI:") fromMenu:NSApp.mainMenu];
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"openAIChat:") fromMenu:NSApp.mainMenu];
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"openAIChats:") fromMenu:NSApp.mainMenu];
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"reinstallClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"uninstallClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
+    }
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installShellIntegration:") fromMenu:NSApp.mainMenu];
+    }
     
     // Set menu item icons for macOS 26+
 #if DEBUG
-    if (NSClassFromString(@"XCTestCase") == nil) {
+    if (NSClassFromString(@"XCTestCase") == nil &&
+        ![iTermTerminalFirstFeatures terminalFirstEnabled]) {
         // Not running in a test
         [[iTermMainMenuMangler instance] checkIcons];
     }
@@ -459,10 +488,19 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     } else if ([menuItem action] == @selector(makeDefaultTerminal:)) {
         return ![[iTermLaunchServices sharedInstance] iTermIsDefaultTerminal];
     } else if ([menuItem action] == @selector(installClaudeCodeIntegration:)) {
+        if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+            return NO;
+        }
         return [[iTermClaudeCodeIntegrationMenuController shared] validateInstallMenuItem:menuItem];
     } else if ([menuItem action] == @selector(reinstallClaudeCodeIntegration:)) {
+        if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+            return NO;
+        }
         return [[iTermClaudeCodeIntegrationMenuController shared] validateReinstallMenuItem:menuItem];
     } else if ([menuItem action] == @selector(uninstallClaudeCodeIntegration:)) {
+        if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+            return NO;
+        }
         return [[iTermClaudeCodeIntegrationMenuController shared] validateUninstallMenuItem:menuItem];
     } else if (menuItem == maximizePane) {
         if ([[[iTermController sharedInstance] currentTerminal] inInstantReplay]) {
@@ -1332,8 +1370,10 @@ void TurnOnDebugLoggingAutomatically(void) {
 
     DLog(@"migrateApplicationSupportDirectoryIfNeeded");
     [iTermMigrationHelper migrateApplicationSupportDirectoryIfNeeded];
-    DLog(@"migrate OpenAI key");
-    [iTermMigrationHelper migrateOpenAIKeyIfNeeded];
+    if ([iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        DLog(@"migrate OpenAI key");
+        [iTermMigrationHelper migrateOpenAIKeyIfNeeded];
+    }
     DLog(@"buildScriptMenu");
     [self buildScriptMenu:nil];
 
@@ -2499,14 +2539,23 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (IBAction)installClaudeCodeIntegration:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
+    }
     [[iTermClaudeCodeIntegrationMenuController shared] install:sender];
 }
 
 - (IBAction)reinstallClaudeCodeIntegration:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
+    }
     [[iTermClaudeCodeIntegrationMenuController shared] reinstall:sender];
 }
 
 - (IBAction)uninstallClaudeCodeIntegration:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
+    }
     [[iTermClaudeCodeIntegrationMenuController shared] uninstall:sender];
 }
 
@@ -2715,6 +2764,9 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (IBAction)openAIChats:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
+    }
     [[iTermChatWindowController instanceShowingErrors:YES] showChatWindow];
     [[iTermChatWindowController instanceShowingErrors:NO] createNewChatIfNeededWithCurrentSession:iTermController.sharedInstance.currentTerminal.currentSession];
 }

@@ -10,6 +10,8 @@
 2. Use `it_fatalError` and `it_assert` (not standard `fatalError`/`assert`) for proper crash logs
 3. **Never** create dependency cycles - use delegates/closures instead
 4. `git add` new files immediately after creation
+5. Read `REFACTOR.md` before any large feature-removal, modernization, or Swift-migration task. Treat it as the staged roadmap for the terminal-first fork and as a local planning document unless the user explicitly asks for it to be committed.
+6. As features are removed, audit their git submodule dependencies and delete submodules that are no longer needed. The long-term target is zero submodules, but never remove one before all code/project/runtime references are gone.
 
 ## Architecture
 
@@ -37,6 +39,7 @@ iTerm2/
 ├── WebExtensionsFramework/  # Swift SPM framework (see WebExtensionsFramework/CLAUDE.md)
 ├── iTerm2.sdef            # AppleScript API
 ├── CLAUDE.md              # Code best practices
+├── REFACTOR.md            # Terminal-first fork roadmap
 └── iTerm2.xcodeproj/      # Xcode project
 ```
 

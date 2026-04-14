@@ -155,10 +155,12 @@ iTermCommandInfoViewControllerDelegate>
         return available;
     }
     if (item.action == @selector(performNaturalLanguageQuery:)) {
-        return [iTermAdvancedSettingsModel generativeAIAllowed];
+        return [iTermTerminalFirstFeatures aiFeaturesEnabled] &&
+               [iTermAdvancedSettingsModel generativeAIAllowed];
     }
     if (item.action == @selector(explainOutputWithAI:)) {
-        return [self.delegate textViewCanExplainOutputWithAI];
+        return [iTermTerminalFirstFeatures aiFeaturesEnabled] &&
+               [self.delegate textViewCanExplainOutputWithAI];
     }
     if (item.action == @selector(foldSelection:)) {
         if ([self.dataSource terminalSoftAlternateScreenMode] && [self foldWouldTouchMutableArea]) {
@@ -234,10 +236,16 @@ iTermCommandInfoViewControllerDelegate>
 }
 
 - (IBAction)performNaturalLanguageQuery:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
+    }
     [self.delegate textViewPerformNaturalLanguageQuery];
 }
 
 - (IBAction)explainOutputWithAI:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
+    }
     [self.delegate textViewExplainOutputWithAI];
 }
 
@@ -1571,6 +1579,9 @@ launchProfileInCurrentTerminal:(Profile *)profile
 #pragma mark - Install Shell Integration
 
 - (IBAction)installShellIntegration:(id)sender {
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        return;
+    }
     if (_shellIntegrationInstallerWindow.isWindowLoaded &&
         _shellIntegrationInstallerWindow.window.isVisible) {
         return;

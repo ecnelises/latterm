@@ -509,7 +509,12 @@ static NSInteger CompareEncodingByLocalizedName(id a, id b, void *unused) {
 }
 
 - (IBAction)shellIntegrationRequired:(id)sender {
-    NSString *html = @"This feature requires shell integration to be installed. <a href=\"https://iterm2.com/documentation-shell-integration.html\">Learn more.</a>";
+    NSString *html;
+    if ([iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        html = @"This feature requires shell integration to be installed. <a href=\"https://iterm2.com/documentation-shell-integration.html\">Learn more.</a>";
+    } else {
+        html = @"This feature is unavailable because shell integration is disabled in the terminal-first fork.";
+    }
     NSAttributedString *attributedString = [NSAttributedString attributedStringWithHTML:html
                                                                                    font:[NSFont systemFontOfSize:[NSFont systemFontSize]]
                                                                          paragraphStyle:[NSParagraphStyle defaultParagraphStyle]];

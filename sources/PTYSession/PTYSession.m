@@ -3442,6 +3442,10 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
                                    completion:(void (^)(NSDictionary<NSString *, NSString *> *,
                                                         NSArray<NSString *> *))completion {
     DLog(@"env=%@ argv=%@", env, argv);
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        completion(env, argv);
+        return;
+    }
     if (![iTermProfilePreferences boolForKey:KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY inProfile:self.profile]) {
         DLog(@"Injection disabled in profile %@", self.profile[KEY_GUID]);
         completion(env, argv);
@@ -18495,6 +18499,9 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)tryToRunShellIntegrationInstallerWithPromptCheck:(BOOL)promptCheck {
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        return;
+    }
     if (_exited) {
         return;
     }
@@ -18554,6 +18561,9 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)screenSuggestShellIntegrationUpgrade {
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        return;
+    }
     id<VT100RemoteHostReading> currentRemoteHost = [self currentHost];
 
     NSString *theKey = [self shellIntegrationUpgradeUserDefaultsKeyForHost:currentRemoteHost];
@@ -24207,6 +24217,9 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
 
 - (void)triggerSideEffectShowShellIntegrationRequiredAnnouncement {
     [iTermGCD assertMainQueueSafe];
+    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        return;
+    }
     if ([[iTermUserDefaults userDefaults] boolForKey:kSuppressCaptureOutputRequiresShellIntegrationWarning]) {
         return;
     }

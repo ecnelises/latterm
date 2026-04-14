@@ -36,6 +36,7 @@
 #import "NSURL+iTerm.h"
 #import "NSView+RecursiveDescription.h"
 #import "NSWindow+iTerm.h"
+#import "NSWorkspace+iTerm.h"
 #import "PTYSession.h"
 #import "PTYTab.h"
 #import "PTYWindow.h"
@@ -1893,6 +1894,9 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
 }
 
 - (BOOL)openURL:(NSURL *)url target:(NSString *)target openStyle:(iTermOpenStyle)openStyle select:(BOOL)select {
+    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+        return [[NSWorkspace sharedWorkspace] openURL:url];
+    }
     if (![iTermBrowserGateway browserAllowedCheckingIfNot:YES]) {
         return NO;
     }
@@ -1998,6 +2002,10 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
                                     configuration:(WKWebViewConfiguration *)configuration
                                           options:(iTermSingleUseWindowOptions)options
                                        completion:(void (^)(void))completion {
+    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+        [[NSWorkspace sharedWorkspace] openURL:url];
+        return nil;
+    }
     if (![iTermBrowserGateway browserAllowedCheckingIfNot:YES]) {
         return nil;
     }
@@ -2239,4 +2247,3 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
 }
 
 @end
-

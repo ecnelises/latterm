@@ -7,6 +7,29 @@
 
 import Cocoa
 
+@objc(iTermTerminalFirstFeatures)
+class TerminalFirstFeatures: NSObject {
+    @objc static func terminalFirstEnabled() -> Bool {
+        return true
+    }
+
+    @objc static func browserFeaturesEnabled() -> Bool {
+        return !terminalFirstEnabled()
+    }
+
+    @objc static func aiFeaturesEnabled() -> Bool {
+        return !terminalFirstEnabled()
+    }
+
+    @objc static func shellIntegrationFeaturesEnabled() -> Bool {
+        return !terminalFirstEnabled()
+    }
+
+    @objc static func onboardingEnabled() -> Bool {
+        return !terminalFirstEnabled()
+    }
+}
+
 /// Observes key-window and firstResponder changes and calls `updateMainMenu()` when either happens.
 @objc(iTermMainMenuMangler)
 class MainMenuMangler: NSObject {

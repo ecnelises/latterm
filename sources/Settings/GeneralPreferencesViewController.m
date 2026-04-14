@@ -1064,6 +1064,16 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     return self;
 }
 
+- (void)it_removeTabViewItemWithLabel:(NSString *)label {
+    NSUInteger index = [_tabView.tabViewItems indexOfObjectPassingTest:^BOOL(NSTabViewItem *candidate, NSUInteger idx, BOOL *stop) {
+        return [candidate.label isEqualToString:label];
+    }];
+    if (index != NSNotFound) {
+        NSTabViewItem *item = _tabView.tabViewItems[index];
+        [_tabView removeTabViewItem:item];
+    }
+}
+
 - (void)awakeFromNib {
     if (_awoken) {
         // View-based NSTableView lazily unarchives each NSTableCellView prototype
@@ -1073,8 +1083,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     }
     _awoken = YES;
 
-    [self setupCustomHeadersSection];
-    [self setupDefaultAIModelSelector];
     PreferenceInfo *info;
 
     __weak __typeof(self) weakSelf = self;
@@ -1284,10 +1292,14 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
 
-    [self defineControl:_notifyOnlyCriticalShellIntegrationUpdates
-                    key:kPreferenceKeyNotifyOnlyForCriticalShellIntegrationUpdates
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
+    if ([iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
+        [self defineControl:_notifyOnlyCriticalShellIntegrationUpdates
+                        key:kPreferenceKeyNotifyOnlyForCriticalShellIntegrationUpdates
+                relatedView:nil
+                       type:kPreferenceInfoTypeCheckbox];
+    } else {
+        _notifyOnlyCriticalShellIntegrationUpdates.hidden = YES;
+    }
 
     [self defineControl:_checkUpdate
                     key:kPreferenceKeyCheckForUpdatesAutomatically
@@ -1579,54 +1591,57 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     PreferenceInfo *allowSendingClipboardInfo = info;
 
     /// -------
+    PreferenceInfo *enableAIInfo = nil;
+    if ([iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        [self setupCustomHeadersSection];
+        [self setupDefaultAIModelSelector];
+        [self addViewToSearchIndex:_openAIAPIKey
+                       displayName:@"Manage AI API Keys"
+                           phrases:@[ @"Set API key for AI",
+                                       @"OpenAI Anthropic Gemini DeepSeek API keys" ]
+                               key:kPreferenceKeyAIAPIKey];
 
-    [self addViewToSearchIndex:_openAIAPIKey
-                   displayName:@"Manage AI API Keys"
-                       phrases:@[ @"Set API key for AI",
-                                   @"OpenAI Anthropic Gemini DeepSeek API keys" ]
-                           key:kPreferenceKeyAIAPIKey];
+        info = [self defineControl:_aiPrompt
+                               key:kPreferenceKeyAIPromptPlaceholder
+                       relatedView:_promptSelector
+                              type:kPreferenceInfoTypeStringTextView];
+        info.observer = ^{
+            [weakSelf updateAIPromptWarning];
+        };
+        info.syntheticGetter = ^id{
+            NSString *key = [weakSelf keyForCurrentlySelectedAIPrompt];
+            return [iTermPreferences stringForKey:key];
+        };
+        info.syntheticSetter = ^(id newValue) {
+            NSString *key = [weakSelf keyForCurrentlySelectedAIPrompt];
+            [iTermPreferences setWithoutSideEffectsObject:newValue forKey:key];
+        };
 
-    info = [self defineControl:_aiPrompt
-                           key:kPreferenceKeyAIPromptPlaceholder
-                   relatedView:_promptSelector
-                          type:kPreferenceInfoTypeStringTextView];
-    info.observer = ^{
-        [weakSelf updateAIPromptWarning];
-    };
-    info.syntheticGetter = ^id{
-        NSString *key = [weakSelf keyForCurrentlySelectedAIPrompt];
-        return [iTermPreferences stringForKey:key];
-    };
-    info.syntheticSetter = ^(id newValue) {
-        NSString *key = [weakSelf keyForCurrentlySelectedAIPrompt];
-        [iTermPreferences setWithoutSideEffectsObject:newValue forKey:key];
-    };
+        [AIMetadata.instance enumerateModels:^(NSString * _Nonnull name, NSInteger context, NSString *url) {
+            [_aiModel addItemWithObjectValue:name];
+        }];
 
-    [AIMetadata.instance enumerateModels:^(NSString * _Nonnull name, NSInteger context, NSString *url) {
-        [_aiModel addItemWithObjectValue:name];
-    }];
-
-    PreferenceInfo *tokenLimitInfo =
-        [self defineControl:_aiTokenLimit
-                        key:kPreferenceKeyAITokenLimit
-                relatedView:_aiTokenLimitLabel
-                       type:kPreferenceInfoTypeIntegerTextField];
-    _aiTokenLimitInfo = tokenLimitInfo;
-    PreferenceInfo *responseTokenLimitInfo =
-        [self defineControl:_aiResponseTokenLimit
-                        key:kPreferenceKeyAIResponseTokenLimit
-                relatedView:_aiTokenLimitLabel
-                       type:kPreferenceInfoTypeIntegerTextField];
-    _aiResponseTokenLimitInfo = responseTokenLimitInfo;
-    PreferenceInfo *urlInfo = [self defineControl:_customAIEndpoint
-                                              key:kPreferenceKeyAITermURL
-                                      displayName:@"Custom URL for AI"
-                                             type:kPreferenceInfoTypeStringTextField];
-    _aiURLInfo = urlInfo;
-    urlInfo.onUpdate = ^BOOL{
-        [weakSelf updateEnabledState];
-        return NO;
-    };
+        PreferenceInfo *tokenLimitInfo =
+            [self defineControl:_aiTokenLimit
+                            key:kPreferenceKeyAITokenLimit
+                    relatedView:_aiTokenLimitLabel
+                           type:kPreferenceInfoTypeIntegerTextField];
+        _aiTokenLimitInfo = tokenLimitInfo;
+        PreferenceInfo *responseTokenLimitInfo =
+            [self defineControl:_aiResponseTokenLimit
+                            key:kPreferenceKeyAIResponseTokenLimit
+                    relatedView:_aiTokenLimitLabel
+                           type:kPreferenceInfoTypeIntegerTextField];
+        _aiResponseTokenLimitInfo = responseTokenLimitInfo;
+        PreferenceInfo *urlInfo = [self defineControl:_customAIEndpoint
+                                                  key:kPreferenceKeyAITermURL
+                                          displayName:@"Custom URL for AI"
+                                                 type:kPreferenceInfoTypeStringTextField];
+        _aiURLInfo = urlInfo;
+        urlInfo.onUpdate = ^BOOL{
+            [weakSelf updateEnabledState];
+            return NO;
+        };
 
     info = [self defineControl:_checkTerminalStateButton
                            key:kPreferenceKeyAIPermissionCheckTerminalState
@@ -1760,7 +1775,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         iTermSecureUserDefaults.instance.enableAI = [newValue boolValue];
         [weakSelf updateAIEnabled];
     };
-    PreferenceInfo *enableAIInfo = info;
+        enableAIInfo = info;
 
 
     info = [self defineControl:_aiCompletions
@@ -1796,6 +1811,10 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         __strong __typeof(weakSelf) strongSelf = weakSelf;
         [strongSelf updateCustomHeadersControlsEnabled];
     };
+        [self validatePlugin];
+    } else {
+        [self it_removeTabViewItemWithLabel:@"AI"];
+    }
 
     // ---------------------------------------------------------------------------------------------
     [self defineControl:_enableRTL
@@ -1807,12 +1826,13 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
              relatedView:nil
                     type:kPreferenceInfoTypeCheckbox];
 
-    [self validatePlugin];
     [self updateEnabledState];
     [self commitControls];
     [self updateValueForInfo:allowSendingClipboardInfo];
-    [self updateValueForInfo:enableAIInfo];
-    [self updateAIEnabled];
+    if (enableAIInfo) {
+        [self updateValueForInfo:enableAIInfo];
+        [self updateAIEnabled];
+    }
 }
 
 // The single source of per-prompt metadata: the preference key plus,

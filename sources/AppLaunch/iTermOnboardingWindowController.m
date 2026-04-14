@@ -26,6 +26,9 @@
 static NSString *const iTermOnboardingWindowControllerHasBeenShown = @"NoSyncOnboardingWindowHasBeenShown34";
 
 static void iTermOpenWhatsNewURL(NSString *path, NSWindow *window) {
+    if (![iTermTerminalFirstFeatures onboardingEnabled]) {
+        return;
+    }
     if ([path isEqualToString:@"companion"]) {
         if (![iTermAdvancedSettingsModel generativeAIAllowed]) {
             [iTermWarning showWarningWithTitle:@"Generative AI features have been disabled. Talk to your enterprise system administrator."
@@ -177,6 +180,9 @@ static void iTermOpenWhatsNewURL(NSString *path, NSWindow *window) {
 }
 
 + (BOOL)shouldBeShown {
+    if (![iTermTerminalFirstFeatures onboardingEnabled]) {
+        return NO;
+    }
     if ([self hasBeenShown]) {
         return NO;
     }
