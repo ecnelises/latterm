@@ -173,8 +173,6 @@ extension iTermApplicationDelegate {
                 text: "Checks whether the GPU Renderer is currently being used in the active session. This is sometimes useful for debugging."),
             Tip(identifier: "Secure Keyboard Entry",
                 text: "**Secure Keyboard Entry** prevents other programs from intercepting your keystrokes in the terminal. However, it also breaks some functionality: other programs cannot activate their windows while this is enabled. For example, the `open` command will still open an app, but it won’t be activated."),
-            Tip(identifier: "Install Shell Integration",
-                text: "**Shell Integration** consists of shell scripts that run when you log in. They inform iTerm2 of where your shell prompt is. This enables dozens of useful features such as command history, directory history, AI features, and more."),
             Tip(identifier: "Toggle Debug Logging",
                 text: "Debug logs are saved in memory while this setting is enabled and written to `/tmp/debuglog.txt` when you turn it off. Memory use is capped at about 200MB; if the log grows past that, the oldest entries are discarded so the most recent activity is always kept."),
             Tip(identifier: "Broadcast Input.Broadcast Input to All Panes in All Tabs",

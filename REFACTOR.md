@@ -23,6 +23,8 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Reworded remaining shell-integration help surfaces so they stop offering installation and instead report that the fork no longer supports those features.
 - Removed the shell integration injection code path from `PTYSession` and remote SSH setup in `Conductor`.
 - Deleted `ShellIntegrationInjection.swift` and `Bundle+ShellIntegration.swift` from the target and removed the last installer-window cleanup hook from `PTYTextView`.
+- Deleted the legacy shell integration installer UI slice from the repo and target (`iTermShellIntegration*` window/controller/panel/root-view files and XIB).
+- Removed the “Install Shell Integration” app tip so the UI stops teaching a feature that this fork no longer intends to keep.
 
 ### Current Build Blocker
 
@@ -33,6 +35,7 @@ This file is a local planning document. Do not assume it belongs in a release co
 ### Recent Verification
 
 - `xcodebuild build -quiet -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES ...` passes after the shell integration injection cleanup.
+- The same `Development` build also passes after deleting the legacy shell integration installer UI slice.
 
 ## Refactor Direction
 
