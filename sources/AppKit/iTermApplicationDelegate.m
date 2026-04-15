@@ -1697,54 +1697,6 @@ void TurnOnDebugLoggingAutomatically(void) {
     }
 
     [self registerMenuTips];
-    // Seed the cached "are hooks installed" / "are triggers
-    // installed" flags from disk once at launch so validateMenuItem
-    // (called constantly) can read user defaults instead of re-
-    // walking ~/.claude/settings.json or every profile's trigger list.
-    [iTermClaudeCodeOnboarding reconcileHooksCache];
-    // Backfill the leader-only flag on existing Claude Code Exit Workgroup
-    // triggers for users upgrading from a build that predates it. Runs before
-    // reconcileTriggersCache so the cached "triggers installed" flag reflects
-    // the migrated (now-flagged) state this launch rather than next launch.
-    [iTermClaudeCodeOnboarding migrateExitTriggersToLeaderOnlyIfNeeded];
-    [iTermClaudeCodeOnboarding reconcileTriggersCache];
-
-    // Sticky claudeCodeIntegrationCompleted flag was added after
-    // 3.7.0beta1/beta2 shipped; users who installed the
-    // integration on those releases need their flag backfilled so
-    // the broken-install prompt can detect their case. Must run
-    // before the health monitor starts: HealthMonitor.start()
-    // calls replayCurrentState, which can synchronously evaluate
-    // restored claude sessions and burn the one-shot hasEvaluated
-    // flag with completed=false — leaving migration users (the
-    // entire migration audience) unprompted for the session.
-    [iTermClaudeCodeOnboarding migrateIntegrationCompletedFlagIfNeeded];
-
-    // ~/.claude/settings.json hooks reference a stable cc-status
-    // symlink in iTerm2's dot dir; we keep it pointed at the running
-    // app's bundle binary. Only re-point it when this launch is a
-    // newer version than the previous one, so launching an older
-    // build never downgrades the deployed cc-status. We still repair
-    // the symlink on any launch when it is missing or resolves to a
-    // bundle that was moved, renamed, or deleted. Gated on the
-    // (NoSync) cached install flag — the vast majority of users never
-    // install the cc-status hook, and they shouldn't pay the cost of
-    // touching the dot dir and a symlink on every launch.
-    // reconcileHooksCache above just refreshed the flag from disk, so
-    // a manual edit of ~/.claude/settings.json is detected next launch.
-    if ([iTermClaudeCodeOnboarding hooksAlreadyInstalled]) {
-        NSString *previousVersion = [iTermPreferences appVersionBeforeThisLaunch];
-        NSString *currentVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
-        const BOOL launchedNewerVersion =
-            (previousVersion == nil) ||
-            (currentVersion != nil && [self version:currentVersion newerThan:previousVersion]);
-        if (launchedNewerVersion || ![iTermClaudeCodeOnboarding ccStatusSymlinkIsHealthy]) {
-            [iTermClaudeCodeOnboarding ensureCCStatusSymlink];
-        }
-    }
-    [iTermClaudeWatcher start];
-    [[iTermClaudeIntegrationHealthMonitor instance] start];
-    [iTermClaudeCodeModeController start];
     if (_workgroupsMenuItem) {
         [iTermWorkgroupMenu attachTo:_workgroupsMenuItem
                            separator:_workgroupsSeparator];
@@ -2536,27 +2488,6 @@ static iTermKeyEventReplayer *gReplayer;
 
 - (IBAction)pairCompanionDevice:(id)sender {
     [iTermCompanionOnboardingRouter openSettingsOrWizard];
-}
-
-- (IBAction)installClaudeCodeIntegration:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [[iTermClaudeCodeIntegrationMenuController shared] install:sender];
-}
-
-- (IBAction)reinstallClaudeCodeIntegration:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [[iTermClaudeCodeIntegrationMenuController shared] reinstall:sender];
-}
-
-- (IBAction)uninstallClaudeCodeIntegration:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [[iTermClaudeCodeIntegrationMenuController shared] uninstall:sender];
 }
 
 #pragma mark - Main Menu

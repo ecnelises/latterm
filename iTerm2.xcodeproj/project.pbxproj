@@ -4343,7 +4343,6 @@
 		A6E632C723C31BD9008F60F0 /* iTermCLogging.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E632C623C31BD9008F60F0 /* iTermCLogging.h */; };
 		A6E701092F82C537001349AE /* ToolStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E701082F82C537001349AE /* ToolStatus.swift */; };
 		A6E702DF2F8327F2001349AE /* iTermSwiftyStringTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E702DE2F8327F2001349AE /* iTermSwiftyStringTextField.swift */; };
-		A6E70C202F84B6D5001349AE /* ClaudeWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E70C1F2F84B6D5001349AE /* ClaudeWatcher.swift */; };
 		A6E7137A18F1D70E008D94DD /* GeneralPreferencesViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E7137818F1D70D008D94DD /* GeneralPreferencesViewController.h */; };
 		A6E7138418F263BC008D94DD /* PreferenceInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E7138218F263BC008D94DD /* PreferenceInfo.h */; };
 		A6E7138918F26445008D94DD /* iTermPreferencesBaseViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E7138718F26445008D94DD /* iTermPreferencesBaseViewController.h */; };
@@ -4967,7 +4966,6 @@
 		A785F516A64BC93AAF1474B8 /* RegexAtomIterator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76421C2E762130B690D1ADC5 /* RegexAtomIterator.swift */; };
 		A7E25DCB1956D4A7FA738CB9 /* iTermStreamingPNGWriter.h in Sources */ = {isa = PBXBuildFile; fileRef = CB2F48F836C5732146BCEDD9 /* iTermStreamingPNGWriter.h */; };
 		A9921A948B70F521BD2B14B0 /* SessionNoteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A91EF453B797BB100AD508 /* SessionNoteModel.swift */; };
-		AA190CE70997D5318EF50177 /* ClaudeCodeOnboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = E961A126DE6D9EFA0C6CC9AB /* ClaudeCodeOnboarding.swift */; };
 		AA20D63F60C6C80D0BFEDA7D /* iTermGutterPanelWidths.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98ADE6D889E9911953ECB78 /* iTermGutterPanelWidths.swift */; };
 		AA251071CC471BAE2F76C4C5 /* iTermWorkgroupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747097BB93FD0DED35E72C39 /* iTermWorkgroupController.swift */; };
 		AA5D2BB2D31EDEA4C68D4C3D /* SessionNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C553F420E05CA5C507043774 /* SessionNoteView.swift */; };
@@ -8593,7 +8591,6 @@
 		A6E632C623C31BD9008F60F0 /* iTermCLogging.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermCLogging.h; sourceTree = "<group>"; };
 		A6E701082F82C537001349AE /* ToolStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolStatus.swift; sourceTree = "<group>"; };
 		A6E702DE2F8327F2001349AE /* iTermSwiftyStringTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iTermSwiftyStringTextField.swift; sourceTree = "<group>"; };
-		A6E70C1F2F84B6D5001349AE /* ClaudeWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeWatcher.swift; sourceTree = "<group>"; };
 		A6E7137818F1D70D008D94DD /* GeneralPreferencesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = GeneralPreferencesViewController.h; sourceTree = "<group>"; tabWidth = 4; };
 		A6E7137918F1D70D008D94DD /* GeneralPreferencesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = GeneralPreferencesViewController.m; sourceTree = "<group>"; tabWidth = 4; };
 		A6E7137D18F1DB1E008D94DD /* iTermPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = iTermPreferences.h; sourceTree = "<group>"; tabWidth = 4; };
@@ -9153,7 +9150,6 @@
 		E8CF757F026DDAD703A80106 /* main.m */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; tabWidth = 4; };
 		E8D4F38B871E9DA9C0AA5E10 /* CompanionPairingWindowController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPairingWindowController.swift; sourceTree = "<group>"; };
 		E8E901A202743CA303A80106 /* NSStringITerm.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = NSStringITerm.m; sourceTree = "<group>"; tabWidth = 4; };
-		E961A126DE6D9EFA0C6CC9AB /* ClaudeCodeOnboarding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaudeCodeOnboarding.swift; sourceTree = "<group>"; };
 		E989C0EC904E3E213AA6115A /* CompanionPixelBufferPool.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPixelBufferPool.swift; sourceTree = "<group>"; };
 		E9B6267AF6FAE7F906B1DBF9 /* iTermModalSheetRunner.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermModalSheetRunner.m; sourceTree = "<group>"; };
 		E9D218FDCACCEF2DA820B7D4 /* ExitWorkgroupTrigger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExitWorkgroupTrigger.swift; sourceTree = "<group>"; };
@@ -14539,9 +14535,7 @@
 		A6CD8B592F9846D1003EA0C1 /* ClaudeCode */ = {
 			isa = PBXGroup;
 			children = (
-				A6E70C1F2F84B6D5001349AE /* ClaudeWatcher.swift */,
 				CA34A6F29B10471D8FD572F6 /* GlobalJobMonitor.swift */,
-				E961A126DE6D9EFA0C6CC9AB /* ClaudeCodeOnboarding.swift */,
 				3298E60BA3D410B4C3FC1A98 /* PeerSessionSettingsViewController.swift */,
 				83F411648885DE6A00CA8321 /* ClaudeCodeIntegrationMenuController.swift */,
 				F1FA5EA310888B7DB4DFBE61 /* ClaudeIntegrationHealthMonitor.swift */,
@@ -19435,7 +19429,6 @@
 				A6CC498A2C06EB4E003484B2 /* SettingsSecureTextField.swift in Sources */,
 				A6A802EA226ED20800BC70DC /* iTermPrintGuard.m in Sources */,
 				A653F66C24CE7CE30062377E /* iTermGraphEncoder.m in Sources */,
-				A6E70C202F84B6D5001349AE /* ClaudeWatcher.swift in Sources */,
 				A66319872308C60000C502BD /* NSStringITerm.m in Sources */,
 				5370678A21C9D2780088D0F3 /* SIGKey.m in Sources */,
 				A6F718C62265B2580053488E /* iTermPathCleaner.m in Sources */,
@@ -20501,7 +20494,6 @@
 				82C8876B3E6C833593501F97 /* SetTabStatusTrigger.swift in Sources */,
 				D456895D420CBEEDC331D5F7 /* StatusPrioritySettings.swift in Sources */,
 				C5F394249CF581965B22B714 /* GlobalJobMonitor.swift in Sources */,
-				AA190CE70997D5318EF50177 /* ClaudeCodeOnboarding.swift in Sources */,
 				8E9796208C12DD69744D3606 /* iTermLocatedString+ScreenCharArray.swift in Sources */,
 				D7391EB323E94EAC34943C01 /* iTermOptionalPathRecognizer.swift in Sources */,
 				A9921A948B70F521BD2B14B0 /* SessionNoteModel.swift in Sources */,

@@ -33,7 +33,13 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Kept `sources/ToolWebView.*` and `sources/iTermWebViewWrapperViewController.*` because they are shared helpers still used by non-browser toolbelt/status surfaces.
 - Replaced browser-only runtime hooks with terminal-first compatibility shims where non-browser code still referenced browser types or selectors.
 - Removed the remaining compile-time dependencies on browser metadata, browser-session find/search plumbing, and browser-only profile/detail lookups.
+- Landed the browser-removal slice in local commit `cab7f0cfe` (`Remove browser session support`).
 - A local `Development` build now succeeds again after the browser-removal cleanup, so the old `WebExtensionsFramework` blocker is no longer the active state of this worktree.
+
+### 2026-04-15 Phase 3 Starter Slice
+
+- Removed the Claude Code watcher/onboarding pair (`sources/ClaudeWatcher.swift`, `sources/ClaudeCodeOnboarding.swift`) and the app-delegate hooks that started or showed them.
+- This intentionally trims an isolated AI onboarding surface first, leaving the chat stack, gatekeeper, and provider plumbing for later slices.
 
 ### Recent Verification
 
@@ -116,6 +122,14 @@ Expected cleanup areas:
 - Chat window/menu entry points
 - AI permission flows linked to terminal or browser sessions
 - Preferences and defaults related to model selection, API keys, or automatic sending
+
+Notes:
+
+- Do not start phase 3 by deleting the chat stack. `ChatWindowController`, `ChatClient`, `ChatBroker`, `ChatService`, `ChatAgent`, and `ChatDatabase` are tightly coupled and should be treated as a later slice.
+- The safest first phase 3 cut is the Claude Code watcher/onboarding pair: `sources/ClaudeWatcher.swift`, `sources/ClaudeCodeOnboarding.swift`, and the two app-delegate hooks that start/show them.
+- AI completion is a reasonable second slice, but it must include both `sources/AICompletion.swift` and the `CompletionItem.Kind.aiSuggestion` handling in `sources/CompletionsWindow.swift`.
+- `sources/ToolCodecierge.swift` is not leaf-clean. If removed, do it together with its toolbelt registration and any AI-specific help/tip text.
+- The shared AI gate/client layer (`sources/AIPluginClient.swift`, `sources/iTermAITermGatekeeper.swift`) is broad enough that it should follow the UI/onboarding cleanup, not lead it.
 
 ### Shell Integration
 
@@ -227,6 +241,13 @@ Goal: eliminate chat, agent, and model plumbing.
 - Remove AI-linked session permission flows.
 - Remove AI menu items, toolbars, tips, onboarding content, and warnings.
 - Remove the separate `iTermAI/` project if it is no longer referenced.
+
+Recommended first slices:
+
+1. Remove the Claude Code watcher/onboarding startup and menu hooks, then delete `sources/ClaudeWatcher.swift` and `sources/ClaudeCodeOnboarding.swift`.
+2. Remove terminal AI completion (`sources/AICompletion.swift`) together with the `.aiSuggestion` UI branch in `sources/CompletionsWindow.swift`.
+3. Remove Codecierge AI surfaces only after deleting its toolbelt registration and related tip/help text.
+4. Tackle the shared AI gate/client layer and the chat stack only after the surface/onboarding slices above are gone.
 
 Success criteria:
 
