@@ -25,18 +25,19 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Deleted `ShellIntegrationInjection.swift` and `Bundle+ShellIntegration.swift` from the target and removed the last installer-window cleanup hook from `PTYTextView`.
 - Deleted the legacy shell integration installer UI slice from the repo and target (`iTermShellIntegration*` window/controller/panel/root-view files and XIB).
 - Removed the “Install Shell Integration” app tip so the UI stops teaching a feature that this fork no longer intends to keep.
-
 - Deleted the standalone `iTermAI/` project (unreferenced by the main app target) and the standalone `iTermBrowserPlugin/` project (also unreferenced by the main app target), pruning two dead leaf modules.
-### Current Build Blocker
 
-- `xcodebuild -quiet build -project iTerm2.xcodeproj -scheme iTerm2 -configuration Debug -derivedDataPath /tmp/iTerm2-derived-escalated-quiet CODE_SIGNING_ALLOWED=NO` currently fails in both the working tree and a clean `HEAD` clone with:
-- `sources/Browser/Extensions/iTermBrowserStorageProvider.swift:8:8: error: unable to resolve module dependency: 'WebExtensionsFramework'`
-- This is a baseline repository problem, not a regression unique to the terminal-first surface changes. It still needs to be fixed or worked around before compile verification can prove later slices.
+### 2026-04-15 Phase 2 Progress
+
+- Deleted `sources/Browser/**` and `sources/PTYSession+Browser.swift`, then removed the stale project references that still pointed at those files.
+- Kept `sources/ToolWebView.*` and `sources/iTermWebViewWrapperViewController.*` because they are shared helpers still used by non-browser toolbelt/status surfaces.
+- Replaced browser-only runtime hooks with terminal-first compatibility shims where non-browser code still referenced browser types or selectors.
+- Removed the remaining compile-time dependencies on browser metadata, browser-session find/search plumbing, and browser-only profile/detail lookups.
+- A local `Development` build now succeeds again after the browser-removal cleanup, so the old `WebExtensionsFramework` blocker is no longer the active state of this worktree.
 
 ### Recent Verification
 
-- `xcodebuild build -quiet -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES ...` passes after the shell integration injection cleanup.
-- The same `Development` build also passes after deleting the legacy shell integration installer UI slice.
+- `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
 
 ## Refactor Direction
 
@@ -81,11 +82,13 @@ Primary removal candidates:
 - `sources/Browser/**`
 - `sources/PTYSession+Browser.swift`
 - Browser branches inside `sources/PTYSession.m`
-- `sources/ToolWebView.*`
-- `sources/iTermWebViewWrapperViewController.*`
 - `sources/iTermBaseWKWebView.*`
 - `iTermBrowserPlugin/`
 - Browser-specific preferences, onboarding, history, bookmarks, and profile creation flows
+
+Notes:
+
+- `sources/ToolWebView.*` and `sources/iTermWebViewWrapperViewController.*` were initially browser-adjacent but are still shared by surviving non-browser UI. Do not delete them until those remaining consumers are migrated or removed.
 
 Expected cleanup areas:
 
@@ -210,6 +213,7 @@ Goal: collapse the app back to terminal sessions only.
 - Remove browser-specific branches from `PTYSession`, `PseudoTerminal`, and related session restoration code.
 - Remove browser profile creation and browser-only preference keys.
 - Remove browser plugin integration and browser-related assets/tests.
+- Keep only the minimal compatibility shims needed to compile non-browser callers while phase3/phase4 continue deleting adjacent code.
 
 Success criteria:
 

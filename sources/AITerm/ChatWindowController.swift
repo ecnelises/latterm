@@ -357,9 +357,8 @@ final class ChatWindowController: NSWindowController, DictionaryCodable {
                 return
             }
             if let guid, let session = iTermController.sharedInstance().anySession(forReference: guid) {
-                let terminal = !session.isBrowserSession()
                 let name = session.name
-                chatViewController.offerLink(to: guid, terminal: terminal, name: name)
+                chatViewController.offerLink(to: guid, terminal: true, name: name)
             } else {
                 // No session to link to, so offer the alternative:
                 // switch the chat into orchestration mode.

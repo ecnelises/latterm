@@ -5,6 +5,7 @@
 //  Created by George Nachman on 5/8/22.
 //
 
+import AppKit
 import Foundation
 
 @objc(iTermConductorDelegate)
@@ -1629,8 +1630,7 @@ extension Conductor {
             "application/x-gtar",
             "application/x-tar",
         ]
-        guard iTermBrowserGateway.browserAllowed(checkIfNo: false),
-              let mimeType,
+        guard let mimeType,
               let url = path.viewInBrowserURL,
               !unsupportedMimeTypes.contains(mimeType) else {
             download(path: path)
@@ -1647,18 +1647,18 @@ extension Conductor {
             // Only "View" should be remembered. Remembering "Download" could cause
             // repeated download prompts if the download fails or isn't handled.
             let warning = iTermWarning()
-            warning.title = "Download \(path.path.lastPathComponent) or view in browser?"
-            warning.actionLabels = ["Download", "View", "Cancel"]
+            warning.title = "Download \(path.path.lastPathComponent) or open in browser?"
+            warning.actionLabels = ["Download", "Open", "Cancel"]
             warning.identifier = "DownloadOrViewInBrowser_" + mimeType + " " + path.usernameHostnameString
             warning.warningType = .kiTermWarningTypePermanentlySilenceable
-            warning.heading = "Download or View File?"
+            warning.heading = "Download or Open File?"
             warning.window = window
             warning.doNotRememberLabels = ["Download", "Cancel"]
             switch warning.runModal() {
             case .kiTermWarningSelection0:  // Download
                 download(path: path)
-            case .kiTermWarningSelection1:  // View
-                iTermController.sharedInstance().open(url, target: nil, openStyle: .tab, select: true)
+            case .kiTermWarningSelection1:  // Open
+                NSWorkspace.shared.open(url)
             default:
                 break
             }
@@ -2962,10 +2962,6 @@ extension Array where Element == Conductor.Nesting {
 
 extension SCPPath {
     var viewInBrowserURL: URL? {
-        var components = URLComponents()
-        components.scheme = iTermBrowserSchemes.ssh
-        components.host = hostname
-        components.path = path
-        return components.url
+        return nil
     }
 }

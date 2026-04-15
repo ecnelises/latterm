@@ -202,17 +202,8 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
                                    andObject:session.badgeLabel
                                    object:@(session.badgeLabel.length > 0)];
     };
-    iTermTriple<NSString *, NSString *, NSNumber *> *(^webSite)(PTYSession *) = ^id(PTYSession *session) {
-        return [iTermTriple tripleWithObject:@"Web Site"
-                                   andObject:session.webSiteTitle ?: @""
-                                      object:@(session.webSiteTitle.length > 0)];
-    };
-
     // functions and functionValues are parallel arrays.
     NSArray<iTermTriple<NSString *, NSString *, NSNumber *>  *(^)(PTYSession *)> *functions = @[ pwd, command, hostname, badge ];
-    if ([iTermBrowserGateway browserAllowedCheckingIfNot:NO]) {
-        functions = [functions arrayByAddingObject:webSite];
-    }
     NSMutableArray<NSMutableArray *> *functionValues = [NSMutableArray array];
     [functions enumerateObjectsUsingBlock:^(iTermTriple<NSString *, NSString *, NSNumber *>  *(^ _Nonnull obj)(PTYSession *), NSUInteger idx, BOOL * _Nonnull stop) {
         [functionValues addObject:[NSMutableArray array]];
@@ -519,53 +510,7 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 - (void)addBookmarkToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
                withMatcher:(iTermMinimumSubsequenceMatcher *)matcher
                       urls:(NSMutableSet<NSURL *> *)urls {
-    if (![iTermBrowserGateway browserAllowedCheckingIfNot:NO]) {
-        return;
-    }
-    if ([matcher.query hasPrefix:@"/"]) {
-        return;
-    }
-    for (iTermTriple<NSString *, NSURL *, NSString *> *triple in [iTermBrowserBookmarkFinder bookmarksMatchingSubstring:matcher.query]) {
-        if ([urls containsObject:triple.secondObject]) {
-            continue;
-        }
-        iTermOpenQuicklyBookmarkItem *item = [[iTermOpenQuicklyBookmarkItem alloc] init];
-        NSMutableAttributedString *attributedName = [[NSMutableAttributedString alloc] init];
-        item.score = [self scoreForBookmarkTitle:triple.firstObject url:triple.secondObject matcher:matcher attributedName:attributedName];
-        if (item.score > 0) {
-            item.detail = [_delegate openQuicklyModelDisplayStringForFeatureNamed:nil
-                                                                            value:@"Open Bookmark in Browser"
-                                                               highlightedIndexes:nil];
-            item.title = attributedName;
-            item.identifier = [triple.secondObject absoluteString];
-            item.url = triple.secondObject;
-            item.bookmarkName = triple.firstObject;
-            item.userID = triple.thirdObject;
-            [items addObject:item];
-            [urls addObject:item.url];
-        }
-    }
-    // Add matching recent visits items
-    for (iTermTriple<NSString *, NSURL *, NSString *> *triple in [iTermBrowserVisitsFinder historyMatchingSubstring:matcher.query]) {
-        if ([urls containsObject:triple.secondObject]) {
-            continue;
-        }
-        iTermOpenQuicklyBookmarkItem *item = [[iTermOpenQuicklyBookmarkItem alloc] init];
-        NSMutableAttributedString *attributedName = [[NSMutableAttributedString alloc] init];
-        item.score = [self scoreForBookmarkTitle:triple.firstObject url:triple.secondObject matcher:matcher attributedName:attributedName];
-        if (item.score > 0) {
-            item.detail = [_delegate openQuicklyModelDisplayStringForFeatureNamed:nil
-                                                                            value:@"Open Visited Site in Browser"
-                                                               highlightedIndexes:nil];
-            item.title = attributedName;
-            item.identifier = [triple.secondObject absoluteString];
-            item.url = triple.secondObject;
-            item.bookmarkName = triple.firstObject;
-            item.userID = triple.thirdObject;
-            [items addObject:item];
-            [urls addObject:item.url];
-        }
-    }
+    return;
 }
 
 - (void)addURLToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items

@@ -69,9 +69,7 @@
     // document loads (which could take infinite time, oh well)
     [[[iTermController sharedInstance] terminals] enumerateObjectsUsingBlock:^(PseudoTerminal *term, NSUInteger idx, BOOL *stop) {
         for (PTYSession *session in term.allSessions) {
-            if (session.isBrowserSession) {
-                [session.view.browserViewController performDeferredInitializationInWindow:term.window];
-            }
+            (void)session;
         }
     }];
 }

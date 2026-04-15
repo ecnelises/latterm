@@ -322,12 +322,10 @@ static NSString *const SESSION_ARRANGEMENT_REUSABLE_COOKIE = @"Reusable Cookie";
 static NSString *const SESSION_ARRANGEMENT_OVERRIDDEN_FIELDS = @"Overridden Fields";  // NSArray<NSString *>
 static NSString *const SESSION_ARRANGEMENT_FILTER = @"Filter";  // NSString
 static NSString *const SESSION_ARRANGEMENT_SSH_STATE = @"SSH State";  // NSNumber
-static NSString *const SESSION_ARRANGEMENT_BROWSER_STATE = @"Browser State";  // NSData
 static NSString *const SESSION_ARRANGEMENT_CONDUCTOR = @"Conductor";  // NSString (json)
 static NSString *const SESSION_ARRANGEMENT_PENDING_JUMPS = @"Pending Jumps";  // NSArray<NSString *>, optional.
 static NSString *const SESSION_ARRANGEMENT_CHANNEL_ID = @"Channel ID";  // NSString
 static NSString *const SESSION_ARRANGEMENT_TIMESTAMP_BASELINE = @"Timestamp Baseline"; // NSNumber
-static NSString *const SESSION_ARRANGEMENT_BROWSER_TARGET = @"Browser Target";  // String
 static NSString *const SESSION_ARRANGEMENT_TAB_STATUS = @"Tab Status";  // NSDictionary
 static NSString *const SESSION_ARRANGEMENT_SESSION_NOTE = @"Session Note";  // NSDictionary (graph-encoded)
 static NSString *const SESSION_ARRANGEMENT_CLIPPINGS = @"Clippings";  // NSArray<NSDictionary<NSString *, NSString *> *>, see PTYSessionClipping. Belongs to the leader of the peer group.
@@ -435,6 +433,18 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 - (CGFloat)backgroundDrawingHelperBlending {
     return [self.session backgroundDrawingHelperBlending];
 }
+@end
+
+@interface PTYSession ()
+- (void)browserResetFindCursor;
+- (BOOL)browserFindInProgress;
+- (BOOL)browserContinueFind:(double *)progress range:(NSRange *)rangePtr;
+- (void)browserFindString:(NSString *)aString
+         forwardDirection:(BOOL)direction
+                     mode:(iTermFindMode)mode
+               withOffset:(int)offset
+      scrollToFirstResult:(BOOL)scrollToFirstResult
+                    force:(BOOL)force;
 @end
 
 @implementation PTYSession {
@@ -712,8 +722,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     NSInteger _estimatedThroughput;
     iTermPasteboardReporter *_pasteboardReporter;
     iTermSSHState _sshState;
-    // Stored browser interaction state for restoration
-    NSDictionary *_savedBrowserState;
     // (unique ID, hostname)
     NSMutableData *_sshWriteQueue;
     BOOL _jiggleUponAttach;
@@ -753,8 +761,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     // Holds NSNull or ScreenCharArray. NSNull signals to remove the last line.
     NSMutableArray *_pendingFilterUpdates;
     
-    // Browser navigation state
-    BOOL _browserIsLoading;
 
     // Disables short-lived session warning so the user can read the error.
     BOOL _execDidFail;
@@ -1235,7 +1241,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_pasteboardReporter release];
     [_conductor release];
     [_sshWriteQueue release];
-    [_savedBrowserState release];
     [_lastNonFocusReportingWrite release];
     [_lastFocusReportDate release];
     [_aiterm release];
@@ -1261,7 +1266,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_channelUID release];
     [_channelParentGuid release];
     [_pendingFilterUpdates release];
-    [_browserTarget release];
     [_bindings release];
     [_apsContext release];
     [_sessionNoteModel release];
@@ -1364,10 +1368,6 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)clearInstantReplay {
-    if (self.isBrowserSession) {
-        [_view.browserViewController clearInstantReplay];
-        return;
-    }
     if (_dvrDecoder) {
         [_dvr releaseDecoder:_dvrDecoder];
         _dvrDecoder = nil;
@@ -1443,18 +1443,11 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)setCopyMode:(BOOL)copyMode {
-    if (self.isBrowserSession) {
-        [self.view.browserViewController setCopyMode:copyMode];
-        return;
-    }
     [_textview removePortholeSelections];
     _modeHandler.mode = copyMode ? iTermSessionModeCopy : iTermSessionModeDefault;
 }
 
 - (BOOL)copyMode {
-    if (self.isBrowserSession) {
-        return [self.view.browserViewController copyMode];
-    }
     return _modeHandler.mode == iTermSessionModeCopy;
 }
 
@@ -1473,10 +1466,6 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (BOOL)sessionModeConsumesEvent:(NSEvent *)event {
-    if (_view.isBrowser) {
-        // Browser is modeless, for now.
-        return NO;
-    }
     return [_modeHandler wouldHandleEvent:event];
 }
 
@@ -1706,7 +1695,6 @@ ITERM_WEAKLY_REFERENCEABLE
     }
 
     aSession->_textview.timestampBaseline = [arrangement[SESSION_ARRANGEMENT_TIMESTAMP_BASELINE] doubleValue];
-    aSession.browserTarget = [NSString castFrom:arrangement[SESSION_ARRANGEMENT_BROWSER_TARGET]];
     aSession->_channelUID = [arrangement[SESSION_ARRANGEMENT_CHANNEL_ID] copy];
     if (arrangement[SESSION_ARRANGEMENT_COMMANDS]) {
         [aSession.commands addObjectsFromArray:arrangement[SESSION_ARRANGEMENT_COMMANDS]];
@@ -2088,7 +2076,7 @@ ITERM_WEAKLY_REFERENCEABLE
     BOOL shouldEnterTmuxMode = NO;
     NSDictionary *contents = arrangement[SESSION_ARRANGEMENT_CONTENTS];
     BOOL restoreContents = (!tmuxPaneNumber &&
-                            (arrangement[SESSION_ARRANGEMENT_BROWSER_STATE] != nil || contents) &&
+                            contents &&
                             [iTermAdvancedSettingsModel restoreWindowContents]);
     BOOL attachedToServer = NO;
     // Opaque workgroup peer-group descriptor, owned by
@@ -2288,9 +2276,6 @@ ITERM_WEAKLY_REFERENCEABLE
                                      largeContentProvider:options[PTYSessionArrangementOptionsLargeContentProvider]];
             // NOTE: THE SCREEN SIZE IS NOW OUT OF SYNC WITH THE VIEW SIZE. IT MUST BE FIXED!
             // Store browser state for restoration in startProgram:
-        }
-        if (restoreContents || [options[PTYSessionArrangementOptionsForDuplication] boolValue]) {
-            aSession->_savedBrowserState = [[NSDictionary castFrom:arrangement[SESSION_ARRANGEMENT_BROWSER_STATE]] retain];
         }
         if (arrangement[SESSION_ARRANGEMENT_KEYLABELS]) {
             // restoreKeyLabels wants the cursor position to be set so do it after restoring contents.
@@ -2554,24 +2539,13 @@ ITERM_WEAKLY_REFERENCEABLE
                                                               aSize.height)];
     _textview.colorMap = _screen.colorMap;
     _textview.keyboardHandler.keyMapper = _keyMapper;
-    if (self.isBrowserSession && _view.browserViewController != nil) {
-        _view.mainResponder = _view.browserViewController;
-    } else if (!self.isBrowserSession) {
-        _view.mainResponder = _textview;
-    }
+    _view.mainResponder = _textview;
     _view.searchResultsMinimapViewDelegate = _textview.findOnPageHelper;
     _metalGlue.textView = _textview;
     [_textview setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
-    if (_profile.profileIsBrowser) {
-        [_textview configureAsBrowser];
-    } else {
-        [_textview setFontTable:[iTermFontTable fontTableForProfile:_profile]
-              horizontalSpacing:[iTermProfilePreferences doubleForKey:KEY_HORIZONTAL_SPACING inProfile:_profile]
-                verticalSpacing:[iTermProfilePreferences doubleForKey:KEY_VERTICAL_SPACING inProfile:_profile]];
-    }
-    if (@available(macOS 11, *)) {
-        _view.browserViewController.zoom = [iTermProfilePreferences doubleForKey:KEY_BROWSER_ZOOM inProfile:_profile];
-    }
+    [_textview setFontTable:[iTermFontTable fontTableForProfile:_profile]
+          horizontalSpacing:[iTermProfilePreferences doubleForKey:KEY_HORIZONTAL_SPACING inProfile:_profile]
+            verticalSpacing:[iTermProfilePreferences doubleForKey:KEY_VERTICAL_SPACING inProfile:_profile]];
     [self setTransparency:[[_profile objectForKey:KEY_TRANSPARENCY] floatValue]];
     [self setTransparencyAffectsOnlyDefaultBackgroundColor:[[_profile objectForKey:KEY_TRANSPARENCY_AFFECTS_ONLY_DEFAULT_BACKGROUND_COLOR] boolValue]];
 
@@ -3317,14 +3291,33 @@ ITERM_WEAKLY_REFERENCEABLE
        substitutions:(NSDictionary *)substitutions
          arrangement:(NSString *)arrangementName
      fromArrangement:(BOOL)fromArrangement
-webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
+webViewConfiguration:(id)webViewConfiguration
+          completion:(void (^)(BOOL))completion {
+    [self startProgram:command
+                   ssh:ssh
+           environment:environment
+           customShell:customShell
+                isUTF8:isUTF8
+         substitutions:substitutions
+           arrangement:arrangementName
+       fromArrangement:fromArrangement
+            completion:completion];
+}
+
+- (void)startProgram:(NSString *)command
+                 ssh:(BOOL)ssh
+         environment:(NSDictionary *)environment
+         customShell:(NSString *)customShell
+              isUTF8:(BOOL)isUTF8
+       substitutions:(NSDictionary *)substitutions
+         arrangement:(NSString *)arrangementName
+     fromArrangement:(BOOL)fromArrangement
           completion:(void (^)(BOOL))completion {
     // command can be a user-configured command line, environment can carry exported
     // secrets, and substitutions can carry user values; keep them out of the ring.
-    RLog(@"startProgram:%@ ssh:%@ browser:%@ environment:%@ customShell:%@ isUTF8:%@ substitutions:%@ arrangementName:%@ fromArrangement:%@, self=%@",
+    RLog(@"startProgram:%@ ssh:%@ environment:%@ customShell:%@ isUTF8:%@ substitutions:%@ arrangementName:%@ fromArrangement:%@, self=%@",
          RLogRedact(command, @(command.length)),
          @(ssh),
-         @(browser),
          RLogRedact(environment, environment.allKeys),
          customShell,
          @(isUTF8),
@@ -3339,35 +3332,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     self.isUTF8 = isUTF8;
     self.substitutions = substitutions ?: @{};
     _sshState = ssh ? iTermSSHStateProfile : iTermSSHStateNone;
-    if (browser) {
-        const BOOL allowed = [self becomeBrowserWithConfiguration:webViewConfiguration
-                                                  restorableState:_savedBrowserState];
-        [_savedBrowserState release];
-        _savedBrowserState = nil;
-        completion(allowed);
-        if (!allowed) {
-            static int count;
-            count += 1;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self brokenPipe];
-                count -= 1;
-                if (count > 0) {
-                    return;
-                }
-                const iTermWarningSelection selection = [iTermWarning showWarningWithTitle:@"A browser session failed to start because the iTerm2 Browser Plugin couldn’t be found."
-                                           actions:@[ @"Download", @"Cancel" ]
-                                         accessory:nil
-                                        identifier:nil
-                                       silenceable:kiTermWarningTypePersistent
-                                           heading:@"Browser Plugin Missing"
-                                            window:nil];
-                if (selection == kiTermWarningSelection0) {
-                    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://iterm2.com/browser-plugin.html"]];
-                }
-            });
-        }
-        return;
-    }
     [self computeArgvForCommand:command substitutions:substitutions completion:^(NSArray<NSString *> *argv) {
         DLog(@"argv=%@", argv);
         NSDictionary *env = [self environmentForNewJobFromEnvironment:environment ?: @{}
@@ -3545,9 +3509,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     if (self.isSingleUseSession) {
         return;
     }
-    if (self.isBrowserSession) {
-        return;
-    }
     if (self.workgroupInstance != nil) {
         return;
     }
@@ -3679,9 +3640,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
 // "restart", which is done by first calling revive and then replaceTerminatedShellWithNewInstance.
 - (void)terminate {
     RLog(@"terminate called from %@", [NSThread callStackSymbols]);
-    if (self.isBrowserSession) {
-        [self terminateBrowser];
-    }
     if ([[self textview] isFindingCursor]) {
         [[self textview] endFindCursor];
     }
@@ -3962,12 +3920,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
 }
 
 - (void)writeData:(NSData *)data {
-    if (@available(macOS 11, *)) {
-        if (_view.isBrowser) {
-            [_view.browserViewController sendData:data];
-            return;
-        }
-    }
     const char *bytes = data.bytes;
     BOOL newline = NO;
     for (NSUInteger i = 0; i < data.length; i++) {
@@ -4016,14 +3968,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
 }
 
 - (void)enterUsername:(NSString *)username {
-    if (@available(macOS 11, *)) {
-        if (_view.isBrowser) {
-            if (@available(macOS 12, *)) {
-                [_view.browserViewController enterUsername:username];
-            }
-            return;
-        }
-    }
     [self performBlockWithoutFocusReporting:^{
         [self writeTask:[username stringByAppendingString:@"\n"]];
     }];
@@ -5112,15 +5056,19 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     NSURL *url =
     [NSURL URLWithUserSuppliedString:[selection stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
     if (url) {
-        [[NSWorkspace sharedWorkspace] it_openURL:url
-                                           target:nil
-                                            style:iTermOpenStyleTab
-                                           window:self.view.window];
+        [self openURL:url];
         return;
     }
 
     DLog(@"Beep: bad url %@", selection);
     NSBeep();
+}
+
+- (void)openURL:(NSURL *)url {
+    [[NSWorkspace sharedWorkspace] it_openURL:url
+                                       target:nil
+                                        style:iTermOpenStyleTab
+                                       window:self.view.window];
 }
 
 - (void)setBell:(BOOL)flag {
@@ -6083,11 +6031,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
 
 // You're processing if data was read off the socket in the last "idleTimeSeconds".
 - (BOOL)isProcessing {
-    // For browser tabs, check if navigation is in progress
-    if (_view.isBrowser) {
-        return _browserIsLoading;
-    }
-    
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     return (now - _lastOutputIgnoringOutputAfterResizing) < _idleTime;
 }
@@ -6174,11 +6117,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
             return nil;
 
         case iTermProfileIconAutomatic:
-            if (@available(macOS 11, *)) {
-                if (_view.isBrowser) {
-                    return _view.browserViewController.favicon;
-                }
-            }
             if (self.isTmuxClient) {
                 [_graphicSource updateImageForJobName:self.tmuxForegroundJobMonitor.lastValue
                                               enabled:[self shouldShowTabGraphicForProfile:profile]];
@@ -6827,7 +6765,6 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
             }
         }
         result[SESSION_ARRANGEMENT_TIMESTAMP_BASELINE] = @(_textview.timestampBaseline);
-        result[SESSION_ARRANGEMENT_BROWSER_TARGET] = self.browserTarget;
     } else {
         if (_conductor &&
             [self.profile[KEY_CUSTOM_COMMAND] isEqualTo:kProfilePreferenceCommandTypeSSHValue]) {
@@ -6838,14 +6775,7 @@ webViewConfiguration:(WKWebViewConfiguration *)webViewConfiguration
     }
 
     if (includeContents || [options[PTYSessionArrangementOptionsForDuplication] boolValue]) {
-        if (@available(macOS 11, *)) {
-            if (_view.isBrowser && _view.browserViewController) {
-                NSDictionary *browserState = _view.browserViewController.restorableState;
-                if (browserState) {
-                    result[SESSION_ARRANGEMENT_BROWSER_STATE] = browserState;
-                }
-            }
-        }
+        // Reserved for future use
     }
 
     result[SESSION_ARRANGEMENT_GUID] = _guid;
@@ -7741,9 +7671,6 @@ static NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger = @"
             [_textview setFontTable:fontTable
                   horizontalSpacing:[hSpacing doubleValue]
                     verticalSpacing:[vSpacing doubleValue]];
-            if (@available(macOS 11, *)) {
-                _view.browserViewController.zoom = fontTable.browserZoom * 100.0;
-            }
         }
     }
 }
@@ -8200,6 +8127,38 @@ DLog(args); \
     }
     [self.textview convertVisibleSearchResultsToContentNavigationShortcutsWithAction:action clearOnEnd:clearOnEnd];
 }
+
+#pragma mark - Terminal-First Compatibility Shims
+
+- (BOOL)isBrowserSession {
+    return _view.isBrowser;
+}
+
+- (void)browserResetFindCursor {
+}
+
+- (BOOL)browserFindInProgress {
+    return NO;
+}
+
+- (BOOL)browserContinueFind:(double *)progress range:(NSRange *)rangePtr {
+    if (progress) {
+        *progress = 1;
+    }
+    if (rangePtr) {
+        *rangePtr = NSMakeRange(NSNotFound, 0);
+    }
+    return NO;
+}
+
+- (void)browserFindString:(NSString *)aString
+         forwardDirection:(BOOL)direction
+                     mode:(iTermFindMode)mode
+               withOffset:(int)offset
+      scrollToFirstResult:(BOOL)scrollToFirstResult
+                    force:(BOOL)force {
+}
+
 // Note that the caller is responsible for respecting swapFindNextPrevious
 - (void)searchNext {
     [_view createFindDriverIfNeeded];
@@ -8597,24 +8556,14 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (NSInteger)findDriverNumberOfSearchResults {
-    // Check if we're in browser mode
-    if ([_view isBrowser]) {
-        return [self browserNumberOfSearchResults];
-    }
-    
     return _textview.findOnPageHelper.numberOfSearchResults;
 }
 
 - (BOOL)findDriverEnterInFindPanelPerformsForwardSearch {
-    return self.isBrowserSession;
+    return NO;
 }
 
 - (NSInteger)findDriverCurrentIndex {
-    // Check if we're in browser mode
-    if ([_view isBrowser]) {
-        return [self browserCurrentIndex];
-    }
-    
     return _textview.findOnPageHelper.currentIndex;
 }
 
@@ -9791,32 +9740,11 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                     [[arrangement objectForKey:SESSION_ARRANGEMENT_ROWS] intValue])];
 }
 
-- (void)setBrowserIsLoading:(BOOL)browserIsLoading {
-    _browserIsLoading = browserIsLoading;
-    self.active = YES;
-}
-
 - (BOOL)newOutput {
-    if (_browserIsLoading) {
-        return YES;
-    }
     return _newOutput;
 }
-- (BOOL)isBrowserSession {
-    return self.view.isBrowser || self.profile.profileIsBrowser;
-}
-
 - (BOOL)isCompatibleWith:(PTYSession *)otherSession
 {
-    // Browser sessions cannot be split panes with tmux sessions
-    BOOL selfIsBrowser = [self isBrowserSession];
-    BOOL otherIsBrowser = [otherSession isBrowserSession];
-
-    if ((selfIsBrowser && otherSession.tmuxMode == TMUX_CLIENT) ||
-        (self.tmuxMode == TMUX_CLIENT && otherIsBrowser)) {
-        return NO;
-    }
-    
     if (self.tmuxMode != TMUX_CLIENT && otherSession.tmuxMode != TMUX_CLIENT) {
         // Non-clients are always compatible
         return YES;
@@ -10128,12 +10056,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)scrollToNamedMark:(id<iTermGenericNamedMarkReading>)genericMark {
-    if (@available(macOS 11, *)) {
-        if (self.isBrowserSession) {
-            [_view.browserViewController revealNamedMark:genericMark];
-            return;
-        }
-    }
     if ([[NSObject castFrom:genericMark] conformsToProtocol:@protocol(VT100ScreenMarkReading)]) {
         id<VT100ScreenMarkReading> mark = (id)genericMark;
         if ([_screen containsMark:mark]) {
@@ -10157,9 +10079,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)scrollToMarkWithGUID:(NSString *)guid {
-    if (self.isBrowserSession) {
-        [_view.browserViewController revealNamedMarkWithGUID:guid];
-    }
     id<VT100ScreenMarkReading> mark = [_screen namedMarkWithGUID:guid];
     if (mark) {
         [self scrollToMark:mark];
@@ -14276,7 +14195,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
 - (void)openTriggersViewController {
     [_triggerWindowController autorelease];
-    _triggerWindowController = [[TriggerController alloc] initInBrowserMode:self.isBrowserSession];
+    _triggerWindowController = [[TriggerController alloc] initInBrowserMode:NO];
     _triggerWindowController.guid = self.profile[KEY_GUID];
     _triggerWindowController.delegate = self;
     [_triggerWindowController windowWillOpen];
@@ -14391,7 +14310,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                  interpolatedStrings:[self.profile[KEY_TRIGGERS_USE_INTERPOLATED_STRINGS] boolValue]
                                     defaultTextColor:cs.suggestedTextColor
                               defaultBackgroundColor:cs.suggestedBackgroundColor
-                                         browserMode:self.isBrowserSession
+                                         browserMode:NO
                                           completion:^(NSDictionary * _Nonnull dict, BOOL updateProfile) {
         if (!dict) {
             return;
@@ -16071,10 +15990,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)saveScrollPositionWithName:(NSString *)name {
-    if ([self isBrowserSession]) {
-        [_view.browserViewController addNamedMark:name];
-        return;
-    }
     DLog(@"saveScrollPositionWithName:%@", name);
     [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
         [_textview refresh];  // Handle scrollback overflow so we have the most recent scroll position
@@ -16097,12 +16012,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)renameMark:(id<iTermGenericNamedMarkReading>)genericMark to:(NSString *)newName {
-    if (@available(macOS 11, *)) {
-        if (self.isBrowserSession) {
-            [_view.browserViewController renameNamedMark:genericMark to:newName];
-            return;
-        }
-    }
     if ([[NSObject castFrom:genericMark] conformsToProtocol:@protocol(VT100ScreenMarkReading)]) {
         id<VT100ScreenMarkReading> mark = (id)genericMark;
         [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
@@ -16129,12 +16038,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)removeNamedMark:(id<iTermGenericNamedMarkReading>)genericMark {
-    if (@available(macOS 11, *)) {
-        if (self.isBrowserSession) {
-            [_view.browserViewController removeNamedMark:genericMark];
-            return;
-        }
-    }
     if ([[NSObject castFrom:genericMark] conformsToProtocol:@protocol(VT100ScreenMarkReading)]) {
         id<VT100ScreenMarkReading> mark = (id)genericMark;
         [_screen removeNamedMark:mark];
@@ -16142,20 +16045,10 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)canAddNamedMark {
-    if (@available(macOS 11, *)) {
-        if (self.isBrowserSession) {
-            return _view.browserViewController.canAddNamedMark;
-        }
-    }
     return YES; // Always allow for terminal sessions
 }
 
 - (NSArray<id<iTermGenericNamedMarkReading>> *)namedMarks {
-    if (@available(macOS 11, *)) {
-        if ([self isBrowserSession]) {
-            return [_view.browserViewController namedMarks];
-        }
-    }
     return _screen.namedMarks;
 }
 

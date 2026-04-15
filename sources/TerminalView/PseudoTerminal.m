@@ -2373,13 +2373,6 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (IBAction)addNamedMark:(id)sender {
-    if (self.currentSession.isBrowserSession) {
-        // I'm not sure this is reachable but I want to be safe.
-        if (@available(macOS 11, *)) {
-            [self.currentSession.view.browserViewController addNamedMark:sender];
-        }
-        return;
-    }
     __weak PTYSession *session = self.currentSession;
     [iTermBookmarkDialogViewController showInWindow:self.window
                                      withCompletion:^(NSString * _Nonnull name) {
@@ -3539,20 +3532,10 @@ ITERM_WEAKLY_REFERENCEABLE
     RLog(@"findDriver=%@ regex=%@", findDriver, regex);
     __weak PTYSession *session = self.currentSession;
     __block BOOL done = NO;
-    const BOOL browser = session.isBrowserSession;
     [findDriver closeViewAndDoTemporarySearchForString:regex
                                                   mode:iTermFindModeCaseSensitiveRegex
                     extendResultsAcrossSoftBoundaries:[iTermAdvancedSettingsModel findURLsRespectsSoftBoundaries]
                                               progress:^(NSRange linesSearched) {
-        if (browser) {
-            if (linesSearched.location == linesSearched.length) {
-                [session convertVisibleSearchResultsToContentNavigationShortcutsWithAction:iTermContentNavigationActionOpen
-                                                                                         clearOnEnd:YES];
-                done = YES;
-            }
-            return;
-        }
-
         // Terminal codepath
         if (!session.textview || done) {
             return;
@@ -9310,10 +9293,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
 }
 
 - (IBAction)openAutocomplete:(id)sender {
-    if (self.currentSession.isBrowserSession) {
-        [self.currentSession.view.browserViewController openAutocomplete];
-        return;
-    }
     if (!autocompleteView) {
         autocompleteView = [[AutocompleteView alloc] init];
     }
@@ -9552,19 +9531,11 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
         // Moving an existing session (newSession) into a new split
         [newSession setScrollViewDocumentView];
 
-        // SessionView doesn't have any state that survives being moved except the browser view & view controller
-        // and progress bar state.
+        // SessionView doesn't have any state that survives being moved except the progress bar state.
         newSession.view.progress = originalNewSessionView.progress;
         newSession.view.enableProgressBars = originalNewSessionView.enableProgressBars;
         newSession.view.progressBarHeight = originalNewSessionView.progressBarHeight;
         newSession.view.progressBarColorScheme = originalNewSessionView.progressBarColorScheme;
-        if (@available(macOS 11, *)) {
-            if (originalNewSessionView.browserViewController) {
-                [newSession.view setBrowserViewController:originalNewSessionView.browserViewController
-                                               initialURL:nil
-                                          restorableState:nil];
-            }
-        }
     }
     if (!performSetup) {
         [newSession.view.scrollview setFrameSize:[newSession.view frame].size];
@@ -12177,9 +12148,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         }
         return enabled;
     } else if (item.action == @selector(exportRecording:)) {
-        if (self.currentSession.isBrowserSession) {
-            return NO;
-        }
         return !self.currentSession.screen.dvr.empty;
     } else if (item.action == @selector(toggleSizeChangesAffectProfile:)) {
         item.state = [iTermPreferences boolForKey:kPreferenceKeySizeChangesAffectProfile] ? NSControlStateValueOn : NSControlStateValueOff;
@@ -12811,95 +12779,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
     return currentSession;
 }
 
-- (void)openSplitPaneWithURL:(NSURL *)url
-                      target:(NSString *)target
-                 baseProfile:(Profile *)base
-             nearSessionGuid:(NSString *)sessionGuid
-                    vertical:(BOOL)vertical {
-    PTYSession *sessionToSplit = [[iTermController sharedInstance] sessionWithGUID:sessionGuid];
-    if (!sessionToSplit) {
-        return;
-    }
-    MutableProfile *profile = [[base mutableCopy] autorelease];
-    profile[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeBrowserValue;
-    profile[KEY_INITIAL_URL] = url.absoluteString;
-
-    [self asyncSplitVertically:vertical
-                        before:NO
-                       profile:profile
-                 targetSession:sessionToSplit
-                    completion:^(PTYSession *session, BOOL ok) {
-        session.browserTarget = target;
-    }
-                         ready:nil];
-}
-
-- (iTermBrowserWebView *)openTabWithURL:(NSURL *)url
-                            baseProfile:(Profile *)base
-                        nearSessionGuid:(NSString *)sessionGuid
-                          configuration:(WKWebViewConfiguration *)configuration NS_AVAILABLE_MAC(11_0) {
-    MutableProfile *profile = [[base mutableCopy] autorelease];
-    profile[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeBrowserValue;
-    profile[KEY_INITIAL_URL] = url.absoluteString;
-
-    NSNumber *tabIndex = nil;
-    for (NSInteger i = 0; i < self.tabs.count; i++) {
-        if ([[self.tabs[i].sessions mapWithBlock:^id _Nullable(PTYSession *s) { return s.guid; }] containsObject:sessionGuid]) {
-            tabIndex = @(i + 1);
-            break;
-        }
-    }
-    PTYSession *(^makeSession)(Profile *, PseudoTerminal *) =
-    ^PTYSession *(Profile *profile, PseudoTerminal *term) {
-        profile = [profile dictionaryBySettingObject:kProfilePreferenceCommandTypeBrowserValue
-                                              forKey:KEY_CUSTOM_COMMAND];
-        profile = [profile dictionaryBySettingObject:url.absoluteString
-                                              forKey:KEY_INITIAL_URL];
-
-        PTYSession *aSession = [term.sessionFactory newSessionWithProfile:profile
-                                                                   parent:nil];
-        [term addSession:aSession inTabAtIndex:tabIndex];
-        iTermSessionAttachOrLaunchRequest *launchRequest =
-        [iTermSessionAttachOrLaunchRequest launchRequestWithSession:aSession
-                                                          canPrompt:YES
-                                                         objectType:iTermWindowObject
-                                                hasServerConnection:NO
-                                                   serverConnection:(iTermGeneralServerConnection){}
-                                                          urlString:nil
-                                                       allowURLSubs:NO
-                                                        environment:nil
-                                                        customShell:nil
-                                                             oldCWD:nil
-                                                     forceUseOldCWD:NO
-                                                            command:nil
-                                                             isUTF8:nil
-                                                      substitutions:nil
-                                                   windowController:term
-                                                              ready:nil
-                                                         completion:^(PTYSession *session, BOOL ok) {
-            if (!ok) {
-                return;
-            }
-        }];
-        launchRequest.webViewConfiguration = configuration;
-        [term.sessionFactory attachOrLaunchWithRequest:launchRequest];
-        [term customizeCollectionBehaviorForProfile:profile];
-        return aSession;
-    };
-    PTYSession *theSession = [iTermSessionLauncher synchronouslyLaunchProfile:profile
-                                                                   inTerminal:self
-                                                                      withURL:nil
-                                                             hotkeyWindowType:iTermHotkeyWindowTypeNone
-                                                                      makeKey:YES
-                                                                  canActivate:YES
-                                                           respectTabbingMode:NO
-                                                                        index:nil
-                                                                      command:url.absoluteString
-                                                                  makeSession:makeSession];
-
-    return theSession.view.browserViewController.webView;
-}
-
 - (void)asyncCreateTabWithProfile:(Profile *)profile
                       withCommand:(NSString *)command
                       environment:(NSDictionary *)environment
@@ -13317,10 +13196,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 }
 - (IBAction)jumpToSelection:(id)sender {
     PTYSession *session = self.currentSession;
-    if (session.isBrowserSession) {
-        [session.view.browserViewController jumpToSelection];
-        return;
-    }
     PTYTextView *textView = [session textview];
     if (textView) {
         RLog(@"jump to selection");

@@ -36,7 +36,6 @@
 #import "VT100ScreenProgress.h"
 
 @class iTermAnnouncementViewController;
-@class iTermBrowserViewController;
 @class iTermCodeReviewPromptView;
 @class iTermDiffWaitingPromptView;
 @class iTermFindDriver;
@@ -45,7 +44,6 @@
 @class iTermLegacyView;
 @class iTermMTKView;
 @class iTermMetalDriver;
-@protocol iTermBrowserViewControllerDelegate;
 @protocol iTermMetalDriverDataSource;
 @protocol PSMPUAFontProvider;
 @protocol iTermSearchResultsMinimapViewDelegate;
@@ -55,7 +53,36 @@
 @class iTermSessionNoteModel;
 @class SplitSelectionView;
 @class SessionTitleView;
-@class WKWebViewConfiguration;
+
+// Terminal-first compatibility shim. Browser sessions are disabled, but many ObjC call sites still
+// reference the browser view controller type.
+@interface iTermBrowserViewController : NSViewController
+@property (nonatomic, readonly, nullable) id webView;
+@property (nonatomic, readonly) BOOL hasSelection;
+@property (nonatomic, readonly) BOOL instantReplayAvailable;
+@property (nonatomic) double zoom;
+- (void)convertVisibleSearchResultsToContentNavigationShortcutsWithAction:(NSInteger)action
+                                                               clearOnEnd:(BOOL)clearOnEnd;
+- (void)findPanelDidHide;
+- (void)enterPassword:(NSString *)password;
+- (void)enterUsername:(NSString *)username;
+- (BOOL)performKeyBindingAction:(id)action event:(NSEvent * _Nullable)event;
+- (void)refuseFirstResponderAtCurrentMouseLocation;
+- (nullable id)executeGlobalSearch:(NSString *)query mode:(NSInteger)mode;
+- (void)revealFindResult:(id)findResult completion:(void (^)(NSRect))completion;
+- (void)performDeferredInitializationInWindow:(NSWindow *)window;
+- (void)startInstantReplay;
+- (void)openAutocomplete;
+- (void)jumpToSelection;
+- (void)revealNamedMark:(id)mark;
+- (void)revealNamedMarkWithGUID:(NSString *)guid;
+- (void)addNamedMark:(NSString *)name;
+- (void)renameNamedMark:(id)mark to:(NSString *)newName;
+- (void)removeNamedMark:(id)mark;
+- (BOOL)canAddNamedMark;
+- (NSArray *)namedMarks;
+- (nullable NSString *)sessionGuid;
+@end
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -241,6 +268,8 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 // the inner edge of the panel area.
 @property (nonatomic) CGFloat actualPanelReservation;
 @property (nonatomic, readonly) BOOL isBrowser;
+// Terminal-first compatibility shim. Browser sessions are disabled, so this is always nil.
+@property (nonatomic, readonly, nullable) iTermBrowserViewController *browserViewController;
 @property (nonatomic) VT100ScreenProgress progress;
 @property (nonatomic) BOOL enableProgressBars;
 @property (nonatomic) BOOL showInlineProgressBar;
@@ -254,10 +283,6 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 - (BOOL)setToolbarItems:(NSArray<iTermSessionToolbarItem *> * _Nullable)toolbarItems;
 - (void)moveToolbarTo:(SessionView *)other;
 - (void)layoutContentsForNewlyActiveSession;
-- (void)setBrowserViewController:(iTermBrowserViewController *)browserViewController
-                      initialURL:(nullable NSString *)initialURL
-                 restorableState:(nullable NSDictionary *)restorableState NS_AVAILABLE_MAC(11_0);
-
 - (void)setTerminalBackgroundColor:(nullable NSColor *)color;
 
 - (void)showFindUI;

@@ -217,8 +217,9 @@ static NSString *const stateKey = @"session guids with changed screens";
 
 - (void)revealWithState:(NSMutableDictionary *)state
              completion:(void (^)(NSRect))completion {
-    return [self.session.view.browserViewController revealFindResult:self.findResult
-                                                          completion:completion];
+    if (completion) {
+        completion(NSZeroRect);
+    }
 }
 
 @end

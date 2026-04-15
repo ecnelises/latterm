@@ -437,38 +437,13 @@ class MainMenuMangler: NSObject {
     @objc func start(web: NSMenuItem) {
         self.web = web
 
-        // Remove from menu initially if browser not allowed
-        if !iTermBrowserGateway.browserAllowed(checkIfNo: false) {
-            if NSApp.mainMenu?.items.contains(web) ?? false {
-                NSApp.mainMenu?.removeItem(web)
-            }
+        // Terminal-first mode keeps the browser menu hidden at all times.
+        if NSApp.mainMenu?.items.contains(web) ?? false {
+            NSApp.mainMenu?.removeItem(web)
         }
 
         // Store original web menu key equivalents and scan for conflicts
         scanForKeyEquivalentConflicts()
-
-        // Watch for any window becoming or resigning key
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(currentTerminalDidChange(_:)),
-            name: Notification.Name("iTermWindowBecameKey"),
-            object: nil)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(currentSessionDidChange(_:)),
-            name: Notification.Name(rawValue: iTermCurrentSessionDidChange),
-            object: nil)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(currentSessionDidChange(_:)),
-            name: Notification.Name(kCurrentSessionDidChange),
-            object: nil)
-        // Re-check when browser plugin state changes (e.g., user installs plugin)
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(browserStateDidChange(_:)),
-            name: iTermBrowserGateway.didChange,
-            object: nil)
         // Stop observing before iTermController is released during app termination
         NotificationCenter.default.addObserver(
             self,
@@ -645,35 +620,10 @@ class MainMenuMangler: NSObject {
             DLog("updateMainMenu: web is nil, returning early")
             return
         }
-        let currentSessionIsWeb: Bool
-        if let term = iTermController.sharedInstance().currentTerminal {
-            currentSessionIsWeb = term.currentSession()?.isBrowserSession() ?? false
-            DLog("updateMainMenu: currentTerminal=\(term), currentSession=\(term.currentSession().d), isBrowser=\(currentSessionIsWeb)")
-        } else {
-            currentSessionIsWeb = false
-            DLog("updateMainMenu: no currentTerminal")
-        }
-
-        // Only show web menu if browser is allowed (plugin installed) and current session is a browser
-        if currentSessionIsWeb && iTermBrowserGateway.browserAllowed(checkIfNo: false) {
-            if existingWebIndex == nil, let menu = NSApp.mainMenu {
-                DLog("Show web menu")
-                // Clear conflicting key equivalents before adding web menu
-                for conflict in conflictingMenuItems {
-                    conflict.menuItem.keyEquivalent = ""
-                    conflict.menuItem.keyEquivalentModifierMask = []
-                }
-                if let i = menu.items.firstIndex(where: { $0.identifier?.rawValue == "Session" }) {
-                    menu.insertItem(web, at: i + 1)
-                }
-
-                // Restore web menu key equivalents after adding to menu
-                restoreWebKeyEquivalents()
-            }
-        } else if existingWebIndex != nil {
+        if existingWebIndex != nil {
             DLog("Remove web menu")
             NSApp.mainMenu?.removeItem(web)
-            
+
             // Restore conflicting menu items' key equivalents when web menu is removed
             restoreConflictingMenuItems()
         }

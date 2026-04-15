@@ -313,25 +313,6 @@ extension PTYSession {
                            scope: genericScope)
     }
 
-    struct NotABrowserError: LocalizedError {
-        var errorDescription: String? { "The associated session is a terminal emulator, not a web browser" }
-    }
-    struct NotATerminalError: LocalizedError {
-        var errorDescription: String? { "The associated session is a web browser, not a terminal emulator" }
-    }
-
-    func ensureIsTerminal() throws {
-        if isBrowserSession() {
-            throw NotATerminalError()
-        }
-    }
-
-    func ensureIsBrowser() throws {
-        if !isBrowserSession() {
-            throw NotABrowserError()
-        }
-    }
-
     func execute(_ command: RemoteCommand, completion: @escaping (String, String) throws -> ()) throws {
         // Keep the payload (a shell command string or arbitrary file contents) out of
         // the ring; the opt-in debug log still gets the whole command.
@@ -339,104 +320,70 @@ extension PTYSession {
         cancelRemoteCommand()
         switch command.content {
         case .isAtPrompt(let isAtPrompt):
-            try ensureIsTerminal()
             try isAtPromptRemoteCommand(isAtPrompt: isAtPrompt,
                                         completion: completion)
         case .executeCommand(let executeCommand):
-            try ensureIsTerminal()
             try executeCommandRemoteCommand(executeCommand: executeCommand,
                                             completion: completion)
         case .getLastExitStatus(let getLastExitStatus):
-            try ensureIsTerminal()
             try getLastExitStatusRemoteCommand(getLastExitStatus: getLastExitStatus,
                                                completion: completion)
         case .getCommandHistory(let getCommandHistory):
-            try ensureIsTerminal()
             try getCommandHistoryRemoteCommand(getCommandHistory: getCommandHistory,
                                                completion: completion)
         case .getLastCommand(let getLastCommand):
-            try ensureIsTerminal()
             try getLastCommandRemoteCommand(getLastCommand: getLastCommand,
                                             completion: completion)
         case .getCommandBeforeCursor(let getCommandBeforeCursor):
-            try ensureIsTerminal()
             try getCommandBeforeCursorRemoteCommand(getCommandBeforeCursor: getCommandBeforeCursor,
                                                     completion: completion)
         case .searchCommandHistory(let searchCommandHistory):
-            try ensureIsTerminal()
             try searchCommandHistoryRemoteCommand(searchCommandHistory: searchCommandHistory,
                                                   completion: completion)
         case .getCommandOutput(let getCommandOutput):
-            try ensureIsTerminal()
             try getCommandOutputRemoteCommand(getCommandOutput: getCommandOutput,
                                               completion: completion)
         case .getScreenContents(let getScreenContents):
-            try ensureIsTerminal()
             try getScreenContentsRemoteCommand(getScreenContents: getScreenContents,
                                                completion: completion)
         case .getTerminalSize(let getTerminalSize):
-            try ensureIsTerminal()
             try getTerminalSizeRemoteCommand(getTerminalSize: getTerminalSize,
                                              completion: completion)
         case .getShellType(let getShellType):
-            try ensureIsTerminal()
             try getShellTypeRemoteCommand(getShellType: getShellType,
                                           completion: completion)
         case .detectSSHSession(let detectSSHSession):
-            try ensureIsTerminal()
             try detectSSHSessionRemoteCommand(detectSSHSession: detectSSHSession,
                                               completion: completion)
         case .getRemoteHostname(let getRemoteHostname):
-            try ensureIsTerminal()
             try getRemoteHostnameRemoteCommand(getRemoteHostname: getRemoteHostname,
                                                completion: completion)
         case .getUserIdentity(let getUserIdentity):
-            try ensureIsTerminal()
             try getUserIdentityRemoteCommand(getUserIdentity: getUserIdentity,
                                              completion: completion)
         case .getCurrentDirectory(let getCurrentDirectory):
-            try ensureIsTerminal()
             try getCurrentDirectoryRemoteCommand(getCurrentDirectory: getCurrentDirectory,
                                                  completion: completion)
         case .setClipboard(let setClipboard):
-            try ensureIsTerminal()
             try setClipboardRemoteCommand(setClipboard: setClipboard,
                                           completion: completion)
         case .insertTextAtCursor(let insertTextAtCursor):
-            try ensureIsTerminal()
             try insertTextAtCursorRemoteCommand(insertTextAtCursor: insertTextAtCursor,
                                                 completion: completion)
         case .deleteCurrentLine(let deleteCurrentLine):
-            try ensureIsTerminal()
             try deleteCurrentLineRemoteCommand(deleteCurrentLine: deleteCurrentLine,
                                                completion: completion)
         case .getManPage(let getManPage):
-            try ensureIsTerminal()
             try getManPageRemoteCommand(getManPage: getManPage,
                                         completion: completion)
         case .createFile(let createFile):
-            try ensureIsTerminal()
             try createFileCommand(createFile: createFile,
                                   completion: completion)
-        case .searchBrowser(let args):
-            try ensureIsBrowser()
-            try searchBrowser(args: args, completion: completion)
-        case .loadURL(let args):
-            try ensureIsBrowser()
-            try loadURL(args: args, completion: completion)
-        case .webSearch(let args):
-            try ensureIsBrowser()
-            try webSearch(args: args, completion: completion)
-        case .getURL(let args):
-            try ensureIsBrowser()
-            try getURL(args: args, completion: completion)
-        case .readWebPage(let args):
-            try ensureIsBrowser()
-            try readWebPage(args: args, completion: completion)
         case .restartSession(let restartSession):
-            try ensureIsTerminal()
             try restartSessionRemoteCommand(restartSession: restartSession,
                                             completion: completion)
+        default:
+            break
         }
     }
 }
@@ -953,78 +900,6 @@ extension PTYSession {
             }
         }
     }
-    private func searchBrowser(args: RemoteCommand.SearchBrowser, completion: @escaping (String, String) throws -> ()) rethrows {
-        view?.browserViewController?.findOnPage(query: args.query, maxResults: 20, contextLength: 100) { result in
-            switch result {
-            case .success(let results):
-                let json = try! JSONEncoder().encode(results).lossyString
-                try? completion(json, "Find on page complete")
-            case .failure(let error as LocalizedError):
-                try? completion(error.errorDescription ?? "An unknown error occurred", "Find on page failed")
-            case .failure:
-                try? completion("An unknown error occurred", "Find on page failed")
-            }
-        }
-    }
-
-    private func loadURL(args: RemoteCommand.LoadURL, completion: @escaping (String, String) throws -> ()) rethrows {
-        guard let url = URL(string: args.url) else {
-            try completion("The URL \(args.url) is not well formed", "Navigation failed")
-            return
-        }
-        view?.browserViewController?.loadURL(url) { error in
-            if let error {
-                try? completion("The web page could not be loaded: " + error.localizedDescription, "Navigation failed")
-            } else {
-                try? completion("The web page was loaded successfully.", "Navigation complete")
-            }
-        }
-    }
-
-    private func webSearch(args: RemoteCommand.WebSearch, completion: @escaping (String, String) throws -> ()) rethrows {
-        view?.browserViewController?.doWebSearch(for: args.query) { [weak self] error in
-            if let error {
-                RLog("\(error)")
-                try? completion("Web search is not currently available", "Web search failed")
-                return
-            }
-            self?.view?.browserViewController?.convertToMarkdown(skipChrome: true) { (result: Result<String, Error>) in
-                if let markdown = result.successValue {
-                    try? completion(markdown, "Web search complete")
-                } else {
-                    try? completion("Web search is not currently availble", "Web search failed")
-                }
-            }
-        }
-    }
-
-    private func getURL(args: RemoteCommand.GetURL, completion: @escaping (String, String) throws -> ()) rethrows {
-        if let url = view?.browserViewController?.webView.url {
-            try completion(url.absoluteString, "URL provided")
-        } else {
-            try completion("about:blank", "URL provided")
-        }
-    }
-
-    private func readWebPage(args: RemoteCommand.ReadWebPage, completion: @escaping (String, String) throws -> ()) rethrows {
-        view?.browserViewController?.convertToMarkdown(skipChrome: false) { (result: Result<String, Error>) in
-            switch result {
-            case .success(let text):
-                let lines = text.components(separatedBy: "\n")
-                guard args.startingLineNumber < lines.count else {
-                    try? completion("The page contains \(lines.count) lines. Your request was out of bounds.",
-                                   "AI attempted to read past the end of the page")
-                    return
-                }
-                let sub = lines[args.startingLineNumber..<min(lines.count, args.startingLineNumber + args.numberOfLines)]
-                let combined = sub.joined(separator: "\n") + "\n\n[There are a total of \(lines.count) lines of text in this web page.]"
-                try? completion(combined, "Contents provided")
-            case .failure(let error):
-                try? completion("The page could not be converted to markdown for reading: " + error.localizedDescription,
-                               "Page content could not be read")
-            }
-        }
-    }
 }
 
 struct SubSelectionSerializationInfo {
@@ -1344,293 +1219,9 @@ extension PTYSession {
     }
 }
 
-@available(macOS 11, *)
-extension PTYSession {
-    @objc(openURL:)
-    func open(url: URL) {
-        guard view?.isBrowser == true else {
-            RLog("Can't open \(url), not a browser")
-            return
-        }
-        view?.browserViewController?.loadURL(url.absoluteString)
-    }
-
-    @objc
-    var webSiteTitle: String? {
-        if #available(macOS 11, *) {
-            return view?.browserViewController?.title
-        }
-        return nil
-    }
-
-    @objc
-    func loadDeferredURLIfNeeded() {
-        view?.browserViewController?.loadDeferredURLIfNeeded()
-    }
-}
-
-
-@available(macOS 11, *)
-extension PTYSession {
-    @discardableResult
-    @objc
-    func becomeBrowser(configuration: WKWebViewConfiguration,
-                       restorableState: NSDictionary?) -> Bool {
-        if !iTermBrowserGateway.browserAllowed(checkIfNo: true) {
-            return false
-        }
-        let nullValue = NSNull()
-        let terminalOnlyKeys = [
-            KEY_INITIAL_TEXT: nullValue,
-            KEY_CUSTOM_DIRECTORY: nullValue,
-            KEY_WORKING_DIRECTORY: nullValue,
-            KEY_SSH_CONFIG: nullValue,
-            KEY_AWDS_WIN_OPTION: nullValue,
-            KEY_AWDS_WIN_DIRECTORY: nullValue,
-            KEY_AWDS_TAB_OPTION: nullValue,
-            KEY_AWDS_TAB_DIRECTORY: nullValue,
-            KEY_AWDS_PANE_OPTION: nullValue,
-            KEY_AWDS_PANE_DIRECTORY: nullValue,
-            KEY_BLINKING_CURSOR: nullValue,
-            KEY_CURSOR_SHADOW: nullValue,
-            KEY_CURSOR_HIDDEN_WITHOUT_FOCUS: nullValue,
-            KEY_CURSOR_TYPE: nullValue,
-            KEY_DISABLE_BOLD: nullValue,
-            KEY_USE_BOLD_FONT: nullValue,
-            KEY_THIN_STROKES: nullValue,
-            KEY_USE_ITALIC_FONT: nullValue,
-            KEY_ANTI_ALIASING: nullValue,
-            KEY_ASCII_ANTI_ALIASED: nullValue,
-            KEY_DISABLE_WINDOW_RESIZING: nullValue,
-            KEY_DISABLE_UNFOCUSED_WINDOW_RESIZING: nullValue,
-            KEY_TREAT_NON_ASCII_AS_DOUBLE_WIDTH: nullValue,
-            KEY_AMBIGUOUS_DOUBLE_WIDTH: nullValue,
-            KEY_USE_HFS_PLUS_MAPPING: nullValue,
-            KEY_UNICODE_NORMALIZATION: nullValue,
-            KEY_SILENCE_BELL: nullValue,
-            KEY_VISUAL_BELL: nullValue,
-            KEY_FLASHING_BELL: nullValue,
-            KEY_XTERM_MOUSE_REPORTING: nullValue,
-            KEY_XTERM_MOUSE_REPORTING_ALLOW_MOUSE_WHEEL: nullValue,
-            KEY_XTERM_MOUSE_REPORTING_ALLOW_CLICKS_AND_DRAGS: nullValue,
-            KEY_UNICODE_VERSION: nullValue,
-            KEY_DISABLE_SMCUP_RMCUP: nullValue,
-            KEY_ALLOW_TITLE_REPORTING: nullValue,
-            KEY_ALLOW_ALTERNATE_MOUSE_SCROLL: nullValue,
-            KEY_RESTRICT_MOUSE_REPORTING_TO_ALTERNATE_SCREEN_MODE: nullValue,
-            KEY_ALLOW_PASTE_BRACKETING: nullValue,
-            KEY_ENABLE_PROGRESS_BARS: nullValue,
-            KEY_PROGRESS_BAR_HEIGHT: nullValue,
-            KEY_PROGRESS_BAR_COLOR_SCHEME: nullValue,
-            KEY_ALLOW_TITLE_SETTING: nullValue,
-            KEY_DISABLE_PRINTING: nullValue,
-            KEY_SCROLLBACK_WITH_STATUS_BAR: nullValue,
-            KEY_SCROLLBACK_IN_ALTERNATE_SCREEN: nullValue,
-            KEY_DRAG_TO_SCROLL_IN_ALTERNATE_SCREEN_MODE_DISABLED: nullValue,
-            KEY_SEND_BELL_ALERT: nullValue,
-            KEY_SEND_IDLE_ALERT: nullValue,
-            KEY_SEND_NEW_OUTPUT_ALERT: nullValue,
-            KEY_SEND_TERMINAL_GENERATED_ALERT: nullValue,
-            KEY_SUPPRESS_ALERTS_IN_ACTIVE_SESSION: nullValue,
-            KEY_ALLOW_CHANGE_CURSOR_BLINK: nullValue,
-            KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY: nullValue,
-            KEY_RUN_COMMAND_IN_LOGIN_SHELL: nullValue,
-            KEY_AUTOMATICALLY_ENABLE_ALTERNATE_MOUSE_SCROLL: nullValue,
-            KEY_RESTRICT_ALTERNATE_MOUSE_SCROLL_TO_VERTICAL: nullValue,
-            KEY_SET_LOCALE_VARS: nullValue,
-            KEY_CUSTOM_LOCALE: nullValue,
-            KEY_SCROLLBACK_LINES: nullValue,
-            KEY_UNLIMITED_SCROLLBACK: nullValue,
-            KEY_TERMINAL_TYPE: nullValue,
-            KEY_ANSWERBACK_STRING: nullValue,
-            KEY_USE_CANONICAL_PARSER: nullValue,
-            KEY_PLACE_PROMPT_AT_FIRST_COLUMN: nullValue,
-            KEY_SHOW_MARK_INDICATORS: nullValue,
-            KEY_SHOW_OFFSCREEN_COMMANDLINE: nullValue,
-            KEY_SHOW_OFFSCREEN_COMMANDLINE_FOR_CURRENT_COMMAND: nullValue,
-            KEY_TMUX_NEWLINE: nullValue,
-            KEY_PROMPT_PATH_CLICK_OPENS_NAVIGATOR: nullValue,
-            KEY_AUTOLOG: nullValue,
-            KEY_ARCHIVE: nullValue,
-            KEY_LOGDIR: nullValue,
-            KEY_LOG_FILENAME_FORMAT: nullValue,
-            KEY_SEND_CODE_WHEN_IDLE: nullValue,
-            KEY_IDLE_CODE: nullValue,
-            KEY_IDLE_PERIOD: nullValue,
-            KEY_JOBS: nullValue,
-            KEY_REDUCE_FLICKER: nullValue,
-            KEY_LOGGING_STYLE: nullValue,
-            KEY_OPEN_PASSWORD_MANAGER_AUTOMATICALLY: nullValue,
-            KEY_SHOW_TIMESTAMPS: nullValue,
-            KEY_TIMESTAMPS_STYLE: nullValue,
-            KEY_TIMESTAMPS_VISIBLE: nullValue,
-            KEY_OPTION_KEY_SENDS: nullValue,
-            KEY_RIGHT_OPTION_KEY_SENDS: nullValue,
-            KEY_LEFT_OPTION_KEY_CHANGEABLE: nullValue,
-            KEY_RIGHT_OPTION_KEY_CHANGEABLE: nullValue,
-            KEY_APPLICATION_KEYPAD_ALLOWED: nullValue,
-            KEY_MOVEMENT_KEYS_SCROLL_OUTSIDE_INTERACTIVE_APPS: nullValue,
-            KEY_TREAT_OPTION_AS_ALT: nullValue,
-            KEY_ALLOW_MODIFY_OTHER_KEYS: nullValue,
-            KEY_USE_LIBTICKIT_PROTOCOL: nullValue,
-            KEY_LEFT_CONTROL: nullValue,
-            KEY_RIGHT_CONTROL: nullValue,
-            KEY_LEFT_COMMAND: nullValue,
-            KEY_RIGHT_COMMAND: nullValue,
-            KEY_FUNCTION: nullValue,
-            KEY_TMUX_PANE_TITLE: nullValue,
-            KEY_FOREGROUND_COLOR: nullValue,
-            KEY_FOREGROUND_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_FOREGROUND_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_BACKGROUND_COLOR: nullValue,
-            KEY_BACKGROUND_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_BACKGROUND_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_BOLD_COLOR: nullValue,
-            KEY_BOLD_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_BOLD_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_USE_BOLD_COLOR: nullValue,
-            KEY_USE_BOLD_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_USE_BOLD_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_BRIGHTEN_BOLD_TEXT: nullValue,
-            KEY_BRIGHTEN_BOLD_TEXT + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_BRIGHTEN_BOLD_TEXT + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_HARMONIZE_256_COLORS: nullValue,
-            KEY_HARMONIZE_256_COLORS + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_HARMONIZE_256_COLORS + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_CURSOR_COLOR: nullValue,
-            KEY_CURSOR_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_CURSOR_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_CURSOR_TEXT_COLOR: nullValue,
-            KEY_CURSOR_TEXT_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_CURSOR_TEXT_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_0_COLOR: nullValue,
-            KEY_ANSI_0_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_0_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_1_COLOR: nullValue,
-            KEY_ANSI_1_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_1_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_2_COLOR: nullValue,
-            KEY_ANSI_2_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_2_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_3_COLOR: nullValue,
-            KEY_ANSI_3_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_3_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_4_COLOR: nullValue,
-            KEY_ANSI_4_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_4_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_5_COLOR: nullValue,
-            KEY_ANSI_5_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_5_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_6_COLOR: nullValue,
-            KEY_ANSI_6_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_6_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_7_COLOR: nullValue,
-            KEY_ANSI_7_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_7_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_8_COLOR: nullValue,
-            KEY_ANSI_8_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_8_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_9_COLOR: nullValue,
-            KEY_ANSI_9_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_9_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_10_COLOR: nullValue,
-            KEY_ANSI_10_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_10_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_11_COLOR: nullValue,
-            KEY_ANSI_11_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_11_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_12_COLOR: nullValue,
-            KEY_ANSI_12_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_12_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_13_COLOR: nullValue,
-            KEY_ANSI_13_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_13_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_14_COLOR: nullValue,
-            KEY_ANSI_14_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_14_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_ANSI_15_COLOR: nullValue,
-            KEY_ANSI_15_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_ANSI_15_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEYTEMPLATE_ANSI_X_COLOR: nullValue,
-            KEYTEMPLATE_ANSI_X_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEYTEMPLATE_ANSI_X_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_SMART_CURSOR_COLOR: nullValue,
-            KEY_SMART_CURSOR_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_SMART_CURSOR_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_MINIMUM_CONTRAST: nullValue,
-            KEY_MINIMUM_CONTRAST + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_MINIMUM_CONTRAST + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_FAINT_TEXT_ALPHA: nullValue,
-            KEY_FAINT_TEXT_ALPHA + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_FAINT_TEXT_ALPHA + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_USE_SELECTED_TEXT_COLOR: nullValue,
-            KEY_USE_SELECTED_TEXT_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_USE_SELECTED_TEXT_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_UNDERLINE_COLOR: nullValue,
-            KEY_UNDERLINE_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_UNDERLINE_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_USE_UNDERLINE_COLOR: nullValue,
-            KEY_USE_UNDERLINE_COLOR + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_USE_UNDERLINE_COLOR + COLORS_DARK_MODE_SUFFIX: nullValue,
-            KEY_CURSOR_BOOST: nullValue,
-            KEY_CURSOR_BOOST + COLORS_LIGHT_MODE_SUFFIX: nullValue,
-            KEY_CURSOR_BOOST + COLORS_DARK_MODE_SUFFIX: nullValue,
-        ]
-        setSessionSpecificProfileValues(terminalOnlyKeys, reload: false)
-        DispatchQueue.main.async {
-            self.reloadProfile()
-        }
-
-        if iTermProfilePreferences.bool(forKey: KEY_BROWSER_DEV_NULL, inProfile: justProfile) {
-            setSessionSpecificProfileValues([KEY_UNDO_TIMEOUT: 0])
-        }
-        let model: ProfileModel
-        let guid: String
-        let myGuid = justProfile[KEY_GUID]! as! String
-        if isDivorced {
-            if let originalGuid = justProfile[KEY_ORIGINAL_GUID] as? String,
-               ProfileModel.sharedInstance()!.bookmark(withGuid: originalGuid) != nil {
-                model = ProfileModel.sharedInstance()!
-                guid = originalGuid
-            } else {
-                model = ProfileModel.sessionsInstance()!
-                guid = myGuid
-            }
-        } else {
-            model = ProfileModel.sharedInstance()!
-            guid = myGuid
-        }
-        guard let textview, let view else { return false }
-        let vc = iTermBrowserViewController(
-            configuration: configuration,
-            sessionGuid: guid,
-            profileObserver: iTermProfilePreferenceObserver(
-                guid: justProfile[KEY_GUID]! as! String,
-                model: isDivorced ? ProfileModel.sessionsInstance() : ProfileModel.sharedInstance()),
-            profileMutator: iTermProfilePreferenceMutator(
-                model: model,
-                guid: guid),
-            indicatorsHelper: textview.indicatorsHelper)
-        vc.delegate = self
-        view.setBrowserViewController(
-            vc, initialURL: iTermProfilePreferences.string(forKey: KEY_INITIAL_URL,
-                                                           inProfile: justProfile),
-            restorableState: restorableState as? [AnyHashable: Any])
-        return true
-    }
-
-    @objc
-    func terminateBrowser(){
-        view?.browserViewController?.terminate()
-    }
-}
-
 @objc
 extension PTYSession {
     var defaultAccountNameForPasswordManager: String? {
-        if isBrowserSession() {
-            return view?.browserViewController?.currentURL?.host
-        }
         return nil
     }
 }
@@ -2665,7 +2256,6 @@ extension PTYSession {
         }
         do {
             let title = "Chat about \(self.name)"
-            let isBrowser = self.isBrowserSession()
             let chatID = try client.create(
                 chatWithTitle: title,
                 terminalSessionGuid: nil,
@@ -2674,7 +2264,7 @@ extension PTYSession {
                 permissions: "")
             try? client.publishClientLocalMessage(
                 chatID: chatID,
-                action: .offerLink(terminal: !isBrowser, guid: self.guid, name: self.name))
+                action: .offerLink(terminal: true, guid: self.guid, name: self.name))
             inlineChatID = chatID
             return chatID
         } catch {

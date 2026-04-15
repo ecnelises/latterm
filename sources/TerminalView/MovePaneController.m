@@ -6,6 +6,7 @@
 
 #import "MovePaneController.h"
 #import "DebugLogging.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermController.h"
 #import "iTermPreferences.h"
 #import "NSObject+iTerm.h"

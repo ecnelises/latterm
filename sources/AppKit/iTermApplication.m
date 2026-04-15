@@ -517,9 +517,8 @@ static void iTermUncaughtExceptionHandler(NSException *exception) {
     if ([responder isKindOfClass:[NSTextView class]]) {
         return YES;
     }
-    if ([responder conformsToProtocol:@protocol(iTermEditableTextDetecting)]) {
-        id<iTermEditableTextDetecting> detector = (id<iTermEditableTextDetecting>)responder;
-        return detector.isEditingText;
+    if ([responder respondsToSelector:NSSelectorFromString(@"isEditingText")]) {
+        return [[responder valueForKey:@"isEditingText"] boolValue];
     }
     return NO;
 }
@@ -1283,4 +1282,3 @@ static void iTermUncaughtExceptionHandler(NSException *exception) {
 }
 
 @end
-

@@ -121,7 +121,6 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class iTermSessionNoteModel;
 @class iTermSessionToolbarItem;
 @class TmuxHistory;
-@class WKWebViewConfiguration;
 
 typedef NS_ENUM(NSInteger, SplitSelectionMode) {
     kSplitSelectionModeOn,
@@ -478,7 +477,7 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // This is the one and only subview of the document view of -scrollview.
 // nil before init completes and after -terminate.
 @property(nonatomic, retain, nullable) PTYTextView *textview;
-@property(nonatomic, readonly, nullable) NSView *mainResponder;  // textView or browser vc depending on mode
+@property(nonatomic, readonly, nullable) NSView *mainResponder;  // textView
 @property(nonatomic, readonly) NSStringEncoding encoding;
 
 // Send a character periodically.
@@ -623,9 +622,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // Has output been received recently?
 @property(nonatomic, readonly) BOOL isProcessing;
 
-// Browser navigation loading state
-@property(nonatomic, assign) BOOL browserIsLoading;
-
 // Indicates if you're at the shell prompt and not running a command. Returns
 // NO if shell integration is not in use.
 @property(nonatomic, readonly) BOOL isAtShellPrompt;
@@ -744,13 +740,13 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 @property(nonatomic, readonly, nullable) NSColor *effectiveProcessedBackgroundColor;
 @property(nonatomic, readonly) BOOL abortBury;
 @property(nonatomic, readonly) BOOL isArchive;
-@property(nonatomic, copy, nullable) NSString *browserTarget;
-
 @property(nonatomic, retain) iTermAutomaticProfileSwitcher *automaticProfileSwitcher;
 @property(nonatomic, readonly, nullable) iTermAutomaticProfileSwitchingSession *apsContext;
 
 @property(nonatomic, readonly, retain) iTermNaggingController *naggingController;
 @property(nonatomic, readonly, strong) PTYSessionSwiftState *swiftState;
+// Terminal-first compatibility shim. Browser sessions are no longer created.
+@property(nonatomic, readonly) BOOL isBrowserSession;
 
 #pragma mark - methods
 
@@ -856,6 +852,18 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 - (void)startProgram:(NSString *)program
                  ssh:(BOOL)ssh
+         environment:(NSDictionary *)prog_env
+         customShell:(NSString *)customShell
+              isUTF8:(BOOL)isUTF8
+       substitutions:(NSDictionary *)substitutions
+         arrangement:(NSString *)arrangement
+     fromArrangement:(BOOL)fromArrangement
+          completion:(void (^)(BOOL))completion;
+
+// Terminal-first compatibility shim for legacy browser-capable callers. The browser-specific
+// arguments are ignored.
+- (void)startProgram:(NSString *)program
+                 ssh:(BOOL)ssh
              browser:(BOOL)browser
          environment:(nullable NSDictionary *)prog_env
          customShell:(nullable NSString *)customShell
@@ -863,7 +871,7 @@ backgroundColor:(nullable NSColor *)backgroundColor;
        substitutions:(nullable NSDictionary *)substitutions
          arrangement:(nullable NSString *)arrangement
      fromArrangement:(BOOL)fromArrangement
-webViewConfiguration:(nullable WKWebViewConfiguration *)webViewConfiguration
+webViewConfiguration:(id)webViewConfiguration
           completion:(nullable void (^)(BOOL))completion;
 
 // This is an alternative to runCommandWithOldCwd and startProgram. It attaches
@@ -1093,8 +1101,6 @@ webViewConfiguration:(nullable WKWebViewConfiguration *)webViewConfiguration
 - (void)startTmuxMode:(NSString *)dcsID;
 
 - (void)tmuxDetach;
-// Returns YES if this session is a browser session.
-- (BOOL)isBrowserSession;
 // Two sessions are compatible if they may share the same tab. Tmux clients
 // impose this restriction because they must belong to the same controller.
 - (BOOL)isCompatibleWith:(PTYSession *)otherSession;
@@ -1322,4 +1328,3 @@ webViewConfiguration:(nullable WKWebViewConfiguration *)webViewConfiguration
 @end
 
 NS_ASSUME_NONNULL_END
-

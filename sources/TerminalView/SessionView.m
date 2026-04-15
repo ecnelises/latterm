@@ -61,6 +61,102 @@ static NSDate* lastResizeDate_;
 
 NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewWasSelectedForInspectionNotification";
 
+@implementation iTermBrowserViewController
+
+- (void)loadView {
+    self.view = [[NSView alloc] initWithFrame:NSZeroRect];
+}
+
+- (id)webView {
+    return nil;
+}
+
+- (BOOL)hasSelection {
+    return NO;
+}
+
+- (BOOL)instantReplayAvailable {
+    return NO;
+}
+
+- (double)zoom {
+    return 100.0;
+}
+
+- (void)setZoom:(double)zoom {
+}
+
+- (void)convertVisibleSearchResultsToContentNavigationShortcutsWithAction:(NSInteger)action
+                                                               clearOnEnd:(BOOL)clearOnEnd {
+}
+
+- (void)findPanelDidHide {
+}
+
+- (void)enterPassword:(NSString *)password {
+}
+
+- (void)enterUsername:(NSString *)username {
+}
+
+- (BOOL)performKeyBindingAction:(id)action event:(NSEvent *)event {
+    return NO;
+}
+
+- (void)refuseFirstResponderAtCurrentMouseLocation {
+}
+
+- (id)executeGlobalSearch:(NSString *)query mode:(NSInteger)mode {
+    return nil;
+}
+
+- (void)revealFindResult:(id)findResult completion:(void (^)(NSRect))completion {
+    if (completion) {
+        completion(NSZeroRect);
+    }
+}
+
+- (void)performDeferredInitializationInWindow:(NSWindow *)window {
+}
+
+- (void)startInstantReplay {
+}
+
+- (void)openAutocomplete {
+}
+
+- (void)jumpToSelection {
+}
+
+- (void)revealNamedMark:(id)mark {
+}
+
+- (void)revealNamedMarkWithGUID:(NSString *)guid {
+}
+
+- (void)addNamedMark:(NSString *)name {
+}
+
+- (void)renameNamedMark:(id)mark to:(NSString *)newName {
+}
+
+- (void)removeNamedMark:(id)mark {
+}
+
+- (BOOL)canAddNamedMark {
+    return NO;
+}
+
+- (NSArray *)namedMarks {
+    return @[];
+}
+
+- (NSString *)sessionGuid {
+    return nil;
+}
+
+@end
+
 
 @interface iTermHoverContainerView : NSView
 @property (nonatomic, copy) NSString *url;
@@ -412,51 +508,12 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
                                     toolbarHeight);
 }
 
-- (void)setBrowserViewController:(iTermBrowserViewController *)browserViewController
-                      initialURL:(NSString *)initialURL
-                 restorableState:(NSDictionary *)restorableState NS_AVAILABLE_MAC(11_0) {
-    _browserViewController = browserViewController;
-
-    // Set initial frame to avoid constraint conflicts
-    CGFloat titleHeight = _showTitle ? _title.frame.size.height : 0;
-    CGFloat toolbarHeight = [self toolbarReservedHeight];
-    CGFloat reservedSpaceOnBottom = _showBottomStatusBar ? iTermGetStatusBarHeight() : 0;
-    NSRect initialFrame = NSMakeRect(0,
-                                     reservedSpaceOnBottom,
-                                     self.frame.size.width,
-                                     self.frame.size.height - titleHeight - toolbarHeight - reservedSpaceOnBottom);
-    _browserViewController.view.frame = initialFrame;
-
-    // This magic incantation prevents auto layout from virally eating everything in the window preventing it from resizing.
-    // I am so unbelievably lucky that this works. It seems like the only real fix is to make *everything* use auto layout
-    // and I would sooner die.
-    __weak __typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __typeof(self) strongSelf = weakSelf;
-        [strongSelf finishInstallingBrowserWithInitialURL:initialURL
-                                          restorableState:restorableState];
-    });
-}
-
-- (void)finishInstallingBrowserWithInitialURL:(NSString *)initialURL
-                              restorableState:(NSDictionary *)restorableState {
-    [self insertSubview:_browserViewController.view atIndex:_contentViewIndex + 1];
-
-    // Hide terminal views when in browser mode
-    [self setTerminalViewsHidden:YES];
-
-    [self updateLayout];
-
-    [_browserViewController loadRestorableState:restorableState orURL:initialURL];
-
-    NSResponder *prev = self.nextResponder;
-    [self setMainResponder:_browserViewController];
-    _browserViewController.nextResponder = prev;
-    [self.window makeFirstResponder:_browserViewController];
-}
-
 - (BOOL)isBrowser {
-    return _browserViewController != nil;
+    return NO;
+}
+
+- (iTermBrowserViewController *)browserViewController {
+    return nil;
 }
 
 - (void)setTerminalViewsHidden:(BOOL)hidden {
@@ -969,7 +1026,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     _metalView.paused = YES;
     _metalView.enableSetNeedsDisplay = NO;
     // In browser mode, keep metal view hidden
-    _metalView.hidden = self.isBrowser;
+    _metalView.hidden = NO;
     _metalView.alphaValue = 0;
 
     // Start the metal driver going. It will receive delegate calls from iTermMTKView that kick off
@@ -1023,11 +1080,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 }
 
 - (void)updateImageAndBackgroundViewVisibility {
-    // In browser mode, keep terminal views hidden
-    if (self.isBrowser) {
-        return;
-    }
-    
     [CATransaction begin];
     [CATransaction setDisableActions:YES];
     if (_metalView.alphaValue == 0) {
@@ -1201,9 +1253,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
         }
         if (self.composerHeight > 0) {
             [self.delegate sessionViewUpdateComposerFrame];
-        }
-        if (_browserViewController) {
-            [self updateBrowserViewFrame];
         }
         [self updateActivePaneBorder];
     } else {
@@ -1422,9 +1471,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 
     [self _dimShadeToDimmingAmount:amount];
     [_title setDimmingAmount:amount];
-    if (@available(macOS 11, *)) {
-        _browserViewController.dimming = amount;
-    }
     iTermStatusBarViewController *statusBar = self.delegate.sessionViewStatusBarViewController;
     [statusBar updateColors];
 }
@@ -2401,24 +2447,6 @@ typedef NS_ENUM(NSInteger, SessionViewTrackingMode) {
     DLog(@"Returning");
 }
 
-- (void)updateBrowserViewFrame {
-    if (!_browserViewController) {
-        return;
-    }
-
-    // Browser view should cover the entire content area, similar to how scrollview is positioned
-    CGFloat titleHeight = _showTitle ? _title.frame.size.height : 0;
-    CGFloat toolbarHeight = [self toolbarReservedHeight];
-    CGFloat reservedSpaceOnBottom = _showBottomStatusBar ? iTermGetStatusBarHeight() : 0;
-
-    NSRect browserFrame = NSMakeRect(0,
-                                     reservedSpaceOnBottom,
-                                     self.frame.size.width,
-                                     self.frame.size.height - titleHeight - toolbarHeight - reservedSpaceOnBottom);
-
-    _browserViewController.view.frame = browserFrame;
-}
-
 typedef NS_OPTIONS(NSUInteger, iTermCornerFlags) {
     iTermCornerFlagTopLeft = 1 << 0,
     iTermCornerFlagTopRight = 1 << 1,
@@ -2435,7 +2463,7 @@ typedef NS_OPTIONS(NSUInteger, iTermCornerFlags) {
     }
 
     // Get the border view's frame (scrollview or browser view) in window coordinates
-    NSRect borderFrame = self.isBrowser ? _browserViewController.view.frame : _scrollview.frame;
+    NSRect borderFrame = _scrollview.frame;
     NSRect frameInWindow = [self convertRect:borderFrame toView:nil];
 
     // Get window content bounds
@@ -2524,11 +2552,7 @@ typedef NS_OPTIONS(NSUInteger, iTermCornerFlags) {
     _activePaneBorderView.borderColor = borderColor;
 
     // Use the appropriate content frame based on session type
-    if (self.isBrowser) {
-        _activePaneBorderView.frame = _browserViewController.view.frame;
-    } else {
-        _activePaneBorderView.frame = _scrollview.frame;
-    }
+    _activePaneBorderView.frame = _scrollview.frame;
 
     // Get corner radius and which corners should be rounded
     const CGFloat radius = [self windowCornerRadiusForActiveBorder];
@@ -2553,10 +2577,6 @@ typedef NS_OPTIONS(NSUInteger, iTermCornerFlags) {
 
 - (void)updateMinimapFrameAnimated:(BOOL)animated {
     if (![iTermAdvancedSettingsModel showLocationsInScrollbar]) {
-        return;
-    }
-    // In browser mode, minimaps should stay hidden
-    if (self.isBrowser) {
         return;
     }
     NSRect frame = [self convertRect:_scrollview.verticalScroller.bounds

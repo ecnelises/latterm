@@ -436,7 +436,6 @@ typedef struct iTermGlobalSearchEngineCursorSearchOutput {
 
 @implementation iTermGlobalSearchEngineBrowserCursor {
     BOOL _done;
-    iTermBrowserGlobalSearchResultStream *_stream;
 }
 
 - (instancetype)initWithQuery:(NSString *)query
@@ -447,8 +446,7 @@ typedef struct iTermGlobalSearchEngineCursorSearchOutput {
         self.query = query;
         self.mode = mode;
         self.session = session;
-        _stream = [self.session.view.browserViewController executeGlobalSearch:self.query
-                                                                          mode:self.mode];
+        _done = YES;
     }
     return self;
 }
@@ -457,15 +455,8 @@ typedef struct iTermGlobalSearchEngineCursorSearchOutput {
     if (_done) {
         return;
     }
-    NSArray<id<iTermGlobalSearchResultProtocol>> *results = [_stream.consume mapWithBlock:^id _Nullable(iTermBrowserFindResult *findResult) {
-        iTermGlobalBrowserSearchResult *gsr = [[iTermGlobalBrowserSearchResult alloc] init];
-        gsr.session = self.session;
-        gsr.snippet = [self snippetForResult:findResult];
-        gsr.findResult = findResult;
-        return gsr;
-    }];
-    _done = _stream.done;
-    handler(results, 1000);
+    _done = YES;
+    handler(@[], 0);
 }
 
 - (BOOL)consumeAvailable:(void (^ NS_NOESCAPE)(NSArray<id<iTermGlobalSearchResultProtocol>> *, NSUInteger))handler {
@@ -478,27 +469,7 @@ typedef struct iTermGlobalSearchEngineCursorSearchOutput {
 }
 
 - (long long)approximateLinesSearched {
-    return _done ? 0 : 1000;
-}
-
-- (NSAttributedString *)snippetForResult:(iTermBrowserFindResult *)result {
-    NSAttributedString *matchString = [[NSAttributedString alloc] initWithString:result.matchedText
-                                                                      attributes:[self matchAttributes]];
-    NSString *prefix = [(result.contextBefore ?: @"") stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    NSString *suffix = [(result.contextAfter ?: @"") stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-    NSAttributedString *attributedPrefix = [[NSAttributedString alloc] initWithString:prefix
-                                                                           attributes:self.regularAttributes];
-    NSAttributedString *attributedSuffix = [[NSAttributedString alloc] initWithString:suffix
-                                                                           attributes:self.regularAttributes];
-    return [@[attributedPrefix, matchString, attributedSuffix] it_componentsJoinedBySeparator:nil];
-}
-
-- (NSDictionary *)matchAttributes {
-    return iTermGlobalSearchSnippetMatchAttributes();
-}
-
-- (NSDictionary *)regularAttributes {
-    return iTermGlobalSearchSnippetRegularAttributes();
+    return 0;
 }
 
 

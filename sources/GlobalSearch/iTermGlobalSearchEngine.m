@@ -40,22 +40,16 @@
         __weak __typeof(self) weakSelf = self;
         _cursors = [[sessions flatMapWithBlock:^NSArray *(PTYSession *session) {
             NSMutableArray *cursors = [NSMutableArray array];
-            if (session.isBrowserSession) {
-                iTermGlobalSearchEngineBrowserCursor *cursor = [[iTermGlobalSearchEngineBrowserCursor alloc] initWithQuery:query mode:mode session:session];
-                _expectedLines += 1000;
-                [cursors addObject:cursor];
-            } else {
-                iTermGlobalSearchEngineCursor *cursor = [[iTermGlobalSearchEngineCursor alloc] initWithQuery:query mode:mode session:session];
-                cursor.willPause = ^(iTermGlobalSearchEngineCursor *cursor) {
-                    [weakSelf drain:cursor];
-                };
-                _expectedLines += cursor.expectedLines;
-                [cursors addObject:cursor];
+            iTermGlobalSearchEngineCursor *cursor = [[iTermGlobalSearchEngineCursor alloc] initWithQuery:query mode:mode session:session];
+            cursor.willPause = ^(iTermGlobalSearchEngineCursor *cursor) {
+                [weakSelf drain:cursor];
+            };
+            _expectedLines += cursor.expectedLines;
+            [cursors addObject:cursor];
 
-                iTermGlobalSearchEngineFoldCursor *foldCursor = [[iTermGlobalSearchEngineFoldCursor alloc] initWithQuery:query mode:mode session:session];
-                _expectedLines += foldCursor.expectedLines;
-                [cursors addObject:foldCursor];
-            }
+            iTermGlobalSearchEngineFoldCursor *foldCursor = [[iTermGlobalSearchEngineFoldCursor alloc] initWithQuery:query mode:mode session:session];
+            _expectedLines += foldCursor.expectedLines;
+            [cursors addObject:foldCursor];
             return cursors;
         }] mutableCopy];
         _timer = [NSTimer it_scheduledWeakTimerWithTimeInterval:0

@@ -305,7 +305,6 @@
     RLog(@"Creating a new session by URL: %@", RLogRedact(_url, [[NSURL URLWithString:_url] it_redactedDescription] ?: @"(redacted)"));
     PTYSession *session = [windowController.sessionFactory newSessionWithProfile:profile
                                                                           parent:nil];
-    session.browserTarget = self.browserTarget;
     const BOOL saved = windowController.automaticallySelectNewTabs;
     switch (_style) {
         case iTermOpenStyleVerticalSplit:
@@ -364,7 +363,6 @@
                                                      completion:
      ^(PTYSession *newSession, BOOL ok) {
         RLog(@"launch by url finished with ok=%@", @(ok));
-        [newSession loadDeferredURLIfNeeded];
         [weakSelf setFinishedWithSuccess:ok];
     }];
     [windowController.sessionFactory attachOrLaunchWithRequest:launchRequest];
@@ -462,7 +460,6 @@
                                                      completion:
      ^(PTYSession *newSession, BOOL ok) {
         RLog(@"launch by url finished with ok=%@", @(ok));
-        [newSession loadDeferredURLIfNeeded];
         [weakSelf setFinishedWithSuccess:ok];
     }];
     [windowController.sessionFactory attachOrLaunchWithRequest:launchRequest];

@@ -449,18 +449,4 @@ extern NSString *const iTermDidCreateTerminalWindowNotification;
 - (NSArray<NSString *> *)currentSnippetTags;
 - (PTYTextView *)checkFirstResponder;
 
-#pragma mark - Web
-
-- (iTermBrowserWebView *)openTabWithURL:(NSURL *)url
-                            baseProfile:(Profile *)base
-                        nearSessionGuid:(NSString *)sessionGuid
-                          configuration:(WKWebViewConfiguration *)configuration NS_AVAILABLE_MAC(11_0);
-
-- (void)openSplitPaneWithURL:(NSURL *)url
-                      target:(NSString *)target
-                 baseProfile:(Profile *)base
-             nearSessionGuid:(NSString *)sessionGuid
-                    vertical:(BOOL)vertical;
-
 @end
-

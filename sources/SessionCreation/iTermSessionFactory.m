@@ -88,8 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
     request.substitutions = substitutions;
     request.windowController = windowController;
     request.ready = ready;
-    request.browser = [[iTermProfilePreferences stringForKey:KEY_CUSTOM_COMMAND
-                                                   inProfile:aSession.profile] isEqual:kProfilePreferenceCommandTypeBrowserValue];;
     request->_profile = [aSession.profile copy];
     if (forceUseOldCWD) {
         request->_profileForComputingCommand = [request->_profile dictionaryBySettingObject:kProfilePreferenceInitialDirectoryCustomValue forKey:KEY_CUSTOM_DIRECTORY];
@@ -436,14 +434,12 @@ NS_ASSUME_NONNULL_BEGIN
                     completion:(void (^)(BOOL))completion {
     [request.session startProgram:request.computedCommand
                               ssh:request.ssh
-                          browser:request.browser
                       environment:request.environment
                       customShell:request.customShell
                            isUTF8:request.isUTF8
                     substitutions:request.substitutions
                       arrangement:request.arrangementName
                   fromArrangement:request.fromArrangement
-             webViewConfiguration:request.webViewConfiguration
                        completion:^(BOOL ok) {
         [request.windowController setWindowTitle];
         if (completion) {
