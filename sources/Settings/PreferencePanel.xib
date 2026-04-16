@@ -1564,7 +1564,6 @@ CA
         <customObject id="dVg-Ac-SiZ" userLabel="Prefs&gt;Profiles&gt;General View Controller" customClass="ProfilesGeneralPreferencesViewController">
             <connections>
                 <outlet property="_advancedWorkingDirWindowController" destination="Cct-nR-QI7" id="BT2-8e-6Md"/>
-                <outlet property="_afterProfileType" destination="jFD-jQ-u7E" id="hEn-wH-bWg"/>
                 <outlet property="_allowTitleSetting" destination="q57-nJ-Jbz" id="FIJ-aB-riV"/>
                 <outlet property="_badgeLabel" destination="nUa-Y1-jO4" id="86p-e0-92K"/>
                 <outlet property="_badgeText" destination="sa9-oD-SMc" id="MvW-wP-hbS"/>
@@ -1580,7 +1579,6 @@ CA
                 <outlet property="_customDirectory" destination="2189" id="msb-Cg-HLN"/>
                 <outlet property="_customTitleHelp" destination="kFr-1J-iPo" id="o1l-5V-ffb"/>
                 <outlet property="_directoryLabel" destination="2129" id="e8L-eh-dsw"/>
-                <outlet property="_downloadBrowserPluginButton" destination="nbT-jq-fVq" id="Fey-1P-UYJ"/>
                 <outlet property="_editAdvancedConfigButton" destination="5975" id="Xww-uf-BMr"/>
                 <outlet property="_editBadgeButton" destination="kmy-bS-CYF" id="kfJ-uZ-kgH"/>
                 <outlet property="_editCurrentSessionView" destination="IUK-Yc-d7G" id="6ba-10-vJC"/>
@@ -1589,20 +1587,15 @@ CA
                 <outlet property="_iconLabel" destination="Xzz-Fo-TWV" id="JMy-Cp-2Y2"/>
                 <outlet property="_imageWell" destination="CNi-xf-qcd" id="ta5-Ti-xEy"/>
                 <outlet property="_initialDirectoryType" destination="2190" id="LYF-0C-gAo"/>
-                <outlet property="_initialURL" destination="yb0-Wq-WSQ" id="onp-UG-jVD"/>
                 <outlet property="_loadShellIntegrationAutomatically" destination="iWk-HJ-EKg" id="YGt-lQ-NrZ"/>
-                <outlet property="_locatePlugin" destination="ehw-7A-A75" id="GMk-vk-oRW"/>
                 <outlet property="_locked" destination="imM-Ma-mjV" id="Oy4-Ab-2k5"/>
                 <outlet property="_preventAutomaticProfileSwitching" destination="N23-uy-3RA" id="cRM-BE-TkQ"/>
                 <outlet property="_profileNameField" destination="2133" id="6VF-gN-bGW"/>
                 <outlet property="_profileNameFieldForEditCurrentSession" destination="12133" id="5Kd-KE-2zg"/>
                 <outlet property="_profileNameFieldLabel" destination="2134" id="egs-WO-Ucn"/>
                 <outlet property="_profileShortcut" destination="2142" id="vtI-vU-bua"/>
-                <outlet property="_profileType" destination="VI8-Qb-i2z" id="3UM-99-Ph9"/>
-                <outlet property="_profileTypeContainer" destination="Mbz-sF-N6i" id="g1z-v3-Tvk"/>
                 <outlet property="_profiles" destination="15766" id="mhp-qy-IXj"/>
                 <outlet property="_reasonShellIntegrationDisabledLabel" destination="3BE-IU-euZ" id="Jkt-at-t9a"/>
-                <outlet property="_revealBrowserPlugin" destination="ny5-PE-Hbt" id="1yu-VL-it9"/>
                 <outlet property="_runCommandInLoginShell" destination="rcS-Ls-100" id="U9d-8m-snc"/>
                 <outlet property="_schemesLabel" destination="5035" id="zeB-oy-niN"/>
                 <outlet property="_sendTextAtStart" destination="5410" id="eUe-AY-v5Q"/>
@@ -1998,98 +1991,6 @@ CA
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="o8r-qZ-dn4" customClass="iTermBrowserModeEnclosure">
-                    <rect key="frame" x="20" y="389" width="645" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <subviews>
-                        <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m4L-Ud-eRe" userLabel="Initial URL Label">
-                            <rect key="frame" x="-2" y="12" width="118" height="16"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Initial URL:" id="2qo-h9-UBD">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
-                        <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yb0-Wq-WSQ" userLabel="Initial URL text field">
-                            <rect key="frame" x="125" y="9" width="520" height="21"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="cZn-Yn-TLz">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                            <connections>
-                                <outlet property="delegate" destination="dVg-Ac-SiZ" id="9H1-TL-tfz"/>
-                                <outlet property="nextKeyView" destination="2142" id="7qL-hk-cFD"/>
-                            </connections>
-                        </textField>
-                    </subviews>
-                </customView>
-                <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Mbz-sF-N6i" userLabel="Profile Type Container" customClass="iTermHiddenModeEnclosure">
-                    <rect key="frame" x="21" y="418" width="645" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <subviews>
-                        <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jtn-iS-uQ0" userLabel="Name label">
-                            <rect key="frame" x="-2" y="11" width="118" height="16"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Profile Type:" id="6KX-JG-Yon">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
-                        <segmentedControl verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VI8-Qb-i2z">
-                            <rect key="frame" x="123" y="6" width="269" height="24"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="Tbo-Nq-0gg">
-                                <font key="font" metaFont="system"/>
-                                <segments>
-                                    <segment label="🖥️ Terminal" width="130"/>
-                                    <segment label="🌎 Web Browser" width="130" selected="YES" tag="1"/>
-                                </segments>
-                            </segmentedCell>
-                            <connections>
-                                <action selector="settingChanged:" target="dVg-Ac-SiZ" id="2xi-lu-ZGn"/>
-                            </connections>
-                        </segmentedControl>
-                        <button hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nbT-jq-fVq">
-                            <rect key="frame" x="391" y="10" width="188" height="18"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="bevel" title="Download Browser Plugin" bezelStyle="rounded" alignment="center" imageScaling="proportionallyDown" inset="2" id="1Gw-V8-8il">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <color key="contentTintColor" name="linkColor" catalog="System" colorSpace="catalog"/>
-                            <connections>
-                                <action selector="downloadBrowserPlugin:" target="dVg-Ac-SiZ" id="UVa-p8-bSO"/>
-                            </connections>
-                        </button>
-                        <button hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ny5-PE-Hbt">
-                            <rect key="frame" x="391" y="10" width="188" height="18"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="bevel" title="✅ Browser Plugin Installed" bezelStyle="rounded" alignment="center" imageScaling="proportionallyDown" inset="2" id="74h-mB-lfd">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="revealBrowserPlugin:" target="dVg-Ac-SiZ" id="4hM-D4-Bup"/>
-                            </connections>
-                        </button>
-                        <button hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ehw-7A-A75" userLabel="Locate Browser Plugin">
-                            <rect key="frame" x="572" y="5" width="30.5" height="25"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <string key="toolTip">Use this button to manually locate the browser plugin. If it can’t be found automatically, or if something is wrong with the plugin that prevents automatic identification from working, use this to fix the problem or learn why it is failing.</string>
-                            <buttonCell key="cell" type="bevel" bezelStyle="rounded" image="rectangle.and.text.magnifyingglass" catalog="system" imagePosition="overlaps" alignment="center" imageScaling="proportionallyDown" inset="2" id="JCm-5y-us3">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="locateBrowserPlugin:" target="dVg-Ac-SiZ" id="yLG-1s-r48"/>
-                            </connections>
-                        </button>
-                    </subviews>
-                </customView>
                 <customView identifier="AfterProfileTypeContainer" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jFD-jQ-u7E" userLabel="After profile type container">
                     <rect key="frame" x="16" y="0.0" width="650" height="389"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>

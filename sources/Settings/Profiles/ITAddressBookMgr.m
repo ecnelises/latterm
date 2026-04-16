@@ -866,7 +866,8 @@ iTermPercentage iTermPercentageFromProfile(Profile *profile, iTermWindowType win
 
 + (NSString *)bookmarkCommandSwiftyString:(Profile *)bookmark
                             forObjectType:(iTermObjectType)objectType {
-    const BOOL browser = [bookmark[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
+    const BOOL browser = [iTermTerminalFirstFeatures browserFeaturesEnabled] &&
+                         [bookmark[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
     if (browser) {
         return bookmark[KEY_COMMAND_LINE];
     }

@@ -28,6 +28,7 @@
 #import "DebugLogging.h"
 #import "iTermSplitViewAnimation.h"
 #import "ITAddressBookMgr.h"
+#import "NSDictionary+iTerm.h"
 #import "NSDictionary+Profile.h"
 #import "NSArray+iTerm.h"
 #import "NSMutableAttributedString+iTerm.h"
@@ -723,13 +724,14 @@ const CGFloat kDefaultTagsWidth = 80;
         DLog(@"Getting name of profile at row %d. The dictionary's address is %p. Its name is %@",
              (int)rowIndex, bookmark, bookmark[KEY_NAME]);
         Profile *defaultProfile = [[ProfileModel sharedInstance] defaultBookmark];
-        Profile *defaultBrowserProfile = [[ProfileModel sharedInstance] defaultBrowserProfile];
+        const BOOL browser = bookmark.profileIsBrowser;
+        Profile *defaultBrowserProfile = browser ? [[ProfileModel sharedInstance] defaultBrowserProfile] : nil;
         *multilinePtr = [bookmark[KEY_TAGS] count] > 0;
         return [self attributedStringForName:bookmark[KEY_NAME] ?: @""
                                         tags:bookmark[KEY_TAGS]
                                     selected:[[tableView_ selectedRowIndexes] containsIndex:rowIndex]
                                    isDefault:[bookmark[KEY_GUID] isEqualToString:defaultProfile[KEY_GUID]] || [bookmark[KEY_GUID] isEqualToString:defaultBrowserProfile[KEY_GUID]]
-                                   isBrowser:[bookmark[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue]
+                                   isBrowser:browser
                                    isDynamic:bookmark.profileIsDynamic
                                       filter:[searchField_ stringValue]];
     } else if (aTableColumn == commandColumn_) {
@@ -742,7 +744,7 @@ const CGFloat kDefaultTagsWidth = 80;
             theString = [NSString stringWithFormat:@"ssh %@", bookmark[KEY_COMMAND_LINE]];
         } else if ([customCommand isEqualToString:kProfilePreferenceCommandTypeLoginShellValue]) {
             theString = @"Login shell";
-        } else if ([customCommand isEqualToString:kProfilePreferenceCommandTypeBrowserValue]) {
+        } else if (bookmark.profileIsBrowser) {
             theString = @"URL";
         }
         return [self attributedStringForCommand:theString

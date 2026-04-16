@@ -152,14 +152,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
         item.state = [self.delegate textViewRemoteHostCanControlIterm2:&available] ? NSControlStateValueOn : NSControlStateValueOff;
         return available;
     }
-    if (item.action == @selector(performNaturalLanguageQuery:)) {
-        return [iTermTerminalFirstFeatures aiFeaturesEnabled] &&
-               [iTermAdvancedSettingsModel generativeAIAllowed];
-    }
-    if (item.action == @selector(explainOutputWithAI:)) {
-        return [iTermTerminalFirstFeatures aiFeaturesEnabled] &&
-               [self.delegate textViewCanExplainOutputWithAI];
-    }
     if (item.action == @selector(foldSelection:)) {
         if ([self.dataSource terminalSoftAlternateScreenMode] && [self foldWouldTouchMutableArea]) {
             return NO;
@@ -232,21 +224,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
 - (IBAction)toggleRemoteHostCanControlIterm2:(id)sender {
     [self.delegate textViewToggleRemoteHostCanControlIterm2];
 }
-
-- (IBAction)performNaturalLanguageQuery:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [self.delegate textViewPerformNaturalLanguageQuery];
-}
-
-- (IBAction)explainOutputWithAI:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [self.delegate textViewExplainOutputWithAI];
-}
-
 - (BOOL)selectionContainsFold {
     const long long offset = self.dataSource.totalScrollbackOverflow;
     for (iTermSubSelection *subSelection in self.selection.allSubSelections) {

@@ -460,7 +460,9 @@
     }
 
     for (Profile *profile in allProfiles) {
-        if (![iTermBrowserGateway browserAllowedCheckingIfNot:NO] && [profile profileType] == ProfileTypeBrowser) {
+        const BOOL rawBrowserProfile = [profile[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
+        if ((![iTermTerminalFirstFeatures browserFeaturesEnabled] && rawBrowserProfile) ||
+            (![iTermBrowserGateway browserAllowedCheckingIfNot:NO] && [profile profileType] == ProfileTypeBrowser)) {
             continue;
         }
         if ([guids containsObject:profile[KEY_GUID]]) {

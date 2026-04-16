@@ -211,16 +211,15 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (NSColor *)textViewBadgeColor;
 - (NSDictionary *)textViewVariables;
 - (BOOL)textViewSuppressingAllOutput;
+- (BOOL)textViewInPinnedHotkeyWindow;
 - (BOOL)textViewIsZoomedIn;
 - (BOOL)textViewShouldShowMarkIndicators;
 - (BOOL)textViewIsFiltered;
-- (BOOL)textViewInPinnedHotkeyWindow;
-- (BOOL)textViewSessionIsLinkedToAIChat;
-- (BOOL)textViewSessionIsStreamingToAIChat;
+- (BOOL)textViewIsSyntheticSession;
 - (BOOL)textViewSessionHasChannelParent;
+
 - (BOOL)textViewIsBufferingInput;
 - (BOOL)textViewIsInScreenshotMode;
-- (BOOL)textViewIsSyntheticSession;
 
 // Is it possible to restart this session?
 - (BOOL)isRestartable;
@@ -875,4 +874,3 @@ typedef NS_ENUM(NSUInteger, iTermCopyTextStyle) {
 };
 
 @end
-

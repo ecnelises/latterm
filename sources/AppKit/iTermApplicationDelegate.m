@@ -1370,10 +1370,6 @@ void TurnOnDebugLoggingAutomatically(void) {
 
     DLog(@"migrateApplicationSupportDirectoryIfNeeded");
     [iTermMigrationHelper migrateApplicationSupportDirectoryIfNeeded];
-    if ([iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        DLog(@"migrate OpenAI key");
-        [iTermMigrationHelper migrateOpenAIKeyIfNeeded];
-    }
     DLog(@"buildScriptMenu");
     [self buildScriptMenu:nil];
 
@@ -1917,17 +1913,8 @@ static iTermKeyEventReplayer *gReplayer;
     if ([components.path isEqualToString:@"annotation"]) {
         [self revealAnnotationFromURL:url];
     }
-    if ([components.path isEqualToString:@"unlink-session-chat"]) {
-        [self unlinkSessionChatFromURL:url];
-    }
-    if ([components.path isEqualToString:@"reveal-chat-for-session"]) {
-        [self revealChatForSessionFromURL:url];
-    }
     if ([components.path isEqualToString:@"reveal-mark"]) {
         [self revealMarkFromURL:url];
-    }
-    if ([components.path isEqualToString:@"disable-streaming-session-chat"]) {
-        [self stopStreamingSessionChatFromURL:url];
     }
     if ([components.path isEqualToString:@"pop-channel"]) {
         [self popChannel:url];
@@ -1938,32 +1925,6 @@ static iTermKeyEventReplayer *gReplayer;
 - (void)disableCommandSelection {
     [iTermPreferences setBool:NO forKey:kPreferenceKeyClickToSelectCommand];
     [[PreferencePanel sharedInstance] openToPreferenceWithKey:kPreferenceKeyClickToSelectCommand];
-}
-
-- (void)revealChatForSessionFromURL:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
-    NSString *guid = nil;
-    NSString *token = nil;
-    for (NSURLQueryItem *item in components.queryItems) {
-        if ([item.name isEqualToString:@"s"] && !guid) {
-            guid = item.value;
-        } else if ([item.name isEqualToString:@"t"]) {
-            token = item.value;
-        }
-    }
-    if (!guid) {
-        return;
-    }
-    if (![[NSWorkspace sharedWorkspace] it_checkToken:token]) {
-        return;
-    }
-    NSString *chatID = [iTermChatDatabase firstChatIDForSessionGuid:guid];
-    if (!chatID) {
-        return;
-    }
-    [[iTermChatWindowController instanceShowingErrors:YES] showChatWindow];
-    [[iTermChatWindowController instanceShowingErrors:NO] selectChatWithID:chatID];
-
 }
 
 - (void)popChannel:(NSURL *)url {
@@ -1998,46 +1959,6 @@ static iTermKeyEventReplayer *gReplayer;
         return;
     }
     [session.delegate swapSession:session withBuriedSession:parent];
-}
-
-- (void)stopStreamingSessionChatFromURL:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
-    NSString *guid = nil;
-    NSString *token = nil;
-    for (NSURLQueryItem *item in components.queryItems) {
-        if ([item.name isEqualToString:@"s"] && !guid) {
-            guid = item.value;
-        } else if ([item.name isEqualToString:@"t"]) {
-            token = item.value;
-        }
-    }
-    if (!guid) {
-        return;
-    }
-    if (![[NSWorkspace sharedWorkspace] it_checkToken:token]) {
-        return;
-    }
-    [[iTermChatWindowController instanceIfExists] stopStreamingSession:guid];
-}
-
-- (void)unlinkSessionChatFromURL:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
-    NSString *guid = nil;
-    NSString *token = nil;
-    for (NSURLQueryItem *item in components.queryItems) {
-        if ([item.name isEqualToString:@"s"] && !guid) {
-            guid = item.value;
-        } else if ([item.name isEqualToString:@"t"]) {
-            token = item.value;
-        }
-    }
-    if (!guid) {
-        return;
-    }
-    if (![[NSWorkspace sharedWorkspace] it_checkToken:token]) {
-        return;
-    }
-    [iTermChatDatabase unlinkSessionGuid:guid];
 }
 
 - (void)revealMarkFromURL:(NSURL *)url {
@@ -2692,14 +2613,6 @@ static iTermKeyEventReplayer *gReplayer;
     DLog(@"Menu item selected");
     NSString *name = [[[[iTermController sharedInstance] currentTerminal] currentSession] defaultAccountNameForPasswordManager];
     [self openPasswordManagerToAccountName:name inSession:nil];
-}
-
-- (IBAction)openAIChats:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [[iTermChatWindowController instanceShowingErrors:YES] showChatWindow];
-    [[iTermChatWindowController instanceShowingErrors:NO] createNewChatIfNeededWithCurrentSession:iTermController.sharedInstance.currentTerminal.currentSession];
 }
 
 - (IBAction)toggleToolbeltTool:(NSMenuItem *)menuItem {

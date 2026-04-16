@@ -40,8 +40,6 @@ NSString *const kProfilesToolName = @"Profiles";
 NSString *const kSnippetsToolName = @"Snippets";
 NSString *const kNamedMarksToolName = @"Named Marks";
 NSString *const kStatusToolName = @"Session Status";
-NSString *const kCodeciergeToolName = @"Codecierge";
-
 NSString *const kToolbeltShouldHide = @"kToolbeltShouldHide";
 
 NSString *const kDynamicToolsDidChange = @"kDynamicToolsDidChange";
@@ -92,8 +90,6 @@ static NSString *const kDynamicToolURL = @"URL";
     [iTermToolbeltView registerToolWithName:kPasteHistoryToolName withClass:[ToolPasteHistory class]];
     [iTermToolbeltView registerToolWithName:kProfilesToolName withClass:[ToolProfiles class]];
     [iTermToolbeltView registerToolWithName:kSnippetsToolName withClass:[iTermToolSnippets class]];
-    [iTermToolbeltView registerToolWithName:kCodeciergeToolName withClass:[iTermToolCodecierge class]];
-
     NSDictionary<NSString *, NSDictionary *> *dynamicTools = [[iTermUserDefaults userDefaults] objectForKey:kDynamicToolsKey];
     [dynamicTools enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull identifier, NSDictionary * _Nonnull dict, BOOL * _Nonnull stop) {
         [iTermToolbeltView registerToolWithName:dict[kDynamicToolName] withClass:[ToolWebView class]];
@@ -585,7 +581,6 @@ static NSString *const kDynamicToolURL = @"URL";
     [[self directoriesView] updateDirectories];
     [[self jobsView] updateJobs];
     [[self snippetsView] currentSessionDidChange];
-    [[self codeciergeView] currentSessionDidChange];
     [[self namedMarksView] setNamedMarks:[self.delegate toolbeltNamedMarks]];
     [self updateForProfileType];
 }
@@ -677,11 +672,6 @@ static NSString *const kDynamicToolURL = @"URL";
 - (iTermToolSnippets *)snippetsView {
     iTermToolWrapper *wrapper = _tools[kSnippetsToolName];
     return (iTermToolSnippets *)wrapper.tool;
-}
-
-- (iTermToolCodecierge *)codeciergeView {
-    iTermToolWrapper *wrapper = _tools[kCodeciergeToolName];
-    return (iTermToolCodecierge *)wrapper.tool;
 }
 
 #pragma mark - NSSplitViewDelegate

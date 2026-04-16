@@ -298,12 +298,6 @@
             @"0084": @{ kTipTitleKey: @"Auto Composer",
                         kTipBodyKey: @"Improve your command line with the “auto composer”, which replaces the command line with a native control for ease of use. Requires shell integration." },
 
-            @"0085": @{ kTipTitleKey: @"AI Command Writing",
-                        kTipBodyKey: @"Generate commands using AI by entering a prompt in the composer and selecting “Edit > Engage Artificial Intelligence”. An OpenAI API key is required for this functionality." },
-
-            @"0086": @{ kTipTitleKey: @"Codecierge Tool",
-                        kTipBodyKey: @"Set and achieve terminal goals with “Codecierge”, a Toolbelt feature that guides you step-by-step based on your terminal activity. An OpenAI API key is necessary for this feature." },
-
             @"0087": @{ kTipTitleKey: @"Named Marks",
                         kTipBodyKey: @"Navigate your command history effortlessly with “named marks” by assigning names to lines in the terminal." },
 
@@ -393,13 +387,6 @@
 
             @"0116": @{ kTipTitleKey: @"Draggable Tip Window",
                         kTipBodyKey: @"Reposition the Tip of the Day window conveniently on your screen, as it is now draggable." },
-
-            @"0117": @{ kTipTitleKey: @"AI Chat",
-                        kTipBodyKey: @"iTerm2 now has an AI Chat feature! Use “Window > AI Chats” or “Edit > Explain Output with AI”. The assistant can interact with your terminal (with your permission) and explain command output, adding annotations right in the terminal." },
-
-            @"0118": @{ kTipTitleKey: @"Web Browser Profiles",
-                        kTipBodyKey: @"You can configure a profile to be a web browser! In “Settings > Profiles > General”, set “Profile Type” to “Web Browser”. Key bindings, smart selection, and the password manager all work in browser sessions.",
-                        kTipUrlKey: @"https://iterm2.com/documentation-web.html" },
 
             @"0119": @{ kTipTitleKey: @"Adjacent Timestamps",
                         kTipBodyKey: @"Timestamps can now be shown next to terminal content instead of overlapping. Configure it in “Settings > Profiles > Session > Timestamps”. Right-click on any line and select “Set Baseline for Relative Timestamps” to see time elapsed between lines." },

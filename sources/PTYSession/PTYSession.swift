@@ -182,36 +182,13 @@ extension PTYSession {
         return items.map { "<info>" + $0.escapedForHTML + "</info>" }.joined(separator: "\n")
     }
 
-    func add(aiAnnotations annotations: [AITermAnnotation],
+    func add(aiAnnotations annotations: [Any],
              baseOffset: Int64,
              locatedString: iTermLocatedString) -> [URL?] {
-        let width = screen.width()
-        let offset = baseOffset - screen.totalScrollbackOverflow()
-        var urls = [URL?]()
-        for aiAnnotation in annotations {
-            let y = Int64(aiAnnotation.run.origin.y) + offset
-            guard y >= 0 else {
-                urls.append(nil)
-                continue
-            }
-            let note = PTYAnnotation()
-            note.stringValue = aiAnnotation.note
-            var end = aiAnnotation.run.origin
-            end.x += aiAnnotation.run.length - 1
-            if end.x >= width {
-                end.y += end.x / width
-                end.x %= width
-            }
-            end.x += 1
-            let range = VT100GridCoordRangeMake(aiAnnotation.run.origin.x,
-                                                aiAnnotation.run.origin.y,
-                                                end.x,
-                                                end.y)
-            // Don't make them visible because it becomes total chaos if there are a lot of them.
-            screen.addNote(note, in: range, focus: false, visible: false)
-            urls.append(url(annotation: note.uniqueID))
-        }
-        return urls
+        _ = annotations
+        _ = baseOffset
+        _ = locatedString
+        return []
     }
 
     @objc func revealAnnotation(_ id: String) {
@@ -288,29 +265,19 @@ extension PTYSession {
                        command: String?,
                        subjectMatter: String,
                        title: String) throws {
-        let request = AIExplanationRequest(command: command,
-                                           snapshot: snapshot,
-                                           selection: selection,
-                                           truncated: truncated,
-                                           question: "",
-                                           subjectMatter: subjectMatter,
-                                           url: url(selection, in: snapshot),
-                                           context: AIExplanationRequest.Context(
-                                            sessionID: guid,
-                                            baseOffset: screen.totalScrollbackOverflow()))
-        guard let client = ChatClient.instance else {
-            iTermWarning.show(withTitle: "AI Chat could not be opened. Verify you only have one instance of iTerm2 running.",
-                              actions: ["OK"],
-                              accessory: nil,
-                              identifier: nil,
-                              silenceable: .kiTermWarningTypePersistent,
-                              heading: "Error",
-                              window: self.genericView?.window)
-            return
-        }
-        try client.explain(request,
-                           title: title,
-                           scope: genericScope)
+        _ = selection
+        _ = truncated
+        _ = snapshot
+        _ = command
+        _ = subjectMatter
+        _ = title
+        iTermWarning.show(withTitle: "Explain Output with AI is unavailable in the terminal-first fork.",
+                          actions: ["OK"],
+                          accessory: nil,
+                          identifier: nil,
+                          silenceable: .kiTermWarningTypePersistent,
+                          heading: "Feature Unavailable",
+                          window: self.genericView?.window)
     }
 
     func execute(_ command: RemoteCommand, completion: @escaping (String, String) throws -> ()) throws {
@@ -989,45 +956,9 @@ extension iTermSubSelection {
 
 // MARK: - AI Suggestions
 extension PTYSession {
-    private func previouslyRunCommands(_ n: Int) -> ArraySlice<AICompletion.PreviouslyRunCommand> {
-        guard let remoteHost = screen.lastRemoteHost() else {
-            return ArraySlice([])
-        }
-        return iTermShellHistoryController
-            .sharedInstance()
-            .commandUses(forHost: remoteHost)
-            .compactMap { use -> AICompletion.PreviouslyRunCommand? in
-                guard let command = use.command,
-                      let time = use.time else {
-                    return nil
-                }
-                return AICompletion.PreviouslyRunCommand(
-                    command: command,
-                    workingDirectory: use.directory,
-                    date: Date(timeIntervalSinceReferenceDate: time.doubleValue))
-            }.sorted(by: { lhs, rhs in
-                lhs.date < rhs.date
-            })
-            .suffix(10)
-    }
-
     @objc(suggestWithAI:fileCompletions:firstResult:)
     func suggestWithAI(request: SuggestionRequest, files: [CompletionItem], firstResult: CompletionItem?) {
-        let history = previouslyRunCommands(20)
-        AICompletion.suggestionCompletions(
-            request,
-            history: history,
-            files: files) { cs in
-                let modified: [CompletionItem] =
-                if cs.isEmpty {
-                    []
-                } else if let firstResult {
-                    [firstResult] + cs.filter { $0.value != firstResult.value }
-                } else {
-                    cs
-                }
-                request.completion(false, modified)
-            }
+        request.completion(false, [])
     }
 }
 
@@ -2178,98 +2109,7 @@ extension PTYSession {
     // opened as a side effect.
     @objc(toggleInlineChat)
     func toggleInlineChat() {
-        if inlineChatID != nil {
-            inlineChatVisible = !inlineChatVisible
-            return
-        }
-        guard iTermAITermGatekeeper.check() else {
-            return
-        }
-        guard let listModel = ChatListModel.instance else {
-            return
-        }
-        let sessionGuid = self.guid
-        if let existing = listModel.mostRecentChat(forGuid: sessionGuid) {
-            inlineChatID = existing.id
-            inlineChatVisible = true
-            return
-        }
-        if createInlineChat() != nil {
-            inlineChatVisible = true
-        }
-    }
-
-    // Re-bind an inline chat during arrangement restoration. Setting
-    // inlineChatID drives the right-extra layout cascade that instantiates the
-    // gutter panel and reserves the panel's width, the same as a live toggle.
-    //
-    // Deliberately NOT gated on iTermAITermGatekeeper, unlike the create/show
-    // entry points. Restoring a panel that shows past chat history is benign:
-    // it makes no AI calls until the user sends a message, which goes through
-    // the gate. Gating here would pay the plugin-load cost on the launch
-    // restore path and would drop the saved binding whenever AI is temporarily
-    // disabled.
-    //
-    // Validate against the chat list only if the chat DB is ALREADY open
-    // (instanceIfExists, which does not construct it). Reading
-    // ChatListModel.instance would force ChatDatabase to open chatdb.sqlite
-    // and run migrations synchronously here on the restore path. When the DB
-    // is open and the chat is gone (deleted since the arrangement was saved),
-    // skip binding so the panel doesn't reopen onto a missing chat; when it
-    // isn't open we can't tell, so bind optimistically. The width provider
-    // re-validates that the chat still exists once the DB is open and drops
-    // the binding (yielding no panel) if it has since been deleted.
-    //
-    // Edge case: if the chat DB cannot be opened at all this launch (e.g. a
-    // second iTerm2 instance holds the sqlite lock), the width provider yields
-    // 0 and the window restores at full terminal width with no panel. We still
-    // set the binding so it survives to a healthy launch. Reserving width for
-    // a panel that can't be constructed would crash the force-unwrapping panel
-    // factory, so we accept the wider window in that degraded state.
-    @objc(restoreInlineChatID:visible:)
-    func restoreInlineChat(id: String, visible: Bool) {
-        if ChatDatabase.instanceIfExists != nil,
-           let listModel = ChatListModel.instance,
-           listModel.index(of: id) == nil {
-            return
-        }
-        inlineChatID = id
-        inlineChatVisible = visible
-    }
-
-    // Create a brand-new chat for this session's inline panel and bind it via
-    // inlineChatID. The chat is created UNLINKED (no terminal/browser GUID) and
-    // carries a single .offerLink client-local message, mirroring the chat
-    // window's new-chat flow: the user picks "Link" (bind to this session) or
-    // "Enable Orchestration" from buttons in the conversation rather than the
-    // panel deciding for them. Returns the new chat ID, or nil on failure.
-    //
-    // The offer is published here (at creation) rather than in
-    // ChatViewController.attach(to:) because attach runs on every (re)attach;
-    // offering there would stack duplicate offer bubbles across detach/reattach
-    // cycles. Published client-local messages persist and replay when the panel
-    // loads the chat.
-    @discardableResult
-    func createInlineChat() -> String? {
-        guard let client = ChatClient.instance else {
-            return nil
-        }
-        do {
-            let title = "Chat about \(self.name)"
-            let chatID = try client.create(
-                chatWithTitle: title,
-                terminalSessionGuid: nil,
-                browserSessionGuid: nil,
-                initialMessages: [],
-                permissions: "")
-            try? client.publishClientLocalMessage(
-                chatID: chatID,
-                action: .offerLink(terminal: true, guid: self.guid, name: self.name))
-            inlineChatID = chatID
-            return chatID
-        } catch {
-            RLog("\(error)")
-            return nil
-        }
+        inlineChatID = nil
+        inlineChatVisible = false
     }
 }

@@ -418,6 +418,8 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     NSString *guid = [[ProfileModel sharedInstance] defaultBrowserProfile][KEY_GUID];
     if (guid) {
         [self openToProfileWithGuid:guid];
+    } else {
+        [self selectDefaultProfile];
     }
 }
 
@@ -563,7 +565,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)updateEnclosureVisibilityForProfile:(Profile *)profile {
-    const BOOL browserMode = [Profile profileTypeForCustomCommand:profile[KEY_CUSTOM_COMMAND]] == ProfileTypeBrowser;
+    const BOOL browserMode = [iTermTerminalFirstFeatures browserFeaturesEnabled] &&
+                             [Profile profileTypeForCustomCommand:profile[KEY_CUSTOM_COMMAND]] == ProfileTypeBrowser;
     const BOOL profileIsShared = [[ProfileModel sharedInstance] bookmarkWithGuid:profile[KEY_GUID]] != nil;
     NSInteger i = 0;
     for (NSArray *tuple in [self tabViewControllerTuples]) {
@@ -571,7 +574,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
         iTermProfilePreferencesBaseViewController *vc = tuple[1];
         const BOOL wantTab = [vc setVisibilityForTerminalEnclosures:!browserMode
                                                   browserEnclosures:browserMode
-                                               hiddenModeEnclosures:[iTermAdvancedSettingsModel browserProfiles]
+                                               hiddenModeEnclosures:([iTermTerminalFirstFeatures browserFeaturesEnabled] &&
+                                                                     [iTermAdvancedSettingsModel browserProfiles])
                                            sharedProfilesEnclosures:profileIsShared
                                                         tabViewItem:tabViewItem];
         const BOOL haveTab = [_tabView.tabViewItems containsObject:tabViewItem];
@@ -1295,6 +1299,10 @@ andEditComponentWithIdentifier:(NSString *)identifier
         return;
     }
     if (profileType & ProfileTypeBrowser) {
+        if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+            [self selectDefaultProfile];
+            return;
+        }
         [self selectDefaultBrowserProfile];
         return;
     }

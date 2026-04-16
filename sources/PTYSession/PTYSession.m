@@ -336,8 +336,6 @@ static NSString *const SESSION_ARRANGEMENT_AUTO_SEND_CLIPPINGS_WHEN_IDLE = @"Aut
 static NSString *const SESSION_ARRANGEMENT_AUTO_REQUEST_REVIEW_WHEN_IDLE = @"Auto Request Review When Idle";  // BOOL. Main session's toolbar toggle state.
 static NSString *const SESSION_ARRANGEMENT_WORKGROUP = @"Workgroup";  // NSDictionary, opaque to PTYSession. Owned by iTermWorkgroupRestoration. Present on the visible/anchor member of a peer group; embeds the other (buried) members' arrangements so the workgroup can be rebuilt on relaunch.
 static NSString *const SESSION_ARRANGEMENT_CODE_REVIEW_LAST_PROMPT = @"Code Review Last Prompt";  // NSString. The prompt text the user last submitted in a code-review session, so a reload after restore defaults to their edited prompt.
-static NSString *const SESSION_ARRANGEMENT_INLINE_CHAT_ID = @"Inline Chat ID";  // NSString. Chat hosted in this session's inline AI chat gutter panel.
-static NSString *const SESSION_ARRANGEMENT_INLINE_CHAT_VISIBLE = @"Inline Chat Visible";  // BOOL. Whether that panel was showing.
 
 // Keys for dictionary in SESSION_ARRANGEMENT_PROGRAM
 NSString *const kProgramType = @"Type";  // Value will be one of the kProgramTypeXxx constants.
@@ -1243,7 +1241,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_sshWriteQueue release];
     [_lastNonFocusReportingWrite release];
     [_lastFocusReportDate release];
-    [_aiterm release];
     [_commandQueue release];
     [_pendingJumps release];
     [_dataQueue release];
@@ -1730,9 +1727,6 @@ ITERM_WEAKLY_REFERENCEABLE
     // default (off).
     aSession.autoSendClippingsWhenIdle = [[NSNumber castFrom:arrangement[SESSION_ARRANGEMENT_AUTO_SEND_CLIPPINGS_WHEN_IDLE]] boolValue];
     aSession.autoRequestReviewWhenIdle = [[NSNumber castFrom:arrangement[SESSION_ARRANGEMENT_AUTO_REQUEST_REVIEW_WHEN_IDLE]] boolValue];
-    // Inline AI chat is restored earlier, synchronously, in
-    // sessionFromArrangement: (see the comment there) so the panel's reserved
-    // width is in place before the window first fits its grid.
     [aSession.directoryTracker restoreFromArrangement:arrangement];
 
     if (arrangement[SESSION_ARRANGEMENT_APS]) {
@@ -1876,20 +1870,6 @@ ITERM_WEAKLY_REFERENCEABLE
     aSession.view = sessionView;
     aSession->_savedGridSize = VT100GridSizeMake(MAX(1, [arrangement[SESSION_ARRANGEMENT_COLUMNS] intValue]),
                                                  MAX(1, [arrangement[SESSION_ARRANGEMENT_ROWS] intValue]));
-    // Re-bind the inline AI chat here, synchronously, rather than in the
-    // asynchronous finishInitializing path. The right-gutter panel reserves
-    // width through desiredRightExtra; if inlineChatID is set late (after the
-    // command/server attach finishes), the window has already fit its grid to
-    // the full width with no reservation, and applying the reservation
-    // afterward grows the window by the panel width. Setting it now (before
-    // the window lays out its grid) means the grid is fit with the panel's
-    // space reserved, matching the saved frame. The session has no delegate
-    // yet, so this won't kick off a premature window resize.
-    NSString *inlineChatID = [NSString castFrom:arrangement[SESSION_ARRANGEMENT_INLINE_CHAT_ID]];
-    if (inlineChatID) {
-        [aSession restoreInlineChatID:inlineChatID
-                              visible:[[NSNumber castFrom:arrangement[SESSION_ARRANGEMENT_INLINE_CHAT_VISIBLE]] boolValue]];
-    }
     [sessionView setFindDriverDelegate:aSession];
     NSMutableSet<NSString *> *keysToPreserveInCaseOfDivorce = [NSMutableSet setWithArray:@[ KEY_GUID, KEY_ORIGINAL_GUID ]];
 
@@ -6873,14 +6853,6 @@ webViewConfiguration:(id)webViewConfiguration
     }
     if (self.autoRequestReviewWhenIdle) {
         result[SESSION_ARRANGEMENT_AUTO_REQUEST_REVIEW_WHEN_IDLE] = @(YES);
-    }
-
-    // Inline AI chat gutter panel. Only meaningful when a chat is bound, so
-    // the visibility flag rides along with the id rather than being written
-    // unconditionally.
-    if (self.inlineChatID) {
-        result[SESSION_ARRANGEMENT_INLINE_CHAT_ID] = self.inlineChatID;
-        result[SESSION_ARRANGEMENT_INLINE_CHAT_VISIBLE] = @(self.inlineChatVisible);
     }
 
     // Workgroup peer-group membership. The descriptor is opaque here:
@@ -13603,17 +13575,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     return _liveSession != nil;
 }
 
-- (BOOL)textViewSessionIsLinkedToAIChat {
-    // Pass both ids so the lookup is a plain map hit, not a session-tree walk
-    // (this runs on the draw path via configureIndicatorsHelperWithRightMargin).
-    return [iTermChatDatabase chatIDsForSessionGuid:_guid stableID:self.stableID].count > 0;
-}
-
-- (BOOL)textViewSessionIsStreamingToAIChat {
-    return [[iTermChatWindowController instanceIfExists] isStreamingToGuid:self.guid
-                                                                  stableID:self.stableID];
-}
-
 - (BOOL)textViewSessionHasChannelParent {
     return self.channelParentGuid != nil;
 }
@@ -14231,9 +14192,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)textViewLiveSelectionDidEnd {
-    if (_textview._haveShortSelection) {
-        [[iTermChatWindowController instanceShowingErrors:NO] setSelectionText:_textview.selectedText forSession:self.guid];
-    }
 }
 
 - (void)textViewShowJSONPromotion {
@@ -20023,7 +19981,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                              reason:(NSString *)reason
                          bypassable:(BOOL)bypassable
                          completion:(void (^)(NSString *input))completion {
-    if (![iTermAITermGatekeeper checkSilently:NO]) {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
         completion(nil);
         return;
     }
@@ -20226,22 +20184,17 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)reallyPerformNaturalLanguageQuery:(NSString *)query
-                               completion:(void (^)(BOOL))completion {
-    if (!query) {
+                               completion:(void (^)(BOOL ok))completion {
+    if (query.length == 0 || ![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        NSBeep();
+        if (completion) {
+            completion(NO);
+        }
         return;
     }
-    [_aiterm invalidate];
-    [_aiterm release];
-    __weak __typeof(self) weakSelf = self;
-    _aiterm = [[AITermControllerObjC alloc] initWithQuery:query
-                                                    scope:self.variablesScope
-                                                 inWindow:self.view.window
-                                               completion:^(iTermOr<NSString *,NSError *> *result) {
-        [weakSelf handleAIResult:result];
-        if (completion) {
-            completion(result.hasFirst);
-        }
-    }];
+    if (completion) {
+        completion(NO);
+    }
 }
 
 - (void)textViewUpdateTrackingAreas {
@@ -23377,24 +23330,9 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 - (void)composerManager:(iTermComposerManager *)composerManager
        fetchSuggestions:(iTermSuggestionRequest *)request
           byUserRequest:(BOOL)byUserRequest {
-    const BOOL aiSuggest = iTermSecureUserDefaults.instance.aiCompletionsEnabled;
     if (@available(macOS 11, *)) {
         if ([_conductor framing]) {
-            iTermSuggestionRequest *limited = [request requestWithReducedLimitBy:8];
-            if (aiSuggest) {
-                request.startActivityIndicator();
-                [_conductor fetchSuggestions:[limited requestWrappingCompletion:^(BOOL _suggestionOnly,
-                                                                                  NSArray<iTermCompletionItem *> *dumb,
-                                                                                  void (^ignore)(BOOL, NSArray<iTermCompletionItem *> *)) {
-
-                    request.startActivityIndicator();
-                    iTermCompletionItem *firstResult = request.earlyResult(dumb);
-                    [self suggestWithAI:request fileCompletions:dumb firstResult:firstResult];
-                }]
-                              suggestionOnly:NO];
-            } else {
-                [_conductor fetchSuggestions:limited suggestionOnly:byUserRequest];
-            }
+            [_conductor fetchSuggestions:request suggestionOnly:byUserRequest];
             return;
         }
     }
@@ -23409,13 +23347,7 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
                                                         detail:[request.prefix stringByAppendingString:filename]
                                                           kind:iTermCompletionItemKindFile] autorelease];
         }];
-        if (aiSuggest) {
-            request.startActivityIndicator();
-            iTermCompletionItem *firstResult = request.earlyResult(fileItems);
-            [self suggestWithAI:request fileCompletions:fileItems firstResult:firstResult];
-        } else {
-            request.completion(!byUserRequest, fileItems);
-        }
+        request.completion(!byUserRequest, fileItems);
     }];
 }
 

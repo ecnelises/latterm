@@ -788,6 +788,9 @@ static NSInteger gLessLoggingCount;
 }
 
 - (Profile *)defaultBrowserProfileCreatingIfNeeded {
+    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+        return nil;
+    }
     NSString *guid = [[iTermUserDefaults userDefaults] stringForKey:KEY_DEFAULT_BROWSER_GUID];
     {
         Profile *profile = [self bookmarkWithGuid:guid];
@@ -808,6 +811,9 @@ static NSInteger gLessLoggingCount;
 }
 
 - (Profile *)defaultBrowserProfile {
+    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+        return nil;
+    }
     NSString *guid = [[iTermUserDefaults userDefaults] stringForKey:KEY_DEFAULT_BROWSER_GUID];
     Profile *profile = [self bookmarkWithGuid:guid];
     if (!profile.profileIsBrowser) {
@@ -1154,6 +1160,9 @@ static NSInteger gLessLoggingCount;
 }
 
 + (ProfileType)profileTypeForCustomCommand:(id)customCommand {
+    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
+        return ProfileTypeTerminal;
+    }
     if ([customCommand isEqual:kProfilePreferenceCommandTypeBrowserValue]) {
         return ProfileTypeBrowser;
     }

@@ -985,10 +985,6 @@ extension PTYTextView {
         panel.includeLocalhost = false
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
-        let provider = AITermController.provider
-        panel.isSelectable = { remoteFile in
-            return provider?.fileTypeIsSupported(extension: remoteFile.name.pathExtension.lowercased()) == true
-        }
         panel.beginSSH(window: window) { response in
             guard response == .OK else {
                 return
@@ -1284,4 +1280,3 @@ extension PTYTextView {
 }
 
 // MARK: - Extend URL Search Results Across Soft Boundaries
-

@@ -39,7 +39,6 @@
 @class PTYSessionPublishRequest;
 @class iTermComposerManager;
 @class iTermConductor;
-@class AITermControllerObjC;
 @class iTermNonTextPasteHelper;
 
 @interface PTYSession () <
@@ -84,7 +83,6 @@ TriggerDelegate> {
     NSMutableArray<PTYSessionPublishRequest *> *_pendingPublishRequests;
     iTermComposerManager *_composerManager;
     iTermAppSwitchingPreventionDetector *_appSwitchingPreventionDetector;
-    AITermControllerObjC *_aiterm;
     iTermNonTextPasteHelper *_nonTextPasteHelper;
     TransferrableFile *_uploadAndPasteTransfer;  // Current upload for "upload and paste path" feature
 }
@@ -134,6 +132,8 @@ TriggerDelegate> {
                identifier:(NSString *)identifier;
 - (void)removeAnnouncementWithIdentifier:(NSString *)identifier;
 - (BOOL)haveAutoComposer;
+- (void)reallyPerformNaturalLanguageQuery:(NSString *)query
+                               completion:(void (^)(BOOL ok))completion;
 - (void)sendDataQueue;
 - (void)bracketedPasteDidExpect;
 

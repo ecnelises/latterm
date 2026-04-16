@@ -1011,7 +1011,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
     IBOutlet NSPopUpButton *_writeToFilesystemButton;
     IBOutlet NSTextField *_actInWebBrowserLabel; // Act in web browser
     IBOutlet NSPopUpButton *_actInWebBrowserButton;
-    IBOutlet NSButton *_aiCompletions;
 
     IBOutlet NSButton *_enableRTL;
     IBOutlet NSButton *_sshIntegrationForURLs;
@@ -1617,10 +1616,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
             [iTermPreferences setWithoutSideEffectsObject:newValue forKey:key];
         };
 
-        [AIMetadata.instance enumerateModels:^(NSString * _Nonnull name, NSInteger context, NSString *url) {
-            [_aiModel addItemWithObjectValue:name];
-        }];
-
         PreferenceInfo *tokenLimitInfo =
             [self defineControl:_aiTokenLimit
                             key:kPreferenceKeyAITokenLimit
@@ -1778,21 +1773,6 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
         enableAIInfo = info;
 
 
-    info = [self defineControl:_aiCompletions
-                           key:kPreferenceKeyAICompletion
-                   relatedView:nil
-                          type:kPreferenceInfoTypeCheckbox];
-    info.syntheticGetter = ^id {
-        return @(iTermSecureUserDefaults.instance.aiCompletionsEnabled);
-    };
-    info.syntheticSetter = ^(id newValue) {
-        const BOOL setting = [newValue boolValue];
-        if (setting == iTermSecureUserDefaults.instance.defaultValue_aiCompletionsEnabled) {
-            [iTermSecureUserDefaults.instance resetAICompletionsEnabled];
-        } else {
-            iTermSecureUserDefaults.instance.aiCompletionsEnabled = [newValue boolValue];
-        }
-    };
     [self defineControl:_aiTimeout
                     key:kPreferenceKeyAITimeout
             displayName:@"AI timeout"
@@ -2144,9 +2124,8 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (void)updateAIModelFromVendor {
-    iTermAIModel *model = [iTermAIModel modelFromSettings];
-    if (model) {
-        [self setString:model.name forKey:kPreferenceKeyAIModel];
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        return;
     }
 }
 
@@ -2155,60 +2134,19 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                  urlInfo:(PreferenceInfo *)urlInfo
                  apiInfo:(PreferenceInfo *)apiInfo
             featureInfos:(NSArray<PreferenceInfo *> *)featureInfos {
-    NSString *model = [self stringForKey:kPreferenceKeyAIModel];
-    // Ignore it if it doesn't change because this is called when the view is closed.
-    if (!model || [model isEqualToString:_lastModel]) {
+    (void)tokenLimitInfo;
+    (void)responseLimitInfo;
+    (void)urlInfo;
+    (void)apiInfo;
+    (void)featureInfos;
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
         return;
-    }
-
-    _lastModel = [self stringForKey:kPreferenceKeyAIModel];
-
-    const iTermAIAPI api = [AIMetadata.instance apiForModel:model
-                                                   fallback:[self unsignedIntegerForKey:kPreferenceKeyAITermAPI]];
-    [self setObject:@(api) forKey:kPreferenceKeyAITermAPI];
-    [self updateValueForInfo:apiInfo];
-
-    NSNumber *tokens = [AIMetadata.instance contextWindowTokensForModelName:model];
-    if (tokens) {
-        [self setObject:tokens forKey:kPreferenceKeyAITokenLimit];
-        [self updateValueForInfo:tokenLimitInfo];
-    }
-    NSNumber *responseTokens = [AIMetadata.instance responseTokenLimitForModelName:model];
-    if (responseTokens) {
-        [self setObject:responseTokens forKey:kPreferenceKeyAIResponseTokenLimit];
-        [self updateValueForInfo:responseLimitInfo];
-    }
-    NSString *url = [AIMetadata.instance urlForModelName:model];
-    if (url) {
-        [self setObject:url forKey:kPreferenceKeyAITermURL];
-        [self updateValueForInfo:urlInfo];
-    }
-    if ([AIMetadata.instance modelHasDefaults:model]) {
-        [self setBool:[AIMetadata.instance modelSupportsHostedCodeInterpreter:model]
-               forKey:kPreferenceKeyAIFeatureHostedCodeInterpreter];
-        [self setBool:[AIMetadata.instance modelSupportsHostedFileSearch:model]
-               forKey:kPreferenceKeyAIFeatureHostedFileSearch];
-        [self setBool:[AIMetadata.instance modelSupportsHostedWebSearch:model]
-               forKey:kPreferenceKeyAIFeatureHostedWebSearch];
-        [self setBool:[AIMetadata.instance modelSupportsFunctionCalling:model]
-               forKey:kPreferenceKeyAIFeatureFunctionCalling];
-        [self setBool:[AIMetadata.instance modelSupportsStreamingResponses:model]
-               forKey:kPreferenceKeyAIFeatureStreamingResponses];
-        [self setInteger:[AIMetadata.instance vectorStoreForModel:model]
-                  forKey:kPreferenceKeyAIVectorStore];
-        for (PreferenceInfo *info in featureInfos) {
-            [self updateValueForInfo:info];
-        }
     }
 }
 
 - (void)validatePlugin {
     DLog(@"validatePlugin");
-    _pluginStatus.stringValue = @"Checking plugin status…";
-    __weak __typeof(self) weakSelf = self;
-    [iTermAITermGatekeeper validatePlugin:^(NSString * _Nullable problem) {
-        [weakSelf setPluginProblem:problem];
-    }];
+    [self setPluginProblem:@"AI features are disabled in the terminal-first fork."];
 }
 
 - (void)setPluginProblem:(NSString *)problem {
@@ -2264,7 +2202,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 - (void)updateAIEnabled {
     _enableAI.enabled = _pluginOK;
 
-    const BOOL allowed = _pluginOK && [iTermAITermGatekeeper allowed];
+    const BOOL allowed = NO;
     _openAIAPIKey.enabled = allowed;
     _aiPrompt.editable = allowed;
     _aiModel.enabled = allowed;
@@ -2288,8 +2226,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (BOOL)modelSupportsModernAPI {
-    NSURL *url = [NSURL URLWithString:[self stringForKey:kPreferenceKeyAITermURL]];
-    return [iTermLLMMetadata hostIsOpenAIAPIForURL:url];
+    return NO;
 }
 
 - (void)customScriptsFolderDidChange {
@@ -2423,83 +2360,34 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (IBAction)changeAPIKey:(id)sender {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        NSBeep();
+        return;
+    }
     NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = @"Manage AI API Keys";
     alert.informativeText = @"Keys are stored securely in the macOS Keychain.";
     [alert addButtonWithTitle:@"OK"];
     [alert addButtonWithTitle:@"Cancel"];
 
-    NSArray<NSNumber *> *vendors = [self aiAPIKeyProviderVendors];
-    const CGFloat width = 620;
-    const CGFloat rowHeight = 36;
-    const CGFloat topPadding = 10;
-    const CGFloat bottomPadding = 10;
-    const CGFloat labelWidth = 90;
-    const CGFloat fieldX = labelWidth + 14;
-    const CGFloat fieldWidth = width - fieldX;
-    NSView *accessory = [[NSView alloc] initWithFrame:NSMakeRect(0,
-                                                                0,
-                                                                width,
-                                                                topPadding + bottomPadding +
-                                                                rowHeight * vendors.count)];
-    _aiAPIKeySheetFields = [NSMutableArray array];
-    // The value each field was prefilled with, so OK only rewrites keys the
-    // user actually changed. Without this, a field that prefilled blank because
-    // the keychain read failed (locked/denied/prompt dismissed) would, on OK,
-    // overwrite the still-good stored key with an empty string.
-    NSMutableArray<NSString *> *initialFieldValues = [NSMutableArray array];
-
-    for (NSInteger i = 0; i < vendors.count; i++) {
-        iTermAIVendor vendor = (iTermAIVendor)vendors[i].unsignedIntegerValue;
-        NSString *name = [self aiAPIKeyProviderNameForVendor:vendor];
-        CGFloat y = bottomPadding + rowHeight * (vendors.count - 1 - i);
-
-        NSTextField *label = [NSTextField labelWithString:name];
-        label.frame = NSMakeRect(0, y + 5, labelWidth, 22);
-        label.alignment = NSTextAlignmentRight;
-        [accessory addSubview:label];
-
-        NSSecureTextField *field =
-            [[NSSecureTextField alloc] initWithFrame:NSMakeRect(fieldX, y + 2, fieldWidth, 24)];
-        field.usesSingleLineMode = YES;
-        field.editable = YES;
-        field.selectable = YES;
-        field.placeholderString = [NSString stringWithFormat:@"%@ API key", name];
-        field.stringValue = [AITermControllerObjC apiKeyForVendor:vendor] ?: @"";
-        [accessory addSubview:field];
-        [_aiAPIKeySheetFields addObject:field];
-        [initialFieldValues addObject:field.stringValue];
-    }
-
-    alert.accessoryView = accessory;
+    NSSecureTextField *apiKey = [[NSSecureTextField alloc] initWithFrame:NSMakeRect(0, 0, 500, 24)];
+    apiKey.usesSingleLineMode = YES;
+    apiKey.editable = YES;
+    apiKey.selectable = YES;
+    alert.accessoryView = apiKey;
     [alert layout];
-    if (_aiAPIKeySheetFields.count > 0) {
-        [[alert window] makeFirstResponder:_aiAPIKeySheetFields[0]];
-    }
+    [[alert window] makeFirstResponder:apiKey];
 
     [NSApp activateIgnoringOtherApps:YES];
     [alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
         switch (returnCode) {
             case NSAlertFirstButtonReturn: {
-                for (NSInteger i = 0; i < vendors.count && i < self->_aiAPIKeySheetFields.count; i++) {
-                    NSString *newValue = self->_aiAPIKeySheetFields[i].stringValue ?: @"";
-                    NSString *initialValue = i < initialFieldValues.count ? initialFieldValues[i] : @"";
-                    // Only write vendors the user actually changed. Leaving a
-                    // field at its prefilled value (including a blank left blank
-                    // because the keychain read failed) must not touch the key.
-                    if ([newValue isEqualToString:initialValue]) {
-                        continue;
-                    }
-                    iTermAIVendor vendor = (iTermAIVendor)vendors[i].unsignedIntegerValue;
-                    [AITermControllerObjC setAPIKey:newValue forVendor:vendor];
-                }
                 break;
             }
             case NSAlertSecondButtonReturn: {
                 break;
             }
         }
-        self->_aiAPIKeySheetFields = nil;
     }];
 }
 
@@ -3147,28 +3035,15 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (IBAction)reloadPlugin:(id)sender {
-    __weak __typeof(self) weakSelf = self;
-    [iTermAITermGatekeeper reloadPlugin:^(void) {
-        [weakSelf validatePlugin];
-    }];
+    [self validatePlugin];
 }
 
 - (IBAction)installPlugin:(id)sender {
-    [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/ai-plugin.html"]
-                                       target:nil
-                                configuration:[NSWorkspaceOpenConfiguration configuration]
-                                        style:iTermOpenStyleTab
-                                       upsell:NO
-                                       window:self.view.window];
+    NSBeep();
 }
 
 - (void)revealPlugin:(id)sender {
-    NSURL *url = [[NSWorkspace sharedWorkspace] URLForApplicationWithBundleIdentifier:@"com.googlecode.iterm2.iTermAI"];
-    if (!url) {
-        NSBeep();
-        return;
-    }
-    [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[url]];
+    NSBeep();
 }
 
 - (IBAction)exportAllSettingsAndData:(id)sender {
@@ -3261,13 +3136,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
 }
 
 - (IBAction)aiPromptHelp:(id)sender {
-    NSString *text =
-        [NSString stringWithContentsOfFile:[[NSBundle bundleForClass:[self class]] pathForResource:@"ai-prompt-help"
-                                                                                            ofType:@"md"]
-                                  encoding:NSUTF8StringEncoding
-                                     error:nil];
-
-    [(NSView *)sender it_showInformativeMessageWithMarkdown:text];
+    [(NSView *)sender it_showInformativeMessageWithMarkdown:@"AI prompt customization is unavailable in the terminal-first fork."];
 }
 
 #pragma mark - Notifications

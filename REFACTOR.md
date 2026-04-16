@@ -36,14 +36,44 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Landed the browser-removal slice in local commit `cab7f0cfe` (`Remove browser session support`).
 - A local `Development` build now succeeds again after the browser-removal cleanup, so the old `WebExtensionsFramework` blocker is no longer the active state of this worktree.
 
+### 2026-04-16 Browser Audit
+
+- Browser session creation and the main browser UI entry points are no longer the active path in the terminal-first fork, but the browser subsystem is not fully removed yet.
+- Remaining browser-specific work still includes profile-type UI and defaults, browser triggers, gateway/plugin plumbing, browser-specific branches in `PTYSession` and `SessionView`, and browser-only onboarding/help copy.
+- The profile general pane no longer carries browser-plugin install/reveal/locate controls or the controller logic that polled browser-plugin state for those buttons.
+- The profile general pane also no longer exposes browser-only editing controls for profile type switching or initial browser URL.
+- Profile preferences now treat browser profiles as terminal-only for enclosure visibility, trigger editing mode, and onboarding copy instead of switching into browser-specific preference UI.
+- Terminal-first builds now stop loading raw browser dynamic profiles, stop minting a browser default-profile fallback, and downgrade surviving stored browser profiles to ordinary terminal launch/list behavior instead of preserving browser-specific icons or URL command handling.
+- The static main menu no longer defines the old `Web` browser-navigation submenu, so those browser-only commands are gone even before responder-chain cleanup.
+
 ### 2026-04-15 Phase 3 Starter Slice
 
 - Removed the Claude Code watcher/onboarding pair (`sources/ClaudeWatcher.swift`, `sources/ClaudeCodeOnboarding.swift`) and the app-delegate hooks that started or showed them.
 - This intentionally trims an isolated AI onboarding surface first, leaving the chat stack, gatekeeper, and provider plumbing for later slices.
 
+### 2026-04-16 Phase 3 Build Recovery
+
+- Removed the remaining AI/chat/LLM source entries from the main app target so the terminal-first fork stops compiling dead provider and chat UI files during the current slice.
+- Replaced the surviving AI-only call sites in `PTYSession`, `PTYTextView`, the status-bar composer, preferences, migration helpers, and the toolbelt with terminal-first no-op or disabled behavior instead of leaving broken references behind.
+- Fixed Gemini-introduced structural breakage while doing that cleanup, including duplicate `@end` blocks, duplicated protocol declarations, and a truncated `PTYSession.m` tail section.
+- Kept the surviving entry points shape-compatible where that reduced churn, for example by leaving natural-language-query selectors in place but routing them to terminal-first disabled behavior.
+
+### 2026-04-16 Phase 3 Surface Cleanup
+
+- Removed the startup-time OpenAI key migration hook now that terminal-first builds never enable AI features.
+- Deleted AI-specific menu-tip registrations and old Tip of the Day entries so the app stops advertising AI chat, AI command writing, and Codecierge from user-facing help surfaces.
+- Reworded the remaining Composer and Auto Composer tips to describe their surviving terminal-first behavior instead of mentioning AI suggestions.
+- Removed AI menu icon mappings from `MainMenuMangler` to keep the menu-decoration layer aligned with the shrinking AI surface.
+- Updated `README.md` to stop listing AI chat, browser profiles, and shell integration as current headline features of the fork.
+- Deleted the remaining AI menu items from `Interfaces/MainMenu.xib` so those commands no longer exist in the static menu definition.
+- Removed the AI prompt help markdown resource and replaced its settings help action with a terminal-first disabled message instead of loading AI-specific help content.
+- Deleted the matching `PTYTextView+ARC` menu-validation and action handlers for the removed Edit-menu AI commands so the responder chain no longer carries dead menu-only code.
+- Deleted the old Tip of the Day entry that still promoted browser profiles as an available feature.
+
 ### Recent Verification
 
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
+- `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase3 build` passes on 2026-04-16 after the phase3 AI-removal build-recovery cleanup.
 
 ## Refactor Direction
 

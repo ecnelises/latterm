@@ -94,13 +94,11 @@
     IBOutlet NSView *_accessories;
     IBOutlet NSScrollView *_scrollView;
     IBOutlet NSView *_engageAI;
-    IBOutlet NSTextField *_aiCompletionWarning;
     IBOutlet NSTextField *_sendTip;
 
     CommandHistoryPopupWindowController *_historyWindowController;
     NSInteger _completionGeneration;
     iTermTextPopoverViewController *_popoverVC;
-    AITermControllerObjC *_aitermController;
 }
 
 - (void)awakeFromNib {
@@ -108,22 +106,14 @@
     self.textView.textColor = [NSColor textColor];
     self.textView.insertionPointColor = [NSColor textColor];
     self.textView.font = [NSFont fontWithName:@"Menlo" size:11];
-    _aiCompletionWarning.hidden = ![[iTermSecureUserDefaults instance] aiCompletionsEnabled] || ![iTermAdvancedSettingsModel generativeAIAllowed];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(secureUserDefaultDidChange:)
-                                                 name:iTermSecureUserDefaults.secureUserDefaultsDidChangeNotificationName
-                                               object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(commandValidityDidChange:)
                                                  name:iTermLocalFileChecker.commandValidityDidChange
                                                object:nil];
-    if (![iTermAdvancedSettingsModel generativeAIAllowed]) {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled] ||
+        ![iTermAdvancedSettingsModel generativeAIAllowed]) {
         _engageAI.hidden = YES;
     }
-}
-
-- (void)secureUserDefaultDidChange:(NSNotification *)notification {
-    _aiCompletionWarning.hidden = ![[iTermSecureUserDefaults instance] aiCompletionsEnabled] || ![iTermAdvancedSettingsModel generativeAIAllowed];
 }
 
 - (void)commandValidityDidChange:(NSNotification *)notification {
@@ -151,7 +141,7 @@
 
 - (void)viewDidLayout {
     // Avoid overlapping text
-    if ((!_aiCompletionWarning.isHidden && self.view.bounds.size.width < 418) || self.view.bounds.size.width < 180) {
+    if (self.view.bounds.size.width < 180) {
         _sendTip.hidden = YES;
     } else {
         _sendTip.hidden = NO;
@@ -287,25 +277,10 @@
 }
 
 - (IBAction)performNaturalLanguageQuery:(id)sender {
-    __weak __typeof(self) weakSelf = self;
-
-    _aitermController = [[AITermControllerObjC alloc] initWithQuery:self.aiPrompt
-                                                              scope:self.scope
-                                                           inWindow:self.view.window
-                                                         completion:^(iTermOr<NSString *,NSError *> *result) {
-        [result whenFirst:^(NSString *choice) {
-            [weakSelf acceptSuggestion:choice];
-            [weakSelf.textView.window makeFirstResponder:weakSelf.textView];
-        } second:^(NSError *error) {
-            [iTermWarning showWarningWithTitle:error.localizedDescription
-                                       actions:@[ @"OK" ]
-                                     accessory:nil
-                                    identifier:nil
-                                   silenceable:kiTermWarningTypePersistent
-                                       heading:@"AI Error"
-                                        window:weakSelf.view.window];
-        }];
-    }];
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        NSBeep();
+        return;
+    }
 }
 
 - (void)acceptSuggestion:(NSString *)string {
@@ -339,7 +314,8 @@
         @"^⇧-click\tAdd cursor",
         @"⌥-drag\tAdd cursors"
     ];
-    if ([iTermAdvancedSettingsModel generativeAIAllowed]) {
+    if ([iTermTerminalFirstFeatures aiFeaturesEnabled] &&
+        [iTermAdvancedSettingsModel generativeAIAllowed]) {
         lines = [lines arrayByAddingObject:@"⌘Y\tNatural language AI lookup"];
     }
     lines = [lines arrayByAddingObjectsFromArray:@[
@@ -720,14 +696,11 @@
     // Escape filename completions.
     NSArray<iTermCompletionItem *> *completions =
     [[filenameCompletions mapWithBlock:^id _Nullable(iTermCompletionItem *item) {
-        if (item.kind == iTermCompletionItemKindAiSuggestion) {
-            // AI generally escapes for us. Don't double escape.
-            return item;
-        }
         return [item mapValue:^NSString * _Nonnull(NSString *filename) {
             return [filename stringWithBackslashEscapedShellCharactersIncludingNewlines:YES];
         }];
     }] arrayByAddingObjectsFromArray:historySuggestions];
+
     if ([_historyWindowController.window isVisible]) {
         DLog(@"History window is visible so return");
         [self.textView setCompletions:@[] prefix:@""];

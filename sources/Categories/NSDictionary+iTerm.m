@@ -12,6 +12,7 @@
 #import "DebugLogging.h"
 #import "NSColor+iTerm.h"
 #import "NSWorkspace+iTerm.h"
+#import "iTerm2SharedARC-Swift.h"
 
 static NSString *const kGridCoordXKey = @"x";
 static NSString *const kGridCoordYKey = @"y";
@@ -72,7 +73,8 @@ static const NSEventModifierFlags iTermHotkeyModifierMask = (NSEventModifierFlag
 @implementation NSDictionary (iTerm)
 
 - (BOOL)profileIsBrowser {
-    return [[NSString castFrom:self[KEY_CUSTOM_COMMAND]] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
+    return [iTermTerminalFirstFeatures browserFeaturesEnabled] &&
+           [[NSString castFrom:self[KEY_CUSTOM_COMMAND]] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
 }
 
 - (BOOL)profileIsTerminal {

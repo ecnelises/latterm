@@ -25,7 +25,6 @@
 @class ToolStatus;
 @class iTermSessionNoteModel;
 @class iTermToolWrapper;
-@class iTermToolCodecierge;
 
 @protocol iTermToolbeltViewDelegate<NSObject>
 
@@ -67,8 +66,6 @@
 @property(nonatomic, readonly) ToolCommandHistoryView *commandHistoryView;
 @property(nonatomic, readonly) ToolNamedMarks *namedMarksView;
 @property(nonatomic, readonly) iTermToolSnippets *snippetsView;
-@property(nonatomic, readonly) iTermToolCodecierge *codeciergeView;
-
 - (void)hideToolbelt;
 - (void)toggleShowToolWithName:(NSString *)theName;
 

@@ -88,7 +88,6 @@ struct SecureUserDefaults {
     lazy var enableAI = { SecureUserDefault<Bool>("EnableAI", defaultValue: false) }()
     lazy var enableCompanionPairing = { SecureUserDefault<Bool>("EnableCompanionPairing", defaultValue: false) }()
     lazy var browserBundleID = { SecureUserDefault<String>("BrowserBundleID", defaultValue: "") }()
-    lazy var aiCompletionsEnabled = { SecureUserDefault<Bool>("AICompletions", defaultValue: false) }()
 
     /// Grant AI and/or companion consent in a SINGLE administrator prompt.
     /// Setting these one at a time (the normal `set(true)` path) puts up one
@@ -154,8 +153,7 @@ struct SecureUserDefaults {
          enableSecureKeyboardEntryAutomatically,
          enableAI,
          enableCompanionPairing,
-         browserBundleID,
-         aiCompletionsEnabled] + Array(hostToOpenURLSUDs.values)
+         browserBundleID] + Array(hostToOpenURLSUDs.values)
     }
 }
 
@@ -204,23 +202,6 @@ class iTermSecureUserDefaults: NSObject {
         set {
             try? SecureUserDefaults.instance.browserBundleID.set(newValue)
         }
-    }
-    @objc var defaultValue_aiCompletionsEnabled: Bool {
-        return SecureUserDefaults.instance.aiCompletionsEnabled.defaultValue
-    }
-    @objc var aiCompletionsEnabled: Bool {
-        get {
-            return SecureUserDefaults.instance.aiCompletionsEnabled.value
-        }
-        set {
-            try? SecureUserDefaults.instance.aiCompletionsEnabled.set(newValue)
-        }
-    }
-    @objc static var aiCompletionsKey: String {
-        SecureUserDefaults.instance.aiCompletionsEnabled.key
-    }
-    @objc(resetAICompletionsEnabled) func resetAICompletionsEnabled() {
-        try? SecureUserDefaults.instance.aiCompletionsEnabled.reset()
     }
     @objc static func openURL(host: String) -> Bool {
         SecureUserDefaults.instance.openURL(host: host).value

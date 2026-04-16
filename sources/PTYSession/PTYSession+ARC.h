@@ -8,7 +8,6 @@
 #import "PTYSession.h"
 #import "iTermMetadata.h"
 
-@class AITermControllerObjC;
 @protocol iTermPopupWindowHosting;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -42,11 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)maybeTurnOffPasteBracketing;
 - (void)maybeOfferToRestoreIconName:(NSString *)iconName windowName:(NSString *)windowName;
 - (id<iTermPopupWindowHosting> _Nullable)popupHost;
-
-#pragma mark - AITerm
-
-- (void)removeAITerm;
-- (void)setAITerm:(AITermControllerObjC *)aiterm;
 
 @end
 

@@ -321,10 +321,6 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
                                                  selector:@selector(applicationDidResignActive:)
                                                      name:NSApplicationDidResignActiveNotification
                                                    object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(redrawTerminalsNotification:)
-                                                     name:iTermChatDatabase.redrawTerminalsNotification
-                                                   object:nil];
 
         _semanticHistoryController = [[iTermSemanticHistoryController alloc] init];
         _semanticHistoryController.delegate = self;
@@ -2384,12 +2380,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
                      darkBackground:isDark];
     [_indicatorsHelper setIndicator:kiTermIndicatorPinned
                             visible:[_delegate textViewInPinnedHotkeyWindow]
-                     darkBackground:isDark];
-    [_indicatorsHelper setIndicator:kiTermIndicatorAIChatLinked
-                            visible:[_delegate textViewSessionIsLinkedToAIChat]
-                     darkBackground:isDark];
-    [_indicatorsHelper setIndicator:kiTermIndicatorAIChatStreaming
-                            visible:[_delegate textViewSessionIsStreamingToAIChat]
                      darkBackground:isDark];
     [_indicatorsHelper setIndicator:kiTermIndicatorChannel
                             visible:[_delegate textViewSessionHasChannelParent]
@@ -6020,7 +6010,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
             [[iTermFindPasteboard sharedInstance] updateObservers:_delegate internallyGenerated:YES];
         }
     }
-    [self.delegate textViewLiveSelectionDidEnd];
 }
 
 - (VT100GridRange)selectionRangeOfTerminalNullsOnAbsoluteLine:(long long)absLineNumber {

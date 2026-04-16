@@ -579,11 +579,6 @@ class CompletionsWindow: NSWindow, NSTableViewDataSource, NSTableViewDelegate {
                                         fallbackImageName: "document",
                                         for: CompletionsWindow.self)!
             }
-        case .aiSuggestion:
-            return NSImage.it_image(forSymbolName: SFSymbol.sparkles.rawValue,
-                                    accessibilityDescription: "AI",
-                                    fallbackImageName: "sparkles",
-                                    for: CompletionsWindow.self)!
         case .history:
             return NSImage.it_image(forSymbolName: SFSymbol.clock.rawValue,
                                     accessibilityDescription: "History",
@@ -598,11 +593,6 @@ class CompletionsWindow: NSWindow, NSTableViewDataSource, NSTableViewDelegate {
             return NSImage.it_image(forSymbolName: SFSymbol.folder.rawValue,
                                     accessibilityDescription: "Folder",
                                     fallbackImageName: "folder",
-                                    for: CompletionsWindow.self)!
-        case .webSearch:
-            return NSImage.it_image(forSymbolName: SFSymbol.magnifyingglass.rawValue,
-                                    accessibilityDescription: "Web Search",
-                                    fallbackImageName: "magnifyingglass",
                                     for: CompletionsWindow.self)!
         case .navigation:
             return NSImage.it_image(forSymbolName: SFSymbol.safari.rawValue,

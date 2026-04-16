@@ -249,7 +249,6 @@ NSString *const kPreferenceKeyAITermURL = @"AitermURL";
 NSString *const kPreferenceKeyAITermUseLegacyAPI = @"AitermUseLegacyAPI";  // deprecated
 NSString *const kPreferenceKeyAITermAPI = @"AITermAPI";
 NSString *const kPreferenceKeyIndicateNonDefaultValues  = @"NoSyncHideDefaultValuedSettings";
-NSString *const kPreferenceKeyAICompletion = @"AICompletion";
 NSString *const kPreferenceKeyAIFeatureHostedCodeInterpreter = @"AIFeatureHostedCodeInterpeter";
 NSString *const kPreferenceKeyAIFeatureHostedFileSearch = @"AIFeatureHostedFileSearch";
 NSString *const kPreferenceKeyAIFeatureHostedWebSearch = @"AIFeatureHostedWebSearch";
@@ -760,7 +759,6 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
                   kPreferenceKeyAITermUseLegacyAPI: @NO,
                   kPreferenceKeyAITermAPI: @(iTermAIAPIResponses),
                   kPreferenceKeyIndicateNonDefaultValues: @NO,
-                  kPreferenceKeyAICompletion: @NO,  // ignored - synthetic value
                   kPreferenceKeyAIFeatureHostedFileSearch: @NO,
                   kPreferenceKeyAIFeatureHostedCodeInterpreter: @NO,
                   kPreferenceKeyAIFeatureHostedWebSearch: @NO,

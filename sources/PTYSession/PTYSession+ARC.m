@@ -356,19 +356,6 @@ extern NSString *const SESSION_ARRANGEMENT_SERVER_DICT;
     }
 }
 
-#pragma mark - AITerm
-
-- (void)removeAITerm {
-    [_aiterm invalidate];
-    _aiterm = nil;
-}
-
-- (void)setAITerm:(AITermControllerObjC *)aiterm {
-    [self removeAITerm];
-    _aiterm = aiterm;
-}
-
-
 @end
 
 @implementation PTYSessionPublishRequest

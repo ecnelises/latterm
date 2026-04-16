@@ -9100,16 +9100,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
     [self.currentSession toggleTriggerEnabledAtIndex:[[sender representedObject] integerValue]];
 }
 
-- (IBAction)openAIChat:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        return;
-    }
-    [[iTermChatWindowController instanceShowingErrors:YES] showChatWindow];
-    [[iTermChatWindowController instanceShowingErrors:NO] revealOrCreateChatAboutSessionGuid:self.currentSession.guid
-                                                                                        name:self.currentSession.name
-                                                                                  isTerminal:!self.currentSession.isBrowserSession];
-}
-
 - (IBAction)openPasteHistory:(id)sender {
     if (!pbHistoryView) {
         pbHistoryView = [[PasteboardHistoryWindowController alloc] init];
@@ -12032,10 +12022,7 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         PTYSession *session = [self currentSession];
         const BOOL hasInlineChat = (session != nil && session.inlineChatID != nil);
         [item setState:(hasInlineChat && session.inlineChatVisible) ? NSControlStateValueOn : NSControlStateValueOff];
-        // Enable when a chat is already bound (just toggle visibility) or
-        // when AI is configured (the action will pick a recent chat for
-        // this session or create one).
-        return hasInlineChat || (session != nil && [iTermAITermGatekeeper checkSilently:YES]);
+        return hasInlineChat;
     } else if ([item action] == @selector(toggleSelectionRespectsSoftBoundaries:)) {
         [item setState:[[iTermController sharedInstance] selectionRespectsSoftBoundaries] ? NSControlStateValueOn : NSControlStateValueOff];
         result = YES;

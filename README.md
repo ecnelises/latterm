@@ -20,13 +20,11 @@ iTerm2 is a powerful terminal emulator for macOS that brings the terminal into t
 ### Key Features
 
 - **tmux Integration** - Native iTerm2 windows/tabs replace tmux's text-based interface. Run tmux -CC and tmux windows become real macOS windows. Sessions persist through crashes, SSH disconnects, and even app upgrades. Collaborate by having two people attach to the same session.
-- **Shell Integration** - Deep shell awareness that tracks commands, directories, hostnames, and usernames. Enables click-to-download files via SCP, drag-and-drop uploads, command history per host, recent directories by "frecency," and marks at each prompt.
-- **AI Chat** - Built-in LLM chat window that can optionally interact with terminal contents. Link sessions to get context-aware help, run commands on your behalf, or explain output with annotations.
+- **Composer** - Edit commands in a native macOS control with syntax highlighting, filename completion, and multi-cursor editing before sending text to the terminal.
 - **Inline Images** - Display images (including animated GIFs) directly in the terminal. Use imgcat to view photos, charts, or visual output without leaving your workflow.
 - **Automatic Profile Switching** - Terminal appearance changes automatically based on hostname, username, directory, or running command. SSH to production? Background turns red. Different environments get different visual contexts.
 - **Dedicated Hotkey Windows** - System-wide hotkey summons a terminal that slides down from the top of the screen (or any edge), even over fullscreen apps. Pin it or let it auto-hide.
 - **Session Restoration** - Sessions run in long-lived server processes. If iTerm2 crashes or upgrades, your shells keep running. When iTerm2 restarts, it reconnects to your sessions exactly where you left off.
-- **Built-in Web Browser** - Browser profiles integrate web browsing into iTerm2's window/tab/pane hierarchy. Copy mode, triggers, AI chat, and other terminal features work in browser sessions.
 - **Configurable Status Bar** - Per-session status bar showing git branch, CPU/memory graphs, current directory, hostname, custom interpolated strings, or Python API components.
 - **Triggers** - Regex patterns that fire actions when matched: highlight text, run commands, send notifications, open password manager, set marks, or invoke Python scripts.
 - **Smart Selection** - Quad-click selects semantic objects (URLs, file paths, email addresses, quoted strings). Right-click for context actions. Cmd-click to open.
