@@ -9,7 +9,7 @@ This fork currently removes or de-emphasizes AI, embedded browser, and shell-int
 Latterm is intended to become a clean, long-lived fork rather than a one-off patch set.
 
 - Base UI language is English and remains the default.
-- A first-pass Simplified Chinese localization is included in `zh_CN.lproj`.
+- A first-pass Simplified Chinese localization is included in `zh-Hans.lproj`.
 - Some internal target names and filenames still use `iTerm2` during the transition, but the shipped app bundle and executable are now `Latterm`.
 
 ## What Stays
