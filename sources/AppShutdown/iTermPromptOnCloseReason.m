@@ -10,6 +10,14 @@
 #import "ITAddressBookMgr.h"
 #import "NSArray+iTerm.h"
 
+static NSString *iTermPromptOnCloseApplicationDisplayName(void) {
+    NSString *displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (displayName.length == 0) {
+        displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleNameKey];
+    }
+    return displayName.length > 0 ? displayName : @"Latterm";
+}
+
 @interface iTermPromptOnCloseReason()
 @property (nonatomic, readonly) NSNumber *priority;
 + (NSString *)groupFooter;
@@ -219,11 +227,17 @@
 }
 
 + (instancetype)alwaysConfirmQuitPreferenceEnabled {
-    return [[[iTermPromptOnCloseMessageReason alloc] initWithMessage:@"“Settings > General > Closing > Confirm Quit iTerm2” is enabled and there is at least one terminal window." priority:100] autorelease];
+    return [[[iTermPromptOnCloseMessageReason alloc] initWithMessage:[NSString stringWithFormat:NSLocalizedString(@"“Settings > General > Closing > Confirm Quit %@” is enabled and there is at least one terminal window.",
+                                                                                                                   @"Prompt-on-quit reason when confirm-quit is enabled"),
+                                                                     iTermPromptOnCloseApplicationDisplayName()]
+                                                           priority:100] autorelease];
 }
 
 + (instancetype)alwaysConfirmQuitPreferenceEvenIfThereAreNoWindowsEnabled {
-    return [[[iTermPromptOnCloseMessageReason alloc] initWithMessage:@"“Settings > General > Closing > Confirm Quit iTerm2” and “Even if there are no windows” is enabled." priority:100] autorelease];
+    return [[[iTermPromptOnCloseMessageReason alloc] initWithMessage:[NSString stringWithFormat:NSLocalizedString(@"“Settings > General > Closing > Confirm Quit %@” and “Even if there are no windows” is enabled.",
+                                                                                                                   @"Prompt-on-quit reason when confirm-quit-without-windows is enabled"),
+                                                                     iTermPromptOnCloseApplicationDisplayName()]
+                                                           priority:100] autorelease];
 }
 
 + (instancetype)closingMultipleSessionsPreferenceEnabled {

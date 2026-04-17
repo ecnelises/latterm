@@ -8,13 +8,70 @@
 
 #import "iTermTipData.h"
 #import "iTermTip.h"
+#import "iTerm2SharedARC-Swift.h"
 
 @implementation iTermTipData
+
++ (BOOL)it_shouldHideTipWithIdentifier:(NSString *)identifier details:(NSDictionary *)details {
+    if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
+        return NO;
+    }
+
+    static NSSet<NSString *> *blockedIdentifiers;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        blockedIdentifiers = [NSSet setWithArray:@[
+            @"0000",
+            @"0003",
+            @"0008",
+            @"0010",
+            @"0012",
+            @"0039",
+            @"0040",
+            @"0053",
+            @"0079",
+            @"0084",
+            @"0094",
+            @"0104",
+            @"0105",
+            @"0122",
+            @"0123",
+        ]];
+    });
+    if ([blockedIdentifiers containsObject:identifier]) {
+        return YES;
+    }
+
+    NSString *title = details[kTipTitleKey] ?: @"";
+    NSString *body = details[kTipBodyKey] ?: @"";
+    NSString *url = details[kTipUrlKey] ?: @"";
+    NSArray<NSString *> *needles = @[
+        @"Shell Integration",
+        @"shell integration",
+        @"Claude Code",
+        @"AI Chat",
+        @"Explain Output with AI",
+        @"Web Browser",
+        @"browser sessions",
+        @"browser session",
+        @"documentation-web",
+        @"SSH Integration",
+        @"ssh Integration",
+        @"SSH File Browser",
+        @"shell_integration.html",
+    ];
+    for (NSString *needle in needles) {
+        if ([title containsString:needle] || [body containsString:needle] || [url containsString:needle]) {
+            return YES;
+        }
+    }
+    return NO;
+}
 
 + (NSDictionary *)allTips {
   // The keys in this dictionary are saved in user defaults and should not be changed or
   // recycled, or users will see the same tip more than once.
-  return @{
+  NSDictionary *tips = @{
     // Big new features
             @"000": @{ kTipTitleKey: @"Tip of the Day",
                         kTipBodyKey: @"This window shows the iTerm2 tip of the day. It’ll appear every 24 hours to let you know about new features and hidden secrets. Hit “More Options” to view more tips or to stop getting them altogether." },
@@ -405,6 +462,16 @@
 
 // IMPORTANT: When updating this, also update it2tip
             };
+  if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
+      return tips;
+  }
+  NSMutableDictionary *filteredTips = [NSMutableDictionary dictionary];
+  [tips enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, NSDictionary *details, BOOL *stop) {
+      if (![self it_shouldHideTipWithIdentifier:identifier details:details]) {
+          filteredTips[identifier] = details;
+      }
+  }];
+  return filteredTips;
 }
 
 @end

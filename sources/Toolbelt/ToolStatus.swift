@@ -207,7 +207,7 @@ extension ToolStatus: ToolbeltTool {
     }
 
     static var supportedProfileTypes: ProfileType {
-        ProfileType(rawValue: ProfileType.terminal.rawValue | ProfileType.browser.rawValue)
+        .terminal
     }
 
     @objc func shutdown() {

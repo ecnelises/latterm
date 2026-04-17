@@ -185,6 +185,18 @@ extension iTermApplicationDelegate {
                 imageName: "TabStatus",
                 text: "The **Session Status** tool shows the status of sessions across all tabs. Statuses can be set by the **Set Tab Status** trigger or by programs using a control sequence. Each entry shows the session name, a colored indicator dot, status text, and a keyboard shortcut to jump to that session."),
         ]
+        let unsupportedTipIdentifiers: Set<String> = [
+            "Paste Special.Limit Multi-Line Paste Warning to Shell Prompt",
+            "Paste Special.Warn Before Pasting One Line Ending in a Newline at Shell Prompt",
+            "Marks and Annotations.Set Mark",
+            "Toolbelt.Captured Output",
+            "Toolbelt.Command History",
+            "Toolbelt.Recent Directories",
+            "Auto Composer",
+        ]
+        let visibleTips = TerminalFirstFeatures.terminalFirstEnabled()
+            ? tips.filter { !unsupportedTipIdentifiers.contains($0.identifier) }
+            : tips
         var index = [String: NSMenuItem]()
         func makeIndex(menu: NSMenu) {
             for item in menu.items {
@@ -198,7 +210,7 @@ extension iTermApplicationDelegate {
         }
         makeIndex(menu: mainMenu)
         let controller = MenuItemTipController.instance
-        for tip in tips {
+        for tip in visibleTips {
             if let item = index[tip.identifier] {
                 controller.registerTip(forMenuItem: item,
                                        image: tip.imageName.compactMap { NSImage.it_imageNamed($0, for: Self.self) },

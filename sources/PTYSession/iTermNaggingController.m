@@ -1097,6 +1097,12 @@ static NSString *const iTermNaggingControllerTouchIDForSudoUserDefaultsKey = @"N
 #pragma mark - Claude Code Status Tool
 
 - (void)offerClaudeCodeStatusTool:(void (^)(iTermClaudeCodeUpsellStatus))completion {
+    if ([iTermTerminalFirstFeatures terminalFirstEnabled]) {
+        if (completion) {
+            completion(iTermClaudeCodeUpsellStatusNever);
+        }
+        return;
+    }
     if (![self.delegate naggingControllerCanShowMessageWithIdentifier:iTermNaggingControllerClaudeCodeStatusToolIdentifier]) {
         return;
     }

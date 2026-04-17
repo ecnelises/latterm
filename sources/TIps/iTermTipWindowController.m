@@ -35,6 +35,14 @@ static NSString *const kShowTipsWeeklyTitle = @"Show Tips Weekly";
 static NSString *const kShowTipsDailyTitle = @"Show Tips Daily";
 static NSString *const kShareTitle = @"Share";
 
+static NSString *iTermTipWindowApplicationDisplayName(void) {
+    NSString *displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (displayName.length == 0) {
+        displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleNameKey];
+    }
+    return displayName.length > 0 ? displayName : @"Latterm";
+}
+
 static const CGFloat kWindowWidth = 400;
 
 static const CGFloat kWindowLeftMargin = 8;
@@ -330,7 +338,9 @@ static const CGFloat kWindowTopMargin = 8;
 
     self.window.level = NSModalPanelWindowLevel;
     self.window.accessibilityElement = YES;
-    self.window.accessibilityLabel = @"iTerm2 Tip of the Day";
+    self.window.accessibilityLabel = [NSString stringWithFormat:NSLocalizedString(@"%@ Tip of the Day",
+                                                                                  @"Tip-of-the-day window accessibility label"),
+                                      iTermTipWindowApplicationDisplayName()];
     self.window.opaque = NO;
     self.window.alphaValue = 0;
 

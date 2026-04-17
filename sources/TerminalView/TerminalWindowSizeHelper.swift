@@ -166,13 +166,6 @@ extension TerminalWindowSizeHelper {
 
     @nonobjc
     static func measurements(profile: Profile?) -> (rows: Measurement, columns: Measurement) {
-        let isBrowser = (profile as? NSDictionary)?.profileIsBrowser ?? false
-        if isBrowser {
-            return (rows: .cells(iTermProfilePreferences.int(forKey: KEY_HEIGHT,
-                                                             inProfile: profile ?? [:])),
-                    columns: .cells(iTermProfilePreferences.int(forKey: KEY_WIDTH,
-                                                                inProfile: profile ?? [:])))
-        }
         let windowTypeRawValue = iTermProfilePreferences.int(forKey: KEY_WINDOW_TYPE,
                                                              inProfile: profile ?? [:])
         let columnCells = iTermProfilePreferences.int(forKey: KEY_COLUMNS,
@@ -412,9 +405,6 @@ private extension TerminalWindowSizeHelper {
     }
 
     static func cellSize(profile: Profile) -> NSSize {
-        if (profile as NSDictionary).profileIsBrowser {
-            return NSSize(width: 1.0, height: 1.0)
-        }
         return PTYTextView.charSize(
             for: font(profile: profile),
             horizontalSpacing: iTermProfilePreferences.double(forKey: KEY_HORIZONTAL_SPACING, inProfile: profile),

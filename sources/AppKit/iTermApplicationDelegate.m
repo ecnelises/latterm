@@ -170,6 +170,14 @@ static NSInteger gAppStateGeneration = 0;
 static NSString *LEGACY_DEFAULT_ARRANGEMENT_NAME = @"Default";
 static BOOL hasBecomeActive = NO;
 
+static NSString *iTermApplicationDisplayName(void) {
+    NSString *displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (displayName.length == 0) {
+        displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleNameKey];
+    }
+    return displayName.length > 0 ? displayName : @"Latterm";
+}
+
 @interface iTermApplicationDelegate () <
     iTermGraphCodable,
     iTermOrphanServerAdopterDelegate,
@@ -366,6 +374,45 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 #pragma mark - Interface Builder
 
+- (NSMenuItem *)it_menuItemWithIdentifier:(NSString *)identifier inMenu:(NSMenu *)menu {
+    for (NSMenuItem *item in menu.itemArray) {
+        if ([item.identifier isEqualToString:identifier]) {
+            return item;
+        }
+        if (item.hasSubmenu) {
+            NSMenuItem *descendant = [self it_menuItemWithIdentifier:identifier inMenu:item.submenu];
+            if (descendant) {
+                return descendant;
+            }
+        }
+    }
+    return nil;
+}
+
+- (void)it_setTitle:(NSString *)title forMenuItemWithIdentifier:(NSString *)identifier {
+    NSMenuItem *item = [self it_menuItemWithIdentifier:identifier inMenu:NSApp.mainMenu];
+    if (item) {
+        item.title = title;
+    }
+}
+
+- (void)it_updateAppMenuTitles {
+    NSString *appName = iTermApplicationDisplayName();
+    NSMenuItem *rootMenuItem = [NSApp.mainMenu itemAtIndex:0];
+    rootMenuItem.title = appName;
+    _iterm2Menu.title = appName;
+    [self it_setTitle:[NSString stringWithFormat:NSLocalizedString(@"About %@", @"Application about menu item"), appName]
+ forMenuItemWithIdentifier:@"About iTerm2"];
+    [self it_setTitle:[NSString stringWithFormat:NSLocalizedString(@"Hide %@", @"Application hide menu item"), appName]
+ forMenuItemWithIdentifier:@"Hide iTerm2"];
+    [self it_setTitle:[NSString stringWithFormat:NSLocalizedString(@"Make %@ Default Term", @"Default terminal application menu item"), appName]
+ forMenuItemWithIdentifier:@"Make iTerm2 Default Term"];
+    [self it_setTitle:[NSString stringWithFormat:NSLocalizedString(@"Quit %@", @"Application quit menu item"), appName]
+ forMenuItemWithIdentifier:@"Quit iTerm2"];
+    [self it_setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ Help", @"Application help menu item"), appName]
+ forMenuItemWithIdentifier:@"iTerm2 Help"];
+}
+
 - (void)it_removeMenuItemsWithAction:(SEL)action fromMenu:(NSMenu *)menu {
     for (NSInteger i = menu.numberOfItems - 1; i >= 0; i--) {
         NSMenuItem *item = [menu itemAtIndex:i];
@@ -380,6 +427,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 - (void)awakeFromNib {
     [ArchivesMenuBuilder setShared:[[ArchivesMenuBuilder alloc] initWithMenuItem:_archivesMenuItem]];
+    [self it_updateAppMenuTitles];
 
     NSMenu *viewMenu = [self topLevelViewNamed:@"View"];
     [viewMenu addItem:[NSMenuItem separatorItem]];
@@ -434,6 +482,9 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     }
     if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
         [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installShellIntegration:") fromMenu:NSApp.mainMenu];
+    }
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
     }
     
     // Set menu item icons for macOS 26+
@@ -1039,20 +1090,28 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     if (reason.hasReason) {
         RLog(@"Showing quit alert");
         NSString *message;
+        NSString *appName = iTermApplicationDisplayName();
         if ([[iTermController sharedInstance] shouldLeaveSessionsRunningOnQuit]) {
-            message = @"Sessions will be restored automatically when iTerm2 is relaunched.";
+            message = [NSString stringWithFormat:NSLocalizedString(@"Sessions will be restored automatically when %@ is relaunched.",
+                                                                   @"Prompt-on-quit informative text when sessions will be restored"),
+                       appName];
         } else {
-            message = @"All sessions will be closed.";
+            message = NSLocalizedString(@"All sessions will be closed.",
+                                        @"Prompt-on-quit informative text when sessions will be closed");
         }
         [NSApp activateIgnoringOtherApps:YES];
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-        alert.messageText = @"Quit iTerm2?";
+        alert.messageText = [NSString stringWithFormat:NSLocalizedString(@"Quit %@?",
+                                                                         @"Prompt-on-quit title"),
+                             appName];
         alert.informativeText = message;
-        [alert addButtonWithTitle:@"OK"];
-        [alert addButtonWithTitle:@"Cancel"];
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Default confirmation button title")];
+        [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Default cancellation button title")];
         iTermDisclosableView *accessory = [[iTermDisclosableView alloc] initWithFrame:NSZeroRect
-                                                                               prompt:@"Why am I being prompted?"
-                                                                              message:[NSString stringWithFormat:@"You are being prompted because:\n\n%@",
+                                                                               prompt:NSLocalizedString(@"Why am I being prompted?",
+                                                                                                        @"Prompt-on-quit disclosure prompt")
+                                                                              message:[NSString stringWithFormat:NSLocalizedString(@"You are being prompted because:\n\n%@",
+                                                                                                                                  @"Prompt-on-quit disclosure body"),
                                                                                        reason.message]];
         iTermAccessoryViewUnfucker *unfucker = [[iTermAccessoryViewUnfucker alloc] initWithView:accessory];
         accessory.frame = NSMakeRect(0, 0, accessory.intrinsicContentSize.width, accessory.intrinsicContentSize.height);
@@ -1777,7 +1836,9 @@ static iTermKeyEventReplayer *gReplayer;
     mainMenuItem.submenu = [[NSApp mainMenu] it_deepCopy];
     [menu addItem:mainMenuItem];
     
-    item = [[[NSMenuItem alloc] initWithTitle:@"Quit iTerm2"
+    item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Quit %@",
+                                                                                           @"Status item quit menu item"),
+                                               iTermApplicationDisplayName()]
                                        action:@selector(terminate:)
                                 keyEquivalent:@""] autorelease];
     [menu addItem:item];

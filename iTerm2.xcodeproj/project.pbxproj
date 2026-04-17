@@ -16466,6 +16466,7 @@
 				93BD20450FE16DD50059656D /* Rewrite version number in plist file */,
 				874206480564169600CFC3F1 /* Headers */,
 				8742064A0564169600CFC3F1 /* Resources */,
+				F0A1B2C3D4E5F60718293E01 /* Copy zh_CN localization */,
 				8742064E0564169600CFC3F1 /* Sources */,
 				874206510564169600CFC3F1 /* Frameworks */,
 				874206560564169600CFC3F1 /* CopyFiles */,
@@ -18735,6 +18736,34 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\nset -euo pipefail\n\nversion_file=\"${SRCROOT}/last-xcode-version\"\ncurrent=\"$(xcodebuild -version)\"\nlast=\"$(< \"$version_file\")\"\nif [[ \"$current\" == \"$last\" ]]; then\n    touch \"${DERIVED_FILE_DIR}/xcode-version-check.stamp\"\n    exit 0\nfi\n\n# versions differ → block\necho 'You must run `make paranoid-deps` before you can build because your xcode version is out of sync with the prebuild dependencies in the repo'\necho \"Your version is:\"\nprintf '%s\\n' \"$current\"\necho \"The last-built-for version is:\"\nprintf '%s\\n' \"$last\"\nexit 1\n";
 		};
+		F0A1B2C3D4E5F60718293E01 /* Copy zh_CN localization */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/zh_CN.lproj/AboutWindow.strings",
+				"$(SRCROOT)/zh_CN.lproj/InfoPlist.strings",
+				"$(SRCROOT)/zh_CN.lproj/Localizable.strings",
+				"$(SRCROOT)/zh_CN.lproj/MainMenu.strings",
+				"$(SRCROOT)/zh_CN.lproj/PreferencePanel.strings",
+			);
+			name = "Copy zh_CN localization";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj/AboutWindow.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj/InfoPlist.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj/Localizable.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj/MainMenu.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj/PreferencePanel.strings",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\nset -euo pipefail\n\ndestination=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/zh_CN.lproj\"\nmkdir -p \"$destination\"\ncp \"${SRCROOT}/zh_CN.lproj/AboutWindow.strings\" \"$destination/AboutWindow.strings\"\ncp \"${SRCROOT}/zh_CN.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh_CN.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh_CN.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\ncp \"${SRCROOT}/zh_CN.lproj/PreferencePanel.strings\" \"$destination/PreferencePanel.strings\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -20894,7 +20923,7 @@
 					"-force_load",
 					"$(BUILT_PRODUCTS_DIR)/libit2core.a",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.iterm2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecnelises.latterm;
 				PRODUCT_NAME = iTerm2;
 				PROVISIONING_PROFILE_SPECIFIER = "iTerm2 Dev ID Keychain";
 				SDKROOT = macosx;
@@ -22228,7 +22257,7 @@
 					"-force_load",
 					"$(BUILT_PRODUCTS_DIR)/libit2core.a",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.iterm2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecnelises.latterm;
 				PRODUCT_NAME = iTerm2;
 				PROVISIONING_PROFILE_SPECIFIER = "iTerm2 Dev ID Keychain";
 				SDKROOT = macosx;
@@ -25011,7 +25040,7 @@
 					"-force_load",
 					"$(BUILT_PRODUCTS_DIR)/libit2core.a",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.iterm2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecnelises.latterm;
 				PRODUCT_NAME = iTerm2;
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
@@ -25105,7 +25134,7 @@
 					"-force_load",
 					"$(BUILT_PRODUCTS_DIR)/libit2core.a",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.googlecode.iterm2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ecnelises.latterm;
 				PRODUCT_NAME = iTerm2;
 				PROVISIONING_PROFILE_SPECIFIER = "iTerm2 Dev ID Keychain";
 				SDKROOT = macosx;

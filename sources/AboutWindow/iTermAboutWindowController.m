@@ -18,6 +18,14 @@
 
 static NSString *iTermAboutWindowControllerWhatsNewURLString = @"iterm2://whats-new/";
 
+static NSString *iTermAboutWindowApplicationDisplayName(void) {
+    NSString *displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (displayName.length == 0) {
+        displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleNameKey];
+    }
+    return displayName.length > 0 ? displayName : @"Latterm";
+}
+
 static const CGFloat kSponsorImageHeight = 32.0;
 static const CGFloat kSponsorPadding = 8.0;
 static const CGFloat kSponsorSpacing = 16.0;
@@ -197,23 +205,29 @@ static const CGFloat kSponsorRowY = 170.0;
         NSDictionary *myDict = [[NSBundle bundleForClass:[self class]] infoDictionary];
         NSString *const versionNumber = myDict[(NSString *)kCFBundleVersionKey];
         NSString *versionString = [NSString stringWithFormat: @"Build %@\n\n", versionNumber];
+        NSString *appName = iTermAboutWindowApplicationDisplayName();
         NSAttributedString *whatsNew = nil;
         if ([versionNumber hasPrefix:@"3.7."] || [versionString isEqualToString:@"unknown"]) {
             whatsNew = [self attributedStringWithLinkToURL:iTermAboutWindowControllerWhatsNewURLString
-                                                     title:@"What’s New in 3.7?\n"];
+                                                     title:NSLocalizedString(@"What’s New in 3.7?\n",
+                                                                             @"About window What's New link title")];
         }
 
         NSAttributedString *webAString = [self attributedStringWithLinkToURL:@"https://iterm2.com/"
-                                                                       title:@"Home Page"];
+                                                                       title:NSLocalizedString(@"Home Page",
+                                                                                               @"About window home page link title")];
         NSAttributedString *bugsAString =
                 [self attributedStringWithLinkToURL:@"https://iterm2.com/bugs"
-                                              title:@"Report a bug"];
+                                              title:NSLocalizedString(@"Report a bug",
+                                                                      @"About window report-a-bug link title")];
         NSAttributedString *creditsAString =
                 [self attributedStringWithLinkToURL:@"https://iterm2.com/credits"
-                                              title:@"Credits"];
+                                              title:NSLocalizedString(@"Credits",
+                                                                      @"About window credits link title")];
 
         // Force IBOutlets to be bound by creating window.
         [self window];
+        self.window.title = [NSString stringWithFormat:NSLocalizedString(@"About %@", @"About window title"), appName];
 
         NSDictionary *versionAttributes = @{ NSForegroundColorAttributeName: [NSColor controlTextColor] };
         NSAttributedString *bullet = [[NSAttributedString alloc] initWithString:@" ∙ "

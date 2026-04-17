@@ -536,6 +536,31 @@ if not home:
 
 RCFILE = os.path.expanduser(os.path.join(home, '.it2totd'))
 
+BLOCKED_TIP_NEEDLES = [
+  "Shell Integration",
+  "shell integration",
+  "Claude Code",
+  "AI Chat",
+  "Explain Output with AI",
+  "Web Browser",
+  "browser session",
+  "browser sessions",
+  "SSH Integration",
+  "SSH File Browser",
+  "shell_integration.html",
+  "documentation-web",
+]
+
+def should_hide_tip(tip):
+  combined = "\n".join([
+    tip.get("title", ""),
+    tip.get("body", ""),
+    tip.get("url", ""),
+  ])
+  return any(needle in combined for needle in BLOCKED_TIP_NEEDLES)
+
+tips = [tip for tip in tips if not should_hide_tip(tip)]
+
 def last_index():
   try:
     with open(RCFILE) as f:
@@ -556,7 +581,7 @@ def print_tip(i):
       return "\x1b]" + ";".join(args) + "\x1b\\"
 
   tip = tips[i]
-  print(f'iTerm2 tip - {tip["title"]}:')
+  print(f'Latterm tip - {tip["title"]}:')
   print(tip["body"])
   if "url" in tip:
     print("Learn more: " + osc(["8", "", tip["url"]]) + tip["url"] + osc(["8", "", ""]))
@@ -572,4 +597,3 @@ if i >= len(tips) and len(sys.argv) > 1 and sys.argv[1] == "-w":
 if i < len(tips):
   print_tip(i)
   save_index(i)
-

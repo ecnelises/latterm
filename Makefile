@@ -14,17 +14,17 @@ CMAKE ?= $(HOMEBREW_PREFIX)/bin/cmake
 PKG_CONFIG ?= $(HOMEBREW_PREFIX)/bin/pkg-config
 RUSTUP ?= $(shell PATH="$(ORIG_PATH):$(HOME)/.cargo/bin" which rustup 2>/dev/null)
 DEPLOYMENT_TARGET=12.0
+XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme iTerm2
 
-# Build product directory: defaults to xcodebuild's SYMROOT.
-# Override with BUILD_DIR=/path/to/dir on the command line.
-# Skip validation for targets that don't need a build directory.
-ifndef BUILD_DIR
-  BUILD_DIR := $(shell xcodebuild -scheme iTerm2 -showBuildSettings 2>/dev/null | awk -F ' = ' '/^ *SYMROOT/{print $$2; exit}')
-endif
+# Build products live in a repo-local directory by default so make does not
+# depend on Xcode's derived settings or user cache directories.
+BUILD_DIR ?= $(CURDIR)/Build
+DERIVED_DATA_DIR ?= $(BUILD_DIR)/DerivedData
+BUILD_HOME ?= $(BUILD_DIR)/Home
 _NEEDS_BUILD_DIR := $(if $(filter-out setup dangerous-setup _setup-main help doctor,$(MAKECMDGOALS)),yes,$(if $(MAKECMDGOALS),,yes))
 ifdef _NEEDS_BUILD_DIR
   ifeq ($(strip $(BUILD_DIR)),)
-    $(error Could not determine BUILD_DIR from xcodebuild -showBuildSettings. Is Xcode installed? Set BUILD_DIR explicitly to override.)
+    $(error BUILD_DIR is empty. Set BUILD_DIR=/path/to/dir to override.)
   endif
   ifeq ($(patsubst /%,%,$(BUILD_DIR)),$(BUILD_DIR))
     $(error BUILD_DIR is not an absolute path: $(BUILD_DIR))
@@ -269,21 +269,25 @@ install: | Deployment backup-old-iterm
 Development:
 	echo "Using PATH for build: $(PATH)"
 	cp plists/dev-iTerm2.plist plists/iTerm2.plist
-	xcodebuild -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" && \
+	mkdir -p "$(BUILD_HOME)/.cache/clang" "$(BUILD_HOME)/Library/Caches" && \
+	HOME="$(BUILD_HOME)" $(XCODEBUILD_ITERM) -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" -derivedDataPath "$(DERIVED_DATA_DIR)" && \
 	chmod -R go+rX $(BUILD_DIR)/Development
 
 Beta:
 	cp plists/beta-iTerm2.plist plists/iTerm2.plist
-	xcodebuild -scheme iTerm2 -configuration Beta -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" ENABLE_ADDRESS_SANITIZER=NO && \
+	mkdir -p "$(BUILD_HOME)/.cache/clang" "$(BUILD_HOME)/Library/Caches" && \
+	HOME="$(BUILD_HOME)" $(XCODEBUILD_ITERM) -configuration Beta -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" -derivedDataPath "$(DERIVED_DATA_DIR)" ENABLE_ADDRESS_SANITIZER=NO && \
 	chmod -R go+rX $(BUILD_DIR)/Beta
 
 Deployment:
-	xcodebuild -scheme iTerm2 -configuration Deployment -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" ENABLE_ADDRESS_SANITIZER=NO && \
+	mkdir -p "$(BUILD_HOME)/.cache/clang" "$(BUILD_HOME)/Library/Caches" && \
+	HOME="$(BUILD_HOME)" $(XCODEBUILD_ITERM) -configuration Deployment -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" -derivedDataPath "$(DERIVED_DATA_DIR)" ENABLE_ADDRESS_SANITIZER=NO && \
 	chmod -R go+rX $(BUILD_DIR)/Deployment
 
 Nightly: force
 	cp plists/nightly-iTerm2.plist plists/iTerm2.plist
-	xcodebuild -scheme iTerm2 -configuration Nightly -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" ENABLE_ADDRESS_SANITIZER=NO
+	mkdir -p "$(BUILD_HOME)/.cache/clang" "$(BUILD_HOME)/Library/Caches" && \
+	HOME="$(BUILD_HOME)" $(XCODEBUILD_ITERM) -configuration Nightly -destination 'platform=macOS' -skipPackagePluginValidation $(SIGNING_FLAGS) $(ARCH_FLAGS) SYMROOT="$(BUILD_DIR)" -derivedDataPath "$(DERIVED_DATA_DIR)" ENABLE_ADDRESS_SANITIZER=NO
 	chmod -R go+rX $(BUILD_DIR)/Nightly
 
 companion-iphone: force

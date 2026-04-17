@@ -22,6 +22,14 @@ static NSString *const kTipsDisabledKey = @"NoSyncTipsDisabled";  // There's an 
 static const NSTimeInterval kSecondsPerDay = 24 * 60 * 60;
 static NSString *const kPermissionToShowTip = @"NoSyncPermissionToShowTip";
 
+static NSString *iTermTipControllerApplicationDisplayName(void) {
+    NSString *displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (displayName.length == 0) {
+        displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleNameKey];
+    }
+    return displayName.length > 0 ? displayName : @"Latterm";
+}
+
 @interface iTermTipController()<iTermTipWindowDelegate>
 @property(nonatomic, strong) NSDictionary *tips;
 @property(nonatomic, copy) NSString *currentTipName;
@@ -121,10 +129,12 @@ static NSString *const kPermissionToShowTip = @"NoSyncPermissionToShowTip";
 
 - (void)askForPermission {
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"See Tips of the Day?";
-    alert.informativeText = @"iTerm2 can show you a Tip of the Day message to help you learn about its many features. Are you interested?";
-    [alert addButtonWithTitle:@"Yes"];
-    [alert addButtonWithTitle:@"No"];
+    alert.messageText = NSLocalizedString(@"See Tips of the Day?", @"Tip-of-the-day permission prompt title");
+    alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"%@ can show you a Tip of the Day message to help you learn about its many features. Are you interested?",
+                                                                         @"Tip-of-the-day permission prompt body"),
+                             iTermTipControllerApplicationDisplayName()];
+    [alert addButtonWithTitle:NSLocalizedString(@"Yes", @"Default affirmative button title")];
+    [alert addButtonWithTitle:NSLocalizedString(@"No", @"Default negative button title")];
     BOOL havePermission = ([alert runModal] == NSAlertFirstButtonReturn);
     [[iTermUserDefaults userDefaults] setBool:havePermission forKey:kPermissionToShowTip];
 }
