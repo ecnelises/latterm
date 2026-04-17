@@ -230,7 +230,7 @@
                 </dict>
         </array>
         <key>CFBundleExecutable</key>
-        <string>iTerm2</string>
+        <string>$(EXECUTABLE_NAME)</string>
         <key>CFBundleGetInfoString</key>
         <string>unknown</string>
         <key>CFBundleHelpBookFolder</key>
@@ -240,11 +240,11 @@
         <key>CFBundleIconFile</key>
         <string>iTerm2.icns</string>
         <key>CFBundleIdentifier</key>
-        <string>com.googlecode.iterm2</string>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
-        <string>iTerm2</string>
+        <string>$(PRODUCT_NAME)</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleShortVersionString</key>

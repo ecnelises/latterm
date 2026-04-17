@@ -65,7 +65,6 @@
 #import "iTermAPIConnectionIdentifierController.h"
 #import "iTermGraphDatabase.h"
 #import "iTermAPIHelper.h"
-#import "iTermAboutWindowController.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermAppHotKeyProvider.h"
@@ -176,6 +175,61 @@ static NSString *iTermApplicationDisplayName(void) {
         displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleNameKey];
     }
     return displayName.length > 0 ? displayName : @"Latterm";
+}
+
+static NSDictionary *iTermAboutPanelLinkAttributes(void) {
+    return @{
+        NSForegroundColorAttributeName: [NSColor linkColor],
+        NSUnderlineStyleAttributeName: @(NSUnderlineStyleSingle),
+    };
+}
+
+static NSAttributedString *iTermAttributedAboutPanelLink(NSString *title, NSString *urlString) {
+    NSURL *url = [NSURL URLWithString:urlString];
+    if (!url) {
+        return [[NSAttributedString alloc] initWithString:title];
+    }
+    NSMutableDictionary *attributes = [iTermAboutPanelLinkAttributes() mutableCopy];
+    attributes[NSLinkAttributeName] = url;
+    return [[NSAttributedString alloc] initWithString:title attributes:attributes];
+}
+
+static NSAttributedString *iTermStandardAboutPanelCredits(void) {
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.alignment = NSTextAlignmentCenter;
+    paragraphStyle.lineSpacing = 4.0;
+
+    NSDictionary *bodyAttributes = @{
+        NSForegroundColorAttributeName: [NSColor secondaryLabelColor],
+        NSParagraphStyleAttributeName: paragraphStyle,
+        NSFontAttributeName: [NSFont systemFontOfSize:12],
+    };
+    NSDictionary *separatorAttributes = @{
+        NSForegroundColorAttributeName: [NSColor tertiaryLabelColor],
+        NSParagraphStyleAttributeName: paragraphStyle,
+        NSFontAttributeName: [NSFont systemFontOfSize:12],
+    };
+
+    NSMutableAttributedString *credits = [[NSMutableAttributedString alloc] init];
+    NSString *byline = NSLocalizedString(@"By George Nachman and Contributors",
+                                         @"About panel byline");
+    [credits appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@\n\n", byline]
+                                                                    attributes:bodyAttributes]];
+    [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Home Page",
+                                                                                    @"About window home page link title"),
+                                                                  @"https://iterm2.com/")];
+    [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"  ·  "
+                                                                    attributes:separatorAttributes]];
+    [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Report a bug",
+                                                                                    @"About window report-a-bug link title"),
+                                                                  @"https://iterm2.com/bugs")];
+    [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"  ·  "
+                                                                    attributes:separatorAttributes]];
+    [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Credits",
+                                                                                    @"About window credits link title"),
+                                                                  @"https://iterm2.com/credits")];
+    [credits setAlignment:NSTextAlignmentCenter range:NSMakeRange(0, credits.length)];
+    return credits;
 }
 
 @interface iTermApplicationDelegate () <
@@ -3084,7 +3138,21 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (IBAction)showAbout:(id)sender {
-    [[iTermAboutWindowController sharedInstance] showWindow:self];
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *shortVersion = [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString *buildVersion = [bundle objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+
+    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    options[NSAboutPanelOptionApplicationName] = iTermApplicationDisplayName();
+    if (shortVersion.length > 0) {
+        options[NSAboutPanelOptionApplicationVersion] = shortVersion;
+    }
+    if (buildVersion.length > 0 && ![buildVersion isEqualToString:shortVersion]) {
+        options[NSAboutPanelOptionVersion] = buildVersion;
+    }
+    options[NSAboutPanelOptionCredits] = iTermStandardAboutPanelCredits();
+    [NSApp orderFrontStandardAboutPanelWithOptions:options];
+    [NSApp activateIgnoringOtherApps:YES];
 }
 
 - (void)clearAllDownloads:(id)sender {

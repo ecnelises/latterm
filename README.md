@@ -10,7 +10,7 @@ Latterm is intended to become a clean, long-lived fork rather than a one-off pat
 
 - Base UI language is English and remains the default.
 - A first-pass Simplified Chinese localization is included in `zh_CN.lproj`.
-- Some internal target names, filenames, and the executable name still use `iTerm2` during the transition to keep the project building cleanly.
+- Some internal target names and filenames still use `iTerm2` during the transition, but the shipped app bundle and executable are now `Latterm`.
 
 ## What Stays
 
@@ -35,7 +35,7 @@ Current Chinese coverage includes:
 
 - App display name metadata
 - Main menu strings
-- About window strings
+- About panel strings
 - Preference panel strings touched by the fork changes
 - Core prompts updated to use localized runtime strings
 
@@ -64,7 +64,7 @@ make Development
 make run
 ```
 
-`make run` builds the Development configuration and launches the app with the `iterm2-dev` preferences suite.
+`make run` builds the Development configuration and launches `Latterm.app` with the `iterm2-dev` preferences suite.
 
 ### Notes
 

@@ -1,6 +1,9 @@
 ORIG_PATH := $(PATH)
 PATH := /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-ITERM_PID=$(shell pgrep "iTerm2")
+APP_NAME = Latterm
+APP_BUNDLE = $(APP_NAME).app
+APP_EXECUTABLE = $(APP_NAME)
+ITERM_PID=$(shell pgrep "$(APP_EXECUTABLE)")
 APPS := /Applications
 ITERM_CONF_PLIST = $(HOME)/Library/Preferences/com.googlecode.iterm2.plist
 # Local checkout of the iterm2-website repo, where built plugins are published.
@@ -64,7 +67,7 @@ endif
 .PHONY: clean all backup-old-iterm restart setup dangerous-setup _setup-main help doctor
 
 help:
-	@echo "iTerm2 — $(VERSION) ($(NATIVE_ARCH))"
+	@echo "$(APP_NAME) — $(VERSION) ($(NATIVE_ARCH))"
 	@echo ""
 	@echo "First time:"
 	@echo "  make setup            Install all build dependencies (interactive)"
@@ -240,7 +243,7 @@ _setup-main:
 	@echo "Setup complete. Run 'make paranoid-deps' to build native dependencies."
 
 doctor:
-	@echo "iTerm2 build environment — $(NATIVE_ARCH)"
+	@echo "$(APP_NAME) build environment — $(NATIVE_ARCH)"
 	@echo ""
 	@printf "  %-18s" "Homebrew:"; (PATH="$(ORIG_PATH)" brew --version 2>/dev/null | head -1) || echo "NOT FOUND"
 	@printf "  %-18s" "Homebrew prefix:"; echo "$(HOMEBREW_PREFIX)"
@@ -264,7 +267,7 @@ TAGS:
 	find . -name "*.[mhMH]" -exec etags -o ./TAGS -a '{}' +
 
 install: | Deployment backup-old-iterm
-	cp -R $(BUILD_DIR)/Deployment/iTerm2.app $(APPS)
+	cp -R "$(BUILD_DIR)/Deployment/$(APP_BUNDLE)" "$(APPS)"
 
 Development:
 	echo "Using PATH for build: $(PATH)"
@@ -294,10 +297,10 @@ companion-iphone: force
 	Companion/tools/run_on_iphone.sh $(COMPANION_DEVICE)
 
 open: Development
-	open -W -n "$(BUILD_DIR)/Development/iTerm2.app" --args -suite $(SUITE)
+	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite $(SUITE)
 
 run: Development
-	"$(BUILD_DIR)/Development/iTerm2.app/Contents/MacOS/iTerm2" -suite $(SUITE) & \
+	"$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" -suite $(SUITE) & \
 	pid=$$!; \
 	trap 'kill $$pid 2>/dev/null' INT TERM; \
 	( sleep 1 && osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $$pid) to true" >/dev/null 2>&1 ) & \
@@ -321,35 +324,35 @@ run: Development
 # suite-namespaced, so AI-key migration touches your real keychain items. Drop -suite
 # below to test real companion pairing.
 run-keychain: Development
-	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/iTerm2.app"
-	open -W -n "$(BUILD_DIR)/Development/iTerm2.app" --args -suite $(notdir $(CURDIR))
+	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)"
+	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite $(SUITE)
 
 # Reset the data-protection keychain between migration tests. Those items are
 # entitlement-gated, so the `security` CLI can't reach them; this signs the app (same as
 # run-keychain) and launches it with a DEBUG-only flag that deletes the app's own
 # data-protection items (scoped to our access group) and quits. Prints the count.
 purge-keychain-test: Development
-	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/iTerm2.app"
+	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)"
 	rm -f /tmp/iterm2-keychain-purge-result.txt
-	open -W -n "$(BUILD_DIR)/Development/iTerm2.app" --args --iterm2-purge-data-protection-keychain-for-testing
+	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args --iterm2-purge-data-protection-keychain-for-testing
 	@cat /tmp/iterm2-keychain-purge-result.txt 2>/dev/null || echo "no purge result written (build may lack the entitlement)"
 
 runbg: Development
-	"$(BUILD_DIR)/Development/iTerm2.app/Contents/MacOS/iTerm2" -suite $(SUITE) & \
+	"$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" -suite $(SUITE) & \
 	pid=$$!; \
 	trap 'kill $$pid 2>/dev/null' INT TERM; \
 	( sleep 1 && osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $$pid) to true" >/dev/null 2>&1 ) & \
 
 watch: Development
-	tools/run.sh "$(BUILD_DIR)/Development/iTerm2.app/Contents/MacOS/iTerm2" "$(BUILD_DIR)" -suite iterm2-dev
+	tools/run.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" "$(BUILD_DIR)" -suite $(SUITE)
 
 devzip: Development
 	cd $(BUILD_DIR)/Development && \
-	zip -r iTerm2-$(NAME).zip iTerm2.app
+	zip -r $(APP_NAME)-$(NAME).zip $(APP_BUNDLE)
 
 zip: Deployment
 	cd $(BUILD_DIR)/Deployment && \
-	zip -r iTerm2-$(NAME).zip iTerm2.app
+	zip -r $(APP_NAME)-$(NAME).zip $(APP_BUNDLE)
 
 clean:
 	rm -rf "$(BUILD_DIR)"
@@ -367,14 +370,14 @@ clean:
 	git checkout last-xcode-version
 
 backup-old-iterm:
-	if [[ -d $(APPS)/iTerm2.app.bak ]] ; then rm -fr $(APPS)/iTerm2.app.bak ; fi
-	if [[ -d $(APPS)/iTerm2.app ]] ; then \
-	/bin/mv $(APPS)/iTerm2.app $(APPS)/iTerm2.app.bak ;\
-	 cp $(ITERM_CONF_PLIST) $(APPS)/iTerm2.app.bak/Contents/ ; \
+	if [[ -d $(APPS)/$(APP_BUNDLE).bak ]] ; then rm -fr $(APPS)/$(APP_BUNDLE).bak ; fi
+	if [[ -d $(APPS)/$(APP_BUNDLE) ]] ; then \
+	/bin/mv $(APPS)/$(APP_BUNDLE) $(APPS)/$(APP_BUNDLE).bak ;\
+	 cp $(ITERM_CONF_PLIST) $(APPS)/$(APP_BUNDLE).bak/Contents/ ; \
 	fi
 
 restart:
-	PATH=$(ORIG_PATH) /usr/bin/open /Applications/iTerm2.app &
+	PATH=$(ORIG_PATH) /usr/bin/open /Applications/$(APP_BUNDLE) &
 	/bin/kill -TERM $(ITERM_PID)
 
 release:
