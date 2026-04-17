@@ -17054,7 +17054,6 @@
 				A67F6183214395A70093940A /* graphic_nginx.png in Resources */,
 				1D6ED9B919AEA20D005A7799 /* wrap_to_top.png in Resources */,
 				A6E7AEB7214394F600DE9F3B /* graphic_database@2x.png in Resources */,
-				A67D0D701A2EE12A003A8B35 /* MainMenu.strings in Resources */,
 				A67F61E9214395D50093940A /* graphic_yo@2x.png in Resources */,
 				A6F31A2C295BC41700C1A51E /* uniE0CC_PowerlineExtraSymbols.pdf in Resources */,
 				A6F7A70F213CB143004DE961 /* StatusBarIconJobs.png in Resources */,
@@ -18744,6 +18743,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/Interfaces/MainMenu.xib",
 				"$(SRCROOT)/zh-Hans.lproj/AboutWindow.strings",
 				"$(SRCROOT)/zh-Hans.lproj/InfoPlist.strings",
 				"$(SRCROOT)/zh-Hans.lproj/Localizable.strings",
@@ -18754,16 +18754,20 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MainMenu.nib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MainMenu.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/MainMenu.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/AboutWindow.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/InfoPlist.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/Localizable.strings",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/MainMenu.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/MainMenu.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/PreferencePanel.strings",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\nset -euo pipefail\n\nresources_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\ndestination=\"${resources_root}/zh-Hans.lproj\"\nrm -rf \"${resources_root}/zh_CN.lproj\"\nmkdir -p \"$destination\"\ncp \"${SRCROOT}/zh-Hans.lproj/AboutWindow.strings\" \"$destination/AboutWindow.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"$destination/PreferencePanel.strings\"\n";
+			shellScript = "#!/bin/bash\nset -euo pipefail\n\nresources_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nenglish_destination=\"${resources_root}/en.lproj\"\ndestination=\"${resources_root}/zh-Hans.lproj\"\nrm -rf \"${resources_root}/MainMenu.nib\" \"${resources_root}/MainMenu.strings\" \"${resources_root}/zh_CN.lproj\"\nmkdir -p \"$english_destination\" \"$destination\"\ncp \"${SRCROOT}/zh-Hans.lproj/AboutWindow.strings\" \"$destination/AboutWindow.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"$destination/PreferencePanel.strings\"\nxcrun ibtool --compile \"$english_destination/MainMenu.nib\" \"${SRCROOT}/Interfaces/MainMenu.xib\"\nxcrun ibtool --compile \"$destination/MainMenu.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"${SRCROOT}/Interfaces/MainMenu.xib\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
