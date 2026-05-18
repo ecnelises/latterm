@@ -6,17 +6,12 @@
 //
 
 import Foundation
+import UniformTypeIdentifiers
 
 class MimeTypeUtilities {
     static func extensionForMimeType(_ mimeType: String) -> String {
-        let mimeToExtension = extensionToMime.lossilyInverted
-        
-        if let fileExtension = mimeToExtension[mimeType.lowercased()] {
-            return fileExtension
-        }
-        
         let cleanMimeType = mimeType.components(separatedBy: ";").first?.trimmingCharacters(in: .whitespaces) ?? mimeType
-        if let fileExtension = mimeToExtension[cleanMimeType.lowercased()] {
+        if let fileExtension = UTType(mimeType: cleanMimeType)?.preferredFilenameExtension {
             return fileExtension
         }
         

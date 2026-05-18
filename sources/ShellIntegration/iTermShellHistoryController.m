@@ -373,11 +373,6 @@ static NSString *iTermShellIntegrationRemoteHostKey(id<VT100RemoteHostReading> s
         return;
     }
 
-    NSResponder *firstResponder = [[NSApp keyWindow] firstResponder];
-    SEL selector = @selector(installShellIntegration:);
-    if (![firstResponder respondsToSelector:selector]) {
-        firstResponder = nil;
-    }
     alert.messageText = @"About Shell Integration";
     alert.informativeText =
         @"To use shell integration features such as "
@@ -388,9 +383,6 @@ static NSString *iTermShellIntegrationRemoteHostKey(id<VT100RemoteHostReading> s
         @"your shell must be properly configured.";
     [alert addButtonWithTitle:@"Learn More…"];
     [alert addButtonWithTitle:@"OK"];
-    if (firstResponder) {
-        [alert addButtonWithTitle:@"Install Now"];
-    }
     [alert beginSheetModalForWindow:window completionHandler:^(NSModalResponse returnCode) {
         switch (returnCode) {
             case NSAlertFirstButtonReturn:
@@ -398,10 +390,6 @@ static NSString *iTermShellIntegrationRemoteHostKey(id<VT100RemoteHostReading> s
                                                    target:nil
                                                     style:iTermOpenStyleTab
                                                    window:window];
-                break;
-                
-            case NSAlertThirdButtonReturn:  // Install now, optional button
-                [firstResponder performSelector:selector withObject:self];
                 break;
         }
     }];

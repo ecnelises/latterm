@@ -75,19 +75,11 @@
     // Big new features
             @"000": @{ kTipTitleKey: @"Tip of the Day",
                         kTipBodyKey: @"This window shows the iTerm2 tip of the day. It’ll appear every 24 hours to let you know about new features and hidden secrets. Hit “More Options” to view more tips or to stop getting them altogether." },
-            @"0000": @{ kTipTitleKey: @"Shell Integration",
-                         kTipBodyKey: @"The big new feature of iTerm2 version 3 is Shell Integration. Click “Learn More” for all the details.",
-                          kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0001": @{ kTipTitleKey: @"Timestamps",
                          kTipBodyKey: @"“View > Show Timestamps” shows the time (and date, if appropriate) when each line was last modified." },
 
             @"0002": @{ kTipTitleKey: @"Password Manager",
                         kTipBodyKey: @"Did you know iTerm2 has a password manager? Open it with “Window > Password Manager.” You can define a Trigger to open it for you at a password prompt in “Settings > Profiles > Advanced > Triggers.”" },
-            @"0003": @{ kTipTitleKey: @"Open Quickly",
-                        kTipBodyKey: @"You can quickly search through your sessions with “View > Open Quickly” (⇧⌘O). You can type a query and sessions whose name, badge, current hostname, current user name, recent commands, and recent working directories match will be surfaced. It works best with Shell Integration so the user name, hostname, command, and directories can be known even while sshed.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0004": @{ kTipTitleKey: @"Undo Close",
                         kTipBodyKey: @"If you close a session, tab, or window by accident you can undo it with “Edit > Undo” (⌘Z). By default you have five seconds to undo, but you can adjust that timeout in “Settings > Profiles > Session.”" },
 
@@ -100,17 +92,9 @@
                         kTipBodyKey: @"iTerm2 can display images (even animated GIFs) inline.",
                         kTipUrlKey: @"https://iterm2.com/images.html" },
 
-            @"0008": @{ kTipTitleKey: @"Automatic Profile Switching",
-                        kTipBodyKey: @"Automatic Profile Switching changes the current profile when the username, hostname, or directory changes. Set it up in “Settings > Profiles > Advanced.” It requires Shell Integration to be installed.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0009": @{ kTipTitleKey: @"Captured Output",
                         kTipBodyKey: @"iTerm2 can act like an IDE using the Captured Output feature. When it sees text matching a regular expression you define, like compiler errors, it shows the matching lines in the Toolbelt. You can click to jump to the line in your terminal and double-click to perform an action like opening an editor to the line with the error.",
                         kTipUrlKey: @"https://iterm2.com/captured_output.html" },
-
-            @"0010": @{ kTipTitleKey: @"Badges",
-                        kTipBodyKey: @"You can display a status message in the top right of your session in the background. It’s called a “Badge.” If you install Shell Integration you can include info like user name, hostname, current directory, and more.",
-                        kTipUrlKey: @"https://iterm2.com/badges.html" },
 
             @"0011" : @{ kTipTitleKey: @"Dynamic Profiles",
                          kTipBodyKey: @"Dynamic Profiles let you store your profiles as one or more JSON files. It’s great for batch creating and editing profiles.",
@@ -151,31 +135,11 @@
             @"0021": @{ kTipTitleKey: @"Cursor Guide",
                         kTipBodyKey: @"The cursor guide is a horizontal line that follows your cursor. You can turn it on in “Settings > Profiles > Colors” or toggle it with the ⌥⌘; shortcut." },  // TODO Add learn more for escape sequence
 
-            @"0022": @{ kTipTitleKey: @"Shell Integration: Alerts",
-                        kTipBodyKey: @"The Shell Integration feature lets you ask to be alerted (⌥⌘A) when a long-running command completes.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0023": @{ kTipTitleKey: @"Cursor Blink Rate",
                          kTipBodyKey: @"You can configure how quickly the cursor blinks in “Settings > Advanced.”" },
 
-            @"0024": @{ kTipTitleKey: @"Shell Integration: Navigation",
-                        kTipBodyKey: @"The Shell Integration feature lets you navigate among shell prompts with ⇧⌘↑ and ⇧⌘↓.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
-            @"0025": @{ kTipTitleKey: @"Shell Integration: Status",
-                        kTipBodyKey: @"The Shell Integration feature puts a blue arrow next to your shell prompt. If you run a command that fails, it turns red. Right click on it to get the running time and status.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
-            @"0026": @{ kTipTitleKey: @"Shell Integration: Selection",
-                        kTipBodyKey: @"With Shell Integration installed, you can select the output of the last command with ⇧⌘A.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0027": @{ kTipTitleKey: @"Bells",
                         kTipBodyKey: @"The dock icon shows a count of the number of bells rung and notifications posted since the app was last active." },
-
-            @"0028": @{ kTipTitleKey: @"Shell Integration: Downloads",
-                        kTipBodyKey: @"If you install Shell Integration on a machine you ssh to, you can right click on a filename (for example, in the output of “ls”) and choose “Download with scp” to download the file.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
 
             @"0029": @{ kTipTitleKey: @"Find Your Cursor",
                         kTipBodyKey: @"Press ⌘/ to locate your cursor. It’s fun!" },
@@ -204,22 +168,6 @@
                         kTipBodyKey: @"iTerm2 can download files by base-64 encoding them. Click “Learn More” to download a shell script that makes it easy.",
                         kTipUrlKey: @"https://iterm2.com/download.sh" },
 
-            @"0037": @{ kTipTitleKey: @"Command Completion",
-                        kTipBodyKey: @"If you install Shell Integration, ⇧⌘; helps you complete commands. It remembers the commands you’ve run on each host that has Shell Integration installed. It knows how often that command was run and how recently to help make the best suggestions.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
-            @"0038": @{ kTipTitleKey: @"Recent Directories",
-                        kTipBodyKey: @"iTerm2 remembers which directories you use the most on each host that has Shell Integration installed. There’s a Toolbelt tool to browse them, and ⌥⌘/ gives you a popup sorted by frequency and recency of use.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
-            @"0039": @{ kTipTitleKey: @"Favorite Directories",
-                        kTipBodyKey: @"If you have Shell Integration installed, you can “star” a directory to keep it always at the bottom of the Recent Directories tool in the Toolbelt. Right click and choose “Toggle Star.”",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
-            @"0040": @{ kTipTitleKey: @"Shell Integration History",
-                        kTipBodyKey: @"Install Shell Integration and turn on “Settings > General > Save copy/paste and command history to disk” to remember command history per host across restarts of iTerm2.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0041": @{ kTipTitleKey: @"Paste File as Base64",
                         kTipBodyKey: @"Copy a file to the pasteboard in Finder and then use “Edit > Paste Special > Paste File Base64-Encoded” for easy uploads of binary files. Use ”base64 -D” (or -d on Linux) on the remote host to decode it." },
 
@@ -228,10 +176,6 @@
 
             @"0043": @{ kTipTitleKey: @"Adjust Split Panes",
                         kTipBodyKey: @"Resize split panes with the keyboard using ^⌘-Arrow Key." },
-
-            @"0044": @{ kTipTitleKey: @"Move Cursor",
-                        kTipBodyKey: @"Hold ⌥ and click to move your cursor. It works best with Shell Integration installed (to avoid sending up/down arrow keys to your shell).",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
 
             @"0045": @{ kTipTitleKey: @"Edge Windows",
                         kTipBodyKey: @"You can tell your profile to create windows that are attached to one edge of the screen in “Settings > Profiles > Window.” You can resize them by dragging the edges." },
@@ -299,7 +243,7 @@
                         kTipUrlKey: @"https://iterm2.com/coprocesses.html" },
 
             @"0066": @{ kTipTitleKey: @"Touch Bar Customization",
-                        kTipBodyKey: @"You can customize the touch bar by selecting “View > Customize Touch Bar.” You can add a tab bar for full-screen mode, a user-customizable status button, and you can even define your own touch bar buttons in Settings > Keys. There’s also a new shell integration tool to customize touch bar function key labels." },
+                        kTipBodyKey: @"You can customize the touch bar by selecting “View > Customize Touch Bar.” You can add a tab bar for full-screen mode, a user-customizable status button, and you can even define your own touch bar buttons in Settings > Keys." },
 
             @"0067": @{ kTipTitleKey: @"Ligatures",
                         kTipBodyKey: @"If you use a font that supports ligatures, you can enable ligature support in Settings > Profiles > Text." },
@@ -339,21 +283,11 @@
             @"0079": @{ kTipTitleKey: @"Composer",
                         kTipBodyKey: @"Press ⇧⌘. to open the Composer. It gives you a scratchpad to edit a command before sending it to the shell." },
             
-            @"0080": @{ kTipTitleKey: @"Shell Integration: Uploads",
-                        kTipBodyKey: @"If you install Shell Integration on a machine you ssh to, you can drag-drop from Finder into the remote host by holding ⌥ while dragging. The destination directory is determined by where you drop the file in the terminal window: run cd foo, then drop the file below the cd command, and the file will go into the foo directory.",
-                        kTipUrlKey: @"https://iterm2.com/shell_integration.html" },
-
             @"0081": @{ kTipTitleKey: @"Composer Power Features",
                         kTipBodyKey: @"The composer supports multiple cursors. It also has the ability to send just one command out of a list, making it easy to walk through a list of commands one-by-one. Click the help button in the composer for details." },
 
             @"0082": @{ kTipTitleKey: @"Render Selection",
                         kTipBodyKey: @"Transform selected text into a prettified, syntax-highlighted view with the “Render Selection” command, ideal for JSON, Markdown, or source code. This feature includes horizontal scrolling for easy log navigation." },
-
-            @"0083": @{ kTipTitleKey: @"SSH Integration",
-                        kTipBodyKey: @"Export environment variables and copy files to remote hosts seamlessly with SSH integration. Either configure a profile to use ssh or use it2ssh in place of ssh." },
-
-            @"0084": @{ kTipTitleKey: @"Auto Composer",
-                        kTipBodyKey: @"Improve your command line with the “auto composer”, which replaces the command line with a native control for ease of use. Requires shell integration." },
 
             @"0087": @{ kTipTitleKey: @"Named Marks",
                         kTipBodyKey: @"Navigate your command history effortlessly with “named marks” by assigning names to lines in the terminal." },
@@ -406,12 +340,6 @@
             @"0103": @{ kTipTitleKey: @"Password Generation",
                         kTipBodyKey: @"Generate strong, secure passwords using the password manager’s new password generation feature." },
 
-            @"0104": @{ kTipTitleKey: @"it2tip Utility",
-                        kTipBodyKey: @"Access tips of the day with the it2tip utility, a command line app. Enable it by installing shell integration and utilities." },
-
-            @"0105": @{ kTipTitleKey: @"Auto Shell Integration",
-                        kTipBodyKey: @"Experience automatic shell integration when creating a login shell, removing the need for explicit setup on your Mac." },
-
             @"0106": @{ kTipTitleKey: @"Command Prompt Info",
                         kTipBodyKey: @"Get detailed information about commands by ⌘-clicking on the command prompt." },
 
@@ -453,12 +381,6 @@
 
             @"0121": @{ kTipTitleKey: @"Command Palette",
                         kTipBodyKey: @"Open Quickly (⇧⌘O) is now a command palette! Just type the name of a menu item to activate it." },
-
-            @"0122": @{ kTipTitleKey: @"Click Paths in Shell Prompts",
-                        kTipBodyKey: @"Enable “Settings > Profiles > Terminal > Click on a path in a shell prompt to open Navigator” to navigate your filesystem by clicking on paths in your prompt. Requires Shell Integration." },
-
-            @"0123": @{ kTipTitleKey: @"SSH File Browser",
-                        kTipBodyKey: @"When connected via SSH Integration, use “Shell > ssh > Download Files” to browse and download files from the remote host without opening a new connection. Files on SSH hosts also appear in file open/save dialogs!" },
 
 // IMPORTANT: When updating this, also update it2tip
             };

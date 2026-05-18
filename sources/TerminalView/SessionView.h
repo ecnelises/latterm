@@ -54,6 +54,8 @@
 @class SplitSelectionView;
 @class SessionTitleView;
 
+NS_ASSUME_NONNULL_BEGIN
+
 // Terminal-first compatibility shim. Browser sessions are disabled, but many ObjC call sites still
 // reference the browser view controller type.
 @interface iTermBrowserViewController : NSViewController
@@ -83,8 +85,6 @@
 - (NSArray *)namedMarks;
 - (nullable NSString *)sessionGuid;
 @end
-
-NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const SessionViewWasSelectedForInspectionNotification;
 

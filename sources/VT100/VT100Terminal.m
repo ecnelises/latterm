@@ -4423,9 +4423,13 @@ static NSString *VT100GetURLParamForKey(NSString *params, NSString *key) {
             [_delegate terminalUpdateEnv:value];
         }
     } else if ([key isEqualToString:@"it2ssh"]) {
-        [_delegate terminalBeginSSHIntegeration:value];
+        if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
+            [_delegate terminalBeginSSHIntegeration:value];
+        }
     } else if ([key isEqualToString:@"SendConductor"]) {
-        [_delegate terminalSendConductor:value];
+        if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
+            [_delegate terminalSendConductor:value];
+        }
     } else if ([key isEqualToString:@"EndSSH"]) {
         if ([_delegate terminalIsTrusted] && value.length > 0) {
             [_delegate terminalEndSSH:value];

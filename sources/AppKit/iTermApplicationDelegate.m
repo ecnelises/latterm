@@ -530,17 +530,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         [self it_removeMenuItemsWithAction:NSSelectorFromString(@"explainOutputWithAI:") fromMenu:NSApp.mainMenu];
         [self it_removeMenuItemsWithAction:NSSelectorFromString(@"openAIChat:") fromMenu:NSApp.mainMenu];
         [self it_removeMenuItemsWithAction:NSSelectorFromString(@"openAIChats:") fromMenu:NSApp.mainMenu];
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"reinstallClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"uninstallClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
     }
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installShellIntegration:") fromMenu:NSApp.mainMenu];
-    }
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"installClaudeCodeIntegration:") fromMenu:NSApp.mainMenu];
-    }
-    
     // Set menu item icons for macOS 26+
 #if DEBUG
     if (NSClassFromString(@"XCTestCase") == nil &&
@@ -592,21 +582,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         return YES;
     } else if ([menuItem action] == @selector(makeDefaultTerminal:)) {
         return ![[iTermLaunchServices sharedInstance] iTermIsDefaultTerminal];
-    } else if ([menuItem action] == @selector(installClaudeCodeIntegration:)) {
-        if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-            return NO;
-        }
-        return [[iTermClaudeCodeIntegrationMenuController shared] validateInstallMenuItem:menuItem];
-    } else if ([menuItem action] == @selector(reinstallClaudeCodeIntegration:)) {
-        if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-            return NO;
-        }
-        return [[iTermClaudeCodeIntegrationMenuController shared] validateReinstallMenuItem:menuItem];
-    } else if ([menuItem action] == @selector(uninstallClaudeCodeIntegration:)) {
-        if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-            return NO;
-        }
-        return [[iTermClaudeCodeIntegrationMenuController shared] validateUninstallMenuItem:menuItem];
     } else if (menuItem == maximizePane) {
         if ([[[iTermController sharedInstance] currentTerminal] inInstantReplay]) {
             // Things get too complex if you allow this. It crashes.
@@ -1479,7 +1454,6 @@ void TurnOnDebugLoggingAutomatically(void) {
     DLog(@"registerStandardFunctions");
     [iTermBuiltInFunctions registerStandardFunctions];
     [iTermClippingsGutterPanelRegistration register];
-    [iTermInlineChatGutterPanelRegistration register];
 
     DLog(@"migrateApplicationSupportDirectoryIfNeeded");
     [iTermMigrationHelper migrateApplicationSupportDirectoryIfNeeded];
@@ -1691,10 +1665,6 @@ void TurnOnDebugLoggingAutomatically(void) {
     finishedLaunching_ = YES;
     // Create the app support directory
     [self createVersionFile];
-
-    // Refresh the AI model catalog in the background (rate-limited to once per
-    // day). New models take effect on the next launch.
-    [[iTermAIModelCatalogUpdater instance] performPeriodicCheck];
 
     // Prevent the input manager from swallowing control-q. See explanation here:
     // https://web.archive.org/web/20111102073237/https://b4winckler.wordpress.com/2009/07/19/coercing-the-cocoa-text-system

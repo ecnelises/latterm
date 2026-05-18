@@ -17,13 +17,6 @@ extern NSString *const kDirectoriesDidChangeNotificationName;
 @protocol VT100RemoteHostReading;
 @protocol VT100ScreenMarkReading;
 
-// This is an informal protocol that the first responder may adopt.
-@protocol ShellIntegrationInstaller <NSObject>
-
-- (void)installShellIntegration:(id)sender;
-
-@end
-
 @interface iTermShellHistoryController : NSObject
 
 + (instancetype)sharedInstance;

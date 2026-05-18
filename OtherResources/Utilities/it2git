@@ -13,8 +13,7 @@
 #   it2git
 # }
 
-# fish: Place this in ~/.config/fish/config.fish after the line
-#       "source ~/.iterm2_shell_integration.fish".
+# fish: Place this in ~/.config/fish/config.fish.
 # --------------------------------------------------------------------------------------
 # function iterm2_print_user_vars
 #   it2git
@@ -25,7 +24,7 @@
 # alias get_current_branch "bash -c '((git branch 2> /dev/null) | grep \* | cut -c3-)'"
 # alias _iterm2_user_defined_vars 'it2git'
 
-# zsh:Place this in .zshrc after "source /Users/georgen/.iterm2_shell_integration.zsh".
+# zsh: Place this in .zshrc.
 # --------------------------------------------------------------------------------------
 # iterm2_print_user_vars() {
 #   it2git
@@ -186,5 +185,4 @@ if (($?)); then
 else
     git_poll "$PWD"
 fi
-
 

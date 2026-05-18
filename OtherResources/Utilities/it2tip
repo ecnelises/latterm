@@ -362,10 +362,6 @@ tips = [
         "body": "Transform selected text into a prettified, syntax-highlighted view with the “Render Selection” command, ideal for JSON, Markdown, or source code. This feature includes horizontal scrolling for easy log navigation."
         },
 
-    { "title": "SSH Integration",
-        "body": "Export environment variables and copy files to remote hosts seamlessly with SSH integration. Either configure a profile to use ssh or use it2ssh in place of ssh."
-        },
-
     { "title": "Auto Composer",
         "body": "Improve your command line with the “auto composer”, which replaces the command line with a native control for ease of use. Requires shell integration."
         },

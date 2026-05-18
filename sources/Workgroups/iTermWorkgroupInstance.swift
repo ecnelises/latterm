@@ -682,15 +682,14 @@ final class iTermWorkgroupInstance: NSObject {
             // empty. iTermGitStringMaker.init has just pushed the
             // leader's PWD into the poller, so the bump succeeds when
             // the leader's shell has already published its PWD by entry
-            // time (typical for user-driven "Enter Workgroup" on a
-            // long-running session). When the workgroup is entered via
-            // a trigger the moment the shell starts (the Claude Code
-            // flow), PWD hasn't been published yet, the bump no-ops on
-            // the empty-directory guard, and the first useful poll is
-            // the one iTermGitPoller.setCurrentDirectory triggers when
-            // the PWD finally arrives. We accept the overlay flash in
-            // that case; nothing here is harmful, just not always
-            // productive.
+            // time, which is typical for user-driven "Enter Workgroup"
+            // on a long-running session. If a trigger enters the
+            // workgroup the moment the shell starts, PWD may not have
+            // been published yet; the bump then no-ops on the
+            // empty-directory guard, and the first useful poll is the
+            // one iTermGitPoller.setCurrentDirectory triggers when PWD
+            // arrives. We accept the overlay flash in that case; nothing
+            // here is harmful, just not always productive.
             poller.bump()
         }
 

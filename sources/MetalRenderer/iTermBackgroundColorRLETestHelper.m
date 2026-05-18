@@ -29,13 +29,13 @@
 @synthesize generation = _generation;
 @synthesize harmonize = _harmonize;
 @synthesize useSeparateColorsForLightAndDarkMode = _useSeparateColorsForLightAndDarkMode;
+@synthesize backgroundIsDark = _backgroundIsDark;
 
 - (vector_float4)fastProcessedBackgroundColorForBackgroundColor:(vector_float4)color {
     return color;
 }
 
 - (BOOL)darkBackground { return NO; }
-- (BOOL)backgroundIsDark { return NO; }
 - (CGFloat)minimumContrast { return 0; }
 - (CGFloat)dimmingAmount { return 0; }
 - (CGFloat)mutingAmount { return 0; }
@@ -56,6 +56,8 @@
 - (NSDictionary<NSNumber *, NSString *> *)colormapKeyToProfileKeyDictionary { return @{}; }
 - (iTermColorMapKey)keyForColor:(int)theIndex green:(int)green blue:(int)blue colorMode:(ColorMode)theMode bold:(BOOL)isBold isBackground:(BOOL)isBackground useCustomBoldColor:(BOOL)useCustomBoldColor brightenBold:(BOOL)brightenBold { return 0; }
 - (NSColor *)colorForCode:(int)theIndex green:(int)green blue:(int)blue colorMode:(ColorMode)theMode bold:(BOOL)isBold faint:(BOOL)isFaint isBackground:(BOOL)isBackground useCustomBoldColor:(BOOL)useCustomBoldColor brightenBold:(BOOL)brightenBold { return [NSColor blackColor]; }
+- (VT100TerminalColorValue)resolvedDualModeColor:(iTermDualModeColor)dual { return dual.light; }
+- (VT100TerminalColorValue)resolvedColorValue:(VT100TerminalColorValue)value { return value; }
 - (iTermColorMap *)copy { return (iTermColorMap *)self; }
 - (VT100SavedColorsSlot *)savedColorsSlot { return nil; }
 - (VT100TerminalColorValue)resolvedDualModeColor:(iTermDualModeColor)dual { return (VT100TerminalColorValue){0}; }

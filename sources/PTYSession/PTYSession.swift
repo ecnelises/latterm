@@ -384,6 +384,11 @@ class RunningRemoteCommand: NSObject {
 }
 
 extension PTYSession {
+    private var remoteCommandShellIntegrationUnavailableMessage: (String, String) {
+        ("Shell Integration is unavailable in the terminal-first fork.",
+         "This information depends on Shell Integration, which is disabled in the terminal-first fork.")
+    }
+
     func cancelRemoteCommand() {
         let previousState = runningRemoteCommand.state
         runningRemoteCommand.state = .none
@@ -413,7 +418,8 @@ extension PTYSession {
     func isAtPromptRemoteCommand(isAtPrompt: RemoteCommand.IsAtPrompt,
                                  completion: @escaping (String, String) throws -> ()) rethrows {
         guard iTermShellHistoryController.sharedInstance().commandHistoryHasEverBeenUsed() else {
-            try completion("Tell the user they need to install Shell Integration to access this information.", "Failed to check if you’re at the prompt because Shell Integration is not installed.")
+            try completion(remoteCommandShellIntegrationUnavailableMessage.0,
+                           remoteCommandShellIntegrationUnavailableMessage.1)
             return
         }
         try completion(currentCommand != nil ? "true" : "false", "Notified AI that you are \(currentCommand != nil ? "at" : "not at") the a prompt.")
@@ -508,8 +514,8 @@ extension PTYSession {
     func getLastExitStatusRemoteCommand(getLastExitStatus: RemoteCommand.GetLastExitStatus,
                                         completion: @escaping (String, String) throws -> ()) rethrows {
         guard iTermShellHistoryController.sharedInstance().commandHistoryHasEverBeenUsed() else {
-            try completion("Tell the user they need to install Shell Integration to access this information.",
-                       "Failed to get the last command’s exit status because shell integration is not installed.")
+            try completion(remoteCommandShellIntegrationUnavailableMessage.0,
+                           remoteCommandShellIntegrationUnavailableMessage.1)
             return
         }
         guard let promise = screen.lastCommandMark()?.returnCodePromise, let value = promise.maybeValue  else {
@@ -523,8 +529,8 @@ extension PTYSession {
     func getCommandHistoryRemoteCommand(getCommandHistory: RemoteCommand.GetCommandHistory,
                                         completion: @escaping (String, String) throws -> ()) rethrows {
         guard iTermShellHistoryController.sharedInstance().commandHistoryHasEverBeenUsed() else {
-            try completion("Tell the user they need to install Shell Integration to access this information.",
-                       "Command history isn’t available because Shell Integration isn’t installed.")
+            try completion(remoteCommandShellIntegrationUnavailableMessage.0,
+                           remoteCommandShellIntegrationUnavailableMessage.1)
             return
         }
         var entries = [[String: String]]()
@@ -553,8 +559,8 @@ extension PTYSession {
     func getLastCommandRemoteCommand(getLastCommand: RemoteCommand.GetLastCommand,
                                      completion: @escaping (String, String) throws -> ()) rethrows {
         guard iTermShellHistoryController.sharedInstance().commandHistoryHasEverBeenUsed() else {
-            try completion("Tell the user they need to install Shell Integration to access this information.",
-                       "The last command execute can’t be provided because Shell Integration isn’t installed.")
+            try completion(remoteCommandShellIntegrationUnavailableMessage.0,
+                           remoteCommandShellIntegrationUnavailableMessage.1)
             return
         }
         guard let command = screen.lastCommandMark()?.fullCommand else {
@@ -567,8 +573,8 @@ extension PTYSession {
     func getCommandBeforeCursorRemoteCommand(getCommandBeforeCursor: RemoteCommand.GetCommandBeforeCursor,
                                              completion: @escaping (String, String) throws -> ()) rethrows {
         guard iTermShellHistoryController.sharedInstance().commandHistoryHasEverBeenUsed() else {
-            try completion("Tell the user they need to install Shell Integration to access this information.",
-            "The contents of the shell prompt could not be determined because Shell Integration isn’t installed.")
+            try completion(remoteCommandShellIntegrationUnavailableMessage.0,
+                           remoteCommandShellIntegrationUnavailableMessage.1)
             return
         }
         guard let currentCommandUpToCursor else {
@@ -583,8 +589,8 @@ extension PTYSession {
     func searchCommandHistoryRemoteCommand(searchCommandHistory: RemoteCommand.SearchCommandHistory,
                                            completion: @escaping (String, String) throws -> ()) rethrows {
         guard iTermShellHistoryController.sharedInstance().commandHistoryHasEverBeenUsed() else {
-            try completion("Tell the user they need to install Shell Integration to access this information.",
-                       "Command history is not available because Shell Integration isn’t installed.")
+            try completion(remoteCommandShellIntegrationUnavailableMessage.0,
+                           remoteCommandShellIntegrationUnavailableMessage.1)
             return
         }
         var entries = [[String: String]]()
@@ -2091,22 +2097,9 @@ extension PTYSession {
     @objc static let inlineChatDidChangeNotification =
         Notification.Name("iTermInlineChatDidChange")
 
-    // Action for the View > Show Inline Chat menu item. If a chat is bound
-    // already, just toggle its panel visibility. The binding (inlineChatID)
-    // lives in memory and is saved/restored with the window arrangement, so
-    // re-toggling reuses the same chat across both panel hides and restarts.
-    //
-    // With no chat bound, fall back to the most recent chat the user
-    // EXPLICITLY linked to this session (via the offerLink "Link" button or
-    // from the chat window): that's all mostRecentChat(forGuid:) can match.
-    // Inline chats are created unlinked (see createInlineChat), so this
-    // fallback intentionally does NOT rediscover a prior inline chat whose
-    // inlineChatID was lost; the only thing that clears inlineChatID is
-    // deleting the chat, which removes it entirely, so there's no reusable
-    // unlinked chat left behind to rediscover. When nothing matches, create a
-    // fresh inline chat. Intentionally does NOT route through
-    // ChatWindowController so the chat window stays unaffected and is not
-    // opened as a side effect.
+    // Inline chat is unavailable in the terminal-first fork. Keep the
+    // selector as a compatibility no-op while menu and responder cleanup
+    // continues.
     @objc(toggleInlineChat)
     func toggleInlineChat() {
         inlineChatID = nil

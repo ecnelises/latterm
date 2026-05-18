@@ -70,11 +70,7 @@ enum WorkgroupPresets {
             sessions: [root, diff])
     }
 
-    // Builds a Chat-root + Diff-peer + Code-Review-peer workgroup. Shared
-    // between the user-pickable preset (defaults: fresh UUIDs and a
-    // user-friendly name) and the Claude Code onboarding installer, which
-    // overrides every ID and the workgroup name so its triggers and saved
-    // references keep resolving across upgrades.
+    // Builds a root + Diff-peer + Code-Review-peer workgroup.
     static func buildCodingAgentPlusDiffPlusCodeReview(
         workgroupID: String = UUID().uuidString,
         rootID: String = UUID().uuidString,

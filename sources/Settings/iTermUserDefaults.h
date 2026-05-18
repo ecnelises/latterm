@@ -39,16 +39,6 @@ typedef NS_ENUM(NSUInteger, iTermAppleWindowTabbingMode) {
 @property (class, nonatomic) BOOL haveBeenWarnedAboutTabDockSetting;
 @property (class, nonatomic) BOOL requireAuthenticationAfterScreenLocks;
 @property (class, nonatomic) BOOL openTmuxDashboardIfHiddenWindows;
-@property (class, nonatomic) BOOL claudeCodeWorkgroupUpsellSuppressed;
-@property (class, nonatomic) BOOL claudeCodeHooksInstalled;
-@property (class, nonatomic) BOOL claudeCodeTriggersInstalled;
-// Sticky flag: set to YES when the user successfully installs the
-// cc-status hook, cleared only by the Uninstall menu flow. Distinct
-// from claudeCodeHooksInstalled, which is reconciled against disk on
-// every launch — this one preserves the "user once completed setup"
-// signal so we can detect when something else (e.g. Claude Code
-// rewriting ~/.claude/settings.json) silently strips our hook.
-@property (class, nonatomic) BOOL claudeCodeIntegrationCompleted;
 
 // Whether session-status text (from cc-status, OSC 21337, the SetTabStatus
 // trigger, or iterm2.set_status) is woven into the tab’s subtitle and
@@ -81,50 +71,8 @@ typedef NS_ENUM(NSUInteger, iTermAppleWindowTabbingMode) {
 // migration state through synced prefs.
 @property (class, nonatomic) BOOL workgroupShortcutsBackfilled;
 
-// Latched once the one-time migration that flips the Claude Code
-// workgroup's Diff peer mode from .regular to .diff has run.
-// NoSync for the same reason as workgroupShortcutsBackfilled.
-@property (class, nonatomic) BOOL claudeCodeDiffModeBackfilled;
-
-// Latched once the one-time migration that rewrites the Claude Code
-// workgroup's Code Review command to read its system prompt from the
-// user-editable temp file (codeReviewSystemPromptFile) instead of the
-// bundled code-review-system-prompt.txt has run. NoSync for the same
-// reason as workgroupShortcutsBackfilled.
-@property (class, nonatomic) BOOL claudeCodeReviewSystemPromptCommandBackfilled;
-
-// Latched once the one-time migration that adds the Auto-Send Clippings
-// When Idle toolbar item to the Claude Code workgroup's Code Review peer
-// has run. NoSync for the same reason as workgroupShortcutsBackfilled.
-@property (class, nonatomic) BOOL claudeCodeAutoSendClippingsBackfilled;
-
-// Latched once the one-time migration that adds the Auto-Request Review
-// When Idle toolbar item to the Claude Code workgroup's main (root)
-// session has run. NoSync for the same reason as workgroupShortcutsBackfilled.
-@property (class, nonatomic) BOOL claudeCodeAutoRequestReviewBackfilled;
-
-// Tri-state consent for the AI model catalog updater (AIModelCatalogUpdater) to
-// periodically download a refreshed, signed model list from the network.
-// Defaults to Unknown; we ask the user once (and only if AI is fully enabled)
-// before the very first download, because contacting the network is a change to
-// the privacy model. NoSync: a privacy decision that should not travel through
-// synced prefs to other machines.
-typedef NS_ENUM(NSInteger, iTermAIModelCatalogUpdateConsent) {
-    iTermAIModelCatalogUpdateConsentUnknown = 0,
-    iTermAIModelCatalogUpdateConsentGranted = 1,
-    iTermAIModelCatalogUpdateConsentDenied = 2
-};
-@property (class, nonatomic) iTermAIModelCatalogUpdateConsent aiModelCatalogUpdateConsent;
-
-// Tri-state consent for automatically including a session's terminal state +
-// visible screen with every AI chat message (the "Provide ... Automatically"
-// escalation of the View Contents / Check Terminal State permissions when set to
-// Always). Defaults to Unknown; auto-send is suppressed until Granted, so a legacy
-// "Always" grant (e.g. an old "View History = Always" carried across the rename)
-// cannot silently start sending the screen without an explicit, informed choice.
-// The per-chat "Send Automatically" confirmation also sets Granted, so an explicit
-// per-chat opt-in is never asked again. NoSync: a privacy decision that should not
-// travel through synced prefs to other machines.
+// Tri-state consent for automatically sharing terminal state with a paired
+// Companion device. This privacy decision remains local to this Mac.
 typedef NS_ENUM(NSInteger, iTermAutoProvideConsent) {
     iTermAutoProvideConsentUnknown = 0,
     iTermAutoProvideConsentGranted = 1,

@@ -1551,22 +1551,6 @@ launchProfileInCurrentTerminal:(Profile *)profile
     return self.window;
 }
 
-#pragma mark - Install Shell Integration
-
-- (IBAction)installShellIntegration:(id)sender {
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Shell Integration Removed";
-    alert.informativeText =
-        @"Shell integration is not available in the terminal-first fork. "
-        @"Related features should be removed or replaced instead of reinstalling it.";
-    [alert addButtonWithTitle:@"OK"];
-    if (self.window) {
-        [alert beginSheetModalForWindow:self.window completionHandler:nil];
-    } else {
-        [alert runModal];
-    }
-}
-
 #pragma mark - iTermMouseReportingFrustrationDetectorDelegate
 
 - (void)mouseReportingFrustrationDetectorDidDetectFrustration:(iTermMouseReportingFrustrationDetector *)sender {

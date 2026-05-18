@@ -248,8 +248,6 @@ static NSString *const kTurnOffMouseReportingOnAutodetectAnnouncementIdentifier 
 static NSString *const kTurnOffFocusReportingOnHostChangeAnnouncementIdentifier = @"TurnOffFocusReportingOnHostChange";
 static NSString *const kTurnOffDEC2048OnAutodetectAnnouncementIdentifier = @"TurnOffDEC2048OnHostChange";
 
-static NSString *const kShellIntegrationOutOfDateAnnouncementIdentifier =
-    @"kShellIntegrationOutOfDateAnnouncementIdentifier";
 
 static NSString *TERM_ENVNAME = @"TERM";
 static NSString *COLORFGBG_ENVNAME = @"COLORFGBG";
@@ -3265,14 +3263,14 @@ ITERM_WEAKLY_REFERENCEABLE
 - (void)startProgram:(NSString *)command
                  ssh:(BOOL)ssh
              browser:(BOOL)browser
-         environment:(NSDictionary *)environment
-         customShell:(NSString *)customShell
+         environment:(nullable NSDictionary *)environment
+         customShell:(nullable NSString *)customShell
               isUTF8:(BOOL)isUTF8
-       substitutions:(NSDictionary *)substitutions
-         arrangement:(NSString *)arrangementName
+      substitutions:(nullable NSDictionary *)substitutions
+         arrangement:(nullable NSString *)arrangementName
      fromArrangement:(BOOL)fromArrangement
-webViewConfiguration:(id)webViewConfiguration
-          completion:(void (^)(BOOL))completion {
+webViewConfiguration:(nullable id)webViewConfiguration
+          completion:(nullable void (^)(BOOL))completion {
     [self startProgram:command
                    ssh:ssh
            environment:environment
@@ -4831,17 +4829,23 @@ webViewConfiguration:(id)webViewConfiguration
             onHost:(NSString *)hostname
             asUser:(NSString *)username {
     if (hostname) {
-        NSString *ssh;
+        NSString *hostSpec;
         if (username) {
-            ssh = [NSString stringWithFormat:@"it2ssh %@@%@\n", username, hostname];
+            hostSpec = [NSString stringWithFormat:@"%@@%@", username, hostname];
         } else {
-            ssh = [NSString stringWithFormat:@"it2ssh %@\n", hostname];
+            hostSpec = hostname;
         }
+        NSString *escapedDirectory = [directory stringWithEscapedShellCharactersIncludingNewlines:YES];
+        NSString *remoteCommand;
+        if (escapedDirectory.length > 0) {
+            remoteCommand = [NSString stringWithFormat:@"cd %@ && %@", escapedDirectory, command];
+        } else {
+            remoteCommand = command;
+        }
+        NSString *ssh = [NSString stringWithFormat:@"ssh %@ %@\n",
+                         [hostSpec stringWithEscapedShellCharactersIncludingNewlines:YES],
+                         [remoteCommand stringWithEscapedShellCharactersIncludingNewlines:YES]];
         [self pasteCommand:ssh];
-        [_pendingConductor autorelease];
-        _pendingConductor = [^(PTYSession *session) {
-            [session runCommand:command inDirectory:directory onHost:nil asUser:nil];
-        } copy];
     } else {
         NSString *escapedDirectory = [directory stringWithEscapedShellCharactersIncludingNewlines:YES];
         NSString *text;
@@ -16911,8 +16915,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [self.variablesScope setValuesFromDictionary:variablesUpdate];
 
     [_textview setBadgeLabel:[self badgeLabel]];
-    [self dismissAnnouncementWithIdentifier:kShellIntegrationOutOfDateAnnouncementIdentifier];
-
     [[_delegate realParentWindow] sessionHostDidChange:self to:host];
 
     [self tryAutoProfileSwitchWithHostname:host.hostname
@@ -18325,39 +18327,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     _conductor.currentDirectory = newPath;
 }
 
-- (NSString *)shellIntegrationUpgradeUserDefaultsKeyForHost:(id<VT100RemoteHostReading>)host {
-    return [NSString stringWithFormat:@"SuppressShellIntegrationUpgradeAnnouncementForHost_%@@%@",
-            host.username, host.hostname];
-}
-
-- (void)tryToRunShellIntegrationInstallerWithPromptCheck:(BOOL)promptCheck {
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        return;
-    }
-    if (_exited) {
-        return;
-    }
-    NSString *currentCommand = [self currentCommand];
-    if (!promptCheck || currentCommand != nil) {
-        [_textview installShellIntegration:nil];
-    } else {
-        iTermWarningSelection selection =
-        [iTermWarning showWarningWithTitle:@"It looks like you're not at a command prompt."
-                                   actions:@[ @"Run Installer Anyway", @"Cancel" ]
-                                identifier:nil
-                               silenceable:kiTermWarningTypePersistent
-                                    window:self.view.window];
-        switch (selection) {
-            case kiTermWarningSelection0:
-                [_textview installShellIntegration:nil];
-                break;
-
-            default:
-                break;
-        }
-    }
-}
-
 - (void)screenDidDetectShell:(NSString *)shell {
     NSString *name = self.currentHost.usernameAndHostname;
     if (name && shell) {
@@ -18393,38 +18362,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)screenSuggestShellIntegrationUpgrade {
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        return;
-    }
-    id<VT100RemoteHostReading> currentRemoteHost = [self currentHost];
-
-    NSString *theKey = [self shellIntegrationUpgradeUserDefaultsKeyForHost:currentRemoteHost];
-    NSUserDefaults *userDefaults = [iTermUserDefaults userDefaults];
-    if ([userDefaults boolForKey:theKey]) {
-        return;
-    }
-    iTermAnnouncementViewController *announcement =
-    [iTermAnnouncementViewController announcementWithTitle:@"This account’s Shell Integration scripts are out of date."
-                                                     style:kiTermAnnouncementViewStyleWarning
-                                               withActions:@[ @"Upgrade", @"Silence Warning" ]
-                                                completion:^(int selection) {
-        switch (selection) {
-            case -2:  // Dismiss programmatically
-                break;
-
-            case -1: // No
-                break;
-
-            case 0: // Yes
-                [self tryToRunShellIntegrationInstallerWithPromptCheck:YES];
-                break;
-
-            case 1: // Never for this account
-                [userDefaults setBool:YES forKey:theKey];
-                break;
-        }
-    }];
-    [self queueAnnouncement:announcement identifier:kShellIntegrationOutOfDateAnnouncementIdentifier];
 }
 
 - (BOOL)screenShouldReduceFlicker {
@@ -19220,8 +19157,8 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         count += 1;
         [self unhookSSHConductor];
     }
-    // it2ssh waits for a newline before exiting. This is in case ssh dies while iTerm2 is sending
-    // conductor.sh.
+    // Legacy SSH integration helpers waited for a newline before exiting. This is in case ssh dies
+    // while iTerm2 is sending the helper payload.
     [self writeTaskNoBroadcast:@"\x03\n"];
     if (_queuedConnectingSSH.length) {
         [_queuedConnectingSSH release];
@@ -24023,23 +23960,16 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
 
 - (void)triggerSideEffectShowShellIntegrationRequiredAnnouncement {
     [iTermGCD assertMainQueueSafe];
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        return;
-    }
     if ([[iTermUserDefaults userDefaults] boolForKey:kSuppressCaptureOutputRequiresShellIntegrationWarning]) {
         return;
     }
-    NSString *theTitle = @"A Capture Output trigger fired, but Shell Integration is not installed.";
+    NSString *theTitle = @"A Capture Output trigger fired, but Shell Integration is unavailable in this fork.";
     void (^completion)(int selection) = ^(int selection) {
         switch (selection) {
             case -2:
                 break;
 
             case 0:
-                [self tryToRunShellIntegrationInstallerWithPromptCheck:NO];
-                break;
-
-            case 1:
                 [[iTermUserDefaults userDefaults] setBool:YES
                                                         forKey:kSuppressCaptureOutputRequiresShellIntegrationWarning];
                 break;
@@ -24048,7 +23978,7 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     iTermAnnouncementViewController *announcement =
         [iTermAnnouncementViewController announcementWithTitle:theTitle
                                                          style:kiTermAnnouncementViewStyleWarning
-                                                   withActions:@[ @"Install", @"Silence Warning" ]
+                                                   withActions:@[ @"Silence Warning" ]
                                                     completion:completion];
     [self queueAnnouncement:announcement
                  identifier:kTwoCoprocessesCanNotRunAtOnceAnnouncementIdentifier];

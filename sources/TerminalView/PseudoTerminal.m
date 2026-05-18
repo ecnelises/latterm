@@ -2503,7 +2503,7 @@ ITERM_WEAKLY_REFERENCEABLE
                 profile[KEY_WORKING_DIRECTORY] = sequence[0].initialDirectory;
             }
         } else {
-            // Local session in which the user ran it2ssh. Change to ssh profile to first host.
+            // Local session that established SSH integration. Change to ssh profile to first host.
             assert(sequence.count > 0);
             profile[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeSSHValue;
             profile[KEY_COMMAND_LINE] = sequence[0].sshargs;

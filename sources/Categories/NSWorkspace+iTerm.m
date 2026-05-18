@@ -127,12 +127,7 @@
 // A high-confidence check of whether we'd open this URL ourselves.
 // Assumes a web URL (see it_urlIsWeb:).
 - (BOOL)it_isDefaultBrowserForWebURL:(NSURL *)url {
-    if (![iTermBrowserGateway browserAllowedCheckingIfNot:YES]) {
-        return NO;
-    }
-    NSString *bundleID = [iTermAdvancedSettingsModel browserBundleID];
-    return ([bundleID isEqual:NSBundle.mainBundle.bundleIdentifier] ||
-            [self it_isDefaultAppForURL:url]);
+    return NO;
 }
 
 - (void)it_openURL:(NSURL *)url
@@ -256,32 +251,6 @@ completionHandler:^(NSRunningApplication *app, NSError *error) {
                          style:(iTermOpenStyle)style
                         upsell:(BOOL)upsell
                         window:(NSWindow *)window {
-    if (!upsell && ![iTermBrowserGateway browserAllowedCheckingIfNot:YES]) {
-        return NO;
-    }
-    if (![self it_localBrowserCouldHypotheticallyHandleURL:url]) {
-        return NO;
-    }
-    if ([self it_isDefaultBrowserForWebURL:url]) {
-        // We are the default app. Skip all the machinery and open it directly.
-        if ([self it_openURLLocally:url
-                             target:target
-                      configuration:configuration
-                          openStyle:style]) {
-            return YES;
-        }
-    }
-    if (upsell) {
-        // This feature is new and this is the main way people will discover it. Sorry for the annoyance :(
-        if ([self it_tryToOpenURLLocallyDespiteNotBeingDefaultBrowser:url
-                                                               target:target
-                                                        configuration:configuration
-                                                                style:style
-                                                             testOnly:NO
-                                                               window:window]) {
-            return YES;
-        }
-    }
     return NO;
 }
 
@@ -381,77 +350,7 @@ withApplicationAtURL:appURL
                                                       style:(iTermOpenStyle)style
                                                    testOnly:(BOOL)testOnly
                                                      window:(NSWindow *)window {
-    if (![iTermBrowserGateway browserAllowedCheckingIfNot:YES]) {
-        if ([iTermBrowserGateway shouldOfferPlugin]) {
-            if (testOnly) {
-                return [iTermBrowserGateway wouldUpsell];
-            }
-            switch ([iTermBrowserGateway upsell]) {
-                case iTermTriStateTrue:
-                    // User is downloading plugin. Return yes and you'll have to try again.
-                    return YES;
-                case iTermTriStateFalse:
-                    // Use system browser.
-                    return NO;
-                case iTermTriStateOther:
-                    // Cancel.
-                    return YES;
-            }
-        } else {
-            // Plugin not available, just use system browser.
-            return NO;
-        }
-    }
-    NSString *identifier;
-    const BOOL isFileURL = [url.scheme isEqualToString:@"file"];
-    if (isFileURL) {
-        identifier = @"NoSyncOpenLinksInAppForFileURL";
-    } else {
-        identifier = @"NoSyncOpenLinksInApp";
-    }
-    if (testOnly) {
-        NSNumber *n = [iTermWarning conditionalSavedSelectionForIdentifier:identifier];
-        if (n) {
-            return n.intValue == kiTermWarningSelection1;
-        }
-        return YES;
-    }
-    iTermWarningSelection selection = kiTermWarningSelection0;
-    switch (style) {
-        case iTermOpenStyleWindow:
-        case iTermOpenStyleTab:
-            if (isFileURL) {
-                selection = [iTermWarning showWarningWithTitle:@"iTerm2 can display files like this in its built-in web browser! Would you like to open this link in iTerm2?"
-                                                      actions:@[ @"Use Default App", @"Open in iTerm2", @"Cancel"]
-                                                    accessory:nil
-                                                   identifier:identifier
-                                                  silenceable:kiTermWarningTypePermanentlySilenceable
-                                                      heading:@"Open in iTerm2?"
-                                                       window:window];
-            } else {
-                selection = [iTermWarning showWarningWithTitle:@"iTerm2 can display web pages! Would you like to open this link in iTerm2?"
-                                                      actions:@[ @"Use Default Browser", @"Open in iTerm2", @"Cancel"]
-                                                    accessory:nil
-                                                   identifier:identifier
-                                                  silenceable:kiTermWarningTypePermanentlySilenceable
-                                                      heading:@"Open in iTerm2?"
-                                                       window:window];
-            }
-            break;
-        case iTermOpenStyleVerticalSplit:
-        case iTermOpenStyleHorizontalSplit:
-            // Implied consent - no way to open in a split otherwise!
-            selection = kiTermWarningSelection1;
-            break;
-    }
-    if (selection == kiTermWarningSelection2) {
-        // Cancel: do nothing. Return YES to prevent the caller from opening in the default browser.
-        return YES;
-    }
-    if (selection != kiTermWarningSelection1) {
-        return NO;
-    }
-    return [self it_openURLLocally:url target:target configuration:configuration openStyle:style];
+    return NO;
 }
 
 - (BOOL)it_openURLLocally:(NSURL *)url

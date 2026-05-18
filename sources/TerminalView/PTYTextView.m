@@ -534,14 +534,9 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
         return YES;
     }
 
-    if ([item action] == @selector(installShellIntegration:) &&
-        ![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        return NO;
-    }
     if ([item action]==@selector(saveDocumentAs:)) {
         return [self isAnyCharSelected];
     } else if ([item action] == @selector(selectAll:) ||
-               [item action]==@selector(installShellIntegration:) ||
                ([item action] == @selector(print:) && [item tag] != 1)) {
         // We always validate the above commands
         return YES;

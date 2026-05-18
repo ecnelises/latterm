@@ -75,7 +75,7 @@ const NSInteger iTermMaxInitialSessionSize = 1250;
 static NSMutableArray<NSNotification *> *sDelayedNotifications;
 
 NSString *iTermPathToSSH(void) {
-    return [[NSBundle bundleForClass:[ITAddressBookMgr class]] pathForResource:@"utilities/it2ssh" ofType:nil];
+    return @"/usr/bin/ssh";
 }
 
 iTermWindowType iTermWindowDefaultType(void) {
@@ -879,7 +879,7 @@ iTermPercentage iTermPercentageFromProfile(Profile *profile, iTermWindowType win
             if (ssh) {
                 NSDictionary *dict = bookmark[KEY_SSH_CONFIG];
                 iTermSSHConfiguration *config = [[iTermSSHConfiguration alloc] initWithDictionary:dict];
-                if (!config.sshIntegration) {
+                if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled] || !config.sshIntegration) {
                     return [NSString stringWithFormat:@"ssh %@", command];
                 }
                 NSString *wrappedCommand = [NSString stringWithFormat:@"'%@' %@",

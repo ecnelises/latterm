@@ -928,4 +928,3 @@ fileprivate func DisplayLinkCallback(displayLink: CVDisplayLink,
     displaySource.add(data: 1)
     return kCVReturnSuccess
 }
-

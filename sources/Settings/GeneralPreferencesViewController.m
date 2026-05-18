@@ -1782,15 +1782,7 @@ objectValueForTableColumn:(NSTableColumn *)tableColumn
                     key:kPreferenceKeyAISafetyCheck
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
-
-    info = [self defineControl:_aiCustomHeadersEnabled
-                           key:kPreferenceKeyAICustomHeadersEnabled
-                   relatedView:nil
-                          type:kPreferenceInfoTypeCheckbox];
-    info.onChange = ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        [strongSelf updateCustomHeadersControlsEnabled];
-    };
+    _aiSafetyCheck.enabled = NO;
         [self validatePlugin];
     } else {
         [self it_removeTabViewItemWithLabel:@"AI"];

@@ -153,9 +153,9 @@ public class SSHIdentity: NSObject, Codable {
     }
 
     // We make an effort to figure out the real hostname, but there's no guarantee that we succeed.
-    // For example, the user could do `it2ssh foo` where `foo` is only defined in /etc/hosts.
+    // For example, the user could SSH to `foo` where `foo` is only defined in /etc/hosts.
     // The remote host could report itself as either `foo` or `foo.example.com`. In the case where
-    // they are both `foo` it's wise to match state.host (derived from the it2ssh command line)
+    // they are both `foo` it's wise to match state.host (derived from the SSH command line)
     // against the `host` parameter (derived from shell integration control sequences from the
     // remote host).
     public func matches(host: String?,  // Host of remote file

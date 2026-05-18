@@ -868,11 +868,11 @@ backgroundColor:(nullable NSColor *)backgroundColor;
          environment:(nullable NSDictionary *)prog_env
          customShell:(nullable NSString *)customShell
               isUTF8:(BOOL)isUTF8
-       substitutions:(nullable NSDictionary *)substitutions
-         arrangement:(nullable NSString *)arrangement
-     fromArrangement:(BOOL)fromArrangement
-webViewConfiguration:(id)webViewConfiguration
-          completion:(nullable void (^)(BOOL))completion;
+	      substitutions:(nullable NSDictionary *)substitutions
+	        arrangement:(nullable NSString *)arrangement
+	    fromArrangement:(BOOL)fromArrangement
+	webViewConfiguration:(nullable id)webViewConfiguration
+	         completion:(nullable void (^)(BOOL))completion;
 
 // This is an alternative to runCommandWithOldCwd and startProgram. It attaches
 // to an existing server. Use only if [iTermAdvancedSettingsModel runJobsInServers]
@@ -1167,8 +1167,6 @@ webViewConfiguration:(id)webViewConfiguration
 
 - (void)queueAnnouncement:(iTermAnnouncementViewController *)announcement
                identifier:(NSString *)identifier;
-
-- (void)tryToRunShellIntegrationInstallerWithPromptCheck:(BOOL)promptCheck;
 
 - (BOOL)encodeArrangementWithContents:(BOOL)includeContents
                               encoder:(id<iTermEncoderAdapter>)encoder;

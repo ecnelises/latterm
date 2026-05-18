@@ -524,32 +524,6 @@
                             [alert runModal];
                         }
                     }];
-                } else {
-                    if ([iTermBrowserGateway browserAllowedCheckingIfNot:NO]) {
-                        if ([object isKindOfClass:[iTermOpenQuicklyBookmarkItem class]]) {
-                            iTermOpenQuicklyBookmarkItem *item = [iTermOpenQuicklyBookmarkItem castFrom:object];
-                            PTYSession *session = iTermController.sharedInstance.currentTerminal.currentSession;
-                            if (session.isBrowserSession) {
-                                [session openURL:item.url];
-                            } else {
-                                [[iTermController sharedInstance] openURL:item.url
-                                                                   target:nil
-                                                                openStyle:iTermOpenStyleTab
-                                                                select:YES];
-                            }
-                        } else if ([object isKindOfClass:[iTermOpenQuicklyURLItem class]]) {
-                            iTermOpenQuicklyURLItem *item = [iTermOpenQuicklyURLItem castFrom:object];
-                            PTYSession *session = iTermController.sharedInstance.currentTerminal.currentSession;
-                            if (session.isBrowserSession) {
-                                [session openURL:item.url];
-                            } else {
-                                [[iTermController sharedInstance] openURL:item.url
-                                                                   target:nil
-                                                                openStyle:iTermOpenStyleTab
-                                                                   select:YES];
-                            }
-                        }
-                    }
                 }
             }
         }

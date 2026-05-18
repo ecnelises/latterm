@@ -3707,6 +3707,9 @@ typedef struct {
 
 - (void)terminalBeginSSHIntegeration:(NSString *)args {
     RLog(@"begin %@", args);
+    if ([iTermTerminalFirstFeatures terminalFirstEnabled]) {
+        return;
+    }
     if (args) {
         // Save args
         NSArray<NSString *> *parts = [args componentsSeparatedByString:@" "];
@@ -3724,6 +3727,10 @@ typedef struct {
 
 - (void)terminalSendConductor:(NSString *)args {
     RLog(@"begin %@", args);
+    if ([iTermTerminalFirstFeatures terminalFirstEnabled]) {
+        _sshIntegrationFlags = nil;
+        return;
+    }
     if (!_sshIntegrationFlags) {
         return;
     }
@@ -3731,11 +3738,11 @@ typedef struct {
     NSString *v = params[@"v"];
     if (!v || [v integerValue] < 3) {
         _sshIntegrationFlags = nil;
-        [self appendBannerMessage:@"Out-of-date version of it2ssh detected. Please upgrade it2ssh."];
+        [self appendBannerMessage:@"Out-of-date SSH integration helper detected."];
         return;
     } else if (v.integerValue > 3) {
         _sshIntegrationFlags = nil;
-        [self appendBannerMessage:@"Future version of it2ssh detected. Please upgrade iTerm2."];
+        [self appendBannerMessage:@"Unsupported SSH integration helper detected."];
         return;
     }
 
@@ -4016,4 +4023,3 @@ willExecuteToken:(VT100Token *)token
 }
 
 @end
-

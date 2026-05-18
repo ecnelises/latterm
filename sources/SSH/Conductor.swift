@@ -7,6 +7,7 @@
 
 import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 @objc(iTermConductorDelegate)
 protocol ConductorDelegate: Any {
@@ -1624,13 +1625,13 @@ extension Conductor {
     @objc(downloadOrView:window:)
     func downloadOrView(path: SCPPath, window: NSWindow?) {
         let ext = path.path.pathExtension.lowercased()
-        let mimeType = mimeType(for: ext)
+        let detectedMimeType = UTType(filenameExtension: ext)?.preferredMIMEType
         let unsupportedMimeTypes = [
             "application/zip",
             "application/x-gtar",
             "application/x-tar",
         ]
-        guard let mimeType,
+        guard let mimeType = detectedMimeType,
               let url = path.viewInBrowserURL,
               !unsupportedMimeTypes.contains(mimeType) else {
             download(path: path)
@@ -1749,16 +1750,12 @@ extension Conductor {
         defer {
             myJump = nil
         }
-        let path = Bundle(for: Conductor.self).path(forResource: "utilities/it2ssh", ofType: nil)!
-        let it2ssh = try! String(contentsOfFile: path)
+        let sshargs = myJump?.sshargs ?? ""
         let code = """
         #!/usr/bin/env bash
         rm $SELF
         unset SELF
-        it2ssh_wrapper() {
-        \(it2ssh)
-        }
-        it2ssh_wrapper \(myJump!.sshargs)
+        exec ssh \(sshargs)
         """
         return code
     }
@@ -2308,8 +2305,8 @@ extension Conductor {
                     DLog("Failed to get shell")
                     return
                 }
-                // If you ran `it2ssh localhost /usr/local/bin/bash` then the shell is /usr/local/bin/bash.
-                // If you ran `it2ssh localhost` then the shell comes from the response to getshell.
+                // If SSH was launched with a remote command then that command describes the shell.
+                // Otherwise the shell comes from the response to getshell.
                 let parts = lines.strings.joined(separator: "").components(separatedBy: "\n").map {
                     $0.trimmingCharacters(in: .whitespaces)
                 }

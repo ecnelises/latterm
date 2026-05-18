@@ -516,34 +516,7 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 - (void)addURLToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
            withMatcher:(iTermMinimumSubsequenceMatcher *)matcher
                  urls:(NSMutableSet<NSURL *> *)urls {
-    if (![iTermBrowserGateway browserAllowedCheckingIfNot:NO]) {
-        return;
-    }
-    NSURL *url = [NSURL URLWithString:matcher.query];
-    if ([urls containsObject:url]) {
-        return;
-    }
-    if ([matcher.query hasPrefix:@"/"]) {
-        return;
-    }
-    if ([matcher.query hasPrefix:@"https://"] && url != nil) {
-        iTermOpenQuicklyURLItem *item = [[iTermOpenQuicklyURLItem alloc] init];
-
-        NSMutableAttributedString *attributedName = [[NSMutableAttributedString alloc] init];
-        item.score = [self scoreForURL:url matcher:matcher attributedName:attributedName];
-        if (item.score > 0) {
-            item.detail = [_delegate openQuicklyModelDisplayStringForFeatureNamed:nil
-                                                                            value:@"Open URL in Browser"
-                                                               highlightedIndexes:nil];
-            item.title = attributedName;
-            item.identifier = matcher.query;
-            item.url = [NSURL URLWithString:matcher.query];
-            [items addObject:item];
-            [urls addObject:item.url];
-
-
-        }
-    }
+    return;
 }
 
 - (void)addChangeColorPresetToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
@@ -855,14 +828,12 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
             [self addInvocation:queryString scope:scope toItems:items withMatcher:matcher];
         }
 #endif
-        if ([iTermBrowserGateway browserAllowedCheckingIfNot:NO]) {
-            NSMutableSet<NSURL *> *urls = [NSMutableSet set];
-            if ([command supportsBookmarks]) {
-                [self addBookmarkToItems:items withMatcher:matcher urls:urls];
-            }
-            if ([command supportsURLs]) {
-                [self addURLToItems:items withMatcher:matcher urls:urls];
-            }
+        NSMutableSet<NSURL *> *urls = [NSMutableSet set];
+        if ([command supportsBookmarks]) {
+            [self addBookmarkToItems:items withMatcher:matcher urls:urls];
+        }
+        if ([command supportsURLs]) {
+            [self addURLToItems:items withMatcher:matcher urls:urls];
         }
     }
     // Sort from highest to lowest score.

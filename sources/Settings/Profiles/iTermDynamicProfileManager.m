@@ -461,8 +461,8 @@
 
     for (Profile *profile in allProfiles) {
         const BOOL rawBrowserProfile = [profile[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
-        if ((![iTermTerminalFirstFeatures browserFeaturesEnabled] && rawBrowserProfile) ||
-            (![iTermBrowserGateway browserAllowedCheckingIfNot:NO] && [profile profileType] == ProfileTypeBrowser)) {
+        if (![iTermTerminalFirstFeatures browserFeaturesEnabled] &&
+            (rawBrowserProfile || [profile profileType] == ProfileTypeBrowser)) {
             continue;
         }
         if ([guids containsObject:profile[KEY_GUID]]) {

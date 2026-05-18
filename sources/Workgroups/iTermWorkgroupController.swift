@@ -40,8 +40,8 @@ enum iTermWorkgroupEntryMechanism: Int {
 }
 
 // Public API for entering and exiting workgroups on sessions. Owns no
-// trigger logic — callers (trigger sources like ClaudeCodeModeController,
-// menu actions, API calls) invoke these methods directly.
+// trigger logic; menu actions, API calls, and other callers invoke these
+// methods directly.
 @objc(iTermWorkgroupController)
 final class iTermWorkgroupController: NSObject {
     @objc static let instance = iTermWorkgroupController()

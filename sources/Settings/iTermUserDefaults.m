@@ -26,10 +26,6 @@ static NSString *const iTermUserDefaultsKeyEnableAutomaticProfileSwitchingLoggin
 
 static NSString *const iTermUserDefaultsKeyRequireAuthenticationAfterScreenLocks = @"RequireAuthenticationAfterScreenLocks";
 static NSString *const iTermUserDefaultsKeyOpenTmuxDashboardIfHiddenWindows = @"OpenTmuxDashboardIfHiddenWindows";
-static NSString *const iTermUserDefaultsKeyClaudeCodeWorkgroupUpsellSuppressed = @"ClaudeCodeWorkgroupUpsellSuppressed";
-static NSString *const iTermUserDefaultsKeyClaudeCodeHooksInstalled = @"NoSyncClaudeCodeHooksInstalled";
-static NSString *const iTermUserDefaultsKeyClaudeCodeTriggersInstalled = @"ClaudeCodeTriggersInstalled";
-static NSString *const iTermUserDefaultsKeyClaudeCodeIntegrationCompleted = @"NoSyncClaudeCodeIntegrationCompleted";
 static NSString *const iTermUserDefaultsKeyShowSessionStatusInTabSubtitle = @"ShowSessionStatusInTabSubtitle";
 NSString *const iTermShowSessionStatusInTabSubtitleDidChange = @"iTermShowSessionStatusInTabSubtitleDidChange";
 static NSString *const iTermUserDefaultsKeyHaveExplainedHowToAddTouchbarControls = @"NoSyncHaveExplainedHowToAddTouchbarControls";
@@ -46,11 +42,6 @@ static NSString *const iTermUserDefaultsKeyWindowCornerRadiusCache = @"NoSyncWin
 static NSString *const iTermUserDefaultsKeyLastShutdownWasClean = @"NoSyncLastShutdownWasClean";
 static NSString *const iTermUserDefaultsKeyWorkgroupsData = @"Workgroups";
 static NSString *const iTermUserDefaultsKeyWorkgroupShortcutsBackfilled = @"NoSyncWorkgroupShortcutsBackfilled";
-static NSString *const iTermUserDefaultsKeyClaudeCodeDiffModeBackfilled = @"NoSyncClaudeCodeDiffModeBackfilled";
-static NSString *const iTermUserDefaultsKeyClaudeCodeReviewSystemPromptCommandBackfilled = @"NoSyncClaudeCodeReviewSystemPromptCommandBackfilled";
-static NSString *const iTermUserDefaultsKeyClaudeCodeAutoSendClippingsBackfilled = @"NoSyncClaudeCodeAutoSendClippingsBackfilled";
-static NSString *const iTermUserDefaultsKeyClaudeCodeAutoRequestReviewBackfilled = @"NoSyncClaudeCodeAutoRequestReviewBackfilled";
-static NSString *const iTermUserDefaultsKeyAIModelCatalogUpdateConsent = @"NoSyncAIModelCatalogUpdateConsent";
 static NSString *const iTermUserDefaultsKeyAutoProvideConsent = @"NoSyncAutoProvideConsent";
 
 @implementation iTermUserDefaults
@@ -205,42 +196,6 @@ static NSUserDefaults *iTermPrivateUserDefaults(void) {
                         forKey:iTermUserDefaultsKeyOpenTmuxDashboardIfHiddenWindows];
 }
 
-+ (BOOL)claudeCodeWorkgroupUpsellSuppressed {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeWorkgroupUpsellSuppressed];
-}
-
-+ (void)setClaudeCodeWorkgroupUpsellSuppressed:(BOOL)suppressed {
-    [self.userDefaults setBool:suppressed
-                        forKey:iTermUserDefaultsKeyClaudeCodeWorkgroupUpsellSuppressed];
-}
-
-+ (BOOL)claudeCodeHooksInstalled {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeHooksInstalled];
-}
-
-+ (void)setClaudeCodeHooksInstalled:(BOOL)installed {
-    [self.userDefaults setBool:installed
-                        forKey:iTermUserDefaultsKeyClaudeCodeHooksInstalled];
-}
-
-+ (BOOL)claudeCodeTriggersInstalled {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeTriggersInstalled];
-}
-
-+ (void)setClaudeCodeTriggersInstalled:(BOOL)installed {
-    [self.userDefaults setBool:installed
-                        forKey:iTermUserDefaultsKeyClaudeCodeTriggersInstalled];
-}
-
-+ (BOOL)claudeCodeIntegrationCompleted {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeIntegrationCompleted];
-}
-
-+ (void)setClaudeCodeIntegrationCompleted:(BOOL)completed {
-    [self.userDefaults setBool:completed
-                        forKey:iTermUserDefaultsKeyClaudeCodeIntegrationCompleted];
-}
-
 + (BOOL)showSessionStatusInTabSubtitle {
     return [self.userDefaults boolForKey:iTermUserDefaultsKeyShowSessionStatusInTabSubtitle];
 }
@@ -369,51 +324,6 @@ static NSUserDefaults *iTermPrivateUserDefaults(void) {
 + (void)setWorkgroupShortcutsBackfilled:(BOOL)value {
     [self.userDefaults setBool:value
                         forKey:iTermUserDefaultsKeyWorkgroupShortcutsBackfilled];
-}
-
-+ (BOOL)claudeCodeDiffModeBackfilled {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeDiffModeBackfilled];
-}
-
-+ (void)setClaudeCodeDiffModeBackfilled:(BOOL)value {
-    [self.userDefaults setBool:value
-                        forKey:iTermUserDefaultsKeyClaudeCodeDiffModeBackfilled];
-}
-
-+ (BOOL)claudeCodeReviewSystemPromptCommandBackfilled {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeReviewSystemPromptCommandBackfilled];
-}
-
-+ (void)setClaudeCodeReviewSystemPromptCommandBackfilled:(BOOL)value {
-    [self.userDefaults setBool:value
-                        forKey:iTermUserDefaultsKeyClaudeCodeReviewSystemPromptCommandBackfilled];
-}
-
-+ (BOOL)claudeCodeAutoSendClippingsBackfilled {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeAutoSendClippingsBackfilled];
-}
-
-+ (void)setClaudeCodeAutoSendClippingsBackfilled:(BOOL)value {
-    [self.userDefaults setBool:value
-                        forKey:iTermUserDefaultsKeyClaudeCodeAutoSendClippingsBackfilled];
-}
-
-+ (BOOL)claudeCodeAutoRequestReviewBackfilled {
-    return [self.userDefaults boolForKey:iTermUserDefaultsKeyClaudeCodeAutoRequestReviewBackfilled];
-}
-
-+ (void)setClaudeCodeAutoRequestReviewBackfilled:(BOOL)value {
-    [self.userDefaults setBool:value
-                        forKey:iTermUserDefaultsKeyClaudeCodeAutoRequestReviewBackfilled];
-}
-
-+ (iTermAIModelCatalogUpdateConsent)aiModelCatalogUpdateConsent {
-    return [self.userDefaults integerForKey:iTermUserDefaultsKeyAIModelCatalogUpdateConsent];
-}
-
-+ (void)setAiModelCatalogUpdateConsent:(iTermAIModelCatalogUpdateConsent)value {
-    [self.userDefaults setInteger:value
-                           forKey:iTermUserDefaultsKeyAIModelCatalogUpdateConsent];
 }
 
 + (iTermAutoProvideConsent)autoProvideConsent {

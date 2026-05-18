@@ -108,10 +108,6 @@ iTermURLActionHelperDelegate>
                                                                                            selection:(iTermSelection *)selection;
 - (NSString *)selectedTextWithTrailingWhitespace;
 
-#pragma mark - Install Shell Integration
-
-- (IBAction)installShellIntegration:(nullable id)sender;
-
 #pragma mark - Mouse Reporting Frustration Detector
 
 - (void)didCopyToPasteboardWithControlSequence;

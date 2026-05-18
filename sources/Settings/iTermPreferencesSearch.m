@@ -236,9 +236,6 @@
 }
 
 - (void)addDocumentToIndex:(iTermPreferencesSearchDocument *)document {
-    if (document.profileTypes == ProfileTypeBrowser && ![iTermBrowserGateway browserAllowedCheckingIfNot:NO]) {
-        return;
-    }
     for (NSString *keyword in [NSSet setWithArray:document.allKeywords]) {
         [self addToken:keyword inDocument:document toIndex:_keywordIndex];
     }

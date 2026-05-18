@@ -848,6 +848,7 @@ const int kColorMapAnsiBrightModifier = 8;
 @dynamic minimumContrast;
 @dynamic useSeparateColorsForLightAndDarkMode;
 @dynamic darkMode;
+@dynamic backgroundIsDark;
 @dynamic generation;
 @dynamic harmonize;
 @dynamic backgroundIsDark;
@@ -880,4 +881,3 @@ const int kColorMapAnsiBrightModifier = 8;
 }
 
 @end
-

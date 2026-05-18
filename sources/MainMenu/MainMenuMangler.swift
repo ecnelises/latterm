@@ -66,7 +66,6 @@ class MainMenuMangler: NSObject {
         "Secure Keyboard Entry": "lock.badge.checkmark",
         "Make iTerm2 Default Term": "star.fill",
         "Make Terminal Default Term": "star",
-        "Install Shell Integration": "square.and.arrow.down.fill",
         "Remove Recent Profiles from Dock Menu": "person.fill.xmark",
         "About iTerm2": "info.circle.fill",
         "Quit iTerm2": "power",
