@@ -110,8 +110,7 @@
                                              selector:@selector(commandValidityDidChange:)
                                                  name:iTermLocalFileChecker.commandValidityDidChange
                                                object:nil];
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled] ||
-        ![iTermAdvancedSettingsModel generativeAIAllowed]) {
+    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
         _engageAI.hidden = YES;
     }
 }
@@ -314,8 +313,7 @@
         @"^⇧-click\tAdd cursor",
         @"⌥-drag\tAdd cursors"
     ];
-    if ([iTermTerminalFirstFeatures aiFeaturesEnabled] &&
-        [iTermAdvancedSettingsModel generativeAIAllowed]) {
+    if ([iTermTerminalFirstFeatures aiFeaturesEnabled]) {
         lines = [lines arrayByAddingObject:@"⌘Y\tNatural language AI lookup"];
     }
     lines = [lines arrayByAddingObjectsFromArray:@[

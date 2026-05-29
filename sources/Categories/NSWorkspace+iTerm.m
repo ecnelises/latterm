@@ -70,22 +70,7 @@
 // A very weak check of whether the URL is openable by the built-in browser. This can be used to
 // check if it's worth nagging the user to install the plugin to open this URL.
 - (BOOL)it_localBrowserCouldHypotheticallyHandleURL:(NSURL *)url {
-    static NSArray<NSString *> *supportedSchemes;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        // Keep the pre-phase2 browser URL gate without depending on removed browser metadata types.
-        supportedSchemes = @[ @"http", @"https" ];
-    });
-    if (![iTermAdvancedSettingsModel browserProfiles]) {
-        return NO;
-    }
-    if ([url.scheme isEqualToString:@"file"] && [self it_localBrowserIsCompatibleWithFileURL:url]) {
-        return YES;
-    }
-    if (![supportedSchemes containsObject:url.scheme]) {
-        return NO;
-    }
-    return YES;
+    return NO;
 }
 
 // Is this URL one that would open locally, or would request consent to open locally?

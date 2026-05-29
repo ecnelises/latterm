@@ -32,8 +32,6 @@ NSString *const kiTermIndicatorDebugLogging = @"kiTermIndicatorDebugLogging";
 NSString *const kiTermIndicatorSecureKeyboardEntry_Forced = @"kiTermIndicatorSecureKeyboardEntry_Forced";
 NSString *const kiTermIndicatorSecureKeyboardEntry_User = @"kiTermIndicatorSecureKeyboardEntry_User";
 NSString *const kiTermIndicatorPinned = @"kiTermIndicatorPinned";
-NSString *const kiTermIndicatorAIChatLinked = @"kiTermIndicatorAIChatLinked";
-NSString *const kiTermIndicatorAIChatStreaming = @"kiTermIndicatorAIChatStreaming";
 NSString *const kiTermIndicatorChannel = @"kiTermIndicatorChannel";
 NSString *const kiTermIndicatorBufferingInput = @"kiTermIndicatorBufferingInput";
 NSString *const kiTermIndicatorShowRememberedAlerts = @"kiTermIndicatorShowRememberedAlerts";
@@ -109,8 +107,6 @@ CGFloat kiTermIndicatorStandardHeight = 20;
             kiTermIndicatorSecureKeyboardEntry_Forced: SFSymbolGetString(SFSymbolKey),
             kiTermIndicatorSecureKeyboardEntry_User: SFSymbolGetString(SFSymbolKey),
             kiTermIndicatorPinned: SFSymbolGetString(SFSymbolPin),
-            kiTermIndicatorAIChatLinked: SFSymbolGetString(SFSymbolBrain),
-            kiTermIndicatorAIChatStreaming: SFSymbolGetString(SFSymbolDotRadiowavesRight),
             kiTermIndicatorChannel: SFSymbolGetString(SFSymbolRectangleStack),
             kiTermIndicatorBufferingInput: SFSymbolGetString(SFSymbolPauseCircle),
             kiTermIndicatorShowRememberedAlerts: SFSymbolGetString(SFSymbolBellBadge),
@@ -313,8 +309,6 @@ CGFloat kiTermIndicatorStandardHeight = 20;
               kiTermIndicatorSecureKeyboardEntry_Forced,
               kiTermIndicatorSecureKeyboardEntry_User,
               kiTermIndicatorPinned,
-              kiTermIndicatorAIChatLinked,
-              kiTermIndicatorAIChatStreaming,
               kiTermIndicatorChannel,
               kiTermIndicatorBufferingInput,
               kiTermIndicatorShowRememberedAlerts,
@@ -390,9 +384,6 @@ CGFloat kiTermIndicatorStandardHeight = 20;
         kiTermIndicatorSecureKeyboardEntry_User: @"Secure Keyboard Entry is enabled. Select iTerm2 > Secure Keyboard Entry to disable.\n[Disable this indicator.](iterm2:disable-secure-keyboard-entry-indicator)",
         kiTermIndicatorSecureKeyboardEntry_Forced: @"Secure Keyboard Entry is enabled because another app has turned it on.\n[Disable this indicator.](iterm2:disable-secure-keyboard-entry-indicator)",
         kiTermIndicatorPinned: @"This Hotkey Window is pinned.",
-        kiTermIndicatorAIChatLinked: [NSString stringWithFormat:@"AI Chats can view or control this session.\n * [Unlink from AI Chat](iterm2:unlink-session-chat?s=%@&t=%@)\n * [Reveal AI Chat](iterm2:reveal-chat-for-session?s=%@&t=%@)", sessionID, [[NSWorkspace sharedWorkspace] it_newToken], sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],
-        kiTermIndicatorAIChatStreaming: [NSString stringWithFormat:@"Commands run in this session are automatically sent to an AI chat, along with their output. [Stop sending](iterm2:disable-streaming-session-chat?s=%@&t=%@)",
-                                         sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],
         kiTermIndicatorChannel: [NSString stringWithFormat:@"This command is running within another session.\n * [Return to Enclosing Session](iterm2:pop-channel?s=%@&t=%@)", sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],
         kiTermIndicatorBufferingInput: @"Keyboard input is being buffered and will be sent when a trigger stops buffering.",
         kiTermIndicatorShowRememberedAlerts: @"Showing alerts with remembered selections. Disable via View > Always Show Alerts with Remembered Selections.",

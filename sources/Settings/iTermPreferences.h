@@ -12,12 +12,6 @@
 extern NSString *const iTermMetalSettingsDidChangeNotification;
 extern NSString *const iTermAutoComposerDidChangeNotification;
 
-typedef NS_ENUM(NSUInteger, iTermAIPermission) {
-    iTermAIPermissionAsk = 0,
-    iTermAIPermissionAllow = 1,
-    iTermAIPermissionNever = 2
-};
-
 // Values for kPreferenceKeyOpenTmuxWindowsIn (corresponds to tags in control).
 typedef NS_ENUM(NSInteger, iTermOpenTmuxWindowsMode) {
     kOpenTmuxWindowsAsNativeWindows = 0,
@@ -77,40 +71,6 @@ typedef NS_ENUM(NSInteger, iTermPreferenceSavePrefsMode) {
     iTermPreferenceSavePrefsModeAlways = 2
 };
 
-typedef NS_ENUM(NSUInteger, iTermAIAPI) {
-    iTermAIAPICompletions = 0,
-    iTermAIAPIChatCompletions = 1,
-    iTermAIAPIResponses = 2,
-    iTermAIAPIGemini = 3,
-    iTermAIAPIEarlyO1 = 4,
-    iTermAIAPILlama = 5,
-    iTermAIAPIDeepSeek = 6,
-    iTermAIAPIAnthropic = 7,
-    iTermAIAPIAppleIntelligence = 8
-};
-
-typedef NS_ENUM(NSUInteger, iTermAIVendor) {
-    iTermAIVendorDeepSeek = 0,
-    iTermAIVendorGemini = 1,
-    iTermAIVendorOpenAI = 2,
-    iTermAIVendorLlama = 3,
-    iTermAIVendorAnthropic = 4,
-    iTermAIVendorApple = 5
-};
-
-typedef NS_ENUM(NSUInteger, iTermAIPrompt) {
-    iTermAIPromptEngageAI = 0,
-    iTermAIPromptAIChat = 1,
-    iTermAIPromptAIChatReadOnlyTerminal = 2,
-    iTermAIPromptAIChatReadWriteTerminal = 3,
-    iTermAIPromptAIChatBrowser = 4,
-    iTermAIPromptAIChatReadOnlyTerminalBrowser = 5,
-    iTermAIPromptAIChatReadWriteTerminalBrowser = 6,
-    iTermAIPromptAIChatOrchestration = 7,
-    iTermAIPromptCodeReviewSystem = 8,
-    iTermAIPromptChatIcon = 9,
-};
-
 typedef NS_ENUM(NSUInteger, iTermWindowPlacement) {
     iTermWindowPlacementSystem,
     iTermWindowPlacementSmart,
@@ -134,41 +94,12 @@ extern NSString *const kPreferenceKeyConfirmClosingMultipleTabs;
 extern NSString *const kPreferenceKeyPromptOnQuit;
 extern NSString *const kPreferenceKeyPromptOnQuitEvenIfThereAreNoWindows;
 extern NSString *const kPreferenceKeyInstantReplayMemoryMegabytes;
-extern NSString *const kPreferenceKeyAITimeout;
 extern NSString *const kPreferenceKeySavePasteAndCommandHistory;
 extern NSString *const kPreferenceKeyAddBonjourHostsToProfiles;
-extern NSString *const kPreferenceKeyNotifyOnlyForCriticalShellIntegrationUpdates;
 extern NSString *const kPreferenceKeyCheckForUpdatesAutomatically;
 extern NSString *const kPreferenceKeyCheckForTestReleases;
 extern NSString *const kPreferenceKeyLoadPrefsFromCustomFolder;
 extern NSString *const kPreferenceKeyUseCustomScriptsFolder;  // Bool
-extern NSString *const kPreferenceKeyOpenAIAPIKey;  // deprecated
-extern NSString *const kPreferenceKeyAIAPIKey;
-extern NSString *const kPreferenceKeyAIPrompt;
-extern NSString *const kPreferenceKeyAIPromptAIChat;
-extern NSString *const kPreferenceKeyAIPromptAIChatReadOnlyTerminal;
-extern NSString *const kPreferenceKeyAIPromptAIChatReadWriteTerminal;
-extern NSString *const kPreferenceKeyAIPromptAIChatBrowser;
-extern NSString *const kPreferenceKeyAIPromptAIChatReadOnlyTerminalBrowser;
-extern NSString *const kPreferenceKeyAIPromptAIChatReadWriteTerminalBrowser;
-extern NSString *const kPreferenceKeyAIPromptAIChatOrchestration;
-extern NSString *const kPreferenceKeyAIPromptCodeReview;
-extern NSString *const kPreferenceKeyAIPromptCodeReviewSystem;
-extern NSString *const kPreferenceKeyAIPromptChatIcon;
-// The shipped default for kPreferenceKeyAIPromptChatIcon. Exposed so
-// tests can verify the template independent of the machine's defaults.
-extern NSString *iTermDefaultAIPromptChatIcon;
-// Names of the variables (in the interpolated-string "ai" scope) that
-// templated prompts must reference. Shared by the feature code that
-// supplies the value and the Settings warning that checks the template
-// references it, so the two cannot drift.
-extern NSString *const iTermAIPromptVariablePrompt;   // Engage AI: the user's query
-extern NSString *const iTermAIPromptVariableSubject;  // Chat List Icon: the chat's title
-extern NSString *const kPreferenceKeyAIPromptPlaceholder;  // not a real setting, just there to make the prefs UI infra happy
-extern NSString *const kPreferenceKeyAIModel;
-extern NSString *const kPreferenceKeyAITokenLimit;
-extern NSString *const kPreferenceKeyAIResponseTokenLimit;
-
 // Note: if kPreferenceKeyNeverRemindPrefsChangesLostForFileHaveSelection is false, then use the default value (.never).
 // Otherwise, respect this value.
 extern NSString *const kPreferenceKeyNeverRemindPrefsChangesLostForFileSelection;  // iTermPreferenceSavePrefsMode
@@ -204,55 +135,13 @@ extern NSString *const kPreferenceKeyPreferIntegratedGPU;
 extern NSString *const kPreferenceKeyMaximizeThroughput;
 extern NSString *const kPreferenceKeyEnableAPIServer;
 extern NSString *const kPreferenceKeyAPIAuthentication;
-extern NSString *const kPreferenceKeyEnableAI;
 extern NSString *const kPreferenceKeyBidi;
 extern NSString *const kPreferenceKeySshIntegrationForURLs;
 
-extern NSString *const kPhonyPreferenceKeyInstallAIPlugin;
 extern NSString *const kPreferenceKeyPhonyAllowSendingClipboardContents;
-extern NSString *const kPreferenceKeyAITermURL;
-extern NSString *const kPreferenceKeyAITermUseLegacyAPI;  // deprecated
-extern NSString *const kPreferenceKeyAITermAPI;  // NSNumber(iTermAIAPI)
 extern NSString *const kPreferenceKeyIndicateNonDefaultValues;
-extern NSString *const kPreferenceKeyAIFeatureHostedCodeInterpreter;
-extern NSString *const kPreferenceKeyAIFeatureHostedFileSearch;
-extern NSString *const kPreferenceKeyAIFeatureHostedWebSearch;
-extern NSString *const kPreferenceKeyAIFeatureFunctionCalling;
-extern NSString *const kPreferenceKeyAIFeatureStreamingResponses;
-extern NSString *const kPreferenceKeyAIVectorStore;
-extern NSString *const kPreferenceKeyAIManualModelConfigurations;  // NSArray of NSDictionary
-// Name of the manual model the user designated as the "economy" model: a
-// cheaper model used for frequent, low-stakes background judgements (command
-// safety, screen-idle detection). Empty string means none; the catalog's
-// per-model economy pointer is then used instead. See ScreenWatchPoller.
-extern NSString *const kPreferenceKeyAIEconomyModelName;
-extern NSString *const kPreferenceKeyUseRecommendedAIModel;
-extern NSString *const kPreferenceKeyAIVendor;  // iTermAIVendor
-extern NSString *const kPreferenceKeyAISafetyCheck;  // boolean
-
-// Local (NoSync) flags that govern where the AI command-safety check runs.
-// These form a privacy boundary (on-device vs. configured provider), so they
-// are shared constants rather than scattered string literals: a typo fails to
-// build instead of silently mis-routing. Read/written via
-// [iTermUserDefaults userDefaults] (not the registered-defaults map) from both
-// Swift and ObjC.
-extern NSString *const kPreferenceKeyAISafetyCheckUsesAppleIntelligence;  // boolean: route the side-query on-device
-extern NSString *const kPreferenceKeyAISafetyCheckProviderSwitchPending;  // boolean: still owe the user the switch prompt
-extern NSString *const kPreferenceKeyAISafetyCheckProviderMigrationDone;  // boolean: one-time provider migration ran
-extern NSString *const kPreferenceKeyAISafetyCheckNagComplete;  // boolean: opt-in nag already shown
-extern NSString *const kPreferenceKeyAICustomHeadersEnabled;  // boolean
-extern NSString *const kPreferenceKeyAICustomHeaders;  // NSArray of NSDictionary with "name"/"value" NSString entries
 extern NSString *const kPreferenceKeyOpenTmuxWindowsAsTabsInAttachingWindow;  // PHONY
 extern NSString *const kPreferenceKeyOpenUnrecognizedTmuxWindowsIn;  // PHONY
-
-extern NSString *const kPreferenceKeyAIPermissionCheckTerminalState;
-extern NSString *const kPreferenceKeyAIPermissionRunCommands;
-extern NSString *const kPreferenceKeyAIPermissionViewHistory;
-extern NSString *const kPreferenceKeyAIPermissionWriteToClipboard;
-extern NSString *const kPreferenceKeyAIPermissionControlTerminal;
-extern NSString *const kPreferenceKeyAIPermissionViewManpages;
-extern NSString *const kPreferenceKeyAIPermissionWriteToFilesystem;
-extern NSString *const kPreferenceKeyAIPermissionActInWebBrowser;
 
 // Appearance
 extern NSString *const kPreferenceKeyTabStyle_Deprecated;
@@ -395,8 +284,6 @@ extern NSString *const kPreferenceKeySnippets;
 extern NSString *const kPreferenceKeyDisableTransparencyForKeyWindow;
 extern NSString *const kPreferenceKeyNeverBlockSystemShutdown;
 extern NSString *const kPreferenceKeyMenuActionImages;
-
-extern NSString *const iTermDefaultAIPrompt;
 
 @interface iTermPreferences : NSObject
 

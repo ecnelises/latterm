@@ -10,7 +10,6 @@
 #import "SFSymbolEnum/SFSymbolEnum.h"
 #import "iTermStatusBarLargeComposerViewController.h"
 #import "DebugLogging.h"
-#import "iTermAdvancedSettingsModel.h"
 #import "NSAppearance+iTerm.h"
 #import "NSArray+iTerm.h"
 #import "NSImage+iTerm.h"
@@ -46,7 +45,6 @@ static NSString *const iTermComposerComboBoxDidBecomeFirstResponder = @"iTermCom
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
     if (menuItem.action == @selector(performNaturalLanguageQuery:)) {
         return [iTermTerminalFirstFeatures aiFeaturesEnabled] &&
-               [iTermAdvancedSettingsModel generativeAIAllowed] &&
                [self.stringValue stringByTrimmingTrailingWhitespace].length > 0;
     }
     return [super validateMenuItem:menuItem];

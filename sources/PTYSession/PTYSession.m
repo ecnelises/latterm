@@ -955,7 +955,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         _hostStack = [[NSMutableArray alloc] init];
         [iTermCPUUtilization instanceForSessionID:_guid];
         _canChangeProfileInArrangementGeneration = -1;
-        _runningRemoteCommand = [[iTermRunningRemoteCommand alloc] init];
         _channelClients = [[NSMutableArray alloc] init];
         _swiftState = [[PTYSessionSwiftState alloc] init];
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -1253,7 +1252,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_originatingArrangement release];
     [_originatingArrangementName release];
     [_userTmuxOptionMonitors release];
-    [_runningRemoteCommand release];
     [_turdDetector release];
     [_composerClearTurdDetector release];
     [_pathCompletionHelper release];
@@ -18361,9 +18359,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return unameString;
 }
 
-- (void)screenSuggestShellIntegrationUpgrade {
-}
-
 - (BOOL)screenShouldReduceFlicker {
     return [iTermProfilePreferences boolForKey:KEY_REDUCE_FLICKER inProfile:self.profile];
 }
@@ -19893,119 +19888,9 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)fetchNaturalLanguageQuery:(void (^)(NSString *input))completion {
-    NSString *query = nil;
-    if (_textview.selection.hasSelection) {
-        query = _textview.selectedText;
-    } else {
-        query = self.currentCommand;
-    }
-    if (query.length == 0) {
-        [self requestNaturalLanguageQuery:@"" reason:nil bypassable:NO completion:completion];
-        return;
-    }
-    NSInteger maxLength = [iTermPreferences integerForKey:kPreferenceKeyAIResponseTokenLimit] / 8;
-    if (query.length >= maxLength) {
-        [self requestNaturalLanguageQuery:[query substringFromIndex:query.length - maxLength]
-                                   reason:@"⚠️ The selected text was rather long."
-                               bypassable:NO
-                               completion:completion];
-        return;
-    }
-    [self requestNaturalLanguageQuery:query reason:nil bypassable:YES completion:completion];
-}
-
-- (void)requestNaturalLanguageQuery:(NSString *)defaultString
-                             reason:(NSString *)reason
-                         bypassable:(BOOL)bypassable
-                         completion:(void (^)(NSString *input))completion {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
+    if (completion) {
         completion(nil);
-        return;
     }
-    NSString *const bypassKey = @"NoSyncBypassConfirmAIPrompt";
-    if (defaultString.length > 0 && bypassable && [[iTermUserDefaults userDefaults] boolForKey:bypassKey]) {
-        completion(defaultString);
-        return;
-    }
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-    [alert setMessageText:@"Describe the command you want to run in plain English. Press ⇧⏎ to send."];
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Cancel"];
-
-    ShiftEnterTextView *input = [[[ShiftEnterTextView alloc] initWithFrame:NSMakeRect(0, 0, 400, 200)] autorelease];
-    input.richText = NO;
-    [input setVerticallyResizable:YES];
-    [input setHorizontallyResizable:NO];
-    [input setAutoresizingMask:NSViewWidthSizable];
-    [[input textContainer] setContainerSize:NSMakeSize(200, FLT_MAX)];
-    [[input textContainer] setWidthTracksTextView:YES];
-    [input setTextContainerInset:NSMakeSize(4, 4)];
-    [input.textStorage iterm_appendString:defaultString withAttributes:input.typingAttributes];
-    __weak __typeof(alert) weakAlert = alert;
-    input.shiftEnterPressed = ^{
-        [weakAlert.buttons.firstObject performClick:nil];
-    };
-    NSScrollView *scrollview = [[[NSScrollView alloc] initWithFrame:NSMakeRect(0, 0, 400, 200)] autorelease];
-    [scrollview setHasVerticalScroller:YES];
-    [scrollview setDocumentView:input];
-    scrollview.borderType = NSLineBorder;
-
-    NSButton *disableButton = nil;
-    if (bypassable || reason) {
-        CGFloat extraHeight = 0;
-        NSMutableArray<NSView *> *views = [NSMutableArray array];
-
-        if (bypassable) {
-            disableButton = [[[NSButton alloc] init] autorelease];
-            disableButton.buttonType = NSButtonTypeSwitch;
-            disableButton.title = @"Skip this dialog in the future and send the prompt immediately.";
-            [disableButton sizeToFit];
-
-            [views addObject:disableButton];
-
-            extraHeight += NSHeight(disableButton.frame);
-        }
-
-        if (reason) {
-            NSTextField *label = [NSTextField newLabelStyledTextField];
-            label.controlSize = NSControlSizeSmall;
-            label.stringValue = reason;
-            [label sizeToFit];
-            NSRect frame = label.frame;
-            frame.origin.y = extraHeight;
-            label.frame = frame;
-
-            [views addObject:label];
-            extraHeight += NSHeight(frame);
-        }
-
-        NSRect scrollViewFrame = scrollview.frame;
-        scrollViewFrame.origin.y += extraHeight;
-        scrollview.frame = scrollViewFrame;
-
-        NSView *container = [[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 400, scrollViewFrame.size.height + extraHeight)] autorelease];
-        container.subviews = views;
-        [container addSubview:scrollview];
-
-        [alert setAccessoryView:container];
-    } else {
-        [alert setAccessoryView:scrollview];
-    }
-
-    alert.window.initialFirstResponder = input;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [input.window makeFirstResponder:input];
-    });
-
-    [alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse button) {
-        if (button == NSAlertFirstButtonReturn) {
-            if (disableButton.state == NSControlStateValueOn) {
-                [[iTermUserDefaults userDefaults] setBool:YES forKey:bypassKey];
-            }
-            completion([[[input string] copy] autorelease]);
-        }
-        completion(nil);
-    }];
 }
 
 - (iTermSelection *)selectionForOutputToExplainWithAI:(out BOOL *)truncated {
@@ -22303,15 +22188,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                                    action:@selector(fetchTimeOffsetWithCompletion:)];
         [_methods registerFunction:method namespace:@"iterm2"];
 
-        method = [[iTermBuiltInMethod alloc] initWithName:@"load_url"
-                                            defaultValues:@{}
-                                                    types:@{ @"url": [NSString class] }
-                                        optionalArguments:[NSSet set]
-                                                  context:iTermVariablesSuggestionContextSession
-                                   sideEffectsPlaceholder:@"[load_url]"
-                                                   target:self
-                                                   action:@selector(loadURLWithCompletion:url:connectionKey:)];
-        [_methods registerFunction:method namespace:@"iterm2"];
     }
     return _methods;
 }
@@ -22403,74 +22279,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                        nil);
         }
     }];
-}
-
-#pragma mark - load_url
-
-- (NSError *)loadURLErrorWithCode:(NSInteger)code message:(NSString *)message {
-    return [NSError errorWithDomain:@"com.iterm2.load-url"
-                               code:code
-                           userInfo:@{ NSLocalizedDescriptionKey: message }];
-}
-
-- (void)loadURLWithCompletion:(void (^)(id, NSError *))completion
-                          url:(NSString *)urlString
-                connectionKey:(id)connectionKey {
-    // 1. Validate browser session
-    if (!self.isBrowserSession) {
-        completion(nil, [self loadURLErrorWithCode:1
-                                           message:@"load_url is only supported in browser sessions"]);
-        return;
-    }
-
-    // 2. Parse and validate URL
-    NSURL *url = [NSURL URLWithString:urlString];
-    if (!url || !url.host.length) {
-        completion(nil, [self loadURLErrorWithCode:2 message:@"Invalid URL"]);
-        return;
-    }
-
-    // 3. Validate connection context
-    if (!connectionKey) {
-        completion(nil, [self loadURLErrorWithCode:3
-                                           message:@"load_url must be called from a Python script"]);
-        return;
-    }
-
-    NSString *domain = url.host;
-    iTermAPIHelper *apiHelper = [iTermAPIHelper sharedInstanceIfEnabled];
-    iTermScriptHistoryEntry *entry = [apiHelper scriptHistoryEntryForConnectionKey:connectionKey];
-    NSString *scriptName = entry.name ?: @"A script";
-
-    NSString *heading = [NSString stringWithFormat:
-        @"%@ wants to load a URL in this browser session.", scriptName];
-    NSString *title = [NSString stringWithFormat:
-        @"Allow loading URLs from %@?", domain];
-    NSString *identifier = [@"NoSyncLoadURLAllowed_" stringByAppendingString:domain];
-
-    [iTermWarning asyncShowWarningWithTitle:title
-                                    actions:@[ @"OK", @"Cancel" ]
-                              actionMapping:nil
-                                  accessory:nil
-                                 identifier:identifier
-                                silenceable:kiTermWarningTypePermanentlySilenceable
-                                    heading:heading
-                                cancelLabel:nil
-                                     window:self.delegate.realParentWindow.window
-                                 completion:^(iTermWarningSelection selection,
-                                              iTermWarning *warning) {
-        if (selection == kiTermWarningSelection0) {
-            [self performLoadURL:url completion:completion];
-        } else {
-            completion(nil, [self loadURLErrorWithCode:4
-                                               message:@"User denied permission to load URL"]);
-        }
-    }];
-}
-
-- (void)performLoadURL:(NSURL *)url completion:(void (^)(id, NSError *))completion {
-    [self openURL:url];
-    completion(@YES, nil);
 }
 
 - (void)setStatusBarComponentUnreadCountWithCompletion:(void (^)(id, NSError *))completion

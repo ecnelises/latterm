@@ -18,24 +18,6 @@ if {[info exists env(SIGNED)] && $env(SIGNED) eq "1"} {
     set signing_flags {CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO}
 }
 
-# Defensively clear the AI live harness config file unless our parent
-# tells us not to. The file is meaningful only during run_ai_live.sh;
-# for plain ModernTests it's stale state (left over from a SIGKILL'd
-# previous run, etc.) that would cause AILiveHarness to think we want
-# a live-API run. run_ai_live.sh exports ITERM2_AI_LIVE_KEEP_CONFIG=1
-# before invoking this script so its freshly-written config survives.
-if {!([info exists env(ITERM2_AI_LIVE_KEEP_CONFIG)] && $env(ITERM2_AI_LIVE_KEEP_CONFIG) eq "1")} {
-    # Delete the config at the path the harness actually reads: the repo root
-    # (AILiveHarness.configFilePath()). The previous version cleared
-    # $TMPDIR/iterm2-ai-live.json, but the harness reads a different file, so the
-    # defense never fired - a stale config (even from another worktree, back when
-    # it lived in shared /tmp) silently turned the live harness on during plain
-    # tests. Scoping the delete to this repo root closes that gap.
-    if {![catch {exec git rev-parse --show-toplevel} repo_root]} {
-        file delete -force [file join [string trim $repo_root] .iterm2-ai-live.json]
-    }
-}
-
 proc kill_tree {pid} {
     catch {
         set children [exec pgrep -P $pid]

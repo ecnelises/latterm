@@ -1892,10 +1892,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
 
     }
     
-    func screenSuggestShellIntegrationUpgrade() {
-
-    }
-    
     func screenDidDetectShell(_ shell: String) {
 
     }

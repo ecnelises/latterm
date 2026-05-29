@@ -62,11 +62,7 @@ class BrowserModeEnclosure: ModalEnclosure {
 class HiddenModeEnclosure: ModalEnclosure {
     @objc
     override var visibleForProfileTypes: ProfileType {
-        if iTermAdvancedSettingsModel.browserProfiles() {
-            return [.all]
-        } else {
-            return []
-        }
+        return []
     }
 }
 

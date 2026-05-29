@@ -574,8 +574,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
         iTermProfilePreferencesBaseViewController *vc = tuple[1];
         const BOOL wantTab = [vc setVisibilityForTerminalEnclosures:!browserMode
                                                   browserEnclosures:browserMode
-                                               hiddenModeEnclosures:([iTermTerminalFirstFeatures browserFeaturesEnabled] &&
-                                                                     [iTermAdvancedSettingsModel browserProfiles])
+                                               hiddenModeEnclosures:NO
                                            sharedProfilesEnclosures:profileIsShared
                                                         tabViewItem:tabViewItem];
         const BOOL haveTab = [_tabView.tabViewItems containsObject:tabViewItem];

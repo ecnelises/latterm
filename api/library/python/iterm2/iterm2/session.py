@@ -1026,28 +1026,6 @@ class Session:
             await iterm2.rpc.async_invoke_method(
                 self.connection, self.session_id, invocation, -1))
 
-    async def async_load_url(self, url: str) -> None:
-        """
-        Load a URL in a browser session.
-
-        The first time a domain is loaded, the user will be prompted to approve
-        it. Once approved, that domain is remembered globally and will not
-        prompt again for any script.
-
-        :param url: The URL to load.
-
-        :raises: :class:`~iterm2.rpc.RPCException` if the session is not a
-            browser session, the URL is invalid, or the user denies permission.
-
-        .. seealso:: Example ":ref:`open_browser_tab_example`"
-        """
-        iterm2.capabilities.check_supports_load_url(self.connection)
-        invocation = iterm2.util.invocation_string(
-            "iterm2.load_url",
-            {"url": url})
-        await iterm2.rpc.async_invoke_method(
-            self.connection, self.session_id, invocation, -1)
-
     async def async_move_to_new_tab(
             self,
             window: typing.Optional['iterm2.window.Window'] = None,

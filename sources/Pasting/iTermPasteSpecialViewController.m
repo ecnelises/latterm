@@ -100,7 +100,7 @@ static NSString *const kSubstitution = @"Substitution";
     NSSize shrinkage;
     (void)[self.view setVisibilityForTerminalEnclosures:!!(profileType & ProfileTypeTerminal)
                                       browserEnclosures:!!(profileType & ProfileTypeBrowser)
-                                   hiddenModeEnclosures:[iTermAdvancedSettingsModel browserProfiles]
+                                   hiddenModeEnclosures:NO
                                sharedProfilesEnclosures:false
                                            stateStorage:[NSMutableDictionary dictionary]
                                               shrinkage:&shrinkage];

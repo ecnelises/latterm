@@ -10,7 +10,7 @@ Latterm is intended to become a clean, long-lived fork rather than a one-off pat
 
 - Base UI language is English and remains the default.
 - A first-pass Simplified Chinese localization is included in `zh-Hans.lproj`.
-- Some internal target names and filenames still use `iTerm2` during the transition, but the shipped app bundle and executable are now `Latterm`.
+- Some internal target names and filenames still use `iTerm2` during the transition, but the shipped app bundle and executable are now `Latterm`. Renaming the Xcode project, schemes, targets, product references, helper paths, and packaging scripts is tracked as a dedicated refactor phase so project-file churn stays separate from feature removal.
 
 ## What Stays
 
@@ -70,6 +70,7 @@ make run
 
 - Code signing is disabled by default for command-line builds.
 - `make` now resolves `BUILD_DIR` from the checked-in `iTerm2.xcodeproj`, which avoids the previous failure where `make run` could not determine the build output path.
+- Signed and notarized release packaging is not yet adapted for Latterm. The upstream release scripts still contain iTerm2-specific Developer ID, Apple account, team ID, app-name, and build-path assumptions. Public release packaging needs a separate signing/notarization cleanup before distribution.
 
 ## Relationship To iTerm2
 

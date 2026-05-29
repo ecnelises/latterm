@@ -2706,7 +2706,6 @@ typedef struct {
     RLog(@"begin %@", version);
     NSArray *parts = [version componentsSeparatedByString:@";"];
     NSString *shell = nil;
-    NSInteger versionNumber = [parts[0] integerValue];
     if (parts.count >= 2) {
         NSMutableDictionary *params = [NSMutableDictionary dictionary];
         for (NSString *kvp in [parts subarrayWithRange:NSMakeRange(1, parts.count - 1)]) {
@@ -2721,26 +2720,14 @@ typedef struct {
         shell = params[@"shell"];
     }
 
-    NSDictionary<NSString *, NSNumber *> *latestVersionByShell;
-    if ([iTermPreferences boolForKey:kPreferenceKeyNotifyOnlyForCriticalShellIntegrationUpdates]) {
-        latestVersionByShell = @{ @"tcsh": @2,
-                                  @"bash": @5,
-                                  @"zsh": @5,
-                                  @"fish": @5 };
-    } else {
-#include "iTermLatestVersionByShell.h"
+    if (!shell) {
+        return;
     }
-    NSInteger latestKnownVersion = [latestVersionByShell[shell ?: @""] integerValue];
+
     [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         DLog(@"begin side-effect");
-        if (shell) {
-            DLog(@"shell=%@", shell);
-            [delegate screenDidDetectShell:shell];
-        }
-        if (!shell || versionNumber < latestKnownVersion) {
-            DLog(@"suggest upgrade");
-            [delegate screenSuggestShellIntegrationUpgrade];
-        }
+        DLog(@"shell=%@", shell);
+        [delegate screenDidDetectShell:shell];
     } name:@"set shell integration version"];
 }
 

@@ -115,14 +115,6 @@ extern NSString *const kTurnOffBracketedPasteOnHostChangeAnnouncementIdentifier;
 - (void)offerToEnableTouchIDForSudo;
 - (void)removeTouchIDForSudoOffer;
 
-typedef NS_ENUM(NSUInteger, iTermClaudeCodeUpsellStatus) {
-    iTermClaudeCodeUpsellStatusNever,
-    iTermClaudeCodeUpsellStatusAccept,
-    iTermClaudeCodeUpsellStatusAskLater
-};
-
-- (void)offerClaudeCodeStatusTool:(void(^)(iTermClaudeCodeUpsellStatus))completion;
-
 @end
 
 NS_ASSUME_NONNULL_END

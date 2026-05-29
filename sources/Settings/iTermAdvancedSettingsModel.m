@@ -638,8 +638,6 @@ DEFINE_BOOL(showBlockBoundaries, NO, SECTION_DEBUGGING @"Show line buffer block 
 DEFINE_BOOL(logToSyslog, NO, SECTION_DEBUGGING @"Debug logs also write to the system log.");
 DEFINE_BOOL(logForegroundJobAncestryDiagnostics, NO, SECTION_DEBUGGING @"Log a detailed trace when a session’s foreground-job ancestor list unexpectedly shrinks.\nWhen an intermediate ancestor (such as the claude CLI) drops out of a tracked session’s foreground-job ancestry for a single process-cache update, log via RLog which pid held the vanished ancestor, whether it is still in the process table, and the full upward walk from the deepest foreground job. Used to diagnose spurious job-ended events that can tear down a Claude Code workgroup. Off by default; turn on only while reproducing an issue.");
 DEFINE_STRING(fakeFullyQualifiedDomainName, @"", SECTION_DEBUGGING @"Override the local hostname used for localhost detection.\nWhen non-empty, the app behaves as though [NSHost fullyQualifiedDomainName] returns this value. Lets you test how localhost detection reacts to a hostname change without actually renaming your computer. Affects hosts reported after you change it; leave empty to use the real hostname.");
-DEFINE_BOOL(aiChatVerboseConsoleLogging, NO, SECTION_DEBUGGING @"Log AI chat traffic to the system console.\nEmits per-turn user / agent / tool entries via NSFuckingLog so you can trace exactly what the agent received and produced. Useful for debugging tool dispatch and history translation. Off by default; turn on only while reproducing an issue.");
-DEFINE_BOOL(aiChatRawWireLogging, NO, SECTION_DEBUGGING @"Log raw AI API requests and responses to disk.\nWrites every byte sent to and received from the AI vendor (full request headers, body, streaming chunks, final response, errors, and timing) to ~/Library/Application Support/iTerm2/AIChatWire/. One log file per app launch; rotate or delete it yourself when done. WARNING: the log captures Authorization / API-key headers and full prompt + response content verbatim. Off by default; turn on only while reproducing an issue and delete the files when finished.");
 #if DEBUG
 DEFINE_STRING(alternateSSHIntegrationScript, @"", SECTION_DEBUGGING @"Alternate SSH integration python script");
 #endif
@@ -734,7 +732,7 @@ DEFINE_BOOL(tmuxWindowsOpenInBackground, NO, SECTION_TMUX @"Open tmux windows an
 
 #define SECTION_SSH @"SSH Integration: "
 
-DEFINE_STRING(unameCommand, @"uname -s", SECTION_SSH @"Command used to set the `uname` variable.\nThe main use of this is to use in the AI prompt so the language model knows the operating system.");
+DEFINE_STRING(unameCommand, @"uname -s", SECTION_SSH @"Command used to set the `uname` variable for remote-host metadata.");
 DEFINE_STRING(validCharactersInSSHUserNames, @"_-+.", SECTION_SSH @"Valid characters in SSH user names\nAlphanumerics are always valid. This specifies other valid characters.");
 
 #pragma mark Warnings
@@ -780,8 +778,6 @@ DEFINE_OPTIONAL_BOOL(noSyncClearAllBroadcast, nil, SECTION_WARNINGS @"Send Clear
 DEFINE_BOOL(noSyncSuppressSendSignal, NO, SECTION_WARNINGS @"Suppress warning about sending a signal to terminate a job.\nThis is used in the process tree, which you can find the toolbelt or by clicking the Jobs status bar component.");
 DEFINE_BOOL(noSyncConfirmRemoveAnnotation, NO, SECTION_WARNINGS @"Suppress confirmation to remove annotation?");
 DEFINE_SETTABLE_BOOL(noSyncDisableOpenURL, NoSyncDisableOpenURL, NO, SECTION_WARNINGS @"Disable control sequence to open URLs?");
-DEFINE_SETTABLE_BOOL(noSyncOpenLinksInApp, NoSyncOpenLinksInApp, NO, SECTION_WARNINGS @"Open links using the in-app browser?");
-DEFINE_SETTABLE_BOOL(noSyncBrowserUpsell, NoSyncBrowserUpsell, NO, SECTION_WARNINGS @"Suppress the browser plugin upsell when clicking links?");
 
 #pragma mark Pasteboard
 
@@ -828,18 +824,6 @@ DEFINE_FLOAT(badgeMaxWidthFraction, 0.5, SECTION_BADGE @"Maximum width of the ba
 DEFINE_FLOAT(badgeMaxHeightFraction, 0.2, SECTION_BADGE @"Maximum height of the badge\nAs a fraction of the height of the terminal, between 0 and 1.0. This is the default value if a profile does not have a setting.");
 DEFINE_INT(badgeRightMargin, 10, SECTION_BADGE @"Default value for right margin for the badge\nHow much space to leave between the right edge of the badge and the right edge of the terminal. Can be overridden by a profile setting. This is the default value if a profile does not have a setting.");
 DEFINE_INT(badgeTopMargin, 10, SECTION_BADGE @"Default value for the top margin for the badge\nHow much space to leave between the top edge of the badge and the top edge of the terminal. Can be overridden by a profile setting. This is the default value if a profile does not have a setting.");
-
-#pragma mark - Web Browser
-
-#define SECTION_WEB_BROWSER @"Web Browser: "
-
-DEFINE_SETTABLE_BOOL(webKitAdblockEnabled, WebKitAdblockEnabled, NO, SECTION_WEB_BROWSER @"Enable ad blocking in the web browser?\nWhen enabled, downloads and applies ad blocking rules from the configured URL.");
-DEFINE_SETTABLE_STRING(adblockListURL, AdblockListURL, @"https://easylist-downloads.adblockplus.org/easylist_content_blocker.json", SECTION_WEB_BROWSER @"URL for ad blocking filter list\nThis should be a JSON file in WebKit content blocker format. The list is downloaded automatically every 24 hours.");
-DEFINE_SETTABLE_BOOL(browserProxyEnabled, BrowserProxyEnabled, NO, SECTION_WEB_BROWSER @"Enable HTTP proxy for web browser?\nWhen enabled, routes all browser traffic through the configured proxy server.");
-DEFINE_SETTABLE_STRING(browserProxyHost, BrowserProxyHost, @"127.0.0.1", SECTION_WEB_BROWSER @"HTTP proxy hostname or IP address\nThe address of the proxy server to use for browser connections.");
-DEFINE_SETTABLE_INT(browserProxyPort, BrowserProxyPort, 8118, SECTION_WEB_BROWSER @"HTTP proxy port\nThe port number of the proxy server.");
-DEFINE_FLOAT(webInstantReplayFrameRate, 60.0, SECTION_WEB_BROWSER @"Instant replay frame rate for web browser sessions");
-DEFINE_SETTABLE_STRING(browserPluginPathHint, BrowserPluginPathHint, @"", SECTION_WEB_BROWSER @"Location of browser plugin if it cannot be auto-detected");
 
 #pragma mark - Experimental Features
 
@@ -903,8 +887,6 @@ DEFINE_BOOL(asyncPreconvertStrings, YES, SECTION_EXPERIMENTAL @"Pre-convert long
 DEFINE_INT(asyncPreconvertMinStringLength, 128, SECTION_EXPERIMENTAL @"Minimum string length (in UTF-16 code units) to dispatch for async pre-conversion.");
 DEFINE_INT(asyncPreconvertMaxOutstandingBytes, 1048576, SECTION_EXPERIMENTAL @"Maximum bytes of outstanding async pre-conversions.\nWhen this limit is reached, new strings are converted synchronously on the mutation thread.");
 DEFINE_BOOL(logNonASCIIStringLengthHistogram, NO, SECTION_EXPERIMENTAL @"Log a histogram of non-ASCII string lengths periodically.\nUseful for tuning the async pre-conversion minimum string length.");
-DEFINE_STRING(aiModernModelPrefixes, @"gpt-", SECTION_EXPERIMENTAL @"AI model name substrings that use the modern 'completions' API.\nSubstrings should be space-delimited. This handles OpenRouter-style names like 'openai/gpt-4o'. Note that o1 models use a different API and have hard-coded behavior.");
-DEFINE_STRING(aiProxy, @"", SECTION_EXPERIMENTAL @"Host and port for proxy for AI requests.\ni.e., example.com:8080")
 DEFINE_BOOL(addUtilitiesToPATH, YES, SECTION_EXPERIMENTAL @"Add path to iTerm2 utilities to $PATH for new sessions?");
 DEFINE_BOOL(autoSearch, NO, SECTION_EXPERIMENTAL @"Automatically search for selected text after making a selection?");
 DEFINE_BOOL(smartLoggingWithAutoComposer, NO, SECTION_EXPERIMENTAL @"Enable more compact logging when using auto composer?\nThis will avoid logging raw data in your prompt and your interactions with it. Instead, the prompt is logged once in plain text and the command is logged when sent.");
@@ -912,27 +894,19 @@ DEFINE_BOOL(disclaimChildren, NO, SECTION_EXPERIMENTAL @"Disclaim ownership of c
 DEFINE_BOOL(restoreKeyModeAutomaticallyOnHostChange, YES, SECTION_EXPERIMENTAL @"Automatically restore keyboard mode when an ssh session ends?");
 
 DEFINE_BOOL(chaseAnchoredScreen, NO, SECTION_EXPERIMENTAL @"Aggressively keep windows on the screen they were configured to be on");
-DEFINE_STRING(codeciergeGhostRidingPrompt, @"You operate a terminal emulator for me. My goal is $GOAL. $CONTEXT. Ask clarifying questions as needed and run commands using the execute function when you're ready. When I've reached my goal, remind me to click the End Task button.", SECTION_EXPERIMENTAL @"Prompt to send to LLM for Codecierge when it is able to execute commands automatically.\n$GOAL and $CONTEXT are replaced with the user-specified goal and info about the running environment, respectively." );
-DEFINE_INT(codeciergeCommandWarningCount, 10, SECTION_EXPERIMENTAL @"After this many commands, make codecierge confirm that you intend to keep it enabled.");
-DEFINE_STRING(codeciergeRegularPrompt, @"You help a me in a terminal emulator. My goal is $GOAL. $CONTEXT. Start by suggesting a command. Don't overwhelm me with too much information: just go one step at a time. When I've reached my goal, remind me to click the End Task button.", SECTION_EXPERIMENTAL @"Prompt to send to LLM for Codecierge when it is NOT able to execute commands automatically.\n$GOAL and $CONTEXT are replaced with the user-specified goal and info about the running environment, respectively." );
-DEFINE_BOOL(generativeAIAllowed, YES, SECTION_GENERAL @"Allow the use of large language model APIs?\nThe purpose of this setting is to make it easy for managed environments to disable the use of LLMs. The user defaults key is `GenerativeAIAllowed`.");
 DEFINE_BOOL(companionPairingAllowed, YES, SECTION_GENERAL @"Allow pairing a companion iOS device?\nOff by default while this feature is in development. When off, the Companion Device Settings menu item is hidden. Managed environments can also use this to disable the feature. The user defaults key is `CompanionPairingAllowed`.");
 DEFINE_STRING(companionRelayOrigin, @"https://relay.iterm2.com", SECTION_GENERAL @"Relay origin for companion iOS device pairing.\nMust be a bare https origin (scheme and host, no path), such as https://companion-relay.iterm2.com. The relay is the only transport, so this must be set for pairing to work; forks can point it at their own Worker. Leave empty to disable the relay entirely. The user defaults key is `CompanionRelayOrigin`.");
 DEFINE_STRING(companionResolverURL, @"https://resolver.iterm2.com/shardmap.json", SECTION_GENERAL @"Shard-map URL for companion iOS device pairing.\nAn https URL pointing directly at the static shard-map JSON, used to find the relay shard that serves the phone-to-mac connection. It is fetched verbatim (nothing is appended). Leave empty to use direct connections (such as if you run your own relay).");
-DEFINE_STRING(llmPlatform, @"OpenAI", SECTION_GENERAL @"LLM Platform.\nLegal values are: OpenAI, Azure, Gemini. This determines the format of requests and responses.");
-DEFINE_STRING(aiModelCatalogURL, @"https://iterm2.com/downloads/ai/manifest.json", SECTION_GENERAL @"URL to check for updates to the AI model catalog.\nThe catalog defines the built-in AI models (context window, capabilities, and the recommended model per vendor). iTerm2 periodically downloads a signed newer copy so new models become available without an app update. This happens only when AI features are enabled and you have granted permission; a non-empty URL by itself does not enable checking. Clearing this URL disables checking entirely.");
 DEFINE_BOOL(alternateScreenBidi, YES, SECTION_EXPERIMENTAL @"When right-to-left text support is enabled, also support it in alternate screen mode?");
 DEFINE_BOOL(aquaSKKBugfixEnabled, NO, SECTION_EXPERIMENTAL @"Enable AquaSKK bugfix?")
 DEFINE_BOOL(channelsEnabled, NO, SECTION_EXPERIMENTAL @"Enable Channels feature?")
 DEFINE_BOOL(rightJustifyRTLLines, YES, SECTION_EXPERIMENTAL @"Right-justify lines in paragraphs with base writing direction of right-to-left?\nRequires BOTH “right-to-left text support” and “auto-detect paragraph writing detection” to be enabled.");
 DEFINE_BOOL(detectParagraphDirection, NO, SECTION_EXPERIMENTAL @"Auto-detect paragraph writing direction based on the first strong directional character?\nRequires right-to-left text support to be enabled.");
-DEFINE_BOOL(browserProfiles, YES, SECTION_EXPERIMENTAL @"Enable browser-style profiles?\nYou must restart iTerm2 for this to take effect.");
 DEFINE_BOOL(companionStreamFrameNumbers, NO, SECTION_EXPERIMENTAL @"Stamp frame numbers into the iTerm2 Buddy live stream?\nDraws a monotonic counter onto each streamed video frame, for debugging the phone’s live session view.");
 DEFINE_INT(companionStreamMaxLeadMilliseconds, 500, SECTION_EXPERIMENTAL @"iTerm2 Buddy live stream: maximum capture-time lead, in milliseconds.\nThe host stops sending new frames once it is more than this far ahead of the last frame the phone acknowledged, then resumes when the phone catches up. Larger values tolerate more link latency at the cost of a live view that can lag further behind. Only the frame rate is affected; per-frame quality is unchanged.");
 DEFINE_INT(companionStreamMaxQueueDepth, 4, SECTION_EXPERIMENTAL @"iTerm2 Buddy live stream: maximum phone decode-queue depth.\nThe host stops sending new frames once the phone reports more than this many frames queued for decode/display, then resumes as the queue drains. Larger values let more frames pile up on the phone before backing off. Only the frame rate is affected; per-frame quality is unchanged.");
 DEFINE_FLOAT(companionStreamBitrateMultiplier, 1.0, SECTION_EXPERIMENTAL @"iTerm2 Buddy live stream: video bitrate multiplier.\nScales the resolution-derived encoder bitrate. Values above 1 make streamed text sharper at the cost of bandwidth; values below 1 save bandwidth at the cost of sharpness. The result is still clamped to the stream’s minimum and ceiling bitrates.");
 DEFINE_FLOAT(companionWakeupCoalesceInterval, 5.0, SECTION_EXPERIMENTAL @"iTerm2 Buddy push notifications: minimum seconds between wakeup pushes.\nA wakeup push tells the paired phone to fetch every new message and alert at once, so several in quick succession are wasteful and can leave a later one with nothing to show (the generic “Your agent has an update.” placeholder). The host sends the first wakeup immediately, then coalesces any that follow within this interval into a single trailing wakeup. Lower values notify sooner but coalesce less; higher values coalesce bursts more aggressively.");
-
 #pragma mark - Scripting
 #define SECTION_SCRIPTING @"Scripting: "
 

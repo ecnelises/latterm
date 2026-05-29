@@ -730,9 +730,6 @@ static NSInteger gLessLoggingCount;
         if (!profile) {
             continue;
         }
-        if (![iTermAdvancedSettingsModel browserProfiles] && [profile profileType] == ProfileTypeBrowser) {
-            continue;
-        }
         NSArray *tags = profile[KEY_TAGS];
         if (![tags containsObject:@"bonjour"]) {
             [self addBookmark:profile];

@@ -387,7 +387,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionResizePermission) {
                                        pushType:(VT100ScreenWorkingDirectoryPushType)pushType
                                        accepted:(BOOL)accepted;
 
-- (void)screenSuggestShellIntegrationUpgrade;
 - (void)screenDidDetectShell:(NSString * _Nonnull)shell;
 
 - (void)screenSetBackgroundImageFile:(NSString * _Nonnull)filename;
