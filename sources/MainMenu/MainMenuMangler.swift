@@ -24,10 +24,6 @@ class TerminalFirstFeatures: NSObject {
     @objc static func shellIntegrationFeaturesEnabled() -> Bool {
         return !terminalFirstEnabled()
     }
-
-    @objc static func onboardingEnabled() -> Bool {
-        return !terminalFirstEnabled()
-    }
 }
 
 /// Observes key-window and firstResponder changes and calls `updateMainMenu()` when either happens.

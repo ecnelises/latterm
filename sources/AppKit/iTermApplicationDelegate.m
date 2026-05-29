@@ -90,7 +90,6 @@
 #import "iTermMigrationHelper.h"
 #import "iTermModifierRemapper.h"
 #import "iTermNotificationController.h"
-#import "iTermOnboardingWindowController.h"
 #import "iTermOpenQuicklyWindowController.h"
 #import "iTermOrphanServerAdopter.h"
 #import "iTermPasswordManagerWindowController.h"

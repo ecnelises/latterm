@@ -9,14 +9,11 @@
 #import "iTermAboutWindowController.h"
 
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermLaunchExperienceController.h"
 #import "NSArray+iTerm.h"
 #import "NSColor+iTerm.h"
 #import "NSMutableAttributedString+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"
-
-static NSString *iTermAboutWindowControllerWhatsNewURLString = @"iterm2://whats-new/";
 
 static NSString *iTermAboutWindowApplicationDisplayName(void) {
     NSString *displayName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
@@ -182,9 +179,6 @@ static const CGFloat kSponsorRowY = 170.0;
 
 @end
 
-@interface iTermAboutWindowController()<NSTextViewDelegate>
-@end
-
 @implementation iTermAboutWindowController {
     IBOutlet NSTextView *_dynamicText;
     IBOutlet NSTextView *_patronsTextView;
@@ -206,13 +200,6 @@ static const CGFloat kSponsorRowY = 170.0;
         NSString *const versionNumber = myDict[(NSString *)kCFBundleVersionKey];
         NSString *versionString = [NSString stringWithFormat: @"Build %@\n\n", versionNumber];
         NSString *appName = iTermAboutWindowApplicationDisplayName();
-        NSAttributedString *whatsNew = nil;
-        if ([versionNumber hasPrefix:@"3.7."] || [versionString isEqualToString:@"unknown"]) {
-            whatsNew = [self attributedStringWithLinkToURL:iTermAboutWindowControllerWhatsNewURLString
-                                                     title:NSLocalizedString(@"What’s New in 3.7?\n",
-                                                                             @"About window What's New link title")];
-        }
-
         NSAttributedString *webAString = [self attributedStringWithLinkToURL:@"https://iterm2.com/"
                                                                        title:NSLocalizedString(@"Home Page",
                                                                                                @"About window home page link title")];
@@ -236,9 +223,6 @@ static const CGFloat kSponsorRowY = 170.0;
         [[_dynamicText textStorage] deleteCharactersInRange:NSMakeRange(0, [[_dynamicText textStorage] length])];
         [[_dynamicText textStorage] appendAttributedString:[[NSAttributedString alloc] initWithString:versionString
                                                                                             attributes:versionAttributes]];
-        if (whatsNew) {
-            [[_dynamicText textStorage] appendAttributedString:whatsNew];
-        }
         [[_dynamicText textStorage] appendAttributedString:webAString];
         [[_dynamicText textStorage] appendAttributedString:bullet];
         [[_dynamicText textStorage] appendAttributedString:bugsAString];
@@ -341,16 +325,4 @@ static const CGFloat kSponsorRowY = 170.0;
     return [[NSAttributedString alloc] initWithString:localizedTitle
                                             attributes:linkAttributes];
 }
-
-#pragma mark - NSTextViewDelegate
-
-- (BOOL)textView:(NSTextView *)textView clickedOnLink:(id)link atIndex:(NSUInteger)charIndex {
-    NSURL *url = [NSURL castFrom:link];
-    if ([url.absoluteString isEqualToString:iTermAboutWindowControllerWhatsNewURLString]) {
-        [iTermLaunchExperienceController forceShowWhatsNew];
-        return YES;
-    }
-    return NO;
-}
-
 @end

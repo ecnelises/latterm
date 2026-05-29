@@ -13,7 +13,6 @@
 #import "PTYSession.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermController.h"
-#import "iTermOnboardingWindowController.h"
 #import "iTermOpenDirectory.h"
 #import "iTermOptionalComponentDownloadWindowController.h"
 #import "iTermPreferences.h"
@@ -33,12 +32,10 @@ static NSString *const iTermLaunchExperienceControllerTipOfTheDayEligibilityBega
 typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
     iTermLaunchExperienceChoiceNone,
     iTermLaunchExperienceChoiceDefaultPasteBehaviorChangeWarning,
-    iTermLaunchExperienceChoiceWhatsNew,
     iTermLaunchExperienceChoiceTipOfTheDay,
 };
 
 @implementation iTermLaunchExperienceController {
-    iTermOnboardingWindowController *_whatsNewInThisVersion;
     iTermLaunchExperienceChoice _choice;
 }
 
@@ -61,10 +58,6 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
 
 + (void)performStartupActivities {
     [[self sharedInstance] performStartupActivities];
-}
-
-+ (void)forceShowWhatsNew {
-    [[self sharedInstance] showWhatsNewInThisVersion];
 }
 
 + (iTermLaunchExperienceChoice)preferredChoice {
@@ -108,11 +101,6 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
 - (instancetype)init {
     self = [super init];
     if (self) {
-        if ([iTermOnboardingWindowController previousLaunchVersionImpliesShouldBeShown]) {
-            [iTermOnboardingWindowController suppressFutureShowings];
-            _choice = iTermLaunchExperienceChoiceWhatsNew;
-            return self;
-        }
         const NSInteger runCount = [iTermLaunchExperienceController incrementRunCount];
         if (runCount == 2 && ![[SUUpdater sharedUpdater] automaticallyChecksForUpdates]) {
             // Sparkle will do its thing this launch.
@@ -148,7 +136,6 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
             // This is the steady-state.
             [[iTermTipController sharedInstance] startWithPermissionPromptAllowed:NO notBefore:[NSDate date]];
             return;
-        case iTermLaunchExperienceChoiceWhatsNew:
         case iTermLaunchExperienceChoiceDefaultPasteBehaviorChangeWarning:
             // If permission was already granted then allow a tip after 24 hours.
             [[iTermTipController sharedInstance] startWithPermissionPromptAllowed:NO
@@ -176,10 +163,6 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
         case iTermLaunchExperienceChoiceNone:
             return;
 
-        case iTermLaunchExperienceChoiceWhatsNew:
-            [self.class quellAnnoyancesForDays:1];
-            [self showWhatsNewInThisVersion];
-            return;
     }
 }
 
@@ -247,14 +230,6 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
             }
         });
     }];
-}
-
-- (void)showWhatsNewInThisVersion {
-    if (!_whatsNewInThisVersion) {
-        _whatsNewInThisVersion = [[iTermOnboardingWindowController alloc] initWithWindowNibName:@"iTermOnboardingWindowController"];
-    }
-    [_whatsNewInThisVersion.window makeKeyAndOrderFront:nil];
-    [_whatsNewInThisVersion.window center];
 }
 
 + (BOOL)willWarnAboutChangeToDefaultPasteBehavior {
