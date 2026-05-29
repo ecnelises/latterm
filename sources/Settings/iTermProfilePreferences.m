@@ -240,7 +240,6 @@ typedef struct {
                              KEY_DYNAMIC_PROFILE_PARENT_GUID,
                              KEY_DYNAMIC_PROFILE_FILENAME, KEY_TMUX_PANE_TITLE,
                              KEY_SUBTITLE, KEY_CUSTOM_LOCALE, KEY_INITIAL_URL,
-                             KEY_BROWSER_EXTENSIONS_ROOT,
                              KEY_PROGRESS_BAR_COLOR_SCHEME];
 
         NSArray *color = @[ KEY_FOREGROUND_COLOR, KEY_BACKGROUND_COLOR, KEY_BOLD_COLOR,
@@ -424,8 +423,7 @@ typedef struct {
 
             KEY_PROFILE_TYPE_PHONY
         ];
-        NSArray *stringArrays = @[ KEY_TAGS, KEY_JOBS, KEY_BOUND_HOSTS, KEY_SNIPPETS_FILTER,
-                                    KEY_BROWSER_EXTENSION_ACTIVE_IDS ];
+        NSArray *stringArrays = @[ KEY_TAGS, KEY_JOBS, KEY_BOUND_HOSTS, KEY_SNIPPETS_FILTER ];
         NSArray *dictArrays = @[ KEY_HOTKEY_ALTERNATE_SHORTCUTS, KEY_TRIGGERS, KEY_SMART_SELECTION_RULES,
                                  ];
         NSArray *dict = @[ KEY_STATUS_BAR_LAYOUT, KEY_SESSION_HOTKEY, KEY_SEMANTIC_HISTORY,
@@ -845,8 +843,6 @@ typedef struct {
             KEY_SNIPPETS_FILTER:                                    @"Tags to filter available snippets",
             KEY_BROWSER_ZOOM:                                       @"Zoom level for Browser profile (100=100%)",
             KEY_BROWSER_DEV_NULL:                                   @"Whether Browser profile discards output",
-            KEY_BROWSER_EXTENSIONS_ROOT:                            @"Root directory for browser extensions",
-            KEY_BROWSER_EXTENSION_ACTIVE_IDS:                       @"List of active browser extension IDs",
             KEY_WIDTH:                                              @"Initial width in points for Browser profile",
             KEY_HEIGHT:                                             @"Initial height in points for Browser profile",
             KEY_INSTANT_REPLAY:                                     @"Whether instant replay is enabled for Browser profile",
@@ -1194,8 +1190,6 @@ typedef struct {
 
                   KEY_BROWSER_ZOOM: @100,
                   KEY_BROWSER_DEV_NULL: @NO,
-                  KEY_BROWSER_EXTENSIONS_ROOT: [NSNull null],
-                  KEY_BROWSER_EXTENSION_ACTIVE_IDS: @[],
                   KEY_WIDTH: @1000,
                   KEY_HEIGHT: @800,
                   KEY_INSTANT_REPLAY: @NO,
@@ -1395,7 +1389,6 @@ typedef struct {
                   KEY_TREAT_OPTION_AS_ALT: PROFILE_BLOCK(treatOptionAsAlt),
                   KEY_TIMESTAMPS_STYLE: PROFILE_BLOCK(timestampsStyle),
                   KEY_TIMESTAMPS_VISIBLE: PROFILE_BLOCK(timestampsVisible),
-                  KEY_BROWSER_EXTENSIONS_ROOT: PROFILE_BLOCK(browserExtensionsRoot)
                 };
     }
     return dict;
@@ -1558,18 +1551,6 @@ typedef struct {
         return @(iTermTimestampsModeOverlap);
     }
     return fallback;
-}
-
-+ (id)browserExtensionsRoot:(Profile *)profile {
-    NSString *string = [NSString castFrom:profile[KEY_BROWSER_EXTENSIONS_ROOT]];
-    if (string) {
-        return string;
-    }
-    NSString *appSupport = [[NSFileManager defaultManager] applicationSupportDirectoryWithoutCreating];
-    if (!appSupport) {
-        return nil;
-    }
-    return [appSupport stringByAppendingPathComponent:@"BrowserExtensions"];
 }
 
 + (id)timestampsVisible:(Profile *)profile {

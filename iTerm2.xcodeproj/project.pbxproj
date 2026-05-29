@@ -3546,7 +3546,6 @@
 		A6C764161B45C77100E3C992 /* libSSKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DFA7C671923E83500DF1410 /* libSSKeychain.a */; };
 		A6C764171B45C7B200E3C992 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A624231819CF6DE000182C08 /* NMSSH.framework */; };
 		A6C7642B1B45CBA800E3C992 /* libSSKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DFA7C671923E83500DF1410 /* libSSKeychain.a */; };
-		A6C7C96D2E172F3E00AA7668 /* WebExtensionsFramework in Frameworks */ = {isa = PBXBuildFile; productRef = A6C7C96C2E172F3E00AA7668 /* WebExtensionsFramework */; };
 		A6C7DE52199F3087001E5C75 /* PTYWindow+Scripting.h in Headers */ = {isa = PBXBuildFile; fileRef = A6C7DE51199F3087001E5C75 /* PTYWindow+Scripting.h */; };
 		A6C7DE5519A4591E001E5C75 /* iTermNewWindowCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = A6C7DE5319A4591E001E5C75 /* iTermNewWindowCommand.h */; };
 		A6C7DE5919A459E9001E5C75 /* iTerm2.sdef in Resources */ = {isa = PBXBuildFile; fileRef = A6C7DE5819A459E9001E5C75 /* iTerm2.sdef */; };
@@ -8951,7 +8950,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A6C7C96D2E172F3E00AA7668 /* WebExtensionsFramework in Frameworks */,
 				51A4E0853124F0481929EF76 /* CompanionProtocol in Frameworks */,
 				611264B856DACEEA188EA842 /* CompanionNoise in Frameworks */,
 				D52DA7A75005457424B6ECB8 /* CompanionTransport in Frameworks */,
@@ -16081,7 +16079,6 @@
 			);
 			name = iTermSwiftPackages;
 			packageProductDependencies = (
-				A6C7C96C2E172F3E00AA7668 /* WebExtensionsFramework */,
 				223B2226AFD38553CBB6D072 /* CompanionProtocol */,
 				CE47D7EFD87C4A5BF1DF9B29 /* CompanionNoise */,
 				B64D2673BB7E3F17D208CC22 /* CompanionTransport */,
@@ -16257,7 +16254,6 @@
 			);
 			mainGroup = 0464AB0D006CD2EC7F000001 /* JTerminal */;
 			packageReferences = (
-				A62E3BC62E1CC674002DF8C3 /* XCLocalSwiftPackageReference "WebExtensionsFramework" */,
 				72DF701C2DF2DAABC006F100 /* XCLocalSwiftPackageReference "CompanionCore" */,
 				6AEB4F694FB62FA208F96240 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				8282BAE40915D8F2B8CC6B66 /* XCRemoteSwiftPackageReference "Yams" */,
@@ -24975,10 +24971,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Companion/CompanionCore;
 		};
-		A62E3BC62E1CC674002DF8C3 /* XCLocalSwiftPackageReference "WebExtensionsFramework" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = WebExtensionsFramework;
-		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -25012,10 +25004,6 @@
 		223B2226AFD38553CBB6D072 /* CompanionProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CompanionProtocol;
-		};
-		A6C7C96C2E172F3E00AA7668 /* WebExtensionsFramework */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = WebExtensionsFramework;
 		};
 		A6EC804D281BBBE100493544 /* SwiftyMarkdown */ = {
 			isa = XCSwiftPackageProductDependency;

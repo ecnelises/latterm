@@ -36,7 +36,6 @@ iTerm2/
 ├── proto/api.proto        # Protocol Buffer API
 ├── tools/                 # Build scripts
 ├── submodules/            # Git submodules
-├── WebExtensionsFramework/  # Swift SPM framework (see WebExtensionsFramework/CLAUDE.md)
 ├── iTerm2.sdef            # AppleScript API
 ├── CLAUDE.md              # Code best practices
 ├── REFACTOR.md            # Terminal-first fork roadmap

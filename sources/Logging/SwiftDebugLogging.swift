@@ -7,7 +7,6 @@
 
 import Foundation
 import OSLog
-import WebExtensionsFramework
 
 func DLog(_ messageBlock: @autoclosure () -> String, file: String = #file, line: Int = #line, function: String = #function) {
     guard gDebugLogging.boolValue else {
@@ -411,5 +410,3 @@ public func preconditionFailure(
 ) -> Never {
     abort()
 }
-
-extension iTermLogger: BrowserExtensionLogger {}
