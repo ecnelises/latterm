@@ -191,13 +191,13 @@ final class iTermWorkgroupPeerPort: PTYSessionPeerPort {
             return
         }
         // The busy spinner reflects the general state (indicator included).
-        setBusy(WorkgroupIntrospection.state(forTabStatus: status) == .working,
+        setBusy(WorkgroupSessionState.state(forTabStatus: status) == .working,
                 forPeerIdentifier: identifier)
         // The idle-driven auto behaviors track the STRICT reported state so a
         // session restart (which clears the tab status) doesn't register as a
         // working -> idle edge. Read the prior state once and advance it here
         // so both behaviors below see the same edge.
-        let reported = WorkgroupIntrospection.reportedState(forTabStatus: status)
+        let reported = WorkgroupSessionState.reportedState(forTabStatus: status)
         let previous = lastPeerState[identifier]
         lastPeerState[identifier] = reported
         maybeAutoSendClippings(session: session,
@@ -299,7 +299,7 @@ final class iTermWorkgroupPeerPort: PTYSessionPeerPort {
                 newState: newState,
                 mode: session.workgroupSessionMode,
                 toggleOn: session.autoSendClippingsWhenIdle,
-                mainSessionState: WorkgroupIntrospection.state(for: mainSession),
+                mainSessionState: WorkgroupSessionState.state(for: mainSession),
                 clippings: clippings) else {
             return
         }
@@ -370,7 +370,7 @@ final class iTermWorkgroupPeerPort: PTYSessionPeerPort {
             // Record the current state so the first observed transition is a
             // real edge (a peer already working at re-entry, then finishing,
             // still fires the auto-send working -> idle path).
-            let state = WorkgroupIntrospection.state(forTabStatus: status)
+            let state = WorkgroupSessionState.state(forTabStatus: status)
             lastPeerState[identifier] = state
             if state == .working {
                 setBusy(true, forPeerIdentifier: identifier)

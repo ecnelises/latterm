@@ -341,17 +341,11 @@ final class CompanionMacIdentity: NSObject {
 
 enum CompanionMacError: Error, CustomStringConvertible {
     case keychain(OSStatus)
-    case chatSystemUnavailable
-    case unknownChat(String)
 
     var description: String {
         switch self {
         case .keychain(let status):
             return "Keychain error \(status)"
-        case .chatSystemUnavailable:
-            return "The chat system is not available"
-        case .unknownChat(let id):
-            return "Unknown chat \(id)"
         }
     }
 }

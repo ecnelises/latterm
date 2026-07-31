@@ -60,8 +60,6 @@
 - (VT100TerminalColorValue)resolvedColorValue:(VT100TerminalColorValue)value { return value; }
 - (iTermColorMap *)copy { return (iTermColorMap *)self; }
 - (VT100SavedColorsSlot *)savedColorsSlot { return nil; }
-- (VT100TerminalColorValue)resolvedDualModeColor:(iTermDualModeColor)dual { return (VT100TerminalColorValue){0}; }
-- (VT100TerminalColorValue)resolvedColorValue:(VT100TerminalColorValue)value { return value; }
 
 @end
 

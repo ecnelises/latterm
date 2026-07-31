@@ -15,6 +15,20 @@ import JavaScriptCore
 import CompanionProtocol
 import CompanionTransport
 
+struct PluginError: LocalizedError, Equatable, CustomDebugStringConvertible {
+    static let cancelled = PluginError(reason: "cancelled")
+
+    var reason: String
+
+    var errorDescription: String? {
+        reason
+    }
+
+    var debugDescription: String {
+        "<PluginError \(reason)>"
+    }
+}
+
 struct CompanionPlugin {
     static private var _instance = MutableAtomicObject<Result<CompanionPlugin, PluginError>?>(nil)
 

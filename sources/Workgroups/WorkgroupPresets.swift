@@ -20,16 +20,12 @@ struct WorkgroupPreset {
 enum WorkgroupPresets {
     static let all: [WorkgroupPreset] = [
         WorkgroupPreset(
-            identifier: "codingAgentPlusDiff",
-            displayName: "Coding Agent + Diff",
-            build: buildCodingAgentPlusDiff),
-        WorkgroupPreset(
-            identifier: "codingAgentPlusDiffPlusCodeReview",
-            displayName: "Coding Agent + Diff + Code Review",
-            build: { buildCodingAgentPlusDiffPlusCodeReview() })
+            identifier: "terminalPlusDiff",
+            displayName: "Terminal + Diff",
+            build: buildTerminalPlusDiff)
     ]
 
-    private static func buildCodingAgentPlusDiff() -> iTermWorkgroup {
+    private static func buildTerminalPlusDiff() -> iTermWorkgroup {
         let rootID = UUID().uuidString
         let diffID = UUID().uuidString
         // Template uses `\(gitBase)`, the workgroup variable bound
@@ -66,64 +62,7 @@ enum WorkgroupPresets {
 
         return iTermWorkgroup(
             uniqueIdentifier: UUID().uuidString,
-            name: "Coding Agent + Diff",
+            name: "Terminal + Diff",
             sessions: [root, diff])
-    }
-
-    // Builds a root + Diff-peer + Code-Review-peer workgroup.
-    static func buildCodingAgentPlusDiffPlusCodeReview(
-        workgroupID: String = UUID().uuidString,
-        rootID: String = UUID().uuidString,
-        diffID: String = UUID().uuidString,
-        reviewID: String = UUID().uuidString,
-        name: String = "Coding Agent + Diff + Code Review"
-    ) -> iTermWorkgroup {
-        let main = iTermWorkgroupSessionConfig(
-            uniqueIdentifier: rootID,
-            parentID: nil,
-            kind: .root,
-            profileGUID: nil,
-            command: "",
-            urlString: "",
-            toolbarItems: [.modeSwitcher, .gitStatus, .autoRequestReviewWhenIdle],
-            displayName: "Chat")
-
-        let diff = iTermWorkgroupSessionConfig(
-            uniqueIdentifier: diffID,
-            parentID: rootID,
-            kind: .peer,
-            profileGUID: nil,
-            command: "git difftool -y -x vimdiff \\(gitBase)",
-            urlString: "",
-            toolbarItems: [.modeSwitcher,
-                           .changedFileSelector,
-                           .gitBaseSelector,
-                           .navigation(WorkgroupNavigationShortcuts.defaults)],
-            displayName: "Diff",
-            perFileCommand: "git difftool -y -x vimdiff \\(gitBase) -- \\(file)",
-            mode: .diff)
-
-        let review = iTermWorkgroupSessionConfig(
-            uniqueIdentifier: reviewID,
-            parentID: rootID,
-            kind: .peer,
-            profileGUID: nil,
-            // `codeReviewSystemPromptFile` is bound at launch in
-            // PTYSession.wrappedCommandForCodeReview to a temp file
-            // holding the user-editable system prompt (Settings >
-            // General > AI > Prompts), defaulting to the bundled
-            // code-review-system-prompt.txt.
-            command: "claude \\(codeReviewPrompt) --append-system-prompt-file '\\(codeReviewSystemPromptFile)' --settings '\\(iterm2.appBundlePath)/Contents/Resources/code-review-settings.txt'",
-            urlString: "",
-            toolbarItems: [.modeSwitcher,
-                           .reload(WorkgroupToolbarShortcut.reloadDefault),
-                           .autoSendClippingsWhenIdle],
-            displayName: "Code Review",
-            mode: .codeReview)
-
-        return iTermWorkgroup(
-            uniqueIdentifier: workgroupID,
-            name: name,
-            sessions: [main, diff, review])
     }
 }

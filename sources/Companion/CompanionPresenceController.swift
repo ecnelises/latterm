@@ -20,8 +20,7 @@ final class CompanionPresenceController: NSObject {
     private var observer: (any NSObjectProtocol)?
     private var settingsObserver: (any NSObjectProtocol)?
     /// Whether a "connected" toast is currently showing for the live connection,
-    /// so the matching "disconnected" toast fires only if connect did. A
-    /// solicited NSE fetch never sets this, so it produces neither toast.
+    /// so the matching "disconnected" toast fires only if connect did.
     private var connectToastShown = false
     private var controller: CompanionPairingController { .shared }
 
@@ -61,12 +60,8 @@ final class CompanionPresenceController: NSObject {
         controller.hasPairedDevice && iTermAdvancedSettingsModel.companionPairingAllowed()
     }
 
-    /// True only for a real/unexpected connection (an interactive app session or
-    /// an unclassified one past its grace window) - NOT a solicited NSE fetch or
-    /// one still being classified. This is what the toast and the lit status-item
-    /// glyph reflect, so a background push fetch neither toasts nor flickers the
-    /// menu bar. Takes `paired` so a caller that already computed it doesn't
-    /// re-evaluate the gating expression.
+    /// True while the paired phone has a live terminal-control connection. Takes
+    /// `paired` so a caller that already computed it does not re-evaluate the gate.
     private func interactivelyPresent(paired: Bool) -> Bool {
         paired && controller.connectionPresence == .interactive
     }

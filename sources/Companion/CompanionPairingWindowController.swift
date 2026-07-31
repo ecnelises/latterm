@@ -45,9 +45,8 @@ final class CompanionPairingWindowController: NSWindowController, NSWindowDelega
     // outside the paired state (hideTopContent).
     private let roomNameCaptionLabel = NSTextField(labelWithString: "Relay room name")
     private let roomNameLabel = NSTextField(wrappingLabelWithString: "")
-    // A remedy for the AI/admin prerequisites (e.g. "Reveal in Settings"). The
-    // companion plugin and consent have their own controls in the bottom
-    // section, so this is only used for the AI-side gates.
+    // An optional remedy for a blocked pairing state, such as authenticating
+    // before replacing an existing pairing.
     private let gateButton = NSButton(title: "", target: nil, action: nil)
     // SAS confirmation: shown in place of the QR once the handshake completes,
     // asking the user to type the code the phone is displaying.
@@ -59,7 +58,7 @@ final class CompanionPairingWindowController: NSWindowController, NSWindowDelega
     private let sectionSeparator = NSBox()
     // The consent setting. Always shown, never conditional on the plugin:
     // checking it grants consent (set(...), which prompts for authorization);
-    // unchecking revokes it. Mirrors the AI plugin's enable checkbox.
+    // unchecking revokes it.
     private let consentCheckbox = NSButton(checkboxWithTitle: "Allow companion device pairing",
                                            target: nil,
                                            action: nil)
@@ -165,19 +164,6 @@ final class CompanionPairingWindowController: NSWindowController, NSWindowDelega
         currentGate = gate
         RLog("Companion pairing window: gate is now \(gate)")
         switch gate {
-        case .aiAdminDisabled:
-            // No remedy to offer: this is an administrator decision.
-            showBlockedTop("Generative AI features have been disabled. Check with your system administrator.")
-        case .aiPluginMissing:
-            showBlockedTop("You must install the AI plugin before you can pair a companion device.",
-                           remedyTitle: "Reveal in Settings") {
-                PreferencePanel.sharedInstance().openToPreference(withKey: kPhonyPreferenceKeyInstallAIPlugin)
-            }
-        case .aiConsentNeeded:
-            showBlockedTop("You must enable AI features in settings before you can pair a companion device.",
-                           remedyTitle: "Reveal") {
-                PreferencePanel.sharedInstance().openToPreference(withKey: kPreferenceKeyEnableAI)
-            }
         case .companionAdminDisabled:
             // No remedy to offer: this is an administrator decision.
             showBlockedTop("Companion device pairing has been disabled. Check with your system administrator.")

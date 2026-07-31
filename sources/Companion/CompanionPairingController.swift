@@ -37,63 +37,28 @@ final class CompanionPairingController: NSObject {
     }
 
     /// How the current connection should be treated by the presence warning.
-    /// A connection only counts as user-visible presence once it is .interactive;
-    /// a .solicited NSE fetch (the mac's own push response) is invisible. See
-    /// docs/push.txt and CompanionPushNonceRegistry.
+    /// Every live phone connection is interactive now that the background push
+    /// fetch path has been removed.
     enum ConnectionPresence {
-        case none         // no connection
-        case pending      // connected, not yet classified (within the grace window)
-        case solicited    // the mac's own NSE fetch (valid push nonce): no warning
-        case interactive  // a real/unexpected connection: warn
+        case none
+        case interactive
     }
-    private(set) var connectionPresence: ConnectionPresence = .none {
-        didSet {
-            // Mirror to the (lock-guarded) flag the turn-complete push gate reads,
-            // so it suppresses pushes only for a real interactive session and not
-            // for the mac's own solicited NSE fetch.
-            CompanionPushRegistry.setInteractivePhoneConnected(connectionPresence == .interactive)
-        }
-    }
-    private var classificationGraceTask: Task<Void, Never>?
-    /// A connection that neither presents a valid nonce nor does anything within
-    /// this window is treated as interactive (a silent lurker is warn-worthy).
-    private static let classificationGraceNanos: UInt64 = 3_000_000_000
+    private(set) var connectionPresence: ConnectionPresence = .none
 
     private var listener: TransportListener?
     private var acceptTask: Task<Void, Never>?
     private var bridge: CompanionHostBridge? {
         didSet {
-            // Mirrored where the (nonisolated) tool-registration path can
-            // read it.
-            CompanionPushRegistry.setPhoneConnected(bridge != nil)
-            // Reset presence classification for the new connection (or clear it).
-            if let bridge {
-                connectionPresence = .pending
-                startClassificationGrace(for: bridge)
+            if bridge != nil {
+                connectionPresence = .interactive
                 // A live bridge IS relay presence; start the connected timer if a
                 // park hadn't already (continuous through park -> phone -> repark).
                 if relayConnectedSince == nil { relayConnectedSince = Date() }
             } else {
                 connectionPresence = .none
-                classificationGraceTask?.cancel()
-                classificationGraceTask = nil
             }
             // Connection state changed: refresh the presence UI.
             notifyPresenceChanged()
-        }
-    }
-
-    /// After the grace window, an unclassified (still pending) connection is
-    /// escalated to .interactive so it surfaces. A solicited/interactive
-    /// classification arriving first cancels this.
-    private func startClassificationGrace(for connection: CompanionHostBridge) {
-        classificationGraceTask?.cancel()
-        classificationGraceTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: Self.classificationGraceNanos)
-            guard let self, !Task.isCancelled else { return }
-            guard self.bridge === connection, self.connectionPresence == .pending else { return }
-            self.connectionPresence = .interactive
-            self.notifyPresenceChanged()
         }
     }
 
@@ -260,16 +225,6 @@ final class CompanionPairingController: NSObject {
         }
     }
 
-    /// The bridge classified its connection on the first request. solicited ==
-    /// valid push nonce (the mac's own fetch); otherwise warn.
-    private func connectionDidClassify(_ connection: CompanionHostBridge, solicited: Bool) {
-        guard bridge === connection, connectionPresence == .pending else { return }
-        classificationGraceTask?.cancel()
-        classificationGraceTask = nil
-        connectionPresence = solicited ? .solicited : .interactive
-        notifyPresenceChanged()
-    }
-
     private(set) var pairingCode: PairingCode?
 
     /// True while a fresh-pairing QR is being shown (from startPairing until the
@@ -414,26 +369,16 @@ final class CompanionPairingController: NSObject {
     }
 
     /// Everything that must hold to pair, or even listen for a paired device.
-    /// Mirrors the AI feature's gating (admin setting + signed plugin + secure
-    /// consent) twice: the AI prerequisite (the companion bridges AI chat) and
-    /// the companion feature itself. Distinct cases so the UI names the remedy.
+    /// Distinct cases let the settings window name the appropriate remedy.
     enum Gate: Equatable {
         case allowed
-        case aiAdminDisabled
-        case aiPluginMissing
-        case aiConsentNeeded
         case companionAdminDisabled
         case companionPluginMissing
         case companionConsentNeeded
     }
 
     static func gate() -> Gate {
-        // AI prerequisites.
-        if !iTermAdvancedSettingsModel.generativeAIAllowed() { return .aiAdminDisabled }
-        if !iTermAITermGatekeeper.pluginInstalled() { return .aiPluginMissing }
-        if !SecureUserDefaults.instance.enableAI.value { return .aiConsentNeeded }
-        // Companion-specific: admin policy, the signed companion plugin (the
-        // only outbound path to the relay), and the user's secure opt-in.
+        // Companion policy, the signed transport plugin, and the user's opt-in.
         if !iTermAdvancedSettingsModel.companionPairingAllowed() { return .companionAdminDisabled }
         if !CompanionPlugin.instance().isSuccess { return .companionPluginMissing }
         if !SecureUserDefaults.instance.enableCompanionPairing.value { return .companionConsentNeeded }
@@ -445,8 +390,8 @@ final class CompanionPairingController: NSObject {
     private override init() {
         super.init()
         // Track consent and the advanced setting so the background listener
-        // follows the gate: stop when AI becomes unavailable, resume when it
-        // comes back. (Plugin presence has no notification; it is re-checked
+        // follows the gate: stop when Companion becomes unavailable, resume when
+        // it comes back. (Plugin presence has no notification; it is re-checked
         // on the next launch or pairing-window visit.)
         let center = NotificationCenter.default
         for name in [iTermSecureUserDefaults.didChange,
@@ -466,7 +411,7 @@ final class CompanionPairingController: NSObject {
             resumePairedListeningIfNeeded()
             return
         }
-        // Gate closed (AI disabled, admin policy, etc.): stop serving. Drop a
+        // Gate closed (policy, plugin, or consent): stop serving. Drop a
         // live connection too, not just the accept loop. Keep the pairing keys:
         // these gates are reversible, unlike unpair(), so re-enabling lets the
         // same device reconnect. Two exceptions delete key material instead, and
@@ -593,8 +538,8 @@ final class CompanionPairingController: NSObject {
             clearPendingMigrationNotice()
             return
         }
-        // Only nag while we are actually serving: with the gate closed (AI/consent
-        // off) no phone could connect regardless, so "update your iPhone" would
+        // Only nag while we are actually serving: with the Companion gate closed,
+        // no phone could connect regardless, so "update your iPhone" would
         // misattribute the cause. A gate change re-enters here and arms then.
         guard Self.gate() == .allowed else {
             relayLog("Relay migration: notice pending but gate not allowed; not arming yet")
@@ -673,50 +618,28 @@ final class CompanionPairingController: NSObject {
         migrateDirectRelayToResolverIfNeeded()
         armMigrationNoticeIfPending()
         // First call is at launch (the user is present); read the keychain-backed
-        // identity material (Noise keypair, paired phone key, room secret), the
-        // push secret, and the outstanding-nonce list into memory now, so later
-        // reconnects and background sends serve from cache and never trigger a
-        // keychain prompt while the user is away. (The nonce list is its own
-        // keychain item, read lazily on first push without this.) All are
-        // idempotent, so reconnect-driven calls are no-ops.
+        // identity material (Noise keypair, paired phone key, and room secret)
+        // into memory now, so later reconnects never trigger a keychain prompt
+        // while the user is away. This is idempotent, so reconnect-driven calls
+        // are no-ops.
         //
         // Gated on evidence companion is or was paired: a live pairing (pairedPID)
         // or the keychain's own "has material" hint. A never-paired install skips
-        // this whole block, so it never plants or rewrites the push-nonce keychain
-        // item - which pops a code-signature confirmation prompt for anyone who
-        // alternates differently-signed builds (a notarized nightly and an ad-hoc
-        // self-build) - for a feature it never enabled. The hint is ONLY a launch
-        // optimization: the on-demand connect/push reads elsewhere are NOT gated by
-        // it, so a stale-false hint can never prevent a genuinely-needed keychain
-        // read, and primeCacheAtLaunch reconciles the hint from ground truth (true
-        // if it finds material, false if the keychain is genuinely empty).
+        // this keychain block. The hint is only a launch optimization: on-demand
+        // connection reads are not gated by it, and primeCacheAtLaunch reconciles
+        // the hint from ground truth.
         if hasPairedDevice || CompanionMacIdentity.keychainMayHaveMaterial {
             CompanionMacIdentity.primeCacheAtLaunch()
-            CompanionPushRegistry.loadSecretAtLaunch()
-            CompanionPushNonceRegistry.shared.primeAtLaunch()
         } else {
             relayLog("resume: skipping keychain prime (no pairing and no material hint)")
         }
-        // Watch the broker so a completed agent turn (or a permission request)
-        // can nudge an away phone. Idempotent; gated so it does nothing unless
-        // paired, away, and notifications are authorized.
-        CompanionAgentActivityNotifier.start()
         // If the plugin vanished while we were away, tear the pairing down rather
         // than silently keeping the keys around for a feature that can't run.
         unpairIfPluginMissing()
         guard Self.gate() == .allowed else {
-            DLog("Companion: not listening; AI features are unavailable")
-            relayLog("resume: SKIP (AI gate not allowed)")
+            DLog("Companion: not listening; the Companion gate is closed")
+            relayLog("resume: SKIP (Companion gate not allowed)")
             return
-        }
-        // A paired device means an AI query can arrive from the phone while the
-        // user is away. Warm the API key cache now (at launch, or after a
-        // disconnect) so that query serves its key from memory rather than
-        // blocking on, or prompting for, keychain access with nobody present.
-        // Gated on an actual pairing and idempotent, so this is a cheap no-op
-        // on the reconnect-driven calls.
-        if hasPairedDevice {
-            AITermControllerObjC.prewarmAPIKeyCache()
         }
         // Park only when nothing is connected. The relay room has a single mac
         // slot, so parking while a bridge is live would displace it. The
@@ -951,33 +874,6 @@ final class CompanionPairingController: NSObject {
         }
     }
 
-    /// Whether a companion phone is connected right now (a live bridge). Used
-    /// to decide which push tools the orchestrator gets.
-    var isPhoneConnected: Bool {
-        bridge != nil
-    }
-
-    /// Ask the connected phone to prompt for notification permission. nil
-    /// when no phone is connected or it didn't answer.
-    func requestNotificationPermission() async -> CompanionPushAuthorization? {
-        await bridge?.requestNotificationPermission()
-    }
-
-    /// The user turned on "send alerts to my iPhone". Record the durable intent so
-    /// EVERY subsequent `.hello` tells the phone to ask for notification permission
-    /// (the robust, timing-independent path). Also nudge a currently-connected phone
-    /// immediately so opting in while the phone is foreground prompts right away
-    /// instead of waiting for the next connection.
-    func requestPushPermissionForAlerts() {
-        CompanionPushRegistry.setAlertsEverEnabled(true)
-        DLog("Companion: alerts opt-in recorded (authorization=\(CompanionPushRegistry.authorization.rawValue), presence=\(connectionPresence))")
-        if connectionPresence == .interactive,
-           CompanionPushRegistry.authorization == .notDetermined {
-            DLog("Companion: nudging connected phone to request notification permission now")
-            Task { [weak self] in _ = await self?.requestNotificationPermission() }
-        }
-    }
-
     /// Kick the paired device and delete the pairing: closes any live bridge,
     /// forgets the pairing id, and destroys the mac's static identity so a new
     /// one is generated for the next pairing.
@@ -1006,7 +902,6 @@ final class CompanionPairingController: NSObject {
         CompanionMacIdentity.deletePairedRoomSecret()
         CompanionMacIdentity.deleteKeyPair()
         CompanionPushRegistry.clear()
-        CompanionChatMuteRegistry.clear()
         // No paired device left, so a pending migration notice is moot; clear it
         // (and cancel its timer) so a later resume cannot nag an unpaired Mac.
         clearPendingMigrationNotice()
@@ -1068,7 +963,6 @@ final class CompanionPairingController: NSObject {
         CompanionMacIdentity.deletePairedRoomSecret()
         CompanionMacIdentity.deleteKeyPair()
         CompanionPushRegistry.clear()
-        CompanionChatMuteRegistry.clear()
         // No paired device left, so a pending migration notice is moot; clear it.
         clearPendingMigrationNotice()
         onDisconnect?()
@@ -1614,10 +1508,6 @@ final class CompanionPairingController: NSObject {
                 newBridge.onPeerUnpaired = { [weak self] in
                     self?.peerDidUnpair()
                 }
-                newBridge.onConnectionClassified = { [weak self, weak newBridge] solicited in
-                    guard let self, let newBridge else { return }
-                    self.connectionDidClassify(newBridge, solicited: solicited)
-                }
                 newBridge.onVersionIncompatible = { [weak self] verdict in
                     self?.showVersionIncompatibleAlert(verdict)
                 }
@@ -1661,13 +1551,6 @@ final class CompanionPairingController: NSObject {
                     CompanionPushRegistry.recordCurrentRelays(
                         pushRelayURL: CompanionPushRelay.baseURL.absoluteString,
                         mainRelayOrigin: Self.configuredRelayOrigin())
-                    // A brand-new device just paired while the user is present
-                    // (they just confirmed the SAS code): warm the AI key cache
-                    // now so a query later driven from the away phone serves its
-                    // key from memory without a keychain prompt. The launch path
-                    // covers devices already paired at startup; this covers a
-                    // pairing that happens while the app is already running.
-                    AITermControllerObjC.prewarmAPIKeyCache()
                 } else {
                     // Reconnect: refresh ONLY the main relay. This connection is
                     // carried over the main relay, so it proves the phone still

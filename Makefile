@@ -334,7 +334,7 @@ run-keychain: Development
 purge-keychain-test: Development
 	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)"
 	rm -f /tmp/iterm2-keychain-purge-result.txt
-	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args --iterm2-purge-data-protection-keychain-for-testing
+	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite $(SUITE) --iterm2-purge-data-protection-keychain-for-testing
 	@cat /tmp/iterm2-keychain-purge-result.txt 2>/dev/null || echo "no purge result written (build may lack the entitlement)"
 
 runbg: Development

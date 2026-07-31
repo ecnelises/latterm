@@ -70,7 +70,7 @@ final class CodeReviewPromptStore: NSObject {
         } else {
             // Migrate the legacy single-prompt default into a named
             // entry so the user’s customization survives the upgrade.
-            let legacy = iTermPreferences.string(forKey: kPreferenceKeyAIPromptCodeReview) ?? ""
+            let legacy = ud.string(forKey: "AI Prompt for Code Review") ?? ""
             let seedText = legacy.isEmpty ? Self.builtInDefaultText : legacy
             let seedName = "Default"
             prompts = [CodeReviewSavedPrompt(name: seedName, text: seedText)]
@@ -88,7 +88,8 @@ final class CodeReviewPromptStore: NSObject {
     // empty string if the registered default disappears for some reason
     // — in practice iTermPreferences seeds it on +initialize.
     private static var builtInDefaultText: String {
-        return iTermPreferences.string(forKey: kPreferenceKeyAIPromptCodeReview) ?? ""
+        return iTermUserDefaults.userDefaults().string(
+            forKey: "AI Prompt for Code Review") ?? ""
     }
 
     private enum ChangeKind {

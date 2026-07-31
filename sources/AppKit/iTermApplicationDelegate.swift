@@ -228,10 +228,3 @@ extension iTermApplicationDelegate {
         ArchivesMenuBuilder.shared?.restoreArchive(nil)
     }
 }
-
-@objc
-extension iTermApplicationDelegate {
-    @IBAction func revealCockpit(_ sender: Any?) {
-        CockpitWindowController.shared.showAndFocusSearch()
-    }
-}

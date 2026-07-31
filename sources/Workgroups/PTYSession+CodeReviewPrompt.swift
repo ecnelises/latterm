@@ -191,7 +191,11 @@ extension PTYSession {
     // kPreferenceKeyAIPromptCodeReviewSystem, whose registered default is
     // the bundled code-review-system-prompt.txt.
     private func writeCodeReviewSystemPromptFile() -> String? {
-        let text = iTermPreferences.string(forKey: kPreferenceKeyAIPromptCodeReviewSystem) ?? ""
+        let text = iTermUserDefaults.userDefaults().string(
+            forKey: "AI Prompt for Code Review System") ?? ""
+        guard !text.isEmpty else {
+            return nil
+        }
         let filename = "iterm2-code-review-system-prompt-\(guid).txt"
         let path = NSString.path(withComponents: [NSTemporaryDirectory(), filename])
         do {

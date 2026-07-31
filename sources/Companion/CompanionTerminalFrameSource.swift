@@ -55,7 +55,7 @@ final class CompanionTerminalFrameSource: CompanionFrameSource {
 
     /// Whether a full-screen app is up (the alternate screen buffer). Uses the same
     /// soft-alternate-screen signal the orchestrator reports as screen "alternate"
-    /// (WorkgroupIntrospection.screenSurface), so the two stay consistent.
+    /// used by terminal introspection, so the two stay consistent.
     var isAlternateScreen: Bool { session.screen.terminalSoftAlternateScreenMode }
 
     /// Whether the session reports mouse-wheel events to the program right now

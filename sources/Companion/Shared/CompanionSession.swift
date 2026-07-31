@@ -9,7 +9,7 @@
 //  the transport handed in here is the encrypted NoiseChannel, so this layer
 //  never sees plaintext on the wire. It assigns request IDs, correlates host
 //  replies to the client message that triggered them, and routes unsolicited
-//  host events (subscription deliveries, typing status) to a handler.
+//  stream and session events to a handler.
 //
 
 import Foundation
@@ -144,24 +144,13 @@ actor CompanionSession {
         switch message {
         case .unsupported: "unsupported"
         case .hello: "hello"
-        case .chatsAndSessions: "chatsAndSessions"
-        case .chatCreated: "chatCreated"
-        case .history: "history"
-        case .delivery: "delivery"
-        case .typingStatus: "typingStatus"
-        case .turnLifecycle: "turnLifecycle"
-        case .mentionsResolved: "mentionsResolved"
+        case .sessions: "sessions"
         case .sessionScreenInfo: "sessionScreenInfo"
         case .sessionContent: "sessionContent"
         case .historyTile: "historyTile"
-        case .workgroupInfo: "workgroupInfo"
         case .sessionTree: "sessionTree"
-        case .chatListChanged: "chatListChanged"
-        case .requestNotificationPermission: "requestNotificationPermission"
         case .pong: "pong"
         case .relayRoomSecretStored: "relayRoomSecretStored"
-        case .messagesSince: "messagesSince"
-        case .syncSince: "syncSince"
         case .unpaired: "unpaired"
         case .error: "error"
         case .streamStarted: "streamStarted"
@@ -170,7 +159,6 @@ actor CompanionSession {
         case .streamExtent: "streamExtent"
         case .selectionText: "selectionText"
         case .selectionRange: "selectionRange"
-        case .autoProvideConsent: "autoProvideConsent"
         }
     }
 
