@@ -43,9 +43,6 @@ typedef NS_ENUM(NSInteger, iTermLinesShiftedReason) {
 @end
 
 @protocol iTermTriggerSideEffectExecutor<NSObject>
-- (void)triggerSideEffectShowCapturedOutputToolNotVisibleAnnouncementIfNeeded;
-- (void)triggerSideEffectShowShellIntegrationRequiredAnnouncement;
-- (void)triggerSideEffectDidCaptureOutput;
 - (void)triggerSideEffectLaunchCoprocessWithCommand:(NSString * _Nonnull)command
                                          identifier:(NSString * _Nullable)identifier
                                              silent:(BOOL)silent
@@ -68,7 +65,6 @@ typedef NS_ENUM(NSInteger, iTermLinesShiftedReason) {
 - (void)triggerSideEffectSetValue:(id _Nullable)value
                  forVariableNamed:(NSString * _Nonnull)name;
 - (void)triggerSideEffectCurrentDirectoryDidChange:(NSString * _Nonnull)newPath;
-- (void)triggerSideEffectShowCapturedOutputTool;
 - (void)triggerSessionSetBufferInput:(BOOL)shouldBuffer;
 - (void)triggerSideEffectEnterWorkgroupWithIdentifier:(NSString * _Nonnull)workgroupUniqueIdentifier;
 - (void)triggerSideEffectExitWorkgroupLeaderOnly:(BOOL)leaderOnly;
@@ -278,7 +274,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionResizePermission) {
 - (void)screenSetCursorVisible:(BOOL)visible;
 
 - (void)screenSetHighlightCursorLine:(BOOL)highlight;
-- (void)screenClearCapturedOutput;
 
 // Only called if the trackCursorLineMovement property is set.
 - (void)screenCursorDidMoveToLine:(int)line;
@@ -471,11 +466,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionResizePermission) {
 - (void)screenDidReadRawSSHData:(NSData * _Nonnull)data;
 - (void)screenDidTerminateSSHProcess:(int)pid code:(int)code depth:(int)depth;
 - (void)screenHandleIT2:(NSString * _Nullable)string depth:(int)depth;
-- (void)screenWillBeginSSHIntegration;
-- (void)screenBeginSSHIntegrationWithToken:(NSString * _Nonnull)token
-                                  uniqueID:(NSString * _Nonnull)uniqueID
-                                 encodedBA:(NSString * _Nonnull)encodedBA
-                                   sshArgs:(NSString * _Nonnull)sshArgs;
 - (NSInteger)screenEndSSH:(NSString * _Nonnull)uniqueID;
 - (NSString * _Nonnull)screenSSHLocation;
 - (void)screenBeginFramerRecovery:(int)parentDepth;

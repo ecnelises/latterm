@@ -62,6 +62,7 @@ class TestTriggerBaseName:
         assert isinstance(trigger, Trigger)
 
         result = trigger.encode
+        assert result["action"] == "SomeFutureTrigger"
         assert result["regex"] == "pattern"
         assert result["partial"] is True
         assert result["disabled"] is False

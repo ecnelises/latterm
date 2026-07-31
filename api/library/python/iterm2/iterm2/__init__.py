@@ -76,7 +76,7 @@ from iterm2.tool import async_register_web_view_tool
 
 from iterm2.triggers import (
     decode_trigger, MatchType, Trigger, AlertTrigger, AnnotateTrigger,
-    BellTrigger, BounceTrigger, BufferInputTrigger, CaptureTrigger,
+    BellTrigger, BounceTrigger, BufferInputTrigger,
     CoprocessTrigger, FoldTrigger, HighlightLineTrigger, HighlightTrigger,
     HyperlinkTrigger, InjectTrigger, MarkTrigger, MuteCoprocessTrigger,
     PasswordTrigger, RPCTrigger, RunCommandTrigger, SendTextTrigger,

@@ -3,8 +3,6 @@
 #import "PTYSession.h"
 
 #import "CVector.h"
-#import "CaptureTrigger.h"
-#import "CapturedOutput.h"
 #import "Coprocess.h"
 #import "FakeWindow.h"
 #import "FileTransferManager.h"
@@ -97,7 +95,6 @@
 #import "iTermBuiltInFunctions.h"
 #import "iTermBuriedSessions.h"
 #import "iTermCacheableImage.h"
-#import "iTermCapturedOutputMark.h"
 #import "iTermCarbonHotKeyController.h"
 #import "iTermCharacterSource.h"
 #import "iTermColorMap.h"
@@ -235,7 +232,6 @@ NSString *const PTYCommandDidExitUserInfoKeyLineCount = @"Count";
 NSString *const PTYCommandDidExitUserInfoKeyURL = @"URL";
 
 NSString *const kPTYSessionTmuxFontDidChange = @"kPTYSessionTmuxFontDidChange";
-NSString *const kPTYSessionCapturedOutputDidChange = @"kPTYSessionCapturedOutputDidChange";
 static NSString *const kSuppressAnnoyingBellOffer = @"NoSyncSuppressAnnyoingBellOffer";
 static NSString *const kSilenceAnnoyingBellAutomatically = @"NoSyncSilenceAnnoyingBellAutomatically";
 
@@ -365,11 +361,6 @@ static const NSTimeInterval kAntiIdleGracePeriod = 0.1;
 // Keeps saved state from exploding like in issue 5029.
 static const NSUInteger kMaxCommands = 100;
 static const CGFloat PTYSessionMaximumMetalViewSize = 16384;
-
-static NSString *const kSuppressCaptureOutputRequiresShellIntegrationWarning =
-    @"NoSyncSuppressCaptureOutputRequiresShellIntegrationWarning";
-static NSString *const kSuppressCaptureOutputToolNotVisibleWarning =
-    @"NoSyncSuppressCaptureOutputToolNotVisibleWarning";
 
 // This one cannot be suppressed.
 static NSString *const kTwoCoprocessesCanNotRunAtOnceAnnouncementIdentifier =
@@ -740,8 +731,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 
     // Run this when the composer connects.
     void (^_pendingConductor)(PTYSession *);
-    BOOL _connectingSSH;
-    NSMutableData *_queuedConnectingSSH;
 
     __weak id<VT100ScreenMarkReading> _selectedScreenMark;
     NSMutableArray<PTYSessionHostState *> *_hostStack;
@@ -1246,7 +1235,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_localFileChecker release];
     [_pendingConductor release];
     [_appSwitchingPreventionDetector release];
-    [_queuedConnectingSSH release];
     [_hostStack release];
     [_defaultPointer release];
     [_originatingArrangement release];
@@ -3338,51 +3326,37 @@ webViewConfiguration:(nullable id)webViewConfiguration
                     }];
                 }
             }
-            DLog(@"Will call injectShellIntegration");
-            [self injectShellIntegrationWithEnvironment:env
-                                                   args:argv
-                                             completion:^(NSDictionary<NSString *, NSString *> *env,
-                                                          NSArray<NSString *> *argv) {
-                if (_isArchive) {
-                    [self setExited:YES];
-                    return;
+            if (_isArchive) {
+                [self setExited:YES];
+                return;
+            }
+            [_shell launchWithPath:argv[0]
+                         arguments:[argv subarrayFromIndex:1]
+                       environment:env
+                       customShell:customShell
+                          gridSize:_screen.size
+                          viewSize:_screen.viewSize
+                  maybeScaleFactor:_textview.window.backingScaleFactor
+                            isUTF8:isUTF8
+                        completion:^{
+                id<iTermWindowController> pty = self.delegate.realParentWindow;
+                if (pty.fullScreenPromise) {
+                    DLog(@"Wait for window to enter full screen before sending initial text");
+                    __weak __typeof(self) weakSelf = self;
+                    [pty.fullScreenPromise then:^(id  _Nonnull value) {
+                        DLog(@"Fullscreen promise fulfilled");
+                        [weakSelf sendInitialText];
+                    }];
+                } else {
+                    DLog(@"Sending initial text immediately");
+                    [self sendInitialText];
                 }
-                [_shell launchWithPath:argv[0]
-                             arguments:[argv subarrayFromIndex:1]
-                           environment:env
-                           customShell:customShell
-                              gridSize:_screen.size
-                              viewSize:_screen.viewSize
-                      maybeScaleFactor:_textview.window.backingScaleFactor
-                                isUTF8:isUTF8
-                            completion:^{
-                    id<iTermWindowController> pty = self.delegate.realParentWindow;
-                    if (pty.fullScreenPromise) {
-                        DLog(@"Wait for window to enter full screen before sending initial text");
-                        __weak __typeof(self) weakSelf = self;
-                        [pty.fullScreenPromise then:^(id  _Nonnull value) {
-                            DLog(@"Fullscreen promise fulfilled");
-                            [weakSelf sendInitialText];
-                        }];
-                    } else {
-                        DLog(@"Sending initial text immediately");
-                        [self sendInitialText];
-                    }
-                    if (completion) {
-                        completion(YES);
-                    }
-                }];
+                if (completion) {
+                    completion(YES);
+                }
             }];
         }];
     }];
-}
-
-- (void)injectShellIntegrationWithEnvironment:(NSDictionary<NSString *, NSString *> *)env
-                                         args:(NSArray<NSString *> *)argv
-                                   completion:(void (^)(NSDictionary<NSString *, NSString *> *,
-                                                        NSArray<NSString *> *))completion {
-    DLog(@"env=%@ argv=%@", env, argv);
-    completion(env, argv);
 }
 
 - (void)setParentScope:(iTermVariableScope *)parentScope {
@@ -4088,15 +4062,13 @@ webViewConfiguration:(nullable id)webViewConfiguration
      canBroadcast:(BOOL)canBroadcast
         reporting:(BOOL)reporting {
     NSStringEncoding encoding = forceEncoding ? optionalEncoding : _screen.terminalEncoding;
-    if (self.tmuxMode == TMUX_CLIENT || _conductor.handlesKeystrokes || _connectingSSH) {
+    if (self.tmuxMode == TMUX_CLIENT || _conductor.handlesKeystrokes) {
         if (canBroadcast && !_injectingSynthesizedKey && [[_delegate realParentWindow] broadcastInputToSession:self fromSessionWithGUID:self.guid]) {
             [[_delegate realParentWindow] sendInputToAllSessions:string
                                                         encoding:optionalEncoding
                                                    forceEncoding:forceEncoding];
         } else if (_conductor.handlesKeystrokes) {
             [_conductor sendKeys:[string dataUsingEncoding:encoding]];
-        } else if (_connectingSSH) {
-            [_queuedConnectingSSH appendData:[string dataUsingEncoding:encoding]];
         } else {
             assert(self.tmuxMode == TMUX_CLIENT);
             [[_tmuxController gateway] sendKeys:string
@@ -15595,11 +15567,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [self internalSetHighlightCursorLine:highlight];
 }
 
-- (void)screenClearCapturedOutput {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kPTYSessionCapturedOutputDidChange
-                                                        object:nil];
-}
-
 - (void)setHighlightCursorLine:(BOOL)highlight {
     [self internalSetHighlightCursorLine:highlight];
     _screen.trackCursorLineMovement = highlight;
@@ -19025,7 +18992,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     }
     iTermConductor *previousConductor = [_conductor autorelease];
     NSDictionary *dict = [NSDictionary castFrom:[iTermProfilePreferences objectForKey:KEY_SSH_CONFIG inProfile:self.profile]];
-    const BOOL shouldInjectShellIntegration = [iTermProfilePreferences boolForKey:KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY inProfile:self.profile];
     iTermSSHConfiguration *config = [[[iTermSSHConfiguration alloc] initWithDictionary:dict] autorelease];
     _conductor = [[iTermConductor alloc] init:sshargs
                                      boolArgs:boolArgs
@@ -19034,7 +19000,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                    varsToSend:localOrigin ? [self.screen exfiltratedEnvironmentVariables:config.environmentVariablesToCopy] : @{}
                                    clientVars:[self.screen exfiltratedEnvironmentVariables:nil] ?: @{}
                              initialDirectory:directory
-                 shouldInjectShellIntegration:shouldInjectShellIntegration
                                        parent:previousConductor];
     _shell.sshIntegrationActive = YES;
     _conductor.terminalConfiguration = savedState;
@@ -19140,7 +19105,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (NSInteger)screenEndSSH:(NSString *)uniqueID {
     DLog(@"%@", uniqueID);
-    _connectingSSH = NO;
     if (![_conductor ancestryContainsClientUniqueID:uniqueID]) {
         DLog(@"Ancestry does not contain this unique ID");
         return 0;
@@ -19152,40 +19116,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         count += 1;
         [self unhookSSHConductor];
     }
-    // Legacy SSH integration helpers waited for a newline before exiting. This is in case ssh dies
-    // while iTerm2 is sending the helper payload.
-    [self writeTaskNoBroadcast:@"\x03\n"];
-    if (_queuedConnectingSSH.length) {
-        [_queuedConnectingSSH release];
-        _queuedConnectingSSH = nil;
-    }
     return count;
-}
-
-- (void)screenWillBeginSSHIntegration {
-    _connectingSSH = YES;
-    [_queuedConnectingSSH release];
-    _queuedConnectingSSH = [[NSMutableData alloc] init];
-}
-
-- (void)screenBeginSSHIntegrationWithToken:(NSString *)token
-                                  uniqueID:(NSString *)uniqueID
-                                 encodedBA:(NSString *)encodedBA
-                                   sshArgs:(NSString *)sshArgs {
-    NSURL *path = [[NSBundle bundleForClass:[PTYSession class]] URLForResource:@"conductor" withExtension:@"sh"];
-    NSString *conductorSH = [NSString stringWithContentsOfURL:path encoding:NSUTF8StringEncoding error:nil];
-    // Ensure it doesn't contain empty lines.
-    conductorSH = [conductorSH stringByReplacingOccurrencesOfString:@"\n\n" withString:@"\n \n"];
-
-    NSString *message = [NSString stringWithFormat:@"%@main %@ %@ %@ %@",
-                         conductorSH,
-                         token.length ? [token base64EncodedWithEncoding:NSUTF8StringEncoding] : @"bm9uZQ==",
-                         [uniqueID base64EncodedWithEncoding:NSUTF8StringEncoding],
-                         [encodedBA base64EncodedWithEncoding:NSUTF8StringEncoding],
-                         [sshArgs base64EncodedWithEncoding:NSUTF8StringEncoding]];
-    [self writeTaskNoBroadcast:[@"\x03\n-- BEGIN CONDUCTOR --\n" stringByAppendingString:[[message base64EncodedWithEncoding:NSUTF8StringEncoding] chunkedWithLineLength:80 separator:@"\n"]]];
-    // Terminate with an esc on its own line.
-    [self writeTaskNoBroadcast:@"\n\e\n"];
 }
 
 - (NSString *)screenSSHLocation {
@@ -19219,7 +19150,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                    varsToSend:@{}
                                    clientVars:@{}
                              initialDirectory:nil
-                 shouldInjectShellIntegration:NO
                                        parent:previousConductor];
     [_conductor adoptIT2RecoveryStateFrom:recovering];
     [recovering release];
@@ -23630,39 +23560,6 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     [_composerManager setPrefix:prompt userData:[_composerManager prefixUserData]];
 }
 
-// This can be completely async
-- (BOOL)toolbeltIsVisibleWithCapturedOutput {
-    if (!self.delegate.realParentWindow.shouldShowToolbelt) {
-        return NO;
-    }
-    return [iTermToolbeltView shouldShowTool:kCapturedOutputToolName profileType:self.profile.profileType];
-}
-
-- (void)showCapturedOutputTool {
-    if (!self.delegate.realParentWindow.shouldShowToolbelt) {
-        [self.delegate.realParentWindow toggleToolbeltVisibility:nil];
-    }
-    if (![iTermToolbeltView shouldShowTool:kCapturedOutputToolName profileType:self.profile.profileType]) {
-        [iTermToolbeltView toggleShouldShowTool:kCapturedOutputToolName];
-    }
-}
-
-- (void)performActionForCapturedOutput:(CapturedOutput *)capturedOutput {
-    __weak __typeof(self) weakSelf = self;
-    [capturedOutput.promisedCommand onQueue:dispatch_get_main_queue() then:^(NSString * _Nonnull command) {
-        [weakSelf reallyPerformActionForCapturedOutput:capturedOutput command:command];
-    }];
-}
-
-- (void)reallyPerformActionForCapturedOutput:(CapturedOutput *)capturedOutput
-                                     command:(NSString *)command {
-    [self launchCoprocessWithCommand:command
-                          identifier:nil
-                              silent:NO
-                        triggerTitle:@"Captured Output trigger"];
-    [self takeFocus];
-}
-
 #pragma mark - iTermTriggerSideEffectExecutor
 
 - (void)triggerSessionSetBufferInput:(BOOL)shouldBuffer {
@@ -23720,83 +23617,6 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
                 break;
         }
     }];
-}
-
-- (void)triggerSideEffectShowCapturedOutputTool {
-    [iTermGCD assertMainQueueSafe];
-    [self showCapturedOutputTool];
-}
-
-- (void)triggerSideEffectShowCapturedOutputToolNotVisibleAnnouncementIfNeeded {
-    [iTermGCD assertMainQueueSafe];
-    if ([self toolbeltIsVisibleWithCapturedOutput]) {
-        return;
-    }
-
-    if ([[iTermUserDefaults userDefaults] boolForKey:kSuppressCaptureOutputToolNotVisibleWarning]) {
-        return;
-    }
-
-    if ([self hasAnnouncementWithIdentifier:kSuppressCaptureOutputToolNotVisibleWarning]) {
-        return;
-    }
-    NSString *theTitle = @"A Capture Output trigger fired, but the Captured Output tool is not visible.";
-    void (^completion)(int selection) = ^(int selection) {
-        switch (selection) {
-            case -2:
-                break;
-
-            case 0:
-                [self showCapturedOutputTool];
-                break;
-
-            case 1:
-                [[iTermUserDefaults userDefaults] setBool:YES
-                                                        forKey:kSuppressCaptureOutputToolNotVisibleWarning];
-                break;
-        }
-    };
-    iTermAnnouncementViewController *announcement =
-        [iTermAnnouncementViewController announcementWithTitle:theTitle
-                                                         style:kiTermAnnouncementViewStyleWarning
-                                                   withActions:@[ @"Show It", @"Silence Warning" ]
-                                                    completion:completion];
-    announcement.dismissOnKeyDown = YES;
-    [self queueAnnouncement:announcement
-                 identifier:kSuppressCaptureOutputToolNotVisibleWarning];
-}
-
-- (void)triggerSideEffectShowShellIntegrationRequiredAnnouncement {
-    [iTermGCD assertMainQueueSafe];
-    if ([[iTermUserDefaults userDefaults] boolForKey:kSuppressCaptureOutputRequiresShellIntegrationWarning]) {
-        return;
-    }
-    NSString *theTitle = @"A Capture Output trigger fired, but Shell Integration is unavailable in this fork.";
-    void (^completion)(int selection) = ^(int selection) {
-        switch (selection) {
-            case -2:
-                break;
-
-            case 0:
-                [[iTermUserDefaults userDefaults] setBool:YES
-                                                        forKey:kSuppressCaptureOutputRequiresShellIntegrationWarning];
-                break;
-        }
-    };
-    iTermAnnouncementViewController *announcement =
-        [iTermAnnouncementViewController announcementWithTitle:theTitle
-                                                         style:kiTermAnnouncementViewStyleWarning
-                                                   withActions:@[ @"Silence Warning" ]
-                                                    completion:completion];
-    [self queueAnnouncement:announcement
-                 identifier:kTwoCoprocessesCanNotRunAtOnceAnnouncementIdentifier];
-}
-
-- (void)triggerSideEffectDidCaptureOutput {
-    [iTermGCD assertMainQueueSafe];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kPTYSessionCapturedOutputDidChange
-                                                        object:nil];
-
 }
 
 - (void)triggerSideEffectLaunchCoprocessWithCommand:(NSString * _Nonnull)command
@@ -24161,11 +23981,6 @@ static NSString *IT2AuthorizationAnnouncementIdentifier(NSString *guid) {
     }];
     [self unhookSSHConductor];
     [_sshWriteQueue setLength:0];
-}
-
-- (void)conductorStopQueueingInput {
-    _connectingSSH = NO;
-    [_conductor sendKeys:_queuedConnectingSSH];
 }
 
 - (void)conductorStateDidChange {

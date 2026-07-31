@@ -322,8 +322,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (BOOL)noSyncSuppressBadPWDInArrangementWarning;
 + (void)setNoSyncSuppressBadPWDInArrangementWarning:(BOOL)value;
 + (BOOL)noSyncSuppressBroadcastInputWarning;
-+ (BOOL)noSyncSuppressCaptureOutputRequiresShellIntegrationWarning;
-+ (BOOL)noSyncSuppressCaptureOutputToolNotVisibleWarning;
 + (BOOL)noSyncSuppressClipboardAccessDeniedWarning;
 + (void)setNoSyncSuppressClipboardAccessDeniedWarning:(BOOL)value;
 + (BOOL)noSyncSuppressMissingProfileInArrangementWarning;

@@ -13,8 +13,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CapturedOutput;
-@protocol CapturedOutputReading;
 @class ScreenCharArray;
 @protocol VT100ScreenMarkReading;
 @class iTermPromise<T>;
@@ -36,16 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol VT100ScreenMarkReading<NSObject, IntervalTreeImmutableObject, iTermMark, iTermGenericNamedMarkReading>
 @property(nonatomic, readonly) BOOL isPrompt;
-@property(nonatomic, readonly) NSInteger clearCount;
-
 // Like -description but with the command line omitted, for logging into the
 // always-on retrospective ring (RLog). -description embeds firstLineOfCommand,
 // so logging a mark with %@ would otherwise leak the command line. Use
 // RLogRedact(mark, mark.redactedDescription) at RLog sites. See DebugLogging.h.
 @property(nonatomic, readonly) NSString *redactedDescription;
-
-// Array of CapturedOutput objects.
-@property(nonatomic, readonly, nullable) NSArray<id<CapturedOutputReading>> *capturedOutput;
 
 // Return code of command on the line for this mark.
 @property(nonatomic, readonly) int code;
@@ -244,10 +237,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Returns a reference to an existing mark with the given GUID.
 + (id<VT100ScreenMarkReading>)markWithGuid:(NSString *)guid
                          forMutationThread:(BOOL)forMutationThread;
-
-// Add an object to self.capturedOutput.
-- (void)addCapturedOutput:(CapturedOutput *)capturedOutput;
-- (void)incrementClearCount;
 
 - (id<VT100ScreenMarkReading>)doppelganger;
 

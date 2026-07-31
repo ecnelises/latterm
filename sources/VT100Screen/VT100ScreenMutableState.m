@@ -25,7 +25,6 @@
 }
 @end
 
-#import "CapturedOutput.h"
 #import "DebugLogging.h"
 #import "iTermRateLimitedUpdate.h"
 #import "NSArray+iTerm.h"
@@ -44,7 +43,6 @@
 #import "VT100WorkingDirectory.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermCapturedOutputMark.h"
 #import "iTermGCD.h"
 #import "iTermImageMark.h"
 #import "iTermIntervalTreeObserver.h"
@@ -4463,16 +4461,6 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     [super setFakePromptDetectedAbsLine:fakePromptDetectedAbsLine];
 }
 
-- (void)incrementClearCountForCommandMark:(id<VT100ScreenMarkReading>)mark {
-    if (![self.intervalTree containsObject:mark]) {
-        return;
-    }
-    [self.mutableIntervalTree mutateObject:mark block:^(id<IntervalTreeObject> _Nonnull obj) {
-        VT100ScreenMark *mark = (VT100ScreenMark *)obj;
-        [mark incrementClearCount];
-    }];
-}
-
 - (void)pauseAtNextPrompt:(void (^)(void))paused {
     _nextPromptBlock = [paused copy];
 }
@@ -6243,7 +6231,6 @@ lengthExcludingInBandSignaling:data.length
     [self appendCarriageReturnLineFeed];
 }
 
-// Link references to marks in CapturedOutput (for the lines where output was captured) to the deserialized mark.
 // Link marks for commands to CommandUse objects in command history.
 // Notify delegate of annotations so they get added as subviews, and set the delegate of not view controllers to self.
 // Materialize portholes.
@@ -6257,7 +6244,6 @@ lengthExcludingInBandSignaling:data.length
     // interactive create path, so the cached bottommost-fold line must be recomputed.
     _foldCacheDirty = YES;
     id<VT100RemoteHostReading> lastRemoteHost = nil;
-    NSMutableDictionary<NSString *, id<CapturedOutputReading>> *markGuidToCapturedOutput = [NSMutableDictionary dictionary];
     // Collect maps for ResilientCoordinate fold/porthole resolution. Decoded
     // RCs that referenced a fold or porthole come up in .unresolvedFold /
     // .unresolvedPorthole; we hand them their target marks after the first
@@ -6284,14 +6270,6 @@ lengthExcludingInBandSignaling:data.length
                 id<VT100ScreenMarkReading> screenMark = (id<VT100ScreenMarkReading>)object;
                 // Breaking the rules here because I don't want the doppelganger to get a delegate.
                 ((VT100ScreenMark *)screenMark).delegate = self;
-                // If |capturedOutput| is not empty then this mark is a command, some of whose output
-                // was captured. The iTermCapturedOutputMarks will come later so save the GUIDs we need
-                // in markGuidToCapturedOutput and they'll get backfilled when found.
-                for (id<CapturedOutputReading> capturedOutput in screenMark.capturedOutput) {
-                    if (capturedOutput.markGuid) {
-                        markGuidToCapturedOutput[capturedOutput.markGuid] = capturedOutput;
-                    }
-                }
                 if (screenMark.firstLineOfCommand) {
                     // Find the matching object in command history and link it.
                     id<VT100RemoteHostReading> lastRemoteHostDoppelganger = lastRemoteHost.doppelganger;
@@ -6308,23 +6286,6 @@ lengthExcludingInBandSignaling:data.length
                 if (screenMark.name) {
                     [self.namedMarks addObject:screenMark];
                     self.namedMarksDirty = YES;
-                }
-            } else if ([object isKindOfClass:[iTermCapturedOutputMark class]]) {
-                // This mark represents a line whose output was captured. Find the preceding command
-                // mark that has a CapturedOutput corresponding to this mark and fill it in.
-                id<iTermCapturedOutputMarkReading> capturedOutputMark = (id<iTermCapturedOutputMarkReading>)object;
-                id<CapturedOutputReading> capturedOutput = markGuidToCapturedOutput[capturedOutputMark.guid];
-                if (capturedOutput) {
-                    [intervalTree mutateObject:capturedOutputMark
-                                         block:^(id<IntervalTreeObject> obj) {
-                        if (obj == (iTermCapturedOutputMark *)capturedOutputMark) {
-                            ((CapturedOutput *)capturedOutput).mark = capturedOutputMark;
-                        } else {
-                            ((CapturedOutput *)capturedOutput.doppelganger).mark = (iTermCapturedOutputMark *)obj;
-                        }
-                    }];
-                } else {
-                    DLog(@"No mark");
                 }
             } else if ([object isKindOfClass:[PTYAnnotation class]]) {
                 id<PTYAnnotationReading> note = (id<PTYAnnotationReading>)[object doppelganger];
@@ -7104,52 +7065,6 @@ lengthExcludingInBandSignaling:data.length
 
 - (void)triggerSessionRingBell:(Trigger *)trigger {
     [self activateBell];
-}
-
-- (void)triggerSessionShowCapturedOutputTool:(Trigger *)trigger {
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-        [delegate triggerSideEffectShowCapturedOutputTool];
-    } name:@"show captured output"];
-}
-
-- (BOOL)triggerSessionIsShellIntegrationInstalled:(Trigger *)trigger {
-    return self.shellIntegrationInstalled;
-}
-
-- (void)triggerSessionShowShellIntegrationRequiredAnnouncement:(Trigger *)trigger {
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-        [delegate triggerSideEffectShowShellIntegrationRequiredAnnouncement];
-    } name:@"show shell integration required announcement"];
-}
-
-- (void)triggerSessionShowCapturedOutputToolNotVisibleAnnouncementIfNeeded:(Trigger *)trigger {
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-        [delegate triggerSideEffectShowCapturedOutputToolNotVisibleAnnouncementIfNeeded];
-    } name:@"show captured output tool not visible announcement"];
-}
-
-- (void)triggerSession:(Trigger *)trigger didCaptureOutput:(CapturedOutput *)capturedOutput {
-    id<iTermCapturedOutputMarkReading> mark = (id<iTermCapturedOutputMarkReading>)[self addMarkOnLine:self.numberOfScrollbackLines + self.cursorY - 1
-                                                                                              ofClass:[iTermCapturedOutputMark class]];
-    capturedOutput.mark = mark;
-    ((CapturedOutput *)capturedOutput.doppelganger).mark = (id<iTermCapturedOutputMarkReading>)mark.doppelganger;
-
-    id<VT100ScreenMarkReading> lastCommandMark = self.lastCommandMark;
-    if (!lastCommandMark) {
-        // TODO: Show an announcement
-        return;
-    }
-    [self.mutableIntervalTree mutateObject:lastCommandMark block:^(id<IntervalTreeObject> _Nonnull obj) {
-        VT100ScreenMark *mutableMark = (VT100ScreenMark *)obj;
-        if (mutableMark == lastCommandMark) {
-            [mutableMark addCapturedOutput:capturedOutput];
-        } else {
-            [mutableMark addCapturedOutput:(CapturedOutput *)capturedOutput.doppelganger];
-        }
-    }];
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-        [delegate triggerSideEffectDidCaptureOutput];
-    } name:@"trigger did capture output"];
 }
 
 - (void)triggerSession:(Trigger *)trigger

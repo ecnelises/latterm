@@ -16,10 +16,8 @@
 #import "iTermShellHistoryController.h"
 #import "PseudoTerminal.h"
 #import "PTYTab.h"
-#import "ToolCapturedOutputView.h"
 #import "ToolCommandHistoryView.h"
 #import "ToolDirectoriesView.h"
-#import "Trigger.h"
 #import "VT100RemoteHost.h"
 #import <XCTest/XCTest.h>
 
@@ -76,12 +74,6 @@
         }
     }
 
-    // Define a capture output trigger.
-    NSDictionary *trigger = @{ kTriggerRegexKey: @"error:",
-                               kTriggerActionKey: @"CaptureTrigger",
-                               kTriggerParameterKey: @"sleep 99999" };
-
-    [_session setSessionSpecificProfileValues:@{ KEY_TRIGGERS: @[ trigger ] }];
 }
 
 - (void)tearDown {
@@ -164,69 +156,6 @@
     XCTAssert(_view.shouldShowToolbelt);
     XCTAssert(_view.toolbelt);
     XCTAssert(_view.toolbelt.window);
-}
-
-#pragma mark Captured Output
-
-- (void)testToolbeltHasCapturedOutputTool {
-    ToolCapturedOutputView *tool = (ToolCapturedOutputView *)[_view.toolbelt
-                                                              toolWithName:kCapturedOutputToolName];
-    XCTAssert(tool);
-}
-
-- (void)testCapturedOutputUpdatesOnMatch {
-    ToolCapturedOutputView *tool = (ToolCapturedOutputView *)[_view.toolbelt
-                                                              toolWithName:kCapturedOutputToolName];
-    XCTAssertEqual(tool.tableView.numberOfRows, 0);
-    // Gotta have a command mark for captured output to work
-    [self sendPromptAndStartCommand:@"make" toSession:_session];
-    [self sendData:[@"Hello\r\n" dataUsingEncoding:NSUTF8StringEncoding]
-        toTerminal:_session.terminal];
-    XCTAssertEqual(tool.tableView.numberOfRows, 0);
-    [self sendData:[@"error: blah\r\n" dataUsingEncoding:NSUTF8StringEncoding]
-        toTerminal:_session.terminal];
-    XCTAssertEqual(tool.tableView.numberOfRows, 1);
-}
-
-- (void)testCapturedOutputShowsLineOnClick {
-    ToolCapturedOutputView *tool = (ToolCapturedOutputView *)[_view.toolbelt
-                                                              toolWithName:kCapturedOutputToolName];
-    XCTAssertEqual(tool.tableView.numberOfRows, 0);
-    // Gotta have a command mark for captured output to work
-    [self sendPromptAndStartCommand:@"make" toSession:_session];
-    NSRect rectForFirstCellOfCapturedLine = _session.textview.cursorFrame;
-    [self sendData:[@"error: blah\r\n" dataUsingEncoding:NSUTF8StringEncoding]
-        toTerminal:_session.terminal];
-    [self writeLongCommandOutput];
-    // Update scroll position for new text
-    [_session.textview refresh];
-    XCTAssert(!NSIntersectsRect(_session.textview.enclosingScrollView.documentVisibleRect,
-                                rectForFirstCellOfCapturedLine));
-
-    [tool.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-
-    XCTAssert(NSIntersectsRect(_session.textview.enclosingScrollView.documentVisibleRect,
-                               rectForFirstCellOfCapturedLine));
-}
-
-- (void)testCapturedOutputActivatesTriggerOnDoubleClick {
-    ToolCapturedOutputView *tool = (ToolCapturedOutputView *)[_view.toolbelt
-                                                              toolWithName:kCapturedOutputToolName];
-    XCTAssertEqual(tool.tableView.numberOfRows, 0);
-    // Gotta have a command mark for captured output to work
-    [self sendPromptAndStartCommand:@"make" toSession:_session];
-    [self sendData:[@"error: blah\r\n" dataUsingEncoding:NSUTF8StringEncoding]
-        toTerminal:_session.terminal];
-
-    // Select the row
-    [tool.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-
-    XCTAssert(!_session.hasCoprocess);
-
-    // Fake a double click on it
-    [tool.tableView.delegate performSelector:tool.tableView.doubleAction withObject:nil];
-
-    XCTAssert(_session.hasCoprocess);
 }
 
 #pragma mark Command History
@@ -366,48 +295,6 @@
     XCTAssertEqualObjects(_insertedText, [@"cd " stringByAppendingString:_currentDir]);
 }
 
-- (void)testCommandHistoryLinkedToCapturedOutput {
-    [self sendPromptAndStartCommand:@"command 1" toSession:_session];
-    [self sendData:[@"error: 1\r\n" dataUsingEncoding:NSUTF8StringEncoding]
-        toTerminal:_session.terminal];
-    [self endCommand];
-
-    [self sendPromptAndStartCommand:@"command 2" toSession:_session];
-    [self sendData:[@"error: 2\r\n" dataUsingEncoding:NSUTF8StringEncoding]
-        toTerminal:_session.terminal];
-    [self endCommand];
-
-    ToolCapturedOutputView *capturedOutputTool =
-        (ToolCapturedOutputView *)[_view.toolbelt toolWithName:kCapturedOutputToolName];
-    ToolCommandHistoryView *commandHistoryTool =
-        (ToolCommandHistoryView *)[_view.toolbelt toolWithName:kCommandHistoryToolName];
-
-    // Select first command
-    [commandHistoryTool.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
-                              byExtendingSelection:NO];
-    NSString *(^getObject)(int) = ^NSString *(int row) {
-        NSTextField *rowView = [[NSTableCellView castFrom:[capturedOutputTool.tableView.delegate tableView:capturedOutputTool.tableView
-                                                                                        viewForTableColumn:capturedOutputTool.tableView.tableColumns[0]
-                                                                                                       row:0]] textField];
-        return rowView.attributedStringValue.string;
-    };
-    NSString *object = getObject(0);
-    XCTAssert([object containsString:@"error: 1"]);
-
-    // Select second command
-    [commandHistoryTool.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
-                              byExtendingSelection:NO];
-
-    object = getObject(0);
-    XCTAssert([object containsString:@"error: 2"]);
-
-    // Select nothing
-    [commandHistoryTool.tableView selectRowIndexes:[NSIndexSet indexSet]
-                              byExtendingSelection:NO];
-    object = getObject(0);
-    XCTAssert([object containsString:@"error: 2"]);
-}
-
 #pragma mark Directories
 
 - (void)testDirectoriesUpdatesOnCd {
@@ -511,9 +398,6 @@
 }
 
 - (void)toolbeltDidSelectMark:(iTermMark *)mark {
-}
-
-- (void)toolbeltActivateTriggerForCapturedOutputInCurrentSession:(CapturedOutput *)capturedOutput {
 }
 
 - (BOOL)toolbeltCurrentSessionHasGuid:(NSString *)guid {

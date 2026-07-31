@@ -94,8 +94,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     IBOutlet NSTextField *_subtitleLabel;
     IBOutlet NSTextField *_subtitleText;
     IBOutlet NSButton *_configureSSHButton;
-    IBOutlet NSButton *_loadShellIntegrationAutomatically;
-    IBOutlet NSTextField *_reasonShellIntegrationDisabledLabel;
     IBOutlet NSButton *_runCommandInLoginShell;
 
     NSMutableDictionary<NSString *, NSString *> *_cachedCommandLines;  // KEY_COMMAND_LINE per command type
@@ -392,16 +390,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
 
     [self updateSubtitlesAllowed];
 
-    if ([iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        [self defineControl:_loadShellIntegrationAutomatically
-                        key:KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY
-                relatedView:nil
-                       type:kPreferenceInfoTypeCheckbox];
-    } else {
-        _loadShellIntegrationAutomatically.hidden = YES;
-        _reasonShellIntegrationDisabledLabel.hidden = YES;
-    }
-
     info = [self defineControl:_runCommandInLoginShell
                            key:KEY_RUN_COMMAND_IN_LOGIN_SHELL
                    relatedView:nil
@@ -697,63 +685,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     return _shell;
 }
 
-// The return value decides if the checkbox should be enabled and *reasonOut will be displayed as long as it's not nil.
-- (BOOL)shouldEnableLoadShellIntegration:(NSString **)reasonOut {
-    NSInteger tag = _commandType.selectedTag;
-    NSString *param = [self stringForKey:KEY_COMMAND_LINE];
-    NSArray<NSString *> *shells = @[ @"bash", @"fish", @"xonsh", @"zsh"];
-    switch (tag) {
-        case iTermGeneralProfilePreferenceCustomCommandTagCustomShell:
-        case iTermGeneralProfilePreferenceCustomCommandTagCustom: {
-            NSArray<NSString *> *parts = [param componentsInShellCommand];
-            if ([parts.firstObject isEqual:@"/bin/bash"]) {
-                // Apple's bash disables sourcing ENV when --posix is set 🤬
-                *reasonOut = @"Shell integration needs a newer version of bash.";
-                return NO;
-            }
-            NSString *shell = [parts.firstObject lastPathComponent];
-            const BOOL enable = [shells containsObject:[shell lowercaseString]];
-            if (enable) {
-                *reasonOut = nil;
-                return YES;
-            } else if (shell) {
-                *reasonOut = [NSString stringWithFormat:@"Automatic loading doesn’t work with %@", shell];
-                return NO;
-            } else {
-                *reasonOut = nil;
-                return NO;
-            }
-        }
-        case iTermGeneralProfilePreferenceCustomCommandTagLoginShell: {
-            if ([self.loginShell isEqual:@"/bin/bash"]) {
-                // Apple's bash disables sourcing ENV when --posix is set 🤬
-                *reasonOut = @"Shell integration needs a newer version of bash.";
-                return NO;
-            }
-            NSString *shell = [self.loginShell lastPathComponent];
-            const BOOL enable = [shells containsObject:[shell lowercaseString]];
-            if (enable) {
-                *reasonOut = nil;
-                return YES;
-            } else if (shell) {
-                *reasonOut = [NSString stringWithFormat:@"Automatic loading doesn’t work with %@", shell];
-                return NO;
-            } else {
-                *reasonOut = nil;
-                return NO;
-            }
-        }
-        case iTermGeneralProfilePreferenceCustomCommandTagSSH:
-            *reasonOut = @"Requires bash, fish, tcsh, xonsh, or zsh.";
-            return YES;
-
-        case iTermGeneralProfilePreferenceCustomCommandTagBrowser:
-            *reasonOut = @"Not available with browser tabs";
-            return NO;
-    }
-    return NO;
-}
-
 - (void)updateEnabledState {
     [super updateEnabledState];
     if ([[self stringForKey:KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeCustomValue] ||
@@ -782,21 +713,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     _customDirectory.enabled = ([[self stringForKey:KEY_CUSTOM_DIRECTORY] isEqualToString:kProfilePreferenceInitialDirectoryCustomValue]);
     const BOOL isCustomCommand = [[self stringForKey:KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeCustomValue];
     _runCommandInLoginShell.hidden = !isCustomCommand;
-    if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        _loadShellIntegrationAutomatically.hidden = YES;
-        _reasonShellIntegrationDisabledLabel.hidden = YES;
-    } else {
-        NSString *reason;
-        _loadShellIntegrationAutomatically.hidden = isCustomCommand;
-        _loadShellIntegrationAutomatically.enabled = [self shouldEnableLoadShellIntegration:&reason];
-        if (reason && !isCustomCommand) {
-            _reasonShellIntegrationDisabledLabel.stringValue = reason;
-            [_reasonShellIntegrationDisabledLabel setLabelEnabled:NO];
-            _reasonShellIntegrationDisabledLabel.hidden = NO;
-        } else {
-            _reasonShellIntegrationDisabledLabel.hidden = YES;
-        }
-    }
 }
 
 #pragma mark - Browser

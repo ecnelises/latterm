@@ -11,7 +11,6 @@
 #import "AnnotateTrigger.h"
 #import "BellTrigger.h"
 #import "BounceTrigger.h"
-#import "CaptureTrigger.h"
 #import "CoprocessTrigger.h"
 #import "DebugLogging.h"
 #import "FutureMethods.h"
@@ -266,7 +265,6 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
             [BellTrigger class],
             [BounceTrigger class],
             [iTermRPCTrigger class],
-            [CaptureTrigger class],
             [iTermBufferInputTrigger class],
             [iTermFoldTrigger class],
             [iTermInjectTrigger class],

@@ -3,8 +3,6 @@
 #import "PseudoTerminal+WindowStyle.h"
 #import "PseudoTerminal.h"
 
-#import "CaptureTrigger.h"
-#import "CapturedOutput.h"
 #import "ColorsMenuItemView.h"
 #import "CommandHistoryPopup.h"
 #import "Coprocess.h"
@@ -59,7 +57,6 @@
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
 #import "TmuxLayoutParser.h"
-#import "ToolCapturedOutputView.h"
 #import "ToolCommandHistoryView.h"
 #import "ToolDirectoriesView.h"
 #import "ToolJobs.h"
@@ -8572,7 +8569,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
 }
 
 - (void)tabDidClearScrollbackBufferInSession:(PTYSession *)session {
-    [[_contentView.toolbelt capturedOutputView] removeSelection];
     [[_contentView.toolbelt commandHistoryView] removeSelection];
     [self refreshTools];
 }
@@ -13525,10 +13521,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 - (void)toolbeltDidSelectNamedMark:(id<iTermGenericNamedMarkReading>)mark {
     [self.currentSession scrollToNamedMark:mark];
     [self.currentSession takeFocus];
-}
-
-- (void)toolbeltActivateTriggerForCapturedOutputInCurrentSession:(CapturedOutput *)capturedOutput {
-    [self.currentSession performActionForCapturedOutput:capturedOutput];
 }
 
 - (BOOL)toolbeltCurrentSessionHasGuid:(NSString *)guid {

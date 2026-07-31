@@ -11,7 +11,6 @@
 #import "iTermKeyBindingAction.h"
 #import "ProfileModel.h"
 
-@class CapturedOutput;
 @class iTermAction;
 @protocol iTermMark;
 @class iTermToolSnippets;
@@ -39,7 +38,6 @@
 - (id<VT100ScreenMarkReading>)toolbeltLastCommandMark;
 - (void)toolbeltDidSelectMark:(id<iTermMark>)mark;
 - (void)toolbeltDidSelectNamedMark:(id<iTermGenericNamedMarkReading>)mark;
-- (void)toolbeltActivateTriggerForCapturedOutputInCurrentSession:(CapturedOutput *)capturedOutput;
 - (BOOL)toolbeltCurrentSessionHasGuid:(NSString *)guid;
 - (NSString *)toolbeltCurrentSessionGUID;
 - (NSArray<iTermCommandHistoryCommandUseMO *> *)toolbeltCommandUsesForCurrentSession;

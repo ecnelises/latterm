@@ -7,7 +7,6 @@
 //
 
 #import "iTermMark.h"
-#import "CapturedOutput.h"
 #import "DebugLogging.h"
 #import "NSDictionary+iTerm.h"
 

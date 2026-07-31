@@ -286,9 +286,6 @@ static const CGFloat kHelpMargin = 5;
 
     if (commandUse.mark) {
         iTermToolWrapper *wrapper = self.toolWrapper;
-        // Post a notification in case the captured output tool is observing us.
-        [[NSNotificationCenter defaultCenter] postNotificationName:kPTYSessionCapturedOutputDidChange
-                                                            object:nil];
         [wrapper.delegate.delegate toolbeltDidSelectMark:commandUse.mark];
     }
 }

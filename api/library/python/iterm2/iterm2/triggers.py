@@ -74,7 +74,6 @@ def decode_trigger(encoded: dict) -> typing.Union['Trigger', 'EventTrigger']:
         AnnotateTrigger._name(): AnnotateTrigger,
         BellTrigger._name(): BellTrigger,
         BounceTrigger._name(): BounceTrigger,
-        CaptureTrigger._name(): CaptureTrigger,
         CoprocessTrigger._name(): CoprocessTrigger,
         HighlightLineTrigger._name(): HighlightLineTrigger,
         HighlightTrigger._name(): HighlightTrigger,
@@ -120,7 +119,7 @@ def decode_trigger(encoded: dict) -> typing.Union['Trigger', 'EventTrigger']:
     if name not in classes:
         # Futureproof unrecognized trigger types. This allows a round-trip
         # through the Trigger representation.
-        return Trigger(regex, param, instant, enabled)
+        return Trigger(regex, param, instant, enabled, action_name=name)
 
     return classes[name].deserialize(regex, param, instant, enabled)
 
@@ -173,12 +172,14 @@ class Trigger:
     are defined in future versions of iTerm2.
     """
     def __init__(self, regex: str, param, instant: bool, enabled: bool,
-                 match_type: MatchType = MatchType.REGEX):
+                 match_type: MatchType = MatchType.REGEX,
+                 action_name: typing.Optional[str] = None):
         self.__regex = regex
         self.__param = param
         self.__instant = instant
         self.__enabled = enabled
         self.__match_type = match_type
+        self.__action_name = action_name
 
     def __repr__(self):
         return f'<{self.__class__.__name__}: regex={self.__regex} instant={self.__instant} enabled={self.__enabled} param={self._param}>'
@@ -189,7 +190,8 @@ class Trigger:
              self.__param == other.__param and
              self.__instant == other.__instant and
              self.__enabled == other.__enabled and
-             self.__match_type == other.__match_type)
+             self.__match_type == other.__match_type and
+             self.__action_name == other.__action_name)
 
     @property
     def param(self):
@@ -240,7 +242,7 @@ class Trigger:
     def encode(self) -> dict:
         result = {
             "regex": self.regex,
-            "action": self._name(),
+            "action": self.__action_name or self._name(),
             "parameter": self.param,
             "partial": self.instant,
             "disabled": not self.enabled,
@@ -409,32 +411,6 @@ class RPCTrigger(Trigger):
     @property
     def _param(self):
         return self.__invocation
-
-class CaptureTrigger(Trigger):
-    def __init__(self, regex: str, command: str, instant: bool, enabled: bool):
-        self.__command = command
-        super().__init__(regex, self._param, instant, enabled)
-
-    @staticmethod
-    def _name():
-        return "CaptureTrigger"
-
-    @staticmethod
-    def deserialize(regex: str, param: str, instant: bool, enabled: bool):
-        return _futureproof(param, CaptureTrigger(regex, param, instant, enabled))
-
-    @property
-    def command(self) -> str:
-        return self.__command
-
-    @command.setter
-    def command(self, value: str):
-        self.__command = value
-        self.param = self._param
-
-    @property
-    def _param(self):
-        return self.__command
 
 class SetNamedMarkTrigger(Trigger):
     def __init__(self, regex: str, markname: str, instant: bool, enabled: bool):
@@ -1731,4 +1707,3 @@ class ProgressBarChangedEventTrigger(EventTrigger):
             action_classes: typing.Dict[str, typing.Type[Trigger]]) -> 'ProgressBarChangedEventTrigger':
         progress_bar_filter = event_params.get("progressBarFilter", "*") if event_params else "*"
         return ProgressBarChangedEventTrigger(action_name, param, enabled, progress_bar_filter)
-

@@ -4,13 +4,11 @@
 #import "VT100Screen+Search.h"
 #import "VT100ScreenMutableState+RCDataSource.h"
 
-#import "CapturedOutput.h"
 #import "DebugLogging.h"
 #import "DVR.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermEncoderAdapter.h"
-#import "iTermCapturedOutputMark.h"
 #import "iTermColorMap.h"
 #import "iTermExternalAttributeIndex.h"
 #import "iTermGCD.h"
@@ -2163,26 +2161,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
     [self.delegate screenActivateBellAudibly:YES visibly:YES showIndicator:YES quell:NO];
 }
 
-- (void)triggerSessionShowCapturedOutputTool:(Trigger *)trigger {
-    ITCriticalError(NO, @"triggerSessionShowCapturedOutputTool: should not be called for event triggers");
-}
-
-- (BOOL)triggerSessionIsShellIntegrationInstalled:(Trigger *)trigger {
-    return _state.shellIntegrationInstalled;
-}
-
-- (void)triggerSessionShowShellIntegrationRequiredAnnouncement:(Trigger *)trigger {
-    [self.delegate triggerSideEffectShowShellIntegrationRequiredAnnouncement];
-}
-
-- (void)triggerSession:(Trigger *)trigger didCaptureOutput:(CapturedOutput *)capturedOutput {
-    ITCriticalError(NO, @"triggerSession:didCaptureOutput: should not be called for event triggers");
-}
-
-- (void)triggerSessionShowCapturedOutputToolNotVisibleAnnouncementIfNeeded:(Trigger *)trigger {
-    ITCriticalError(NO, @"triggerSessionShowCapturedOutputToolNotVisibleAnnouncementIfNeeded: should not be called for event triggers");
-}
-
 - (void)triggerSession:(Trigger *)trigger
 launchCoprocessWithCommand:(NSString *)command
             identifier:(NSString * _Nullable)identifier
@@ -2386,4 +2364,3 @@ launchCoprocessWithCommand:(NSString *)command
 }
 
 @end
-

@@ -113,8 +113,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func screenHandleSSHSideChannelOutput(_ string: String, pid: Int32, channel: UInt8, depth: Int32) {}
     func screenDidReadRawSSHData(_ data: Data) {}
     func screenDidTerminateSSHProcess(_ pid: Int32, code: Int32, depth: Int32) {}
-    func screenWillBeginSSHIntegration() {}
-    func screenBeginSSHIntegration(withToken token: String, uniqueID: String, encodedBA: String, sshArgs: String) {}
     func screenEndSSH(_ uniqueID: String) -> Int { 0 }
     func screenSSHLocation() -> String { "localhost" }
     func screenBeginFramerRecovery(_ parentDepth: Int32) {}
@@ -191,7 +189,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func screenGetWorkingDirectory(completion: @escaping (String?) -> Void) { completion(nil) }
     func screenSetCursorVisible(_ visible: Bool) {}
     func screenSetHighlightCursorLine(_ highlight: Bool) {}
-    func screenClearCapturedOutput() {}
     func screenCursorDidMove(toLine line: Int32) {}
     func screenHasView() -> Bool { true }
     func screenSaveScrollPosition() {}
@@ -289,14 +286,10 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func triggerSideEffectInvokeFunctionCall(_ invocation: String, withVariables temporaryVariables: [AnyHashable : Any], captures captureStringArray: [String], trigger: Trigger) {}
     func triggerSideEffectSetValue(_ value: Any?, forVariableNamed name: String) {}
     func triggerSideEffectCurrentDirectoryDidChange(_ newPath: String) {}
-    func triggerSideEffectShowCapturedOutputTool() {}
     func triggerWriteTextWithoutBroadcasting(_ text: String) {}
     func triggerSideEffectShowAlert(withMessage message: String, rateLimit: iTermRateLimitedUpdate, disable: @escaping () -> Void) {}
     func triggerSideEffectRunBackgroundCommand(_ command: String, pool: iTermBackgroundCommandRunnerPool) {}
     func triggerSideEffectOpenPasswordManager(toAccountName accountName: String?) {}
-    func triggerSideEffectShowCapturedOutputToolNotVisibleAnnouncementIfNeeded() {}
-    func triggerSideEffectShowShellIntegrationRequiredAnnouncement() {}
-    func triggerSideEffectDidCaptureOutput() {}
     func triggerSideEffectLaunchCoprocess(withCommand command: String, identifier: String?, silent: Bool, triggerTitle: String) {}
     func triggerSideEffectPostUserNotification(withMessage message: String) {}
     func triggerSideEffectStopScrolling(atLine absLine: Int64) {}

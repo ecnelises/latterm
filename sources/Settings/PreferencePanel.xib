@@ -1538,7 +1538,6 @@ CA
                 <outlet property="_iconLabel" destination="Xzz-Fo-TWV" id="JMy-Cp-2Y2"/>
                 <outlet property="_imageWell" destination="CNi-xf-qcd" id="ta5-Ti-xEy"/>
                 <outlet property="_initialDirectoryType" destination="2190" id="LYF-0C-gAo"/>
-                <outlet property="_loadShellIntegrationAutomatically" destination="iWk-HJ-EKg" id="YGt-lQ-NrZ"/>
                 <outlet property="_locked" destination="imM-Ma-mjV" id="Oy4-Ab-2k5"/>
                 <outlet property="_preventAutomaticProfileSwitching" destination="N23-uy-3RA" id="cRM-BE-TkQ"/>
                 <outlet property="_profileNameField" destination="2133" id="6VF-gN-bGW"/>
@@ -1546,7 +1545,6 @@ CA
                 <outlet property="_profileNameFieldLabel" destination="2134" id="egs-WO-Ucn"/>
                 <outlet property="_profileShortcut" destination="2142" id="vtI-vU-bua"/>
                 <outlet property="_profiles" destination="15766" id="mhp-qy-IXj"/>
-                <outlet property="_reasonShellIntegrationDisabledLabel" destination="3BE-IU-euZ" id="Jkt-at-t9a"/>
                 <outlet property="_runCommandInLoginShell" destination="rcS-Ls-100" id="U9d-8m-snc"/>
                 <outlet property="_schemesLabel" destination="5035" id="zeB-oy-niN"/>
                 <outlet property="_sendTextAtStart" destination="5410" id="eUe-AY-v5Q"/>
@@ -2276,15 +2274,6 @@ CA
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
-                                <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3BE-IU-euZ">
-                                    <rect key="frame" x="394" y="135" width="258" height="14"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" title="Reason this is diabled goes here" id="imk-Sy-j9X">
-                                        <font key="font" metaFont="smallSystem"/>
-                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                </textField>
                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5975" userLabel="Edit advanced configuration push button">
                                     <rect key="frame" x="306" y="13" width="58" height="28"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2305,21 +2294,6 @@ CA
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
-                                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iWk-HJ-EKg">
-                                    <rect key="frame" x="128" y="133" width="241" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <string key="toolTip">Shell integration loading is disabled in the terminal-first fork.</string>
-                                    <buttonCell key="cell" type="check" title="Load shell integration automatically" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="jcT-vU-VZU">
-                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                        <font key="font" metaFont="system"/>
-                                    </buttonCell>
-                                    <userDefinedRuntimeAttributes>
-                                        <userDefinedRuntimeAttribute type="boolean" keyPath="hiddenFromActions" value="YES"/>
-                                    </userDefinedRuntimeAttributes>
-                                    <connections>
-                                        <action selector="settingChanged:" target="dVg-Ac-SiZ" id="srb-k2-P02"/>
-                                    </connections>
-                                </button>
                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rcS-Ls-100">
                                     <rect key="frame" x="128" y="133" width="400" height="18"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>

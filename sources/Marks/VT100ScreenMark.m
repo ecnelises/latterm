@@ -7,7 +7,6 @@
 //
 
 #import "VT100ScreenMark.h"
-#import "CapturedOutput.h"
 #import "DebugLogging.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
@@ -18,7 +17,6 @@
 #import "iTerm2SharedARC-Swift.h"
 
 static NSString *const kScreenMarkIsPrompt = @"Is Prompt";
-static NSString *const kMarkCapturedOutputKey = @"Captured Output";
 // Legacy key — maps to firstLineOfCommand for back-compat with pre-PR4
 // serialized marks. The new fullCommand value is serialized under
 // kMarkFullCommandKey below.
@@ -61,7 +59,6 @@ static NSString *const kMarkExcludedSubranges = @"Excluded Subranges";
 @end
 
 @implementation VT100ScreenMark {
-    NSMutableArray<CapturedOutput *> *_capturedOutput;
     iTermPromise<NSNumber *> *_returnCodePromise;
     id<iTermPromiseSeal> _codeSeal;
     // ResilientCoordinate-backed storage for the public promptRange /
@@ -76,8 +73,6 @@ static NSString *const kMarkExcludedSubranges = @"Excluded Subranges";
 }
 
 @synthesize isPrompt = _isPrompt;
-@synthesize clearCount = _clearCount;
-@synthesize capturedOutput = _capturedOutput;
 @synthesize code = _code;
 @synthesize promptDetectedByTrigger = _promptDetectedByTrigger;
 @synthesize lineStyle = _lineStyle;
@@ -166,11 +161,6 @@ static NSString *const kMarkExcludedSubranges = @"Excluded Subranges";
             _endDate = [NSDate dateWithTimeIntervalSinceReferenceDate:end];
         }
         _name = [dict[kMarkNameKey] copy];
-        NSMutableArray *array = [NSMutableArray array];
-        _capturedOutput = array;
-        for (NSDictionary *capturedOutputDict in dict[kMarkCapturedOutputKey]) {
-            [array addObject:[CapturedOutput capturedOutputWithDictionary:capturedOutputDict]];
-        }
         if ([dict[kMarkCommandKey] isKindOfClass:[NSString class]]) {
             _firstLineOfCommand = [dict[kMarkCommandKey] copy];
         }
@@ -295,7 +285,6 @@ static NSString *const kMarkExcludedSubranges = @"Excluded Subranges";
     return self;
 }
 
-// Note that this assumes the copy will be a doppelganger (since it uses CapturedOutput doppelgangers).
 - (instancetype)copyWithZone:(NSZone *)zone {
     assert(!self.isDoppelganger);
 
@@ -312,9 +301,6 @@ static NSString *const kMarkExcludedSubranges = @"Excluded Subranges";
     mark->_startDate = _startDate;
     mark->_name = [_name copy];
     mark->_endDate = _endDate;
-    mark->_capturedOutput = [[_capturedOutput mapWithBlock:^id(CapturedOutput *capturedOutput) {
-        return [capturedOutput doppelganger];
-    }] mutableCopy];
     mark->_firstLineOfCommand = [_firstLineOfCommand copy];
     mark->_fullCommand = [_fullCommand copy];
     // Doppelganger pool segregation: clone each RC field via -unboundCopy
@@ -559,18 +545,9 @@ static BOOL IT_RC_STATUS_IS_USABLE(iTermResilientCoordinate *rc) {
 }
 
 
-- (NSArray *)capturedOutputDictionaries {
-    NSMutableArray *array = [NSMutableArray array];
-    for (CapturedOutput *capturedOutput in _capturedOutput) {
-        [array addObject:capturedOutput.dictionaryValue];
-    }
-    return array;
-}
-
 - (NSDictionary *)dictionaryValue {
     NSMutableDictionary *dict = [[super dictionaryValue] mutableCopy];
     dict[kScreenMarkIsPrompt] = @(_isPrompt);
-    dict[kMarkCapturedOutputKey] = [self capturedOutputDictionaries];
     dict[kMarkHasCode] = @(_hasCode);
     dict[kMarkCodeKey] = @(_code);
     dict[kMarkPromptDetectedByTrigger] = @(_promptDetectedByTrigger);
@@ -654,24 +631,6 @@ static BOOL IT_RC_STATUS_IS_USABLE(iTermResilientCoordinate *rc) {
     }
 }
 
-- (void)addCapturedOutput:(CapturedOutput *)capturedOutput {
-    if (!_capturedOutput) {
-        _capturedOutput = [[NSMutableArray alloc] init];
-    } else if ([self mergeCapturedOutputIfPossible:capturedOutput]) {
-        return;
-    }
-    [_capturedOutput addObject:capturedOutput];
-}
-
-- (BOOL)mergeCapturedOutputIfPossible:(CapturedOutput *)capturedOutput {
-    CapturedOutput *last = _capturedOutput.lastObject;
-    if (![last canMergeFrom:capturedOutput]) {
-        return NO;
-    }
-    [last mergeFrom:capturedOutput];
-    return YES;
-}
-
 - (void)setFirstLineOfCommand:(NSString *)command {
     // This fires for every command the user runs under shell integration; keep the
     // command line out of the always-on ring (the opt-in debug log still gets it).
@@ -709,10 +668,6 @@ static BOOL IT_RC_STATUS_IS_USABLE(iTermResilientCoordinate *rc) {
     id<iTermPromiseSeal> seal = _codeSeal;
     _codeSeal = nil;
     [seal rejectWithDefaultError];
-}
-
-- (void)incrementClearCount {
-    _clearCount += 1;
 }
 
 - (id<VT100ScreenMarkReading>)doppelganger {

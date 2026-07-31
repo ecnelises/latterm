@@ -941,9 +941,6 @@ NSLog(@"Known bug: %s should be true, but %s is.", #expressionThatShouldBeTrue, 
     sizeDidChange_++;
 }
 
-- (void)screenClearCapturedOutput {
-}
-
 - (void)screenDidResize {
 }
 

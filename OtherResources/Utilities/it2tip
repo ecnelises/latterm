@@ -45,11 +45,6 @@ tips = [
       "url": "https://iterm2.com/shell_integration.html"
       },
     {
-      "title": "Captured Output",
-      "body": "iTerm2 can act like an IDE using the Captured Output feature. When it sees text matching a regular expression you define, like compiler errors, it shows the matching lines in the Toolbelt. You can click to jump to the line in your terminal and double-click to perform an action like opening an editor to the line with the error.",
-      "url": "https://iterm2.com/captured_output.html"
-      },
-    {
       "title": "Badges",
       "body": "You can display a status message in the top right of your session in the background. It’s called a “Badge.” If you install Shell Integration you can include info like user name, hostname, current directory, and more.",
       "url": "https://iterm2.com/badges.html"

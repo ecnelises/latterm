@@ -1681,16 +1681,7 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func screenDidTerminateSSHProcess(_ pid: Int32, code: Int32, depth: Int32) {
 
     }
-
     func screenHandleIT2(_ string: String?, depth: Int32) {
-
-    }
-
-    func screenWillBeginSSHIntegration() {
-
-    }
-    
-    func screenBeginSSHIntegration(withToken token: String, uniqueID: String, encodedBA: String, sshArgs: String) {
 
     }
     
@@ -2001,10 +1992,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     }
     
     func screenSetHighlightCursorLine(_ highlight: Bool) {
-
-    }
-    
-    func screenClearCapturedOutput() {
 
     }
     
@@ -2379,9 +2366,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func triggerSideEffectCurrentDirectoryDidChange(_ newPath: String) {
     }
     
-    func triggerSideEffectShowCapturedOutputTool() {
-    }
-    
     func triggerWriteTextWithoutBroadcasting(_ text: String) {
     }
     
@@ -2394,18 +2378,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func triggerSideEffectOpenPasswordManager(toAccountName accountName: String?) {
     }
     
-    func triggerSideEffectShowCapturedOutputToolNotVisibleAnnouncementIfNeeded() {
-
-    }
-
-    func triggerSideEffectShowShellIntegrationRequiredAnnouncement() {
-
-    }
-
-    func triggerSideEffectDidCaptureOutput() {
-
-    }
-
     func triggerSideEffectLaunchCoprocess(withCommand command: String, identifier: String?, silent: Bool, triggerTitle: String) {
 
     }

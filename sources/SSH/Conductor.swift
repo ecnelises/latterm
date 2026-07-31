@@ -15,7 +15,6 @@ protocol ConductorDelegate: Any {
     func conductorAbort(reason: String)
     func conductorQuit()
     func conductorStateDidChange()
-    func conductorStopQueueingInput()
     @objc func conductorSendInitialText()
     // Ask the user, via an in-session announcement (not a modal, so a stray Return
     // cannot accept it), whether the remote it2 CLI described by `displayName` may use
@@ -70,7 +69,6 @@ class Conductor: NSObject, SSHIdentityProvider {
         let clientVars: [String: String]
         var payloads: [Payload] = []
         let initialDirectory: String?
-        let shouldInjectShellIntegration: Bool
         let parsedSSHArguments: ParsedSSHArguments
         let depth: Int32
         var parentState: RestorableState?
@@ -80,8 +78,6 @@ class Conductor: NSObject, SSHIdentityProvider {
         let boolArgs: String
         let dcsID: String
         let clientUniqueID: String
-        var modifiedVars: [String: String]?
-        var modifiedCommandArgs: [String]?
         var homeDirectory: String?
         var shell: String?
         var uname: String?
@@ -102,7 +98,6 @@ class Conductor: NSObject, SSHIdentityProvider {
              clientVars: [String: String],
              payloads: [Payload],
              initialDirectory: String?,
-             shouldInjectShellIntegration: Bool,
              parsedSSHArguments: ParsedSSHArguments,
              depth: Int32,
              parentState: RestorableState?,
@@ -112,8 +107,6 @@ class Conductor: NSObject, SSHIdentityProvider {
              boolArgs: String,
              dcsID: String,
              clientUniqueID: String,
-             modifiedVars: [String: String]?,
-             modifiedCommandArgs: [String]?,
              homeDirectory: String?,
              shell: String?,
              uname: String?,
@@ -125,7 +118,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             self.clientVars = clientVars
             self.payloads = payloads
             self.initialDirectory = initialDirectory
-            self.shouldInjectShellIntegration = shouldInjectShellIntegration
             self.parsedSSHArguments = parsedSSHArguments
             self.depth = depth
             self.parentState = parentState
@@ -135,8 +127,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             self.boolArgs = boolArgs
             self.dcsID = dcsID
             self.clientUniqueID = clientUniqueID
-            self.modifiedVars = modifiedVars
-            self.modifiedCommandArgs = modifiedCommandArgs
             self.homeDirectory = homeDirectory
             self.shell = shell
             self.uname = uname
@@ -149,8 +139,7 @@ class Conductor: NSObject, SSHIdentityProvider {
             // Note backgroundJobs is not included because it isn't restorable.
           case sshargs, varsToSend, payloads, initialDirectory, parsedSSHArguments, depth, parent,
                framedPID, remoteInfo, state, queue, boolArgs, dcsID, clientUniqueID,
-               modifiedVars, modifiedCommandArgs, clientVars, shouldInjectShellIntegration,
-               homeDirectory, shell, pythonversion, uname, terminalConfiguration,
+               clientVars, homeDirectory, shell, pythonversion, uname, terminalConfiguration,
                discoveredHostname, it2Proxy,
                // Legacy, decode-only: the committed HEAD schema persisted the it2 proxy as
                // these two separate scalar keys before they were folded into it2Proxy. Kept
@@ -166,7 +155,6 @@ class Conductor: NSObject, SSHIdentityProvider {
                 clientVars = try container.decode([String: String].self, forKey: .clientVars)
                 payloads = try container.decode([(Payload)].self, forKey: .payloads)
                 initialDirectory = try container.decode(String?.self, forKey: .initialDirectory)
-                shouldInjectShellIntegration = try container.decode(Bool.self, forKey: .shouldInjectShellIntegration)
                 parsedSSHArguments = try container.decode(ParsedSSHArguments.self, forKey: .parsedSSHArguments)
                 depth = try container.decode(Int32.self, forKey: .depth)
                 parentState = try container.decode(RestorableState?.self, forKey: .parent)
@@ -176,8 +164,6 @@ class Conductor: NSObject, SSHIdentityProvider {
                 boolArgs = try container.decode(String.self, forKey: .boolArgs)
                 dcsID = try container.decode(String.self, forKey: .dcsID)
                 clientUniqueID = try container.decode(String.self, forKey: .clientUniqueID)
-                modifiedVars = try container.decode([String: String]?.self, forKey: .modifiedVars)
-                modifiedCommandArgs = try container.decode([String]?.self, forKey: .modifiedCommandArgs)
                 homeDirectory = try? container.decode(String?.self, forKey: .homeDirectory)
                 shell = try? container.decode(String?.self, forKey: .shell)
                 uname = try? container.decode(String?.self, forKey: .uname)
@@ -209,7 +195,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             try container.encode(clientVars, forKey: .clientVars)
             try container.encode(payloads, forKey: .payloads)
             try container.encode(initialDirectory, forKey: .initialDirectory)
-            try container.encode(shouldInjectShellIntegration, forKey: .shouldInjectShellIntegration)
             try container.encode(parsedSSHArguments, forKey: .parsedSSHArguments)
             try container.encode(depth, forKey: .depth)
             try container.encode(parentState, forKey: .parent)
@@ -219,8 +204,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             try container.encode(boolArgs, forKey: .boolArgs)
             try container.encode(dcsID, forKey: .dcsID)
             try container.encode(clientUniqueID, forKey: .clientUniqueID)
-            try container.encode(modifiedVars, forKey: .modifiedVars)
-            try container.encode(modifiedCommandArgs, forKey: .modifiedCommandArgs)
             try container.encode(homeDirectory, forKey: .homeDirectory)
             try container.encode(shell, forKey: .shell)
             try container.encode(uname, forKey: .uname)
@@ -270,9 +253,6 @@ class Conductor: NSObject, SSHIdentityProvider {
     }
     var initialDirectory: String? {
         restorableState.initialDirectory
-    }
-    var shouldInjectShellIntegration: Bool {
-        restorableState.shouldInjectShellIntegration
     }
     var parsedSSHArguments: ParsedSSHArguments {
         restorableState.parsedSSHArguments
@@ -328,24 +308,6 @@ class Conductor: NSObject, SSHIdentityProvider {
     }
     @objc var clientUniqueID: String {  // provided by client when hooking dcs
         restorableState.clientUniqueID
-    }
-    var modifiedVars: [String: String]? {
-        get {
-            restorableState.modifiedVars
-        }
-        set {
-            restorableState.modifiedVars = newValue
-        }
-    }
-
-    // Comes from parsedSSHArguments.commandargs but possibly modified to inject shell integration.
-    var modifiedCommandArgs: [String]? {
-        get {
-            restorableState.modifiedCommandArgs
-        }
-        set {
-            restorableState.modifiedCommandArgs = newValue
-        }
     }
     @objc var homeDirectory: String? {
         get {
@@ -502,7 +464,6 @@ class Conductor: NSObject, SSHIdentityProvider {
                      varsToSend: [String: String],
                      clientVars: [String: String],
                      initialDirectory: String?,
-                     shouldInjectShellIntegration: Bool,
                      parent: Conductor?) {
         let depth = if let parent {
             if parent.framing {
@@ -520,7 +481,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             clientVars: clientVars,
             payloads: [],
             initialDirectory: initialDirectory,
-            shouldInjectShellIntegration: shouldInjectShellIntegration,
             parsedSSHArguments: ParsedSSHArguments(sshargs,
                                                    booleanArgs: boolArgs,
                                                    hostnameFinder: iTermHostnameFinder()),
@@ -532,8 +492,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             boolArgs: boolArgs,
             dcsID: dcsID,
             clientUniqueID: clientUniqueID,
-            modifiedVars: nil,
-            modifiedCommandArgs: nil,
             homeDirectory: nil,
             shell: nil,
             uname: nil,
@@ -562,7 +520,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             clientVars: [:],
             payloads: [],
             initialDirectory: nil,
-            shouldInjectShellIntegration: false,
             parsedSSHArguments: ParsedSSHArguments(recovery.sshargs,
                                                    booleanArgs: recovery.boolArgs,
                                                    hostnameFinder: iTermHostnameFinder()),
@@ -574,8 +531,6 @@ class Conductor: NSObject, SSHIdentityProvider {
             boolArgs: recovery.boolArgs,
             dcsID: recovery.dcsID,
             clientUniqueID: recovery.clientUniqueID,
-            modifiedVars: nil,
-            modifiedCommandArgs: nil,
             homeDirectory: nil,
             shell: nil,
             uname: nil,
@@ -1912,7 +1867,7 @@ extension Conductor {
             framerJump()
         } else {
             framerLogin(cwd: initialDirectory ?? "$HOME",
-                        args: modifiedCommandArgs ?? parsedSSHArguments.commandArgs)
+                        args: parsedSSHArguments.commandArgs)
         }
         if autopollEnabled {
             send(.framerAutopoll, .fireAndForget)
@@ -2005,7 +1960,7 @@ extension Conductor {
     }
 
     private func setEnvironmentVariables() {
-        for (key, value) in modifiedVars ?? varsToSend {
+        for (key, value) in varsToSend {
             send(.setenv(key: key, value: value), .failIfNonzeroStatus)
         }
     }
@@ -2019,11 +1974,7 @@ extension Conductor {
     }
 
     private func execLoginShell() {
-        delegate?.conductorStopQueueingInput()
-        if let modifiedCommandArgs = modifiedCommandArgs,
-           modifiedCommandArgs.isEmpty {
-            send(.execLoginShell(modifiedCommandArgs), .handleNonFramerLogin)
-        } else if parsedSSHArguments.commandArgs.isEmpty {
+        if parsedSSHArguments.commandArgs.isEmpty {
             send(.execLoginShell([]), .handleNonFramerLogin)
         } else {
             run((parsedSSHArguments.commandArgs).joined(separator: " "))
@@ -2071,23 +2022,6 @@ extension Conductor {
     private static let minimumPythonMinorVersion = 7
     @objc static var minimumPythonVersionForFramer: String {
         "\(minimumPythonMajorVersion).\(minimumPythonMinorVersion)"
-    }
-
-    private func shellSupportsInjection(_ shell: String, _ version: String) -> Bool {
-        let alwaysSupported = ["fish", "xonsh", "zsh"]
-        if alwaysSupported.contains(shell.lastPathComponent) {
-            return true
-        }
-        if shell == "bash" {
-            if version.contains("GNU bash, version 3.2.57") && version.contains("apple-darwin") {
-                // macOS's bash doesn't support --posix
-                return false
-            }
-            // Non-macOS bash
-            return true
-        }
-        // Unrecognized shell
-        return false
     }
 
     private func sendInitialText() {
@@ -2311,19 +2245,6 @@ extension Conductor {
                     $0.trimmingCharacters(in: .whitespaces)
                 }
                 let shell = parsedSSHArguments.commandArgs.first ?? parts.get(0, default: "")
-                let home = parts.get(1, default: "")
-                let version: String
-                if parts.count > 1 {
-                    version = parts[2...].joined(separator: "\n")
-                } else {
-                    version = ""
-                }
-                if !shell.isEmpty &&
-                    !home.isEmpty &&
-                    shouldInjectShellIntegration && shellSupportsInjection(shell.lastPathComponent, version) {
-                    modifiedVars = varsToSend
-                    modifiedCommandArgs = parsedSSHArguments.commandArgs
-                }
                 self.shell = shell
                 delegate?.conductorStateDidChange()
                 didFinishGetShell()
@@ -2367,7 +2288,6 @@ extension Conductor {
         framedPID = pid
         sendInitialText()
         delegate?.conductorStateDidChange()
-        delegate?.conductorStopQueueingInput()
     }
 
     @objc(handleLine:depth:) func handle(line: String, depth: Int32) {

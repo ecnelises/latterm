@@ -11,7 +11,6 @@ async def main(connection):
         iterm2.AnnotateTrigger("^AnnotateTrigger", "Lorem ipsum", instant, enabled),
         iterm2.BellTrigger("^BellTrigger", instant, enabled),
         iterm2.BounceTrigger("^BounceTrigger", iterm2.BounceTrigger.Action.BOUNCE_UNTIL_ACTIVATED, instant, enabled),
-        iterm2.CaptureTrigger("^CaptureTrigger", "/bin/true", instant, enabled),
         iterm2.CoprocessTrigger("^CoprocessTrigger", "/bin/true", instant, enabled),
         iterm2.HighlightLineTrigger("^HighlightLineTrigger", iterm2.Color(255, 0, 0), iterm2.Color(0, 255, 0), instant, enabled),
         iterm2.HighlightTrigger("^HighlightTrigger", iterm2.Color(255, 0, 0), iterm2.Color(0, 255, 0), instant, enabled),

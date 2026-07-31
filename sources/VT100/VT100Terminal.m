@@ -4196,8 +4196,6 @@ static NSString *VT100GetURLParamForKey(NSString *params, NSString *key) {
         [_delegate terminalAddNote:(NSString *)value show:NO];
     } else if ([key isEqualToString:@"HighlightCursorLine"]) {
         [_delegate terminalSetHighlightCursorLine:value.length ? [value boolValue] : YES];
-    } else if ([key isEqualToString:@"ClearCapturedOutput"]) {
-        [_delegate terminalClearCapturedOutput];
     } else if ([key isEqualToString:@"CopyToClipboard"]) {
         if ([_delegate terminalIsTrusted]) {
             [_delegate terminalSetPasteboard:value];
@@ -4421,14 +4419,6 @@ static NSString *VT100GetURLParamForKey(NSString *params, NSString *key) {
     } else if ([key isEqualToString:@"Env"]) {
         if ([_delegate terminalIsTrusted]) {
             [_delegate terminalUpdateEnv:value];
-        }
-    } else if ([key isEqualToString:@"it2ssh"]) {
-        if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
-            [_delegate terminalBeginSSHIntegeration:value];
-        }
-    } else if ([key isEqualToString:@"SendConductor"]) {
-        if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
-            [_delegate terminalSendConductor:value];
         }
     } else if ([key isEqualToString:@"EndSSH"]) {
         if ([_delegate terminalIsTrusted] && value.length > 0) {

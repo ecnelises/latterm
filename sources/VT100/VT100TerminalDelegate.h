@@ -537,8 +537,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)terminalDidChangeSendModifiers;
 - (void)terminalKeyReportingFlagsDidChange;
-- (void)terminalClearCapturedOutput;
-
 - (BOOL)terminalIsInAlternateScreenMode;
 
 - (iTermPromise<NSString *> *)terminalStringForKeypressWithCode:(unsigned short)keycode
@@ -588,8 +586,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)terminalHandleSSHTerminatePID:(int)pid withCode:(int)code depth:(int)depth;
 - (void)terminalHandleIT2:(nullable NSString *)string depth:(int)depth;
 - (void)terminalUpdateEnv:(NSString *)value;
-- (void)terminalBeginSSHIntegeration:(nullable NSString *)args;
-- (void)terminalSendConductor:(NSString *)args;
 - (void)terminalEndSSH:(NSString *)uniqueID;
 - (void)terminalBeginFramerRecoveryForChildOfConductorAtDepth:(int)parentDepth;
 - (void)terminalHandleFramerRecoveryString:(nullable NSString *)string;

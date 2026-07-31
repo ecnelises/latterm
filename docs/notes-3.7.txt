@@ -8,6 +8,11 @@ number up to 3.7. The changelog below is relative
 to version 3.6.7 and duplicates some items in
 betas since then.
 
+Terminal-first fork changes:
+- Removed Captured Output.
+- Removed automatic shell-integration loading and
+  the legacy SSH helper bootstrap path.
+
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
   pairs with your Mac by scanning a QR code

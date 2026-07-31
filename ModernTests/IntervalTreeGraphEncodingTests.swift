@@ -762,10 +762,6 @@ class IntervalTreeGraphEncodingTests: XCTestCase {
         }
     }
 
-    // Note: iTermCapturedOutputMark is not exposed to Swift via bridging header,
-    // so we test it indirectly through the testAllIntervalTreeObjectTypesInOneTree test
-    // which uses Objective-C types via the interval tree.
-
     // MARK: FoldMark Round-Trip
 
     func testFoldMarkRoundTrip() {
@@ -949,7 +945,7 @@ class IntervalTreeGraphEncodingTests: XCTestCase {
         let tree = IntervalTree()
 
         // Add one of each Swift-visible type
-        // Note: iTermCapturedOutputMark and VT100WorkingDirectory are not in bridging header
+        // Note: VT100WorkingDirectory is not in the bridging header.
         let screenMark = VT100ScreenMark()
         screenMark.firstLineOfCommand = "echo test"
         screenMark.fullCommand = "echo test"

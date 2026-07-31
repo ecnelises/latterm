@@ -34,9 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Posted when the tmux font changes. Window layouts will need to be updated.
 extern NSString *const kPTYSessionTmuxFontDidChange;
 
-// Called when captured output for the current session changes.
-extern NSString *const kPTYSessionCapturedOutputDidChange;
-
 extern NSString *const PTYSessionCreatedNotification;
 extern NSString *const PTYSessionTerminatedNotification;
 extern NSString *const PTYSessionRevivedNotification;
@@ -70,7 +67,6 @@ extern NSString *const PTYSessionArrangementOptionsLargeContentProvider;
 // peer leaves its last output on screen instead of spawning a stray shell.
 extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 
-@class CapturedOutput;
 @protocol ExternalSearchResultsController;
 @class FakeWindow;
 @class PTYSessionSwiftState;
@@ -1260,7 +1256,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (void)didChangeScreen:(CGFloat)scaleFactor;
 - (void)addContentSubscriber:(id<iTermContentSubscriber>)contentSubscriber;
 - (void)didFinishRestoration;
-- (void)performActionForCapturedOutput:(CapturedOutput *)capturedOutput;
 - (void)userInitiatedReset;
 - (void)resetForRelaunch;
 - (void)resetMode;

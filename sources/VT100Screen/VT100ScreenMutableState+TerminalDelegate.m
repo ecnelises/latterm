@@ -2207,18 +2207,6 @@ typedef struct {
     } name:@"set highlight cursor line"];
 }
 
-- (void)terminalClearCapturedOutput {
-    DLog(@"begin");
-    id<VT100ScreenMarkReading> commandMark = self.lastCommandMark;
-    if (commandMark.capturedOutput.count) {
-        [self incrementClearCountForCommandMark:commandMark];
-    }
-    [self addSideEffect:^(id<VT100ScreenDelegate> delegate) {
-        DLog(@"begin side-effect");
-        [delegate screenClearCapturedOutput];
-    } name:@"clear captured output"];
-}
-
 // Compute the BFS closure over `aid`'s parentAid descendants in the
 // currently-open registry. Returns the set of every aid that should
 // close along with `aid` (including `aid` itself).
@@ -2500,7 +2488,7 @@ typedef struct {
         // This B closes a non-initial prompt (PS2 line, right-prompt). The
         // user hasn't started a new command, they're still typing the same
         // logical one. Record the closed cell range as an excluded subrange
-        // on the active prompt mark so selection/share/AI consumers can
+        // on the active prompt mark so selection and sharing consumers can
         // subtract these from the typed-command region. PR 4 will plumb
         // through the consumer side.
         [self recordPendingExcludedSubrangeForNonInitialB];
@@ -3692,62 +3680,6 @@ typedef struct {
     } name:@"handle it2"];
 }
 
-- (void)terminalBeginSSHIntegeration:(NSString *)args {
-    RLog(@"begin %@", args);
-    if ([iTermTerminalFirstFeatures terminalFirstEnabled]) {
-        return;
-    }
-    if (args) {
-        // Save args
-        NSArray<NSString *> *parts = [args componentsSeparatedByString:@" "];
-        if (parts.count < 4) {
-            RLog(@"Not enough parts");
-            return;
-        }
-        [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-            [delegate screenWillBeginSSHIntegration];
-        } name:@"begin ssh integration"];
-        _sshIntegrationFlags = parts;
-        return;
-    }
-}
-
-- (void)terminalSendConductor:(NSString *)args {
-    RLog(@"begin %@", args);
-    if ([iTermTerminalFirstFeatures terminalFirstEnabled]) {
-        _sshIntegrationFlags = nil;
-        return;
-    }
-    if (!_sshIntegrationFlags) {
-        return;
-    }
-    NSDictionary<NSString *, NSString *> *params = [args it_keyValuePairsSeparatedBy:@";"];
-    NSString *v = params[@"v"];
-    if (!v || [v integerValue] < 3) {
-        _sshIntegrationFlags = nil;
-        [self appendBannerMessage:@"Out-of-date SSH integration helper detected."];
-        return;
-    } else if (v.integerValue > 3) {
-        _sshIntegrationFlags = nil;
-        [self appendBannerMessage:@"Unsupported SSH integration helper detected."];
-        return;
-    }
-
-    // Send conductor
-    NSString *token = _sshIntegrationFlags[0];
-    NSString *uniqueID = _sshIntegrationFlags[1];
-    NSString *encodedBA = _sshIntegrationFlags[2];
-    NSString *sshArgs = _sshIntegrationFlags[3];
-    _sshIntegrationFlags = nil;
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
-        [delegate screenBeginSSHIntegrationWithToken:token
-                                            uniqueID:uniqueID
-                                           encodedBA:encodedBA
-                                             sshArgs:sshArgs];
-        [unpauser unpause];
-    } name:@"send conductor"];
-}
-
 - (void)terminalUpdateEnv:(NSString *)value {
     DLog(@"begin %@", value);
     const NSInteger colon = [value rangeOfString:@":"].location;
@@ -3775,7 +3707,6 @@ typedef struct {
 }
 
 - (void)terminalEndSSH:(NSString *)uniqueID {
-    _sshIntegrationFlags = nil;
     __weak __typeof(self) weakSelf = self;
     dispatch_queue_t queue = _queue;
     [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {

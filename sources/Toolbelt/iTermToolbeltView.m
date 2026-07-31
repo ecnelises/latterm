@@ -5,7 +5,6 @@
 #import "NSArray+iTerm.h"
 #import "NSImage+iTerm.h"
 #import "NSObject+iTerm.h"
-#import "ToolCapturedOutputView.h"
 #import "ToolCommandHistoryView.h"
 #import "ToolDirectoriesView.h"
 #import "ToolJobs.h"
@@ -30,7 +29,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 NSString *const kActionsToolName = @"Actions";
-NSString *const kCapturedOutputToolName = @"Captured Output";
 NSString *const kCommandHistoryToolName = @"Command History";
 NSString *const kRecentDirectoriesToolName = @"Recent Directories";
 NSString *const kJobsToolName = @"Jobs";
@@ -80,7 +78,6 @@ static NSString *const kDynamicToolURL = @"URL";
 + (void)initialize {
     gRegisteredTools = [[NSMutableDictionary alloc] init];
     [iTermToolbeltView registerToolWithName:kActionsToolName withClass:[iTermToolActions class]];
-    [iTermToolbeltView registerToolWithName:kCapturedOutputToolName withClass:[ToolCapturedOutputView class]];
     [iTermToolbeltView registerToolWithName:kCommandHistoryToolName withClass:[ToolCommandHistoryView class]];
     [iTermToolbeltView registerToolWithName:kNamedMarksToolName withClass:[ToolNamedMarks class]];
     [iTermToolbeltView registerToolWithName:kStatusToolName withClass:[ToolStatus class]];
@@ -440,11 +437,6 @@ static NSString *const kDynamicToolURL = @"URL";
     return (ToolDirectoriesView *)wrapper.tool;
 }
 
-- (ToolCapturedOutputView *)capturedOutputView {
-    iTermToolWrapper *wrapper = [_tools objectForKey:kCapturedOutputToolName];
-    return (ToolCapturedOutputView *)wrapper.tool;
-}
-
 - (ToolJobs *)jobsView {
     iTermToolWrapper *wrapper = [_tools objectForKey:kJobsToolName];
     return (ToolJobs *)wrapper.tool;
@@ -577,7 +569,6 @@ static NSString *const kDynamicToolURL = @"URL";
 
 - (void)refreshTools {
     [[self commandHistoryView] updateCommands];
-    [[self capturedOutputView] updateCapturedOutput];
     [[self directoriesView] updateDirectories];
     [[self jobsView] updateJobs];
     [[self snippetsView] currentSessionDidChange];

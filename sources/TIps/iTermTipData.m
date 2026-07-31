@@ -92,10 +92,6 @@
                         kTipBodyKey: @"iTerm2 can display images (even animated GIFs) inline.",
                         kTipUrlKey: @"https://iterm2.com/images.html" },
 
-            @"0009": @{ kTipTitleKey: @"Captured Output",
-                        kTipBodyKey: @"iTerm2 can act like an IDE using the Captured Output feature. When it sees text matching a regular expression you define, like compiler errors, it shows the matching lines in the Toolbelt. You can click to jump to the line in your terminal and double-click to perform an action like opening an editor to the line with the error.",
-                        kTipUrlKey: @"https://iterm2.com/captured_output.html" },
-
             @"0011" : @{ kTipTitleKey: @"Dynamic Profiles",
                          kTipBodyKey: @"Dynamic Profiles let you store your profiles as one or more JSON files. It’s great for batch creating and editing profiles.",
                          kTipUrlKey: @"https://iterm2.com/dynamic-profiles.html" },

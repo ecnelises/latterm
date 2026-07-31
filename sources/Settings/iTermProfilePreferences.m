@@ -354,7 +354,6 @@ typedef struct {
 
             KEY_TIMESTAMPS_VISIBLE,
             KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE,
-            KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY,
             KEY_RUN_COMMAND_IN_LOGIN_SHELL,
             KEY_DYNAMIC_PROFILE_REWRITABLE,
             KEY_DYNAMIC_PROFILE,
@@ -753,7 +752,6 @@ typedef struct {
             KEY_RESTRICT_MOUSE_REPORTING_TO_ALTERNATE_SCREEN_MODE:  @"Whether mouse reporting is only enabled in alternate screen mode",
             KEY_ALLOW_TITLE_SETTING:                                @"Whether applications can set window/tab title",
             KEY_COMPOSER_TOP_OFFSET:                                @"Vertical offset of the Composer from the top of the session",
-            KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY:               @"Whether to inject shell integration automatically",
             KEY_RUN_COMMAND_IN_LOGIN_SHELL:                         @"Whether to run a custom Command through the user’s login shell",
             KEY_DISABLE_PRINTING:                                   @"Whether to disable printing via escape sequences",
             KEY_DISABLE_SMCUP_RMCUP:                                @"Whether to disable alternate screen mode switching",
@@ -1098,7 +1096,6 @@ typedef struct {
                   KEY_RESTRICT_MOUSE_REPORTING_TO_ALTERNATE_SCREEN_MODE: @NO,
                   KEY_ALLOW_TITLE_SETTING: @YES,
                   KEY_COMPOSER_TOP_OFFSET: @0,
-                  KEY_LOAD_SHELL_INTEGRATION_AUTOMATICALLY: @NO,
                   KEY_RUN_COMMAND_IN_LOGIN_SHELL: @NO,
                   KEY_DISABLE_PRINTING: @NO,
                   KEY_DISABLE_SMCUP_RMCUP: @NO,
