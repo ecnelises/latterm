@@ -12,6 +12,7 @@ Terminal-first fork changes:
 - Removed Captured Output.
 - Removed automatic shell-integration loading and
   the legacy SSH helper bootstrap path.
+- Removed regex-based prompt detection triggers.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

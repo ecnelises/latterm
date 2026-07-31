@@ -81,7 +81,7 @@ from iterm2.triggers import (
     HyperlinkTrigger, InjectTrigger, MarkTrigger, MuteCoprocessTrigger,
     PasswordTrigger, RPCTrigger, RunCommandTrigger, SendTextTrigger,
     SetDirectoryTrigger, SetHostnameTrigger, SetNamedMarkTrigger,
-    SetTitleTrigger, SetUserVariableTrigger, SGRTrigger, ShellPromptTrigger,
+    SetTitleTrigger, SetUserVariableTrigger, SGRTrigger,
     StopTrigger, UserNotificationTrigger,
     # Event-based triggers
     EventTrigger, ExitCodeFilter, PromptDetectedEventTrigger,

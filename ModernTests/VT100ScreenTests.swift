@@ -1419,51 +1419,6 @@ class VT100ScreenTests: XCTestCase {
         XCTAssert(actual.contains("world"), "Expected 'world' in grid: \(actual)")
     }
 
-    func testGang_postTriggerActions() {
-        // Tests that _postTriggerActions going non-empty (via a prompt-detecting trigger)
-        // and then being drained works correctly with gang processing.
-        let screen = self.screen(width: 10, height: 4)
-        screen.performBlock(joinedThreads: { _, ms, _ in
-            ms.maxScrollbackLines = 1000
-        })
-
-        // Configure a prompt-detecting trigger that matches "prompt>"
-        let triggerDict: [String: Any] = [
-            "regex": "prompt>",
-            "action": "iTermShellPromptTrigger"
-        ]
-        screen.performBlock(joinedThreads: { _, ms, _ in
-            let config = VT100MutableScreenConfiguration()
-            config.triggerProfileDicts = [triggerDict]
-            ms.setConfig(config)
-        })
-
-        // Send text matching the trigger.
-        screen.performBlock(joinedThreads: { _, ms, _ in
-            ms.terminalAppendMixedAsciiGang(["prompt>\r\n"].map { self.makeMixedToken($0) })
-        })
-
-        // Remove triggers so only _postTriggerActions state matters for eligibility.
-        screen.performBlock(joinedThreads: { _, ms, _ in
-            let config = VT100MutableScreenConfiguration()
-            config.triggerProfileDicts = []
-            ms.setConfig(config)
-        })
-
-        // Send more gangs to verify processing continues correctly.
-        screen.performBlock(joinedThreads: { _, ms, _ in
-            ms.terminalAppendMixedAsciiGang(["after\r\n"].map { self.makeMixedToken($0) })
-        })
-
-        screen.performBlock(joinedThreads: { _, ms, _ in
-            ms.terminalAppendMixedAsciiGang(["verify\r\n"].map { self.makeMixedToken($0) })
-        })
-
-        let actual = screen.compactLineDumpWithDividedHistoryAndContinuationMarks()
-        XCTAssert(actual.contains("after"), "Expected 'after' in output: \(actual)")
-        XCTAssert(actual.contains("verify"), "Expected 'verify' in output: \(actual)")
-    }
-
     func testDropFirstBlock() {
         let screen = self.screen(width: 8, height: 8)
         session.configuration.maxScrollbackLines = 6

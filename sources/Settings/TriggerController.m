@@ -26,7 +26,6 @@
 #import "iTermProfilePreferences.h"
 #import "iTermRPCTrigger.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermShellPromptTrigger.h"
 #import "MarkTrigger.h"
 #import "NSArray+iTerm.h"
 #import "NSColor+iTerm.h"
@@ -273,7 +272,6 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
             [iTermHighlightLineTrigger class],
             [iTermUserNotificationTrigger class],
             [iTermSetUserVariableTrigger class],
-            [iTermShellPromptTrigger class],
             [iTermSetTitleTrigger class],
             [iTermSetNamedMarkTrigger class],
             [iTermSGRTrigger class],

@@ -89,7 +89,6 @@ def decode_trigger(encoded: dict) -> typing.Union['Trigger', 'EventTrigger']:
         SetHostnameTrigger._name(): SetHostnameTrigger,
         SetTitleTrigger._name(): SetTitleTrigger,
         SetUserVariableTrigger._name(): SetUserVariableTrigger,
-        ShellPromptTrigger._name(): ShellPromptTrigger,
         StopTrigger._name(): StopTrigger,
         UserNotificationTrigger._name(): UserNotificationTrigger,
         SetNamedMarkTrigger._name(): SetNamedMarkTrigger,
@@ -617,22 +616,6 @@ class SetUserVariableTrigger(Trigger):
     @property
     def _param(self):
         return self.__name + chr(1) + self.__json_value
-
-class ShellPromptTrigger(Trigger):
-    def __init__(self, regex: str, instant: bool, enabled: bool):
-        super().__init__(regex, self._param, instant, enabled)
-
-    @staticmethod
-    def _name():
-        return "iTermShellPromptTrigger"
-
-    @staticmethod
-    def deserialize(regex: str, param: str, instant: bool, enabled: bool):
-        return _futureproof(param, ShellPromptTrigger(regex, instant, enabled))
-
-    @property
-    def _param(self):
-        return ""
 
 class SetTitleTrigger(Trigger):
     def __init__(self, regex: str, title: str, instant: bool, enabled: bool):

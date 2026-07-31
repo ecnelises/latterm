@@ -26,7 +26,6 @@ async def main(connection):
         iterm2.SetHostnameTrigger("^SetHostnameTrigger", "example.com", instant, enabled),
         iterm2.SetTitleTrigger("^SetTitleTrigger", "lorem ipsum", instant, enabled),
         iterm2.SetUserVariableTrigger("^SetUserVariableTrigger", "hello", '"world"', instant, enabled),
-        iterm2.ShellPromptTrigger("^ShellPromptTrigger", instant, enabled),
         iterm2.StopTrigger("^StopTrigger", instant, enabled),
         iterm2.UserNotificationTrigger("^UserNotificationTrigger", "lorem ipsum", instant, enabled),
     ]
