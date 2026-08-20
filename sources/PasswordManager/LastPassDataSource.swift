@@ -552,7 +552,7 @@ class LastPassUtils {
     private static func showCannotFindCLIMessage() -> Bool {
         let alert = NSAlert()
         alert.messageText = "Can’t Find LastPass CLI"
-        alert.informativeText = "In order to use the LastPass integration, iTerm2 needs to know where to find the CLI app named “lpass”. Select Locate to provide its location."
+        alert.informativeText = "In order to use the LastPass integration, Latterm needs to know where to find the CLI app named “lpass”. Select Locate to provide its location."
         alert.addButton(withTitle: "Locate")
         alert.addButton(withTitle: "Cancel")
         alert.addButton(withTitle: "Help")

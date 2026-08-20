@@ -38,7 +38,7 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
             case .handshakeFailed:
                 return "Handshake failed."
             case .incompatibleProtocol:
-                return "Incompatible protocol. Please update iTerm2."
+                return "Incompatible protocol. Please update Latterm."
             case .adapterNotFound:
                 return "Adapter not found."
             case .invalidToken:

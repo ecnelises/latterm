@@ -1041,13 +1041,13 @@ NSString *const iTermAPIServerConnectionClosed = @"iTermAPIServerConnectionClose
 
 - (void)handleMalformedRequest:(ITMClientOriginatedMessage *)request connection:(id<iTermAPIServerConnection>)webSocketConnection {
     ITMServerOriginatedMessage *response = [self newResponseForRequest:request];
-    response.error = @"Invalid request. Upgrade iTerm2 to a newer version.";
+    response.error = @"Invalid request. Upgrade Latterm to a newer version.";
     [self finishHandlingRequestWithResponse:response onConnection:webSocketConnection];
 }
 
 - (void)handleUnhandleableRequest:(ITMClientOriginatedMessage *)request connection:(id<iTermAPIServerConnection>)webSocketConnection {
     ITMServerOriginatedMessage *response = [self newResponseForRequest:request];
-    response.error = @"Not ready. This is a bug! Please report it at https://iterm2.com/bugs";
+    response.error = @"Not ready. This is a bug! Please report it at https://github.com/ecnelises/latterm/issues";
     [self finishHandlingRequestWithResponse:response onConnection:webSocketConnection];
 }
 
@@ -1451,4 +1451,3 @@ NSString *const iTermAPIServerConnectionClosed = @"iTermAPIServerConnectionClose
 }
 
 @end
-

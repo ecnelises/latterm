@@ -478,11 +478,11 @@ final class SpecialExceptionsWindowController: NSWindowController {
 
     private func importString(_ content: String) {
         guard let newConfig = FontTable.Config(string: content) else {
-            showError("This file is not well formed. Is it from a newer version of iTerm2?")
+            showError("This file is not well formed. Is it from a newer version of Latterm?")
             return
         }
         guard newConfig.version <= FontTable.Config.latestKnownVersion else {
-            showError("This file is from a newer version of iTerm2 and cannot be loaded.")
+            showError("This file is from a newer version of Latterm and cannot be loaded.")
             return
         }
         let missing = missingFonts(newConfig)
@@ -769,4 +769,3 @@ extension RandomAccessCollection {
         return currentSlice.startIndex
     }
 }
-

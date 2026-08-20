@@ -141,6 +141,13 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Removed the orphaned AI secure preference, no-op migration hook, stale tip filters, and now-redundant runtime menu cleanup.
 - Audited the remaining submodules; none is owned by this Composer compatibility slice, so no submodule became safe to remove.
 
+### 2026-08-21 User-Facing Latterm Branding
+
+- Replaced remaining macOS-app branding in alerts, settings descriptions, tips, menu titles, authorization prompts, default filenames, and bug-report links with `Latterm` project equivalents.
+- Preserved compatibility identifiers and wire names such as `com.googlecode.iterm2`, `iterm2:`, `~/.iterm2`, the Python `iterm2` package, public menu identifiers, and terminal protocol reports.
+- Left the Companion app name and protocol branding for a separate coordinated rename so the Mac app, iPhone app, relay, bundle identifiers, and migration behavior can change together.
+- Audited submodules and confirmed this copy-only branding slice does not make any dependency removable.
+
 ### Recent Verification
 
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
@@ -162,6 +169,8 @@ This file is a local planning document. Do not assume it belongs in a release co
 - `tools/build.sh` passes on 2026-08-20 after the post-rebase AI test, fixture, asset, documentation, and Xcode-reference cleanup.
 - `xcrun ibtool --errors --warnings --notices --compile /tmp/Latterm-LargeComposer.nib sources/StatusBar/Components/iTermStatusBarLargeComposerViewController.xib` reports no document errors, warnings, or notices on 2026-08-21 after removing the AI controls.
 - `tools/build.sh` and the `ModernTests` scheme build pass on 2026-08-21 after pruning the remaining AI Composer compatibility path.
+- `ibtool` compiles the main menu and preference panel without document errors or warnings on 2026-08-21 after the user-facing Latterm branding pass; the preference panel retains its pre-existing layout notices.
+- `tools/build.sh` passes on 2026-08-21 after the user-facing branding and bug-report link updates.
 
 ## Refactor Direction
 

@@ -20,8 +20,8 @@ class ImportExport: NSObject {
         DLog("Begin")
         let savePanel = NSSavePanel()
         savePanel.allowedContentTypes = ["itermexport"].compactMap { UTType(filenameExtension: $0) }
-        savePanel.nameFieldStringValue = "iTerm2 State.itermexport"
-        savePanel.title = "Export iTerm2 Settings and Data"
+        savePanel.nameFieldStringValue = "Latterm State.itermexport"
+        savePanel.title = "Export Latterm Settings and Data"
 
         let response = savePanel.runModal()
         guard response == NSApplication.ModalResponse.OK else {
@@ -50,7 +50,7 @@ class ImportExport: NSObject {
             case ImportExportError.failedToSaveFile(let reason):
                 return .failure("Failed to save file: \(reason)")
             case ImportExportError.bug(let reason):
-                return .failure("A bug was encountered: \(reason). Please report this at https://iterm2.com/bugs")
+                return .failure("A bug was encountered: \(reason). Please report this at https://github.com/ecnelises/latterm/issues")
             case ImportExportError.failedToCreateArchive(let reason):
                 return .failure("Failed to create archive: \(reason)")
             case ImportExportError.failedToLoadFile(let reason):
@@ -91,7 +91,7 @@ class ImportExport: NSObject {
 
         do {
             let selection = iTermWarning.show(
-                withTitle: "Any needed Python runtimes will be installed and secure settings will be updated, which may require you to enter your password. Then iTerm2 will restart and finish importing. This can take several minutes.",
+                withTitle: "Any needed Python runtimes will be installed and secure settings will be updated, which may require you to enter your password. Then Latterm will restart and finish importing. This can take several minutes.",
                 actions: ["OK", "Cancel"],
                 accessory: nil,
                 identifier: nil,
@@ -170,13 +170,13 @@ class ImportExport: NSObject {
         let actionLabel: String
         if dryRun {
             confirmTitle = """
-            Dry-run mode is enabled. iTerm2 will log to Console.app what it would erase and stay running. Nothing will actually be deleted.
+            Dry-run mode is enabled. Latterm will log to Console.app what it would erase and stay running. Nothing will actually be deleted.
             """
             confirmHeading = "Dry-Run Erase?"
             actionLabel = "Run Dry Run"
         } else {
             confirmTitle = """
-            The following will be erased and iTerm2 will quit immediately:
+            The following will be erased and Latterm will quit immediately:
 
             \u{2022} Preferences (profiles, key bindings, arrangements, advanced settings)
             \u{2022} Saved windows and sessions
@@ -210,7 +210,7 @@ class ImportExport: NSObject {
             _exit(0)
         }
         _ = iTermWarning.show(
-            withTitle: "iTerm2 logged what it would have erased to Console.app. Nothing was actually deleted because the “Dry-run Erase All Settings and Data” advanced setting is enabled.",
+            withTitle: "Latterm logged what it would have erased to Console.app. Nothing was actually deleted because the “Dry-run Erase All Settings and Data” advanced setting is enabled.",
             actions: ["OK"],
             accessory: nil,
             identifier: nil,

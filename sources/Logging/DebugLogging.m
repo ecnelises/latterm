@@ -105,7 +105,7 @@ NSString *iTermDebugLogHeaderString(void) {
         [pinnedMessages appendString:gPinnedMessages[key]];
     }
     NSString *header = [NSString stringWithFormat:
-                        @"iTerm2 version: %@\n"
+                        @"Latterm version: %@\n"
                         @"Date: %@ (%lld)\n"
                         @"Machine: %@\n"
                         @"Screens: %@\n"
@@ -585,4 +585,3 @@ void DLogC(const char *format, va_list args) {
 }
 
 @end
-

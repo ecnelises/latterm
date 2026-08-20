@@ -18,6 +18,8 @@ Terminal-first fork changes:
   a blue hash prompt.
 - Removed the remaining AI Composer controls,
   routing, and secure settings.
+- Rebranded main-app alerts, tips, and
+  default filenames from iTerm2 to Latterm.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

@@ -58,11 +58,11 @@ class iTermTouchIDHelper: NSObject {
         return "sudo \"\(escaped)\""
     }
 
-    /// Runs the install command in a new iTerm2 window. The user will be prompted
+    /// Runs the install command in a new Latterm window. The user will be prompted
     /// for their sudo password in that window.
     @objc static func runInstallInNewWindow() {
         guard let path = scriptPath else {
-            iTermWarning.show(withTitle: "The Touch ID install script is missing from the iTerm2 application bundle.",
+            iTermWarning.show(withTitle: "The Touch ID install script is missing from the Latterm application bundle.",
                               actions: ["OK"],
                               accessory: nil,
                               identifier: nil,

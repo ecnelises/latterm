@@ -381,7 +381,7 @@ CGFloat kiTermIndicatorStandardHeight = 20;
         kiTermIndicatorFilter: @"Filtering.",
         kiTermIndicatorCopyMode: @"In copy mode. See [documentation](https://iterm2.com/documentation-copymode.html) for details.",
         kiTermIndicatorDebugLogging: @"Debug logging is enabled.",
-        kiTermIndicatorSecureKeyboardEntry_User: @"Secure Keyboard Entry is enabled. Select iTerm2 > Secure Keyboard Entry to disable.\n[Disable this indicator.](iterm2:disable-secure-keyboard-entry-indicator)",
+        kiTermIndicatorSecureKeyboardEntry_User: @"Secure Keyboard Entry is enabled. Select Latterm > Secure Keyboard Entry to disable.\n[Disable this indicator.](iterm2:disable-secure-keyboard-entry-indicator)",
         kiTermIndicatorSecureKeyboardEntry_Forced: @"Secure Keyboard Entry is enabled because another app has turned it on.\n[Disable this indicator.](iterm2:disable-secure-keyboard-entry-indicator)",
         kiTermIndicatorPinned: @"This Hotkey Window is pinned.",
         kiTermIndicatorChannel: [NSString stringWithFormat:@"This command is running within another session.\n * [Return to Enclosing Session](iterm2:pop-channel?s=%@&t=%@)", sessionID, [[NSWorkspace sharedWorkspace] it_newToken]],

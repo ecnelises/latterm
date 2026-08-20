@@ -359,7 +359,7 @@ class Conductor: NSObject, SSHIdentityProvider {
     // (the only fields IT2ProxyState's Codable encodes), and the custom init(from:) resets it to
     // false on decode -- so on state restoration it2Listen re-runs and re-establishes it. Gates
     // it2ProxyActive so the
-    // "Remote host can control iTerm2" menu reflects whether the remote can actually connect.
+    // "Remote host can control Latterm" menu reflects whether the remote can actually connect.
     var it2ListenSucceeded: Bool {
         get { restorableState.it2Proxy.listenSucceeded }
         set { restorableState.it2Proxy.listenSucceeded = newValue }

@@ -72,12 +72,12 @@
   NSDictionary *tips = @{
     // Big new features
             @"000": @{ kTipTitleKey: @"Tip of the Day",
-                        kTipBodyKey: @"This window shows the iTerm2 tip of the day. It’ll appear every 24 hours to let you know about new features and hidden secrets. Hit “More Options” to view more tips or to stop getting them altogether." },
+                        kTipBodyKey: @"This window shows the Latterm tip of the day. It’ll appear every 24 hours to let you know about new features and hidden secrets. Hit “More Options” to view more tips or to stop getting them altogether." },
             @"0001": @{ kTipTitleKey: @"Timestamps",
                          kTipBodyKey: @"“View > Show Timestamps” shows the time (and date, if appropriate) when each line was last modified." },
 
             @"0002": @{ kTipTitleKey: @"Password Manager",
-                        kTipBodyKey: @"Did you know iTerm2 has a password manager? Open it with “Window > Password Manager.” You can define a Trigger to open it for you at a password prompt in “Settings > Profiles > Advanced > Triggers.”" },
+                        kTipBodyKey: @"Did you know Latterm has a password manager? Open it with “Window > Password Manager.” You can define a Trigger to open it for you at a password prompt in “Settings > Profiles > Advanced > Triggers.”" },
             @"0004": @{ kTipTitleKey: @"Undo Close",
                         kTipBodyKey: @"If you close a session, tab, or window by accident you can undo it with “Edit > Undo” (⌘Z). By default you have five seconds to undo, but you can adjust that timeout in “Settings > Profiles > Session.”" },
 
@@ -87,7 +87,7 @@
             @"0006": @{ kTipTitleKey: @"Copy with Styles",
                          kTipBodyKey: @"Copy a selection with ⌥⌘C to include styles such as colors and fonts. You can make this the default action for Copy in “Settings > Advanced.”" },
             @"0007": @{ kTipTitleKey: @"Inline Images",
-                        kTipBodyKey: @"iTerm2 can display images (even animated GIFs) inline.",
+                        kTipBodyKey: @"Latterm can display images (even animated GIFs) inline.",
                         kTipUrlKey: @"https://iterm2.com/images.html" },
 
             @"0011" : @{ kTipTitleKey: @"Dynamic Profiles",
@@ -105,11 +105,11 @@
                          kTipBodyKey: @"The “Semantic History” feature allows you to ⌘-click on a file or URL to open it.", },
 
             @"0015": @{ kTipTitleKey: @"Tmux Integration",
-                        kTipBodyKey: @"If you use tmux, try running “tmux -CC” to get iTerm2’s tmux integration mode. The tmux windows show up as native iTerm2 windows, and you can use iTerm2’s keyboard shortcuts. It even works over ssh!",
+                        kTipBodyKey: @"If you use tmux, try running “tmux -CC” to get Latterm’s tmux integration mode. The tmux windows show up as native Latterm windows, and you can use Latterm’s keyboard shortcuts. It even works over ssh!",
                         kTipUrlKey: @"https://gitlab.com/gnachman/iterm2/wikis/TmuxIntegration" },
 
             @"0016": @{ kTipTitleKey: @"Triggers",
-                        kTipBodyKey: @"iTerm2 can automatically perform actions you define when text matching a regular expression is received. For example, you can highlight text or show an alert box. Set it up in “Settings > Profiles > Advanced > Triggers.”",
+                        kTipBodyKey: @"Latterm can automatically perform actions you define when text matching a regular expression is received. For example, you can highlight text or show an alert box. Set it up in “Settings > Profiles > Advanced > Triggers.”",
                         kTipUrlKey: @"https://www.iterm2.com/documentation-triggers.html" },
 
             @"0017": @{ kTipTitleKey: @"Smart Selection",
@@ -159,7 +159,7 @@
                         kTipBodyKey: @"If you put a slash in a profile’s tag, that implicitly defines a hierarchy. You can see it in the Profiles menu as nested submenus." },
 
             @"0036": @{ kTipTitleKey: @"Downloads",
-                        kTipBodyKey: @"iTerm2 can download files by base-64 encoding them. Click “Learn More” to download a shell script that makes it easy.",
+                        kTipBodyKey: @"Latterm can download files by base-64 encoding them. Click “Learn More” to download a shell script that makes it easy.",
                         kTipUrlKey: @"https://iterm2.com/download.sh" },
 
             @"0041": @{ kTipTitleKey: @"Paste File as Base64",
@@ -219,7 +219,7 @@
                          kTipBodyKey: @"If you paste text containing tabs, you’ll be asked if you want to convert them to spaces. It’s handy at the shell prompt to avoid triggering filename completion." },
 
             @"0061" : @{ kTipTitleKey: @"Bell Silencing",
-                         kTipBodyKey: @"Did you know? If the bell rings too often, you’ll be asked if you’d like to silence it temporarily. iTerm2 cares about your comfort." },
+                         kTipBodyKey: @"Did you know? If the bell rings too often, you’ll be asked if you’d like to silence it temporarily. Latterm cares about your comfort." },
 
             @"0062" : @{ kTipTitleKey: @"Profile Search",
                          kTipBodyKey: @"Every list of profiles has a search field (e.g., in ”Settings > Profiles.”) You can use various operators to restrict your search query. Click “Learn More” for all the details.",
@@ -233,7 +233,7 @@
                         kTipBodyKey: @"You can have a separate font for ASCII versus non-ASCII text. Enable it in “Settings > Profiles > Text.”" },
 
             @"0065": @{ kTipTitleKey: @"Coprocesses",
-                        kTipBodyKey: @"A coprocess is a job, such as a shell script, that has a special relationship with a particular iTerm2 session. All output in a terminal window (that is, what you see on the screen) is also input to the coprocess. All output from the coprocess acts like text that the user is typing at the keyboard.",
+                        kTipBodyKey: @"A coprocess is a job, such as a shell script, that has a special relationship with a particular Latterm session. All output in a terminal window (that is, what you see on the screen) is also input to the coprocess. All output from the coprocess acts like text that the user is typing at the keyboard.",
                         kTipUrlKey: @"https://iterm2.com/coprocesses.html" },
 
             @"0066": @{ kTipTitleKey: @"Touch Bar Customization",
@@ -255,7 +255,7 @@
                         kTipBodyKey: @"You can “bury” a session with “Session > Bury Session.” It remains hidden until you restore it by selecting it from “Session > Buried Sessions > Your session.”" },
 
             @"0072": @{ kTipTitleKey: @"Python API",
-                        kTipBodyKey: @"You can add custom behavior to iTerm2 using the Python API.",
+                        kTipBodyKey: @"You can add custom behavior to Latterm using the Python API.",
                         kTipUrlKey: @"https://iterm2.com/python-api" },
 
             @"0073": @{ kTipTitleKey: @"Status Bar",
@@ -299,7 +299,7 @@
                         kTipBodyKey: @"Execute a series of actions in order with a single shortcut using “sequence” key bindings." },
 
             @"0092": @{ kTipTitleKey: @"Export/Import Settings",
-                        kTipBodyKey: @"Easily backup or transfer your iTerm2 settings using the Export/Import feature in “Settings > General > Settings”." },
+                        kTipBodyKey: @"Easily backup or transfer your Latterm settings using the Export/Import feature in “Settings > General > Settings”." },
 
             @"0093": @{ kTipTitleKey: @"Multi-Session Bindings",
                         kTipBodyKey: @"Apply key bindings uniformly across multiple sessions for consistent control in different tabs or windows." },

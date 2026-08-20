@@ -541,7 +541,7 @@ extension Conductor {
                     return cancel
                 }
                 guard iTermAPIHelper.isEnabled() else {
-                    emitStderr("The iTerm2 Python API is not enabled (Settings > General > Magic).")
+                    emitStderr("The Python API is not enabled (Settings > General > Magic).")
                     finish(2)
                     return cancel
                 }

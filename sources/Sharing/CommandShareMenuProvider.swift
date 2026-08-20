@@ -110,7 +110,7 @@ class CommandShareMenuProvider: NSObject {
     }
 
     private static func defaultCommand(_ maybeCommand: String?) -> String {
-        let fallback = "iTerm2 Command"
+        let fallback = "Latterm Command"
         guard let justCommand = maybeCommand else {
             return fallback
         }

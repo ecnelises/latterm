@@ -302,10 +302,10 @@ class PasswordManagerDataSourceProvider: NSObject {
             reason = "there were too many failed Touch ID attempts.";
 
         case .appCancel:
-            reason = "authentication was cancelled by iTerm2.";
+            reason = "authentication was cancelled by Latterm.";
 
         case .invalidContext:
-            reason = "the context is invalid. This is a bug in iTerm2. Please report it.";
+            reason = "the context is invalid. This is a bug in Latterm. Please report it.";
 
         case .none:
             reason = error.localizedDescription
@@ -340,4 +340,3 @@ class PasswordManagerDataSourceProvider: NSObject {
         alert.runModal()
     }
 }
-

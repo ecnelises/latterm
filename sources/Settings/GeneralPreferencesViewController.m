@@ -402,7 +402,7 @@ enum {
         [[NSNotificationCenter defaultCenter] postNotificationName:iTermMetalSettingsDidChangeNotification object:nil];
     };
     info.onChange = ^{
-        [iTermWarning showWarningWithTitle:@"You must restart iTerm2 for this change to take effect."
+        [iTermWarning showWarningWithTitle:@"You must restart Latterm for this change to take effect."
                                    actions:@[ @"OK" ]
                                 identifier:nil
                                silenceable:kiTermWarningTypePersistent
@@ -867,11 +867,11 @@ enum {
     NSString *action;
     NSString *path;
     if (@available(macOS 13, *)) {
-        message = @"System window restoration has been disabled, which prevents iTerm2 from respecting this setting. Disable ”System Settings > Desktop & Dock > Close windows when quitting an application“ to enable window restoration.";
+        message = @"System window restoration has been disabled, which prevents Latterm from respecting this setting. Disable ”System Settings > Desktop & Dock > Close windows when quitting an application“ to enable window restoration.";
         action = @"Open System Settings";
         path = @"/System/Library/PreferencePanes/Dock.prefPane";
     } else {
-        message = @"System window restoration has been disabled, which prevents iTerm2 from respecting this setting. Disable System Settings > General > Close windows when quitting an app to enable window restoration.";
+        message = @"System window restoration has been disabled, which prevents Latterm from respecting this setting. Disable System Settings > General > Close windows when quitting an app to enable window restoration.";
         action = @"Open System Preferences";
         path = @"/System/Library/PreferencePanes/Appearance.prefPane";
     }

@@ -404,7 +404,7 @@ static NSString *const iTermStatusBarRPCRegistrationRequestV2Key = @"registratio
                                  accessory:nil
                                 identifier:[NSString stringWithFormat:@"NoSyncAutoLaunchScript_%@", _fullPath]
                                silenceable:kiTermWarningTypePermanentlySilenceable
-                                   heading:@"Always launch this script when iTerm2 starts?"
+                                   heading:@"Always launch this script when Latterm starts?"
                                     window:self.delegate.textField.window] == kiTermWarningSelection0) {
         [menuController moveScriptToAutoLaunch:_fullPath];
     }

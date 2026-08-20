@@ -374,11 +374,11 @@ class iTermAnnotatedScreenshot: NSObject {
         return saveToDesktop(nsImage: nsImage)
     }
 
-    /// A timestamped default filename for a screenshot, e.g. iTerm2-Screenshot-2026-06-21-13-05-22.png
+    /// A timestamped default filename for a screenshot, e.g. Latterm-Screenshot-2026-06-21-13-05-22.png
     @objc static func defaultScreenshotFilename() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd-HH-mm-ss"
-        return "iTerm2-Screenshot-\(formatter.string(from: Date())).png"
+        return "Latterm-Screenshot-\(formatter.string(from: Date())).png"
     }
 
     /// Encodes an NSImage as PNG data, or nil on failure.

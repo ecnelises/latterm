@@ -50,11 +50,11 @@ class AppSignatureValidator: NSObject {
     static func warn(reason: String) {
         let team = currentAppTeamID()
         let message = if team == nil {
-            "A required file appears to be missing or corrupted and iTerm2’s code signature could not be verified.\n\nYou should download a fresh copy of the app and reinstall it."
+            "A required file appears to be missing or corrupted and Latterm’s code signature could not be verified.\n\nYou should download a fresh copy of the app and reinstall it."
         } else if team == "H7V7XYVQ7D" {
-            "A required file appears to be missing or corrupted and iTerm2’s code signature did not match that of the official distribution.\n\nYou should download a fresh copy of the app and reinstall it."
+            "A required file appears to be missing or corrupted and Latterm’s code signature did not match that of the official distribution.\n\nYou should download a fresh copy of the app and reinstall it."
         } else {
-            "A required file appears to be missing or corrupted, yet against all odds the code signature for iTerm2 is valid. Please file a bug at https://iterm2.com/bugs"
+            "A required file appears to be missing or corrupted, yet against all odds the code signature for Latterm is valid. Please file a bug at https://github.com/ecnelises/latterm/issues"
         }
         let alert = NSAlert()
         alert.messageText = "Application Corrupt"
@@ -64,4 +64,3 @@ class AppSignatureValidator: NSObject {
         alert.runModal()
     }
 }
-

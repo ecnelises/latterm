@@ -307,7 +307,7 @@ class SecureUserDefault<T: SecureUserDefaultStringTranscodable & Codable & Equat
         // notifications for keys that were never written.
         try runPrivilegedWrites(statements: statements,
                                 keys: writes.map { $0.key },
-                                prompt: "iTerm2 needs to modify secure settings.")
+                                prompt: "Latterm needs to modify secure settings.")
     }
 
     private static func fallbackBaseDirectory(create: Bool) throws -> String {
@@ -345,7 +345,7 @@ class SecureUserDefault<T: SecureUserDefaultStringTranscodable & Codable & Equat
         do shell script "
             umask 000
             /bin/mkdir -m 777 -p \(path)
-        " with prompt "iTerm2 needs to create \(path) to store secure settings because your home directory is on a network file system." with administrator privileges
+        " with prompt "Latterm needs to create \(path) to store secure settings because your home directory is on a network file system." with administrator privileges
         """
         DLog("Will execute:\n\(code)")
         let script = NSAppleScript(source: code)
@@ -513,7 +513,7 @@ class SecureUserDefault<T: SecureUserDefaultStringTranscodable & Codable & Equat
         let statement = try writeStatement(key: key, encodedValue: SecureUserDefaultValue<U>(value: value).encodedString)
         try runPrivilegedWrites(statements: [statement],
                                 keys: [key],
-                                prompt: "iTerm2 needs to modify a secure setting.")
+                                prompt: "Latterm needs to modify a secure setting.")
     }
 
     /// The double-backslash/double-quote escaping for a path embedded in the

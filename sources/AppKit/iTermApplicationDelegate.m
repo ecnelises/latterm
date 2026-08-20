@@ -221,7 +221,7 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
                                                                     attributes:separatorAttributes]];
     [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Report a bug",
                                                                                     @"About window report-a-bug link title"),
-                                                                  @"https://iterm2.com/bugs")];
+                                                                  @"https://github.com/ecnelises/latterm/issues")];
     [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"  ·  "
                                                                     attributes:separatorAttributes]];
     [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Credits",

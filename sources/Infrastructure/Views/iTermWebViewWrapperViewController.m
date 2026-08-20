@@ -126,7 +126,7 @@ NSString *const iTermWebViewErrorDomain = @"com.iterm2.webview";
 
     NSString *webUserAgent = [iTermAdvancedSettingsModel webUserAgent];
     if (!webUserAgent.length) {
-        configuration.applicationNameForUserAgent = @"iTerm2";
+        configuration.applicationNameForUserAgent = @"Latterm";
     }
 
     WKPreferences *prefs = [[NSClassFromString(@"WKPreferences") alloc] init];

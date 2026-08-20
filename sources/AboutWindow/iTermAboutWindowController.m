@@ -204,7 +204,7 @@ static const CGFloat kSponsorRowY = 170.0;
                                                                        title:NSLocalizedString(@"Home Page",
                                                                                                @"About window home page link title")];
         NSAttributedString *bugsAString =
-                [self attributedStringWithLinkToURL:@"https://iterm2.com/bugs"
+                [self attributedStringWithLinkToURL:@"https://github.com/ecnelises/latterm/issues"
                                               title:NSLocalizedString(@"Report a bug",
                                                                       @"About window report-a-bug link title")];
         NSAttributedString *creditsAString =

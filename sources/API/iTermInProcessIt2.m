@@ -179,7 +179,7 @@
             // and registration. Fail fast rather than run a command whose first receive
             // would block forever (the connection was never registered).
             DLog(@"iTermInProcessIt2: channel not registered (API disabled); aborting");
-            stderrBlock(@"The iTerm2 Python API is not enabled (Settings > General > Magic).");
+            stderrBlock(@"The Python API is not enabled (Settings > General > Magic).");
             [channel disconnect];
             completion(2);
             return;

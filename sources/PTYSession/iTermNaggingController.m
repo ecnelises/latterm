@@ -883,7 +883,7 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
 }
 
 - (void)showJSONPromotion {
-    [_delegate naggingControllerShowMessage:@"That's a gnarly JSON blob you've got there! iTerm2 can replace this hard-to-read selection with a pretty-printed value."
+    [_delegate naggingControllerShowMessage:@"That's a gnarly JSON blob you've got there! Latterm can replace this hard-to-read selection with a pretty-printed value."
                                  isQuestion:NO
                                   important:NO
                                  identifier:@"JSONPromotion"

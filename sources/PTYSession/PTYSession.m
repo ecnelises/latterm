@@ -10510,7 +10510,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         actions = @[ @"OK" ];
     }
     const iTermWarningSelection selection =
-    [iTermWarning showWarningWithTitle:@"This instance of iTerm2 is already attached to this session"
+    [iTermWarning showWarningWithTitle:@"This instance of Latterm is already attached to this session"
                                actions:actions
                              accessory:nil
                             identifier:@"AlreadyAttachedToTmuxSession"
@@ -16174,7 +16174,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         NSString *identifier = @"UploadInUnsupportedFormatRequested";
         if (![self announcementWithIdentifier:identifier]) {
             iTermAnnouncementViewController *announcement =
-            [iTermAnnouncementViewController announcementWithTitle:@"An upload with an unsupported archive format was requested. You may need a newer version of iTerm2."
+            [iTermAnnouncementViewController announcementWithTitle:@"An upload with an unsupported archive format was requested. You may need a newer version of Latterm."
                                                              style:kiTermAnnouncementViewStyleWarning
                                                        withActions:@[]
                                                         completion:^(int selection) {}];
@@ -23745,8 +23745,8 @@ static NSString *IT2AuthorizationAnnouncementIdentifier(NSString *guid) {
     NSString *who = displayName.length ? displayName : @"A remote session";
     NSString *title =
         [NSString stringWithFormat:
-         @"%@ wants to control iTerm2 using the API over SSH integration. The API can "
-         @"view and modify iTerm2’s contents. Allow it for this session?", who];
+         @"%@ wants to control Latterm using the API over SSH integration. The API can "
+         @"view and modify Latterm’s contents. Allow it for this session?", who];
     iTermAnnouncementViewController *announcement =
         [iTermAnnouncementViewController announcementWithTitle:title
                                                          style:kiTermAnnouncementViewStyleWarning
