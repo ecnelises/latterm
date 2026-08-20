@@ -131,7 +131,7 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Updated the surviving Companion envelope forward-compatibility tests to cover only the terminal-control protocol and stopped compiling package-owned legacy chat wire vectors into ModernTests.
 - Updated Conductor tests for the shell-integration state already removed from production code.
 - Repaired every test target's `TEST_HOST` setting to point at `Latterm.app` so `build-for-testing` and `test` compile the test bundle instead of treating it as its own host executable.
-- Refreshed the app icon prompt from a green dollar sign to a blue hash while preserving the existing icon layouts, canvas sizes, and release-channel variants.
+- Refreshed the app icon prompt from a green dollar sign to a Lacold Air Blue hash while preserving the existing icon layouts, canvas sizes, and release-channel variants.
 - Audited the remaining submodules after this cleanup; none is owned solely by the deleted tests, fixtures, assets, or documentation, so no additional submodule is safe to remove in this slice.
 
 ### Recent Verification
