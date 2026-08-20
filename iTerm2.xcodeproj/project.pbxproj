@@ -714,7 +714,6 @@
 		449971BD58BB039299CB0D08 /* iTermLayoutEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA5AEB702F05430C1F1B793 /* iTermLayoutEnvironment.swift */; };
 		456E510EFA3B6DCD0F3665E5 /* Data+BigEndian.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB9BDAF96F842ABF40BB10B /* Data+BigEndian.swift */; };
 		462A8A491C3EAAF5E0805D7A /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18F980FAE3B782F42E7DBBDE /* APIClient.swift */; };
-		46385B41497E6F98C6486BFB /* CompanionWireVectors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F544D6F2B98C16911CCFCC2 /* CompanionWireVectors.swift */; };
 		4705C05130977E2C81FD75E8 /* iTermUnicodeNormalization.h in Sources */ = {isa = PBXBuildFile; fileRef = 3335AD96138BA74CC79D25A8 /* iTermUnicodeNormalization.h */; };
 		4887C7B3CAB5465296225860 /* MenuTips.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 904AE312A0E0489899D9ECB8 /* MenuTips.xcassets */; };
 		49A6E4091211CC6000D9AD6F /* Compatability.h in Headers */ = {isa = PBXBuildFile; fileRef = 49A6E4081211CC6000D9AD6F /* Compatability.h */; };
@@ -3037,12 +3036,6 @@
 		A6A2D6D9243453BA00A4DF5B /* iTermComposerManager.h in Headers */ = {isa = PBXBuildFile; fileRef = A6A2D6D7243453BA00A4DF5B /* iTermComposerManager.h */; };
 		A6A2D6DA243453BA00A4DF5B /* iTermComposerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = A6A2D6D8243453BA00A4DF5B /* iTermComposerManager.m */; };
 		A6A30ECE2950D29D0050F01A /* iTermPleaseWaitWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A30ECD2950D29D0050F01A /* iTermPleaseWaitWindow.swift */; };
-		A6A30ED12950EA540050F01A /* aiterm@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6A30ECF2950EA530050F01A /* aiterm@2x.png */; };
-		A6A30ED22950EA540050F01A /* aiterm@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6A30ECF2950EA530050F01A /* aiterm@2x.png */; };
-		A6A30ED32950EA540050F01A /* aiterm@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6A30ECF2950EA530050F01A /* aiterm@2x.png */; };
-		A6A30ED42950EA540050F01A /* aiterm.png in Resources */ = {isa = PBXBuildFile; fileRef = A6A30ED02950EA540050F01A /* aiterm.png */; };
-		A6A30ED52950EA540050F01A /* aiterm.png in Resources */ = {isa = PBXBuildFile; fileRef = A6A30ED02950EA540050F01A /* aiterm.png */; };
-		A6A30ED62950EA540050F01A /* aiterm.png in Resources */ = {isa = PBXBuildFile; fileRef = A6A30ED02950EA540050F01A /* aiterm.png */; };
 		A6A30ED72950EACF0050F01A /* NSView+RecursiveDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D81F0BF183C3C2D00910838 /* NSView+RecursiveDescription.m */; };
 		A6A39EBB24B99AC000A64433 /* iTermGraphicsUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = A6A39EB924B99AC000A64433 /* iTermGraphicsUtilities.h */; };
 		A6A39EBC24B99AC000A64433 /* iTermGraphicsUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = A6A39EBA24B99AC000A64433 /* iTermGraphicsUtilities.m */; };
@@ -5921,7 +5914,6 @@
 		5E02D44A9E1C1B28D6C40090 /* iTermTmuxControlModeKeyName.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermTmuxControlModeKeyName.m; sourceTree = "<group>"; };
 		5ECE005D1454E59B004861E9 /* PseudoTerminalRestorer.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = PseudoTerminalRestorer.h; sourceTree = "<group>"; tabWidth = 4; };
 		5ECE005E1454E59B004861E9 /* PseudoTerminalRestorer.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = PseudoTerminalRestorer.m; sourceTree = "<group>"; tabWidth = 4; };
-		5F544D6F2B98C16911CCFCC2 /* CompanionWireVectors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompanionWireVectors.swift; path = Companion/CompanionCore/Tests/CompanionProtocolTests/CompanionWireVectors.swift; sourceTree = SOURCE_ROOT; };
 		60884ED8C599CCA130F47597 /* iTermGitStringMaker.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermGitStringMaker.m; sourceTree = "<group>"; };
 		61827F01924DF945272653E4 /* AddClippingPanel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddClippingPanel.swift; sourceTree = "<group>"; };
 		61DE2C181D86B1F93619B375 /* iTermSessionNameBuiltInFunction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermSessionNameBuiltInFunction.swift; sourceTree = "<group>"; };
@@ -7662,8 +7654,6 @@
 		A6A2D6D7243453BA00A4DF5B /* iTermComposerManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermComposerManager.h; sourceTree = "<group>"; };
 		A6A2D6D8243453BA00A4DF5B /* iTermComposerManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermComposerManager.m; sourceTree = "<group>"; };
 		A6A30ECD2950D29D0050F01A /* iTermPleaseWaitWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iTermPleaseWaitWindow.swift; sourceTree = "<group>"; };
-		A6A30ECF2950EA530050F01A /* aiterm@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "aiterm@2x.png"; path = "images/aiterm@2x.png"; sourceTree = "<group>"; };
-		A6A30ED02950EA540050F01A /* aiterm.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = aiterm.png; path = images/aiterm.png; sourceTree = "<group>"; };
 		A6A39EB924B99AC000A64433 /* iTermGraphicsUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermGraphicsUtilities.h; sourceTree = "<group>"; };
 		A6A39EBA24B99AC000A64433 /* iTermGraphicsUtilities.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermGraphicsUtilities.m; sourceTree = "<group>"; };
 		A6A39EBD24B9A96B00A64433 /* iTermUnobtrusiveMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermUnobtrusiveMessage.h; sourceTree = "<group>"; };
@@ -9290,8 +9280,6 @@
 				A6A7E2292F9EEA1200B391BA /* GitBig.png */,
 				A68E332D1DE746F5003F1D8E /* Add Mark Touch Bar Icon.png */,
 				A68E332E1DE746F5003F1D8E /* Add Mark Touch Bar Icon@2x.png */,
-				A6A30ED02950EA540050F01A /* aiterm.png */,
-				A6A30ECF2950EA530050F01A /* aiterm@2x.png */,
 				1DEF5E6B185F889600300319 /* Alert.png */,
 				1DEF5E6C185F889600300319 /* Alert@2x.png */,
 				A6A479B62E6E58C000DCF16F /* AppIcon.png */,
@@ -9905,7 +9893,6 @@
 		724ED1D8E78DAB60D3B5C533 /* CompanionCore */ = {
 			isa = PBXGroup;
 			children = (
-				A4676513A64825EE5E00B82D /* Tests */,
 			);
 			path = CompanionCore;
 			sourceTree = "<group>";
@@ -9994,14 +9981,6 @@
 				148411BF36E0AD043E6CA1CD /* decdwl_decdhl_normalized.txt */,
 			);
 			path = tests;
-			sourceTree = "<group>";
-		};
-		A4676513A64825EE5E00B82D /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				B75C7E2B5AA59A10145444A2 /* CompanionProtocolTests */,
-			);
-			path = Tests;
 			sourceTree = "<group>";
 		};
 		A60593B3257DF9A500CACEE6 /* ShellLauncher */ = {
@@ -14211,14 +14190,6 @@
 			name = Companion;
 			sourceTree = SOURCE_ROOT;
 		};
-		B75C7E2B5AA59A10145444A2 /* CompanionProtocolTests */ = {
-			isa = PBXGroup;
-			children = (
-				5F544D6F2B98C16911CCFCC2 /* CompanionWireVectors.swift */,
-			);
-			path = CompanionProtocolTests;
-			sourceTree = "<group>";
-		};
 		C6675EB91C4FE95E0041173B /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -16289,7 +16260,6 @@
 				A67F61A9214395B70093940A /* graphic_rails.png in Resources */,
 				5308BF5D227C02DE004BECAC /* InternetAccessPolicy.plist in Resources */,
 				A686C19A1ADF62F200906FAE /* Zoomed@2x.png in Resources */,
-				A6A30ED32950EA540050F01A /* aiterm@2x.png in Resources */,
 				A6EC8048281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */,
 				A6F18B4C2AE2F39C006C08EE /* uniE0B6_left-half-circle-thick.pdf in Resources */,
 				A67F6163214395990093940A /* graphic_mysql@2x.png in Resources */,
@@ -16645,7 +16615,6 @@
 				A6F7A718213CB143004DE961 /* StatusBarIconRAM@2x.png in Resources */,
 				53FF9822209283BE008688D7 /* template_basic_daemon.py in Resources */,
 				A6F18B372AE2F39C006C08EE /* uniE0C1_flame-thin.pdf in Resources */,
-				A6A30ED62950EA540050F01A /* aiterm.png in Resources */,
 				A6EFF23B1D20F6C000806EEF /* EraseDarkBackground.png in Resources */,
 				A6F6AF6A2F98989200F9F8F3 /* iTermPasteSpecialWindow.xib in Resources */,
 				A6F6AF6B2F98989200F9F8F3 /* iTermPasteSpecialViewController.xib in Resources */,
@@ -16830,7 +16799,6 @@
 				A6F7A726213CB143004DE961 /* StatusBarIconHost.png in Resources */,
 				A67F6165214395990093940A /* graphic_monitor.png in Resources */,
 				A6E7AE81214394DD00DE9F3B /* graphic_curl@2x.png in Resources */,
-				A6A30ED52950EA540050F01A /* aiterm.png in Resources */,
 				A6F6AF722F9898B500F9F8F3 /* iTermTipCardViewController.xib in Resources */,
 				A6F6AF732F9898B500F9F8F3 /* iTermTipWindowController.xib in Resources */,
 				A6E7AE71214394CA00DE9F3B /* graphic_atom.png in Resources */,
@@ -16933,7 +16901,6 @@
 				A62DBBA320F47CFA008B63D1 /* GoBack@2x.png in Resources */,
 				A66A883224DFCCC30043728B /* graphic_elixir@2x.png in Resources */,
 				A61A85A424F1CCB900B03880 /* iTermGlobalSearch.xib in Resources */,
-				A6A30ED22950EA540050F01A /* aiterm@2x.png in Resources */,
 				A6CEDA6219988A7300BB57EC /* LogoShadow.png in Resources */,
 				A65B725E1B1A630100F947A7 /* CheckMark@2x.png in Resources */,
 				1DC2AF5419521CFF005769D5 /* QuestionMarkSign@2x.png in Resources */,
@@ -17418,7 +17385,6 @@
 				A6E16C7224A8696D00C6DB06 /* WindowCorner_BigSur.png in Resources */,
 				534690291C94FF0000B7E4E9 /* overflowImagePressed.png in Resources */,
 				A6EFF2371D20F6BE00806EEF /* EraseDarkBackground.png in Resources */,
-				A6A30ED42950EA540050F01A /* aiterm.png in Resources */,
 				A6C978F124A0194500971AA7 /* WindowCornerFull.psd in Resources */,
 				A67F618D214395A70093940A /* graphic_nodejs@2x.png in Resources */,
 				A6F7A749213CB143004DE961 /* StatusBarIconRAM.png in Resources */,
@@ -17597,7 +17563,6 @@
 				A66DB8321C8E4C2E00233E88 /* ChangeProfile.png in Resources */,
 				A6057C171883D12E004A60AF /* broken_image.png in Resources */,
 				A67F6170214395990093940A /* graphic_mysql.png in Resources */,
-				A6A30ED12950EA540050F01A /* aiterm@2x.png in Resources */,
 				9DB3D6E1176C8F0B0071CCF8 /* PrefsAppearance@2x.png in Resources */,
 				A6E7AEB8214394F600DE9F3B /* graphic_ethereum.png in Resources */,
 				A6A1BCC729CB700400646E9F /* square.and.arrow.up.png in Resources */,
@@ -19611,7 +19576,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CF138846630690AA6A7BCFD5 /* iTermGitClient.m in Sources */,
-				46385B41497E6F98C6486BFB /* CompanionWireVectors.swift in Sources */,
 				229997A22B1C8033B1EDEC2E /* iTermTmuxControlModeKeyName.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -20069,7 +20033,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/PerformanceTests/PerformanceTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
@@ -20101,7 +20065,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/PerformanceTests/PerformanceTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
@@ -21914,7 +21878,7 @@
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "$PROJECT_DIR/sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -23578,7 +23542,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
@@ -23664,7 +23628,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
@@ -23750,7 +23714,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
@@ -23836,7 +23800,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/ThirdParty",
 					"$(PROJECT_DIR)/ThirdParty/libgit2/include",
@@ -24118,7 +24082,7 @@
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "$PROJECT_DIR/sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -24187,7 +24151,7 @@
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "$PROJECT_DIR/sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -24256,7 +24220,7 @@
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "$PROJECT_DIR/sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WARNING_CFLAGS = (
@@ -24640,7 +24604,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/PerformanceTests/PerformanceTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",
@@ -24672,7 +24636,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/PerformanceTests/PerformanceTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/$(WRAPPER_NAME)/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/$(EXECUTABLE_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/sources",
 					"$(SRCROOT)/ThirdParty",

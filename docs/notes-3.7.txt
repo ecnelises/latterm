@@ -13,24 +13,23 @@ Terminal-first fork changes:
 - Removed automatic shell-integration loading and
   the legacy SSH helper bootstrap path.
 - Removed regex-based prompt detection triggers.
+- Removed obsolete AI test fixtures and assets.
+- Replaced the green dollar-sign app icon with
+  a blue hash prompt.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
   pairs with your Mac by scanning a QR code
   (iTerm2 > Companion Device Settings) and
   connects over an encrypted Noise channel so you
-  can interact with iTerm2 via AI chat from your
+  can view and control terminal sessions from your
   phone.
   Devices connect through an encrypted relay, so
   they work even when the Mac and phone are on
-  different
-  networks, and end-to-end encryption ensures that
+  different networks. End-to-end encryption means
   your data is only visible to you.
-  First-time setup is now a guided wizard: it
-  installs the AI and companion plugins, turns on
-  both features with a single password prompt,
-  takes your API key, and walks you through
-  pairing your phone.
+  First-time setup walks you through pairing your
+  phone.
 
 - The Companion app can now receive push
   notifications for terminal alerts. Turn on
@@ -40,7 +39,7 @@ Major New Features:
   triggers also notify your phone. Pushes are
   content-free: the phone fetches the text over
   the encrypted channel, so the relay and Apple
-  never see it or which chat it belongs to.
+  never see it.
 
 - The Companion app’s live session video feed
   now scales its bitrate to the window’s

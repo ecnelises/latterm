@@ -55,11 +55,11 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
 
     func testMalformedBodyOfKnownCaseThrowsRatherThanUnsupported() throws {
         // The regression this guards: an older build receiving a KNOWN case whose
-        // body it can't decode (here .history with a bad Message in the array, as
-        // from a newer Mac with a new content variant) must THROW so the read loop
-        // drops-and-logs the frame and the request times out - NOT collapse the
-        // whole reply to .unsupported, which would fail the entire chat open.
-        let json = #"{"requestID":3,"payload":{"history":{"chatID":"c","messages":[{"not":"a real message"}],"maxSeq":5}}}"#
+        // body it can't decode (here .hello with a missing minimumPeer) must THROW
+        // so the read loop drops-and-logs the frame and the request times out - NOT
+        // collapse the whole reply to .unsupported, which would hide a broken
+        // terminal-control reply.
+        let json = #"{"requestID":3,"payload":{"hello":{"revision":3}}}"#
             .data(using: .utf8)!
         XCTAssertThrowsError(try decoder().decode(HostEnvelope.self, from: json)) { error in
             XCTAssertTrue(error is DecodingError, "a known case with a bad body must surface a DecodingError, got \(error)")
@@ -88,22 +88,6 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
         }
     }
 
-    func testFramedTurnLifecycleWithUnknownEventPreservesFrame() throws {
-        // A turnLifecycle whose event value a newer peer added must decode into the
-        // REAL case with event .unknownFuture - not throw (which, for a KNOWN
-        // discriminator, propagates a DecodingError and drops the whole frame per
-        // testMalformedBodyOfKnownCaseThrowsRatherThanUnsupported) and not collapse
-        // to .unsupported. Guards TurnEvent.init(from:) staying lenient at the wire
-        // level: reverting it to throw-on-unknown fails HERE.
-        let json = #"{"payload":{"turnLifecycle":{"event":"pausedInFuture","chatID":"c"}}}"#.data(using: .utf8)!
-        let env = try decoder().decode(HostEnvelope.self, from: json)
-        guard case let .turnLifecycle(event, chatID) = env.payload else {
-            return XCTFail("expected .turnLifecycle, got \(env.payload)")
-        }
-        XCTAssertEqual(event, .unknownFuture)
-        XCTAssertEqual(chatID, "c")
-    }
-
     // MARK: knownPayloadKeys exhaustiveness
     //
     // The envelope decoder maps any discriminator NOT in knownPayloadKeys to
@@ -113,11 +97,6 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
     // updating the set: clientKey/hostKey are EXHAUSTIVE switches (a new case
     // breaks the build there), the representative arrays drive them, and the set
     // of representative keys is asserted EQUAL to knownPayloadKeys.
-
-    private static let sampleMessage = Message(
-        chatID: "c", author: .agent, content: .markdown("x"),
-        sentDate: Date(timeIntervalSince1970: 0),
-        uniqueID: UUID(uuidString: "550E8400-E29B-41D4-A716-446655440000")!)
 
     // CompanionError lives in CompanionProtocol, which this target can't link, so
     // build the .error representative by decoding rather than naming the type.
@@ -140,28 +119,13 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
     private static let clientReps: [CompanionClientMessage] = [
         .unsupported,
         .hello(revision: 1, minimumPeer: 1),
-        .listChatsAndSessions,
-        .createChat(title: "t", mode: .orchestrator),
-        .deleteChat(chatID: "c"),
-        .setChatMuted(chatID: "c", muted: true),
-        .subscribe(chatID: "c"),
-        .unsubscribe(chatID: "c"),
-        .publish(message: sampleMessage, toChatID: "c", partial: false),
-        .selectSessionResponse(chatID: "c", originalMessage: sampleMessage, sessionGuid: nil, terminal: false),
-        .remoteCommandDecision(chatID: "c", messageUniqueID: UUID(), decision: .allowOnce),
-        .linkSession(chatID: "c", sessionGuid: "s", terminal: false),
-        .resolveMentions(identifiers: []),
+        .listSessions,
         .fetchSessionScreenInfo(sessionGuid: "s"),
         .fetchSessionContent(sessionGuid: "s", firstLine: 0, lineCount: 1),
         .fetchHistoryTile(streamID: 1, firstAbsLine: 2, lineCount: 3, generationId: 4),
-        .fetchWorkgroupInfo(workgroupID: "w"),
         .fetchSessionTree,
-        .pushStatus(authorization: .authorized, token: nil, relaySecret: nil, sandbox: false),
-        .notificationPermissionResponse(requestID: 1, authorization: .authorized),
         .ping,
         .relayRoomSecret(Data()),
-        .messagesSince(collapseToken: "t", seq: 0, limit: 1, nonce: nil),
-        .syncSince(messageSeq: 0, alertSeq: 0, limit: 1, nonce: nil),
         .unpairing,
         .startSessionStream(sessionGuid: "s",
                             params: CompanionStreamParams(supportedCodecs: [.hevc],
@@ -183,8 +147,6 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
         .pasteText(sessionGuid: "g", text: "x"),
         .sendKey(sessionGuid: "g", event: CompanionKeyEvent(key: .text("x"))),
         .resizeSession(sessionGuid: "g", columns: 80, rows: 24),
-        .fetchAutoProvideConsent(sessionGuid: "g"),
-        .grantAutoProvideConsent(chatID: "c"),
     ]
 
     /// EXHAUSTIVE: a new case breaks the build here. When it does, add a branch,
@@ -194,28 +156,13 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
         switch m {
         case .unsupported: return "unsupported"
         case .hello: return "hello"
-        case .listChatsAndSessions: return "listChatsAndSessions"
-        case .createChat: return "createChat"
-        case .deleteChat: return "deleteChat"
-        case .setChatMuted: return "setChatMuted"
-        case .subscribe: return "subscribe"
-        case .unsubscribe: return "unsubscribe"
-        case .publish: return "publish"
-        case .selectSessionResponse: return "selectSessionResponse"
-        case .remoteCommandDecision: return "remoteCommandDecision"
-        case .linkSession: return "linkSession"
-        case .resolveMentions: return "resolveMentions"
+        case .listSessions: return "listSessions"
         case .fetchSessionScreenInfo: return "fetchSessionScreenInfo"
         case .fetchSessionContent: return "fetchSessionContent"
         case .fetchHistoryTile: return "fetchHistoryTile"
-        case .fetchWorkgroupInfo: return "fetchWorkgroupInfo"
         case .fetchSessionTree: return "fetchSessionTree"
-        case .pushStatus: return "pushStatus"
-        case .notificationPermissionResponse: return "notificationPermissionResponse"
         case .ping: return "ping"
         case .relayRoomSecret: return "relayRoomSecret"
-        case .messagesSince: return "messagesSince"
-        case .syncSince: return "syncSince"
         case .unpairing: return "unpairing"
         case .startSessionStream: return "startSessionStream"
         case .stopSessionStream: return "stopSessionStream"
@@ -230,35 +177,23 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
         case .pasteText: return "pasteText"
         case .sendKey: return "sendKey"
         case .resizeSession: return "resizeSession"
-        case .fetchAutoProvideConsent: return "fetchAutoProvideConsent"
-        case .grantAutoProvideConsent: return "grantAutoProvideConsent"
         }
     }
 
     private static let hostReps: [CompanionHostMessage] = [
         .unsupported,
-        .hello(revision: 1, minimumPeer: 1, wantsNotificationPermission: false),
-        .chatsAndSessions(chats: [], sessions: []),
-        .chatCreated(entry: CompanionChatListEntry(chat: Chat(title: "t", permissions: ""), snippet: nil)),
-        .history(chatID: "c", messages: [], maxSeq: 0),
-        .delivery(message: sampleMessage, chatID: "c", partial: false),
-        .typingStatus(isTyping: true, participant: .agent, chatID: "c"),
-        .mentionsResolved([]),
+        .hello(revision: 1, minimumPeer: 1),
+        .sessions([CompanionSessionSummary(guid: "s", name: "n", subtitle: "")]),
         .sessionScreenInfo(CompanionSessionScreenInfo(guid: "s", name: "n", lineCount: 0, columns: 0,
                                                       width: 0, lineHeight: 0, scale: 1)),
         .sessionContent(CompanionSessionContent(guid: "s", firstLine: 0, lineCount: 0, pngData: Data())),
         .historyTile(CompanionHistoryTile(streamID: 1, generationId: 2, firstAbsLine: 3, lineCount: 4,
                                           windowFirstAbsLine: 3, windowLineCount: 10, pngData: Data())),
         .streamExtent(streamID: 1, firstAbsLine: 2, totalLines: 3),
-        .workgroupInfo(CompanionWorkgroupInfo(workgroupID: "w", name: "n", members: [])),
         .sessionTree(CompanionSessionTree(windows: [])),
         .pong,
         .relayRoomSecretStored,
-        .chatListChanged(chats: []),
-        .requestNotificationPermission(requestID: 1),
         .unpaired,
-        .messagesSince(chatName: "", previews: [], maxSeq: 0, truncated: false, reset: false),
-        syncSinceRep,
         sampleErrorMessage,
         .streamStarted(CompanionStreamStarted(streamID: 1, codec: .hevc)),
         .streamConfig(CompanionStreamConfig(streamID: 1, generationId: 0, codecExtradata: Data(),
@@ -269,51 +204,28 @@ final class CompanionEnvelopeForwardCompatTests: XCTestCase {
         .selectionRange(streamID: 1, range: CompanionSelectionRange(
             start: CompanionSelectionPoint(absLine: 0, column: 0),
             end: CompanionSelectionPoint(absLine: 1, column: 2))),
-        .autoProvideConsent(satisfied: true),
-        .turnLifecycle(event: .started, chatID: "c"),
     ]
-
-    /// The .syncSince representative is built by DECODING rather than a literal, so
-    /// this test target need not link the CompanionProtocol package that now owns
-    /// CompanionSyncItem: the empty [CompanionSyncItem] is instantiated inside
-    /// iTerm2SharedARC's decoder, not in this object file.
-    private static let syncSinceRep: CompanionHostMessage = {
-        let json = #"{"syncSince":{"items":[],"maxMessageSeq":0,"maxAlertSeq":0,"messageReset":false,"alertReset":false,"truncated":false}}"#
-        return try! JSONDecoder().decode(CompanionHostMessage.self, from: Data(json.utf8))
-    }()
 
     /// EXHAUSTIVE: see clientKey.
     private func hostKey(_ m: CompanionHostMessage) -> String {
         switch m {
         case .unsupported: return "unsupported"
         case .hello: return "hello"
-        case .chatsAndSessions: return "chatsAndSessions"
-        case .chatCreated: return "chatCreated"
-        case .history: return "history"
-        case .delivery: return "delivery"
-        case .typingStatus: return "typingStatus"
-        case .mentionsResolved: return "mentionsResolved"
+        case .sessions: return "sessions"
         case .sessionScreenInfo: return "sessionScreenInfo"
         case .sessionContent: return "sessionContent"
         case .historyTile: return "historyTile"
         case .streamExtent: return "streamExtent"
-        case .workgroupInfo: return "workgroupInfo"
         case .sessionTree: return "sessionTree"
         case .pong: return "pong"
         case .relayRoomSecretStored: return "relayRoomSecretStored"
-        case .chatListChanged: return "chatListChanged"
-        case .requestNotificationPermission: return "requestNotificationPermission"
         case .unpaired: return "unpaired"
-        case .messagesSince: return "messagesSince"
-        case .syncSince: return "syncSince"
         case .error: return "error"
         case .streamStarted: return "streamStarted"
         case .streamConfig: return "streamConfig"
         case .streamEnded: return "streamEnded"
         case .selectionText: return "selectionText"
         case .selectionRange: return "selectionRange"
-        case .autoProvideConsent: return "autoProvideConsent"
-        case .turnLifecycle: return "turnLifecycle"
         }
     }
 

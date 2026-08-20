@@ -55,7 +55,6 @@ final class ConductorIT2CommandTests: XCTestCase {
             clientVars: [:],
             payloads: [],
             initialDirectory: nil,
-            shouldInjectShellIntegration: true,
             parsedSSHArguments: ParsedSSHArguments("localhost", booleanArgs: "",
                                                    hostnameFinder: iTermHostnameFinder()),
             depth: 0,
@@ -66,8 +65,6 @@ final class ConductorIT2CommandTests: XCTestCase {
             boolArgs: "",
             dcsID: "dcs",
             clientUniqueID: "cid",
-            modifiedVars: nil,
-            modifiedCommandArgs: nil,
             homeDirectory: "/home/u",
             shell: "/bin/zsh",
             uname: nil,
@@ -90,7 +87,6 @@ final class ConductorIT2CommandTests: XCTestCase {
             clientVars: [:],
             payloads: [],
             initialDirectory: nil,
-            shouldInjectShellIntegration: true,
             parsedSSHArguments: ParsedSSHArguments("localhost", booleanArgs: "",
                                                    hostnameFinder: iTermHostnameFinder()),
             depth: 0,
@@ -101,8 +97,6 @@ final class ConductorIT2CommandTests: XCTestCase {
             boolArgs: "",
             dcsID: "dcs",
             clientUniqueID: "cid",
-            modifiedVars: nil,
-            modifiedCommandArgs: nil,
             homeDirectory: "/home/u",
             shell: "/bin/zsh",
             uname: nil,
@@ -169,7 +163,7 @@ final class ConductorIT2CommandTests: XCTestCase {
     private func makeConductor() -> Conductor {
         Conductor("localhost", boolArgs: "", dcsID: "dcs", clientUniqueID: "cid",
                   varsToSend: [:], clientVars: [:], initialDirectory: nil,
-                  shouldInjectShellIntegration: false, parent: nil)
+                  parent: nil)
     }
 
     // The it2 proxy state must actually survive an SSH recovery. adopt copies it from the

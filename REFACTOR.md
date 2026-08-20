@@ -70,10 +70,89 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Deleted the matching `PTYTextView+ARC` menu-validation and action handlers for the removed Edit-menu AI commands so the responder chain no longer carries dead menu-only code.
 - Deleted the old Tip of the Day entry that still promoted browser profiles as an available feature.
 
+### 2026-05-18 Master Rebase And Claude Cleanup
+
+- Rebased the terminal-first branch onto `master` and resolved the file moves that landed there (`sources/Browser/**`, `sources/ShellIntegration/**`, `sources/ShellIntegrationInstaller/**`, `sources/AITerm/**`, and `sources/ClaudeCode/**`).
+- Deleted the remaining AI/chat source tree that had been reintroduced by the rebase, keeping only `sources/AITerm/RemoteCommand.swift` as a temporary compatibility type for surviving terminal-control remote command handlers.
+- Removed the newly added Claude Code integration menu controller, health monitor, foreground-job upsell controller, peer settings controller, and Claude-specific workgroup template, then removed their Xcode target references and stale user-default accessors.
+- Removed the browser-plugin finder source and target references now that the standalone browser plugin project and browser profile UI are gone.
+- Kept the general Coding Agent + Diff + Code Review workgroup preset because it is independent of Claude Code onboarding after the cleanup.
+- Preserved master’s `make run` process-activation behavior while switching it to the `Latterm.app` bundle/executable variables.
+- Deleted the bundled shell-integration scripts, bash/fish shell-integration loaders, the generated utilities tarball, and the generator script that refreshed them from `submodules/iTerm2-shell-integration`.
+- Removed the static “Install Shell Integration” menu item, its responder-chain handlers, shell-history “Install Now” prompt, Tip of the Day entries that advertised shell/SSH integration features, and compatibility-command error text that still told users to install shell integration.
+- Removed the bundled `it2ssh` helpers, stopped packaging `conductor.sh`, disabled the `it2ssh`/`SendConductor` escape path under terminal-first mode, and removed `submodules/iTerm2-shell-integration`.
+- Recovered the post-rebase build by deleting stale AI/browser compatibility hooks that were reintroduced without their owning types: browser gateway checks, inline chat/session selector registration, AI availability probing, and stale `iTermProcess.h` bridging imports.
+- Kept only the small shared types still needed by surviving non-AI code (`Cancellation` and `CompletionItem`) and reduced `RemoteCommand.swift` to a temporary terminal-control compatibility island without LLM safety-check dependencies.
+- Updated MIME lookup code to use `UniformTypeIdentifiers` instead of a missing generated MIME table, and fixed the localization script to compile the moved `sources/MainMenu/MainMenu.xib`.
+- Tightened the zh-Hans localization build phase so it no longer tries to delete root `MainMenu` resources owned by Xcode’s own resource phases, which restores sandboxed `Deployment` builds.
+- Cleared the local code warnings exposed by `Deployment` builds in terminal layout, Metal, Open Quickly, session restart, app startup, and color-map helper code.
+
+### 2026-05-29 Browser Trigger And AI Harness Pruning
+
+- Removed the browser-only trigger classes (`BrowserTrigger`, reader-mode/highlight/hyperlink/reload/inject-JavaScript triggers, and browser workgroup enter/exit triggers) from source and the app target.
+- Kept terminal trigger loading intact while making the now-unreachable browser trigger class list empty.
+- Deleted the temporary `RemoteCommand.swift` AI tool-call compatibility island and removed the matching `PTYSession` remote-command executor state.
+- Removed unused AI state/annotation and AI suggestion shims from `PTYSession.swift`, leaving the existing disabled explain-output responder shape for remaining ObjC call sites.
+- Deleted the AI live harness, stale AI/browser ModernTests, refusal fixtures, and `tools/run_ai_live.sh`, then updated `CLAUDE.md` and `tools/run_tests.expect` so they no longer point at the removed live harness.
+- Moved the shared `Cancellation` utility from `sources/AITerm` to `sources/Infrastructure`, then removed the empty `AITerm` project group.
+- Removed the browser-only `load_url` scripting method, Python API wrapper, docs example, manual test scripts, and local browser page-saver fixture resources.
+- Removed `submodules/adblock-rust` and stale project header-search paths now that browser support no longer uses it.
+- Removed the browser-mode AI prompt variants from settings defaults and the disabled AI prompt picker so old browser tool references stop surviving as configurable presets.
+- Removed dead AI model/API/permission defaults and the unused AI chat session indicators; the hidden AI preferences XIB outlets remain temporarily so nib loading stays safe until the tab is structurally deleted.
+- Removed unused AI/Codecierge/LLM and browser adblock/proxy/plugin-hint Advanced Settings entries after confirming they had no live callers.
+- Removed the dead Claude Code status-tool nagging offer and its private notification path.
+- Removed the shell-integration upgrade-notification path, its generated latest-version table, and the obsolete General preference row; `ShellIntegrationVersion` now only records the detected shell for surviving terminal metadata.
+- Removed the browser-profile and in-app-link browser Advanced Settings toggles now that terminal-first mode statically disables browser sessions.
+- Removed the standalone `WebExtensionsFramework` local Swift package, its Xcode package/product references, and the now-unused browser-extension profile keys.
+- Removed the disabled onboarding/what’s-new window path plus stale onboarding and AI menu-tip image assets.
+
+### 2026-07-18 Shell Injection Compatibility Pruning
+
+- Removed the no-op local shell-integration injection wrapper so terminal jobs now launch directly with their computed environment and arguments.
+- Removed the obsolete automatic shell-integration profile key, hidden profile preference controls, enablement logic, default value, and XIB objects.
+- Removed Conductor’s `shouldInjectShellIntegration` state and its redundant modified-environment/modified-command fields; the surviving SSH path now uses the original environment and parsed command directly.
+- Removed the disabled `it2ssh` and `SendConductor` KVP dispatch path, its VT100/screen delegate methods, and the `PTYSession` implementation that still tried to load the already-deleted `conductor.sh`.
+- Removed the input-queue state used only while sending that deleted helper payload, while retaining Conductor hook handling, Framer operation, restoration, and remote-command support.
+- Audited `SwiftyMarkdown` before considering submodule removal and confirmed it remains a live dependency of Clippings, Portholes, and shared attributed-string formatting, so it must stay for now.
+
+### 2026-07-18 Captured Output Removal
+
+- Removed the shell-integration-dependent `CaptureTrigger` from the app trigger picker, Objective-C implementation, and Python API.
+- Deleted the Captured Output model, invisible interval-tree mark, Toolbelt view, menu-tip asset, Tip of the Day entries, warning preferences, notifications, and coprocess activation path.
+- Removed the associated VT100 KVP command, terminal/screen delegate methods, command-mark storage and serialization, deserialization fix-up, and clear-count state.
+- Updated ModernTests, legacy Objective-C tests, PerformanceTests, and the Python trigger fixture so no test target implements or exercises the removed protocol surface.
+- Kept old profile and arrangement loading fail-soft through the existing generic decoders: unknown trigger classes return no trigger, unknown interval-tree classes are skipped, and the removed command-mark dictionary field is ignored.
+- Audited submodules and third-party dependencies for Captured Output ownership and found no dependency that became removable with this slice.
+
+### 2026-08-20 Post-Rebase Test And Asset Pruning
+
+- Deleted AI/chat/orchestration ModernTests and their cassette, refusal, and terminal-safety fixtures that had been reintroduced without their owning production types.
+- Removed obsolete AI documentation, test harness scripts, menu-tip image resources, and stale Xcode resource references.
+- Updated the surviving Companion envelope forward-compatibility tests to cover only the terminal-control protocol and stopped compiling package-owned legacy chat wire vectors into ModernTests.
+- Updated Conductor tests for the shell-integration state already removed from production code.
+- Repaired every test target's `TEST_HOST` setting to point at `Latterm.app` so `build-for-testing` and `test` compile the test bundle instead of treating it as its own host executable.
+- Refreshed the app icon prompt from a green dollar sign to a blue hash while preserving the existing icon layouts, canvas sizes, and release-channel variants.
+- Audited the remaining submodules after this cleanup; none is owned solely by the deleted tests, fixtures, assets, or documentation, so no additional submodule is safe to remove in this slice.
+
 ### Recent Verification
 
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase3 build` passes on 2026-04-16 after the phase3 AI-removal build-recovery cleanup.
+- `xcodebuild -list -project iTerm2.xcodeproj` passes on 2026-05-18 after the Claude/browser-plugin cleanup and shell-integration resource pruning.
+- `make paranoid-deps` passes on 2026-05-18 after resetting the clean `SwiftyMarkdown` submodule checkout and allowing Homebrew `gawk` plus its `gettext`, `readline`, `mpfr`, and `gmp` dynamic-library dependencies in `deps.sb`. It refreshed `last-xcode-version` to Xcode 26.5. The command also regenerated local native dependency binaries; those generated framework/archive artifacts were left unstaged pending a separate dependency-artifact decision.
+- `xcodebuild -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-dd-terminal-first build` passes on 2026-05-18 after the `make paranoid-deps` recovery and stale AI/browser/session-selector cleanup.
+- `tools/build.sh Deployment` passes on 2026-05-19 after the zh-Hans localization build phase was narrowed to generated localized resources and local code warnings were cleared. The remaining log warning is Xcode’s `appintentsmetadataprocessor` metadata-skip message for the absent AppIntents dependency.
+- `xcodebuild -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-dd-terminal-first-prune build` passes on 2026-05-29 after browser-trigger and `RemoteCommand` pruning.
+- `xcodebuild -project iTerm2.xcodeproj -scheme ModernTests -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-dd-modern-prune build` passes on 2026-05-29 after deleting AI/browser ModernTests and the AI live harness.
+- `xcodebuild -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-dd-terminal-first-api-prune build` passes on 2026-05-29 after removing the browser-only `load_url` API, fixture resources, and `adblock-rust` submodule references.
+- `xcodebuild -project iTerm2.xcodeproj -scheme ModernTests -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-dd-modern-api-prune build` passes on 2026-05-29 after the same browser API/resource pruning.
+- `xcodebuild -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-dd-terminal-first-prompt-prune build` passes on 2026-05-29 after removing the browser-mode AI prompt presets from settings code and the disabled AI prompt picker.
+- `xcrun ibtool --errors --warnings --notices --compile /tmp/Latterm-PreferencePanel.nib sources/Settings/PreferencePanel.xib` passes on 2026-07-18 after structurally removing the hidden shell-integration controls. The XIB retains its pre-existing layout notices but reports no document errors or warnings.
+- Development builds of both the `iTerm2` and `ModernTests` schemes pass on 2026-07-18 with derived data at `/tmp/iTerm2-dd-shell-integration-prune` after shell-injection and SendConductor compatibility pruning. The full rebuild still reports the existing `CoreParse.framework` non-portable include-path warning.
+- Development builds of the `iTerm2`, `ModernTests`, `iTerm2Tests`, and `PerformanceTests` schemes pass on 2026-07-18 with derived data at `/tmp/iTerm2-dd-terminal-first` after Captured Output removal.
+- `tools/run_tests.expect ModernTests/CompanionEnvelopeForwardCompatTests` passes on 2026-08-20, compiling the complete ModernTests target and executing all 8 selected terminal-control protocol tests without failures.
+- `tools/run_tests.expect ModernTests/ConductorIT2CommandTests` passes on 2026-08-20 with all 13 selected Conductor restoration and terminal-control tests succeeding.
+- `tools/build.sh` passes on 2026-08-20 after the post-rebase AI test, fixture, asset, documentation, and Xcode-reference cleanup.
 
 ## Refactor Direction
 
@@ -94,7 +173,7 @@ The removal scope is real, not hypothetical:
 - Shell integration and closely related sources/resources account for roughly 33 files.
 - `sources/PTYSession.m` is a major coupling point across terminal, browser, scripting, shell integration, triggers, and UI.
 - The source tree is still heavily Objective-C weighted: about 567 Swift files vs about 1711 Objective-C headers/implementations in `sources/`.
-- There are multiple optional-feature submodules. The clearest early removal candidate is `submodules/iTerm2-shell-integration`, but it should only be deleted after all compile-time and runtime references are gone.
+- There are multiple optional-feature submodules. `submodules/iTerm2-shell-integration` has been removed; the next safe candidates are browser/AI-adjacent submodules after their remaining runtime references are gone.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 
@@ -139,7 +218,7 @@ Primary removal candidates:
 - `iTermAI/`
 - `sources/Chat*.swift`
 - `sources/AI*.swift`
-- `sources/AITerm*`
+- Remaining AI preference/default keys and XIB controls that still expose model/API-key configuration
 - `sources/LegacyOpenAI.swift`
 - `sources/CompletionsOpenAI.swift`
 - `sources/O1OpenAI.swift`
@@ -155,17 +234,15 @@ Expected cleanup areas:
 
 Notes:
 
-- Do not start phase 3 by deleting the chat stack. `ChatWindowController`, `ChatClient`, `ChatBroker`, `ChatService`, `ChatAgent`, and `ChatDatabase` are tightly coupled and should be treated as a later slice.
-- The safest first phase 3 cut is the Claude Code watcher/onboarding pair: `sources/ClaudeWatcher.swift`, `sources/ClaudeCodeOnboarding.swift`, and the two app-delegate hooks that start/show them.
-- AI completion is a reasonable second slice, but it must include both `sources/AICompletion.swift` and the `CompletionItem.Kind.aiSuggestion` handling in `sources/CompletionsWindow.swift`.
-- `sources/ToolCodecierge.swift` is not leaf-clean. If removed, do it together with its toolbelt registration and any AI-specific help/tip text.
-- The shared AI gate/client layer (`sources/AIPluginClient.swift`, `sources/iTermAITermGatekeeper.swift`) is broad enough that it should follow the UI/onboarding cleanup, not lead it.
+- The chat stack, AI completion, Codecierge surface, and shared gate/client layer have been removed from the app target during the phase 3 cleanup.
+- The temporary `RemoteCommand.swift` compatibility island is gone as of the 2026-05-29 pruning slice; remaining SSH `runRemoteCommand` call sites are separate terminal-control plumbing, not AI tool-call code.
+- Claude Code onboarding, menu, health monitoring, foreground-job upsell, and Claude-specific workgroup template code are gone; future workgroup cleanup should focus on generic terminal workflows, not Claude-specific migrations.
 
 ### Shell Integration
 
 Primary removal candidates:
 
-- `Resources/shell_integration/**`
+- `Resources/shell_integration/**` (removed from the bundle; the directory may disappear once no tracked files remain)
 - `sources/ShellIntegrationInjection.swift`
 - `sources/Bundle+ShellIntegration.swift`
 - `sources/iTermShellIntegration*`
@@ -208,8 +285,6 @@ Rules:
 
 Safe-first targets:
 
-- `submodules/iTerm2-shell-integration` once shell integration code, resources, and installer flows are gone
-- `submodules/adblock-rust` once browser support is gone
 - `submodules/SwiftyMarkdown` once AI/chat and markdown-only surfaces are gone, if no surviving UI still depends on it
 
 High-risk later targets:
@@ -274,10 +349,9 @@ Goal: eliminate chat, agent, and model plumbing.
 
 Recommended first slices:
 
-1. Remove the Claude Code watcher/onboarding startup and menu hooks, then delete `sources/ClaudeWatcher.swift` and `sources/ClaudeCodeOnboarding.swift`.
-2. Remove terminal AI completion (`sources/AICompletion.swift`) together with the `.aiSuggestion` UI branch in `sources/CompletionsWindow.swift`.
-3. Remove Codecierge AI surfaces only after deleting its toolbelt registration and related tip/help text.
-4. Tackle the shared AI gate/client layer and the chat stack only after the surface/onboarding slices above are gone.
+1. Audit preferences/defaults for AI vendor/API-key keys that are now legacy migration baggage.
+2. Keep pruning static menu, tip, and localization strings that mention removed AI, Claude Code, or browser functionality.
+3. Remove any remaining target-only references to stale AI/browser tests or resources as they surface during full test target builds.
 
 Success criteria:
 
@@ -291,11 +365,12 @@ Goal: stop patching the shell environment and prune dependent UX.
 - Delete installers, panels, resources, and update prompts.
 - Remove shell-integration-specific triggers, warnings, and helper controllers when their value disappears without shell integration.
 - Re-evaluate semantic history and command history features: keep only what still makes sense without shell-side hooks.
+- Continue shrinking Conductor/SSH integration code now that the `it2ssh` and `conductor.sh` resource path is gone.
 
 Success criteria:
 
 - Launching a session no longer injects shell integration and the app has no shell-integration install/update UX.
-- `submodules/iTerm2-shell-integration` is removed once no project, resource, or runtime references remain.
+- `submodules/iTerm2-shell-integration` remains absent and no enabled project/resource/runtime path depends on its helpers.
 
 ### Phase 5: Simplify Product Surface
 
@@ -353,8 +428,50 @@ Then:
 Do this after the product is smaller and stable:
 
 - Rename targets, bundle identifiers, assets, and product strings.
+- Systematically replace remaining `iTerm2` project-level names in
+  `iTerm2.xcodeproj`, including project name, scheme names, target names,
+  product references, build-setting names, copied helper paths, and script
+  assumptions. Do this as a dedicated slice so project-file churn does not
+  obscure feature-removal diffs.
 - Update documentation and packaging.
 - Remove leftover iTerm2 branding that is no longer accurate for the fork.
+
+Success criteria:
+
+- The shipped app, project, schemes, primary targets, helper bundle names,
+  archive paths, and packaging scripts consistently use `Latterm`.
+- Remaining `iTerm2` names are either user-facing compatibility names that
+  intentionally preserve old behavior, or comments documenting upstream
+  provenance.
+
+### Phase 9: Release Signing And Notarization
+
+The current command-line build is contributor-friendly: `make Deployment`
+and `tools/build.sh Deployment` disable signing by default. The upstream
+release scripts still assume iTerm2’s original Developer ID, Apple account,
+team ID, app name, bundle path, and `build/` output layout.
+
+Before shipping public binaries:
+
+- Decide the Latterm Developer ID Application certificate, Apple team ID,
+  notarytool credential profile, and signing key ownership.
+- Replace upstream release-script identity assumptions, including
+  `Developer ID Application: GEORGE NACHMAN (H7V7XYVQ7D)`,
+  `apple@georgester.com`, `H7V7XYVQ7D`, `iTerm2.app`, `iTerm.app`, and
+  lower-case `build/` paths.
+- Add an explicit signed build target or script for Latterm, separate from
+  the unsigned contributor build.
+- Notarize with `xcrun notarytool submit --wait`, staple the result, and
+  verify with `codesign --verify`, `codesign -dv --verbose=4`, and
+  `spctl -a -vvv -t exec`.
+- Update Sparkle/appcast packaging only after the app naming and signing
+  chain are stable.
+
+Success criteria:
+
+- A clean machine can produce an unsigned local build without credentials.
+- A release machine with credentials can produce a signed, notarized,
+  stapled Latterm archive without any iTerm2 account or path assumptions.
 
 ## Immediate Execution Slice
 
