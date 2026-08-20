@@ -17,10 +17,6 @@ class TerminalFirstFeatures: NSObject {
         return !terminalFirstEnabled()
     }
 
-    @objc static func aiFeaturesEnabled() -> Bool {
-        return !terminalFirstEnabled()
-    }
-
     @objc static func shellIntegrationFeaturesEnabled() -> Bool {
         return !terminalFirstEnabled()
     }

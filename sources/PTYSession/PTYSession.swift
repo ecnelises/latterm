@@ -205,27 +205,6 @@ extension PTYSession {
         return components.url
     }
 
-    @objc(explainSelectionWithAI:truncated:snapshot:command:subjectMatter:title:error:)
-    func explainWithAI(selection: iTermSelection,
-                       truncated: Bool,
-                       snapshot: TerminalContentSnapshot,
-                       command: String?,
-                       subjectMatter: String,
-                       title: String) throws {
-        _ = selection
-        _ = truncated
-        _ = snapshot
-        _ = command
-        _ = subjectMatter
-        _ = title
-        iTermWarning.show(withTitle: "Explain Output with AI is unavailable in the terminal-first fork.",
-                          actions: ["OK"],
-                          accessory: nil,
-                          identifier: nil,
-                          silenceable: .kiTermWarningTypePersistent,
-                          heading: "Feature Unavailable",
-                          window: self.genericView?.window)
-    }
 }
 
 struct SubSelectionSerializationInfo {

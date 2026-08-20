@@ -329,9 +329,6 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (BOOL)textViewIsOnLocalhost;
 // Show the non-text paste dialog for dropped files, same as Cmd+V with files on the pasteboard.
 - (void)textViewShowPasteOptionsForDroppedFiles:(NSArray<NSString *> *)filenames;
-- (void)textViewPerformNaturalLanguageQuery;
-- (BOOL)textViewCanExplainOutputWithAI;
-- (void)textViewExplainOutputWithAI;
 - (void)textViewUpdateTrackingAreas;
 - (BOOL)textViewShouldShowOffscreenCommandLineAt:(int)location;
 - (BOOL)textViewShouldUseSelectedTextColor;

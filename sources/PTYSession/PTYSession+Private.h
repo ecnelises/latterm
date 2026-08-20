@@ -132,8 +132,6 @@ TriggerDelegate> {
                identifier:(NSString *)identifier;
 - (void)removeAnnouncementWithIdentifier:(NSString *)identifier;
 - (BOOL)haveAutoComposer;
-- (void)reallyPerformNaturalLanguageQuery:(NSString *)query
-                               completion:(void (^)(BOOL ok))completion;
 - (void)sendDataQueue;
 - (void)bracketedPasteDidExpect;
 

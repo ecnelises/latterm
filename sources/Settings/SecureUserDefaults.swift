@@ -85,56 +85,8 @@ struct SecureUserDefaults {
     lazy var allowPaste = { SecureUserDefault<Bool>("AllowPaste", defaultValue: false) }()
     lazy var requireAuthToOpenPasswordmanager = { SecureUserDefault<Bool>("RequireAuthenticationToOpenPasswordManager", defaultValue: true) }()
     lazy var enableSecureKeyboardEntryAutomatically = { SecureUserDefault<Bool>("EnableSecureKeyboardEntryAutomatically", defaultValue: true) }()
-    lazy var enableAI = { SecureUserDefault<Bool>("EnableAI", defaultValue: false) }()
     lazy var enableCompanionPairing = { SecureUserDefault<Bool>("EnableCompanionPairing", defaultValue: false) }()
     lazy var browserBundleID = { SecureUserDefault<String>("BrowserBundleID", defaultValue: "") }()
-
-    /// Grant AI and/or companion consent in a SINGLE administrator prompt.
-    /// Setting these one at a time (the normal `set(true)` path) puts up one
-    /// password dialog per value; the onboarding wizard needs both granted at
-    /// once without making the user authenticate twice. Only the requested values
-    /// are written, and only the `true` direction is supported here (revoking is
-    /// fail-safe and needs no auth, so it stays on the per-value `reset()` path).
-    ///
-    /// Static, not a mutating instance method, on purpose: storeBatch posts
-    /// secureUserDefaultDidChange synchronously, and its observers read
-    /// SecureUserDefaults.instance (the companion gate does). A mutating method
-    /// would hold exclusive access to `instance` across that callout and trip the
-    /// Swift exclusivity checker. So gather the writes with brief accesses first,
-    /// then run the batch with no access to `instance` held.
-    static func grantConsent(ai: Bool, companion: Bool) throws {
-        var writes: [SecureUserDefault<Bool>.PendingWrite] = []
-        if ai {
-            writes.append(instance.enableAI.pendingWrite(true))
-        }
-        if companion {
-            writes.append(instance.enableCompanionPairing.pendingWrite(true))
-        }
-        guard !writes.isEmpty else { return }
-        // storeBatch is not atomic across keys: an earlier statement can commit
-        // its file before a later one fails (and on failure it posts no
-        // notifications). Remember the prior values so a partial failure can be
-        // rolled back to a consistent state rather than silently leaving one
-        // consent on.
-        let priorAI = instance.enableAI.value
-        let priorCompanion = instance.enableCompanionPairing.value
-        // The batch write changes the on-disk files; invalidate the in-memory
-        // caches so the next read reflects the new values.
-        instance.enableAI.invalidateCache()
-        instance.enableCompanionPairing.invalidateCache()
-        do {
-            try SecureUserDefault<Bool>.storeBatch(writes)
-        } catch {
-            // Revert any key this call may have partially written back to its
-            // prior value (reset needs no authorization), so a caller never sees a
-            // half-applied grant.
-            if ai, !priorAI { try? instance.enableAI.reset() }
-            if companion, !priorCompanion { try? instance.enableCompanionPairing.reset() }
-            instance.enableAI.invalidateCache()
-            instance.enableCompanionPairing.invalidateCache()
-            throw error
-        }
-    }
 
     private var hostToOpenURLSUDs = [String: SecureUserDefault<Bool>]()
     mutating func openURL(host: String) -> SecureUserDefault<Bool> {
@@ -151,7 +103,6 @@ struct SecureUserDefaults {
         [allowPaste,
          requireAuthToOpenPasswordmanager,
          enableSecureKeyboardEntryAutomatically,
-         enableAI,
          enableCompanionPairing,
          browserBundleID] + Array(hostToOpenURLSUDs.values)
     }
@@ -182,14 +133,6 @@ class iTermSecureUserDefaults: NSObject {
         }
         set {
             try? SecureUserDefaults.instance.enableSecureKeyboardEntryAutomatically.set(newValue)
-        }
-    }
-    @objc var enableAI: Bool {
-        get {
-            return SecureUserDefaults.instance.enableAI.value
-        }
-        set {
-            try? SecureUserDefaults.instance.enableAI.set(newValue)
         }
     }
     @objc var defaultValue_browserBundleID: String {

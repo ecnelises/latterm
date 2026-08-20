@@ -184,7 +184,7 @@ class ImportExport: NSObject {
             \u{2022} Secure settings
             \u{2022} The contents of ~/.iterm2 and ~/Library/Application Support/iTerm2
 
-            Items stored in the macOS Keychain (such as the AI API key and Password Manager entries) are not erased and must be removed manually from Keychain Access if you want them gone too. On systems with networked home directories, secure settings stored under /usr/local are written by an administrator and may also need to be removed manually.
+            Items stored in the macOS Keychain (such as Password Manager entries) are not erased and must be removed manually from Keychain Access if you want them gone too. On systems with networked home directories, secure settings stored under /usr/local are written by an administrator and may also need to be removed manually.
 
             This cannot be undone.
             """

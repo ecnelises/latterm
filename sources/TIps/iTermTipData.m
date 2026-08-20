@@ -49,8 +49,6 @@
         @"Shell Integration",
         @"shell integration",
         @"Claude Code",
-        @"AI Chat",
-        @"Explain Output with AI",
         @"Web Browser",
         @"browser sessions",
         @"browser session",

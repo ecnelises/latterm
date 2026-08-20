@@ -25,7 +25,6 @@
 #import "iTermShellHistoryController.h"
 #import "iTermSlowOperationGateway.h"
 #import "iTermTextPopoverViewController.h"
-#import "iTermWarning.h"
 
 @interface iTermComposerView : NSView<NSMenuItemValidation>
 @end
@@ -93,7 +92,6 @@
     IBOutlet NSButton *_help;
     IBOutlet NSView *_accessories;
     IBOutlet NSScrollView *_scrollView;
-    IBOutlet NSView *_engageAI;
     IBOutlet NSTextField *_sendTip;
 
     CommandHistoryPopupWindowController *_historyWindowController;
@@ -110,9 +108,6 @@
                                              selector:@selector(commandValidityDidChange:)
                                                  name:iTermLocalFileChecker.commandValidityDidChange
                                                object:nil];
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        _engageAI.hidden = YES;
-    }
 }
 
 - (void)commandValidityDidChange:(NSNotification *)notification {
@@ -267,31 +262,6 @@
     }
 }
 
-- (NSString *)aiPrompt {
-    if (self.textView.selectedRange.length > 0) {
-        return [self.textView.string substringWithRange:self.textView.selectedRange];
-    } else {
-        return self.textView.stringExcludingPrefixAndSuggestion;
-    }
-}
-
-- (IBAction)performNaturalLanguageQuery:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        NSBeep();
-        return;
-    }
-}
-
-- (void)acceptSuggestion:(NSString *)string {
-    // It likes to spam whitespace around the command.
-    NSMutableCharacterSet *trim = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
-
-    // Sometimes it'll give a command wrapped in markdown backticks. This could be too aggressive in some edge cases.
-    [trim addCharactersInString:@"`"];
-
-    [self.textView replaceSelectionOrWholeStringWithString:[string stringByTrimmingCharactersInSet:trim]];
-}
-
 - (IBAction)help:(id)sender {
     [_popoverVC.popover close];
     _popoverVC = [[iTermTextPopoverViewController alloc] initWithNibName:@"iTermTextPopoverViewController"
@@ -313,9 +283,6 @@
         @"^⇧-click\tAdd cursor",
         @"⌥-drag\tAdd cursors"
     ];
-    if ([iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        lines = [lines arrayByAddingObject:@"⌘Y\tNatural language AI lookup"];
-    }
     lines = [lines arrayByAddingObjectsFromArray:@[
         @"⌘F\tOpen Find bar",
         @"⌥⌘V\tOpen in Advanced Paste",

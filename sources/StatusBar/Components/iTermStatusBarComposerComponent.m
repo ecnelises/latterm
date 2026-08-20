@@ -197,10 +197,6 @@
     [self.delegate statusBarComponentComposerRevealComposer:self];
 }
 
-- (void)statusBarComposerPerformNaturalLanguageQuery:(iTermsStatusBarComposerViewController *)composer {
-    [self.delegate statusBarComponent:self performNaturalLanguageQuery:composer.stringValue];
-}
-
 #pragma mark - Notifications
 
 - (void)commandHistoryDidChange:(NSNotification *)notification {

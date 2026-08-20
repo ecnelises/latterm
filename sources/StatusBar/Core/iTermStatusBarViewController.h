@@ -51,7 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (iTermActivityInfo)statusBarActivityInfo;
 - (void)statusBarSetFilter:(NSString * _Nullable)query;
 - (id<ProcessInfoProvider>)statusBarProcessInfoProvider;
-- (void)statusBarPerformNaturalLanguageQuery:(NSString *)query;
 - (iTermFindDriver * _Nullable)statusBarFindDriver;
 
 @end

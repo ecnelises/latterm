@@ -2920,9 +2920,6 @@
 		A697CEBB2D987C5A0031583F /* OpenQuicklyNamedMark@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEB72D987C5A0031583F /* OpenQuicklyNamedMark@2x.png */; };
 		A697CEBC2D987C5A0031583F /* OpenQuicklyNamedMark.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEB62D987C5A0031583F /* OpenQuicklyNamedMark.png */; };
 		A697CEBD2D987C5A0031583F /* OpenQuicklyNamedMark@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEB72D987C5A0031583F /* OpenQuicklyNamedMark@2x.png */; };
-		A697CEBF2D98C3560031583F /* SparklesSquareFilledOnSquare.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEBE2D98C3560031583F /* SparklesSquareFilledOnSquare.png */; };
-		A697CEC02D98C3560031583F /* SparklesSquareFilledOnSquare.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEBE2D98C3560031583F /* SparklesSquareFilledOnSquare.png */; };
-		A697CEC12D98C3560031583F /* SparklesSquareFilledOnSquare.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEBE2D98C3560031583F /* SparklesSquareFilledOnSquare.png */; };
 		A697CEC72D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */; };
 		A697CEC82D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */; };
 		A697CEC92D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */; };
@@ -7548,7 +7545,6 @@
 		A697CD702D973E370031583F /* iTermApplicationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iTermApplicationDelegate.swift; sourceTree = "<group>"; };
 		A697CEB62D987C5A0031583F /* OpenQuicklyNamedMark.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = OpenQuicklyNamedMark.png; path = images/icons/OpenQuicklyNamedMark.png; sourceTree = "<group>"; };
 		A697CEB72D987C5A0031583F /* OpenQuicklyNamedMark@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "OpenQuicklyNamedMark@2x.png"; path = "images/icons/OpenQuicklyNamedMark@2x.png"; sourceTree = "<group>"; };
-		A697CEBE2D98C3560031583F /* SparklesSquareFilledOnSquare.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = SparklesSquareFilledOnSquare.png; path = images/SparklesSquareFilledOnSquare.png; sourceTree = "<group>"; };
 		A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = OpenQuicklyMenuItem.png; path = images/icons/OpenQuicklyMenuItem.png; sourceTree = "<group>"; };
 		A697CECD2D9B0FB60031583F /* CommandSelectionHelp.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CommandSelectionHelp.md; sourceTree = "<group>"; };
 		A697CED22D9D8E540031583F /* VimKeyParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimKeyParser.swift; sourceTree = "<group>"; };
@@ -9450,7 +9446,6 @@
 				A66E805127545CBC003ABDF9 /* SecureKeyboardEntry.png */,
 				A66E804927544E60003ABDF9 /* SecureKeyboardEntry@2x.png */,
 				A6976AED2F47EFD3002875A1 /* SerpApi.png */,
-				A697CEBE2D98C3560031583F /* SparklesSquareFilledOnSquare.png */,
 				A6A1BCC229CB700400646E9F /* square.and.arrow.down.png */,
 				A6A1BCC329CB700400646E9F /* square.and.arrow.up.png */,
 				A6B4832929D73DA10055E24A /* square.and.pencil.png */,
@@ -16605,7 +16600,6 @@
 				A6F7A730213CB143004DE961 /* StatusBarIconLoupe.png in Resources */,
 				A61E513C2F98971E00EB2B55 /* MiniPasteView.xib in Resources */,
 				A66A883324DFCCC30043728B /* graphic_elixir@2x.png in Resources */,
-				A697CEBF2D98C3560031583F /* SparklesSquareFilledOnSquare.png in Resources */,
 				1D6ED9E419AEA20D005A7799 /* PrefsProfile.png in Resources */,
 				1D6ED9E519AEA20D005A7799 /* PrefsProfile@2x.png in Resources */,
 				A602AAE52B0BCDB100E6C965 /* whitebox_logo@2x.png in Resources */,
@@ -16649,7 +16643,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6B70FBC19830C37007A4284 /* dead.png in Resources */,
-				A697CEC02D98C3560031583F /* SparklesSquareFilledOnSquare.png in Resources */,
 				A62A7A762F988932007CAA0B /* FindView.xib in Resources */,
 				A62A7A772F988932007CAA0B /* MinimalFindView.xib in Resources */,
 				A697101418DFA7F9007E901D /* closebutton@2x.png in Resources */,
@@ -17270,7 +17263,6 @@
 				1DCF3CB71222FF1400AD56F1 /* PresetKeyMappings.plist in Resources */,
 				A62A78E02F987FC6007CAA0B /* iTermPreferencesSearchEngineResultsWindowController.xib in Resources */,
 				A6F7A722213CB143004DE961 /* StatusBarIconCPU.png in Resources */,
-				A697CEC12D98C3560031583F /* SparklesSquareFilledOnSquare.png in Resources */,
 				A6F7A72E213CB143004DE961 /* StatusBarIconLoupe.png in Resources */,
 				A6CB24AE2C68149100005824 /* it2ul in Resources */,
 				A67F61C7214395C60093940A /* graphic_search.png in Resources */,

@@ -524,12 +524,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     } else {
         [_webMenuItem.menu removeItem:_webMenuItem];
     }
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"performNaturalLanguageQuery:") fromMenu:NSApp.mainMenu];
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"explainOutputWithAI:") fromMenu:NSApp.mainMenu];
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"openAIChat:") fromMenu:NSApp.mainMenu];
-        [self it_removeMenuItemsWithAction:NSSelectorFromString(@"openAIChats:") fromMenu:NSApp.mainMenu];
-    }
     // Set menu item icons for macOS 26+
 #if DEBUG
     if (NSClassFromString(@"XCTestCase") == nil &&

@@ -384,12 +384,4 @@ static NSString *const iTermMigrationHelperRemoveDeprecatedKeyMappingsUserDefaul
     return mappings != nil;
 }
 
-// 3.5.14 and earlier had a lot fewer settings. This code is meant to migrate
-// them to the modern equivalent. It should be idempotent because once user
-// defaults has values for these settings they will not be changed by this
-// function.
-+ (void)migrateAISettings {
-    // Terminal-first builds keep AI disabled, so there is nothing to migrate here.
-}
-
 @end

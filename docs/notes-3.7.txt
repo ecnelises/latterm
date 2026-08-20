@@ -16,6 +16,8 @@ Terminal-first fork changes:
 - Removed obsolete AI test fixtures and assets.
 - Replaced the green dollar-sign app icon with
   a blue hash prompt.
+- Removed the remaining AI Composer controls,
+  routing, and secure settings.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

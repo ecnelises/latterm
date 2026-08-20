@@ -134,6 +134,13 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Refreshed the app icon prompt from a green dollar sign to a Lacold Air Blue hash while preserving the existing icon layouts, canvas sizes, and release-channel variants.
 - Audited the remaining submodules after this cleanup; none is owned solely by the deleted tests, fixtures, assets, or documentation, so no additional submodule is safe to remove in this slice.
 
+### 2026-08-21 AI Composer Compatibility Pruning
+
+- Removed the hidden AI controls, warning, and orphaned icon asset from the large Composer, along with the natural-language query route through status-bar delegates.
+- Removed the disabled Explain Output and natural-language-query compatibility selectors from `PTYSession` and `PTYTextView`.
+- Removed the orphaned AI secure preference, no-op migration hook, stale tip filters, and now-redundant runtime menu cleanup.
+- Audited the remaining submodules; none is owned by this Composer compatibility slice, so no submodule became safe to remove.
+
 ### Recent Verification
 
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
@@ -153,6 +160,8 @@ This file is a local planning document. Do not assume it belongs in a release co
 - `tools/run_tests.expect ModernTests/CompanionEnvelopeForwardCompatTests` passes on 2026-08-20, compiling the complete ModernTests target and executing all 8 selected terminal-control protocol tests without failures.
 - `tools/run_tests.expect ModernTests/ConductorIT2CommandTests` passes on 2026-08-20 with all 13 selected Conductor restoration and terminal-control tests succeeding.
 - `tools/build.sh` passes on 2026-08-20 after the post-rebase AI test, fixture, asset, documentation, and Xcode-reference cleanup.
+- `xcrun ibtool --errors --warnings --notices --compile /tmp/Latterm-LargeComposer.nib sources/StatusBar/Components/iTermStatusBarLargeComposerViewController.xib` reports no document errors, warnings, or notices on 2026-08-21 after removing the AI controls.
+- `tools/build.sh` and the `ModernTests` scheme build pass on 2026-08-21 after pruning the remaining AI Composer compatibility path.
 
 ## Refactor Direction
 

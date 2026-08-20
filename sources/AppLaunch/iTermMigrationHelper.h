@@ -38,6 +38,4 @@ typedef NS_ENUM(NSUInteger, iTermMigrationHelperShouldRemoveDeprecatedKeyMapping
 // See comments in the enum.
 + (iTermMigrationHelperShouldRemoveDeprecatedKeyMappings)shouldRemoveDeprecatedKeyMappings;
 
-+ (void)migrateAISettings;
-
 @end

@@ -8,7 +8,7 @@
 #import "iTermsStatusBarComposerViewController.h"
 
 #import "SFSymbolEnum/SFSymbolEnum.h"
-#import "iTermStatusBarLargeComposerViewController.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "DebugLogging.h"
 #import "NSAppearance+iTerm.h"
 #import "NSArray+iTerm.h"
@@ -19,7 +19,7 @@
 
 static NSString *const iTermComposerComboBoxDidBecomeFirstResponder = @"iTermComposerComboBoxDidBecomeFirstResponder";
 
-@interface iTermsStatusBarComposerViewController ()<NSComboBoxDelegate, NSMenuItemValidation>
+@interface iTermsStatusBarComposerViewController ()<NSComboBoxDelegate>
 @end
 
 @interface iTermComposerComboBox : NSComboBox
@@ -40,22 +40,6 @@ static NSString *const iTermComposerComboBoxDidBecomeFirstResponder = @"iTermCom
     BOOL _wantsReload;
     IBOutlet NSComboBox *_comboBox;
     IBOutlet NSButton *_button;
-}
-
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    if (menuItem.action == @selector(performNaturalLanguageQuery:)) {
-        return [iTermTerminalFirstFeatures aiFeaturesEnabled] &&
-               [self.stringValue stringByTrimmingTrailingWhitespace].length > 0;
-    }
-    return [super validateMenuItem:menuItem];
-}
-
-- (IBAction)performNaturalLanguageQuery:(id)sender {
-    if (![iTermTerminalFirstFeatures aiFeaturesEnabled]) {
-        NSBeep();
-        return;
-    }
-    [self.delegate statusBarComposerPerformNaturalLanguageQuery:self];
 }
 
 - (void)awakeFromNib {

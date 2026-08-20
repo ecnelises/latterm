@@ -399,10 +399,6 @@ static const CGFloat iTermStatusBarViewControllerBottomMargin = 0;
     [self.delegate statusBarRevealComposer];
 }
 
-- (void)statusBarComponent:(id<iTermStatusBarComponent>)component performNaturalLanguageQuery:(NSString *)query {
-    [self.delegate statusBarPerformNaturalLanguageQuery:query];
-}
-
 - (iTermFindDriver * _Nullable)statusBarComponentFindDriver:(id<iTermStatusBarComponent>)component {
     return [self.delegate statusBarFindDriver];
 }
