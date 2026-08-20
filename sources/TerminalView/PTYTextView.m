@@ -2566,16 +2566,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     _markedTextAttributes = [attr retain];
 }
 
-- (void)configureAsBrowser {
-    _charWidthWithoutSpacing = 1.0;
-    _charHeightWithoutSpacing = 1.0;
-    _horizontalSpacing = 1.0;
-    _verticalSpacing = 1.0;
-    self.charWidth = 1.0;
-    self.lineHeight = 1.0;
-    [self didUpdateFont];
-}
-
 - (void)setFontTable:(iTermFontTable *)fontTable
    horizontalSpacing:(CGFloat)horizontalSpacing
      verticalSpacing:(CGFloat)verticalSpacing {

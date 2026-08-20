@@ -107,7 +107,6 @@ static NSArray<NSString *> *gTerminalCachedCombinedAccountNames;
 
 + (void)setCachedCombinedAccountNames:(NSArray<NSString *> *)names {
     gTerminalCachedCombinedAccountNames = names;
-    // Note the browser subclass does not post this because we don't need it yet.
     [[NSNotificationCenter defaultCenter] postNotificationName:iTermPasswordManagerDidLoadAccounts object:nil];
 }
 
@@ -1847,54 +1846,6 @@ dataCellForTableColumn:(NSTableColumn *)tableColumn
 }
 
 @end
-
-@implementation iTermBrowserPasswordManagerWindowController
-static NSArray<NSString *> *gBrowserCachedCombinedAccountNames;
-+ (NSArray<NSString *> *)cachedCombinedAccountNames {
-    return gBrowserCachedCombinedAccountNames;
-}
-
-+ (void)setCachedCombinedAccountNames:(NSArray<NSString *> *)names {
-    gBrowserCachedCombinedAccountNames = names;
-}
-
-+ (id<PasswordManagerDataSource>)dataSource {
-    return [self.dataSourceProvider dataSource];
-}
-+ (iTermPasswordManagerDataSourceProvider *)dataSourceProvider {
-    return [iTermPasswordManagerDataSourceProvider forBrowser];
-}
-- (id<PasswordManagerDataSource>)dataSource {
-    return [self.dataSourceProvider dataSource];
-}
-- (iTermPasswordManagerDataSourceProvider *)dataSourceProvider {
-    return [iTermPasswordManagerDataSourceProvider forBrowser];
-}
-
-- (void)awakeFromNib {
-    [super awakeFromNib];
-    [_searchFieldMenu removeItem:_probeMenuItem];
-    [_searchFieldMenu removeItem:_sendReturnMenuItem];
-    [_searchFieldMenu removeItem:_separatorMenuItem];
-}
-
-- (void)reallySelectAccountName:(NSString *)name {
-    if (!self.dataSourceProvider.authenticated) {
-        RLog(@"set _accountNameToSelectAfterAuthentication to %@", name);
-        _accountNameToSelectAfterAuthentication = [name copy];
-        return;
-    }
-    _searchField.stringValue = name;
-    [self updateFilter];
-    if (_tableView.numberOfRows == 1) {
-        [_tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
-                byExtendingSelection:NO];
-        [_tableView scrollRowToVisible:0];
-    }
-}
-
-@end
-
 
 @interface iTermPasswordManagerScrim: NSView
 @end

@@ -10,8 +10,7 @@ import LocalAuthentication
 
 @objc(iTermPasswordManagerDataSourceProvider)
 class PasswordManagerDataSourceProvider: NSObject {
-    @objc static let forTerminal = PasswordManagerDataSourceProvider(browser: false)
-    @objc static let forBrowser = PasswordManagerDataSourceProvider(browser: true)
+    @objc static let forTerminal = PasswordManagerDataSourceProvider()
     @objc private(set) var authenticated = false
     private var _dataSource: PasswordManagerDataSource? = nil
     private var dataSourceType: DataSource!
@@ -24,10 +23,7 @@ class PasswordManagerDataSourceProvider: NSObject {
     #if ITERM_DEBUG
     private var _testAdapter: AdapterPasswordDataSource
     #endif
-    private let browser: Bool
-    private var dataSourceNameUserDefaultsKey: String {
-        "NoSyncPasswordManagerDataSourceName" + (browser ? "Browser" : "")
-    }
+    private let dataSourceNameUserDefaultsKey = "NoSyncPasswordManagerDataSourceName"
 
     enum DataSource: String {
         case keychain = "Keychain"
@@ -43,33 +39,27 @@ class PasswordManagerDataSourceProvider: NSObject {
         static let defaultValue = DataSource.keychain
     }
 
-    init(browser: Bool) {
-        _keychain = KeychainPasswordDataSource(browser: browser)
-        _onePassword = OnePasswordDataSource(browser: browser)
-        _lastPass = LastPassDataSource(browser: browser)
+    override init() {
+        _keychain = KeychainPasswordDataSource()
+        _onePassword = OnePasswordDataSource()
+        _lastPass = LastPassDataSource()
 
         let keepassPath = Bundle(for: Self.self).path(forAuxiliaryExecutable: "iterm2-keepassxc-adapter")!
-        _keePassXC = AdapterPasswordDataSource(browser: browser,
-                                               adapterPath: keepassPath,
+        _keePassXC = AdapterPasswordDataSource(adapterPath: keepassPath,
                                                identifier: "KeePassXC")
 
         let bitwardenPath = Bundle(for: Self.self).path(forAuxiliaryExecutable: "iterm2-bitwarden-adapter")!
-        _bitwarden = AdapterPasswordDataSource(browser: browser,
-                                               adapterPath: bitwardenPath,
+        _bitwarden = AdapterPasswordDataSource(adapterPath: bitwardenPath,
                                                identifier: "Bitwarden")
 
         let keeperPath = Bundle(for: Self.self).path(forAuxiliaryExecutable: "iterm2-keeper-adapter")!
-        _keeper = AdapterPasswordDataSource(browser: browser,
-                                            adapterPath: keeperPath,
+        _keeper = AdapterPasswordDataSource(adapterPath: keeperPath,
                                             identifier: "Keeper Security")
         #if ITERM_DEBUG
         let testAdapterPath = Bundle(for: Self.self).path(forAuxiliaryExecutable: "iterm2-test-adapter")!
-        _testAdapter = AdapterPasswordDataSource(browser: browser,
-                                                 adapterPath: testAdapterPath,
+        _testAdapter = AdapterPasswordDataSource(adapterPath: testAdapterPath,
                                                  identifier: "Test Adapter")
         #endif
-
-        self.browser = browser
 
         super.init()
 

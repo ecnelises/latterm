@@ -49,7 +49,6 @@
 - (void)toolbeltRenameNamedMark:(id<iTermGenericNamedMarkReading>)mark to:(NSString *)newName;
 - (NSArray<NSString *> *)toolbeltSnippetTags;
 - (void)toolbeltMakeCurrentSessionFirstResponder;
-- (BOOL)toolbeltCurrentSessionIsBrowser;
 - (NSArray<id<iTermGenericNamedMarkReading>> *)toolbeltNamedMarks;
 - (ProfileType)toolbeltProfileType;
 - (BOOL)toolbeltWindowContainsSessionWithGUID:(NSString *)guid;

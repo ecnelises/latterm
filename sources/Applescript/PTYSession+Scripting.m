@@ -41,14 +41,12 @@
     [aCommand suspendExecution];
     [self startProgram:args[@"command"]
                    ssh:NO
-               browser:NO
            environment:@{}
            customShell:nil
                 isUTF8:[args[@"isUTF8"] boolValue]
          substitutions:nil
            arrangement:nil
        fromArrangement:NO
-  webViewConfiguration:nil
             completion:^(BOOL ok) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [aCommand resumeExecutionWithResult:nil];

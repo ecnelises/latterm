@@ -48,7 +48,3 @@ extern NSString *const iTermPasswordManagerDidLoadAccounts;
 
 @interface iTermPasswordManagerPanel : NSPanel
 @end
-
-@interface iTermBrowserPasswordManagerWindowController : iTermPasswordManagerWindowController
-@end
-

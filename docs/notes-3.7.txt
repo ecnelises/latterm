@@ -20,6 +20,8 @@ Terminal-first fork changes:
   routing, and secure settings.
 - Rebranded main-app alerts, tips, and
   default filenames from iTerm2 to Latterm.
+- Removed obsolete browser session shims.
+- Simplified terminal password management.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

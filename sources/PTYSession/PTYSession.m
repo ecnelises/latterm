@@ -422,18 +422,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 }
 @end
 
-@interface PTYSession ()
-- (void)browserResetFindCursor;
-- (BOOL)browserFindInProgress;
-- (BOOL)browserContinueFind:(double *)progress range:(NSRange *)rangePtr;
-- (void)browserFindString:(NSString *)aString
-         forwardDirection:(BOOL)direction
-                     mode:(iTermFindMode)mode
-               withOffset:(int)offset
-      scrollToFirstResult:(BOOL)scrollToFirstResult
-                    force:(BOOL)force;
-@end
-
 @implementation PTYSession {
 
     NSString *_termVariable;
@@ -1257,8 +1245,8 @@ ITERM_WEAKLY_REFERENCEABLE
 
 - (NSString *)description {
     NSString *synthetic = _synthetic ? @" Synthetic" : @"";
-    return [NSString stringWithFormat:@"<%@: %p %dx%d metal=%@ id=%@%@%@>",
-            [self class], self, [_screen width], [_screen height], @(self.useMetal), _guid, synthetic, _view.isBrowser ? @" WebBrowser" : @""];
+    return [NSString stringWithFormat:@"<%@: %p %dx%d metal=%@ id=%@%@>",
+            [self class], self, [_screen width], [_screen height], @(self.useMetal), _guid, synthetic];
 }
 
 - (void)didFinishInitialization {
@@ -3248,35 +3236,13 @@ ITERM_WEAKLY_REFERENCEABLE
 
 - (void)startProgram:(NSString *)command
                  ssh:(BOOL)ssh
-             browser:(BOOL)browser
          environment:(nullable NSDictionary *)environment
          customShell:(nullable NSString *)customShell
               isUTF8:(BOOL)isUTF8
-      substitutions:(nullable NSDictionary *)substitutions
+       substitutions:(nullable NSDictionary *)substitutions
          arrangement:(nullable NSString *)arrangementName
      fromArrangement:(BOOL)fromArrangement
-webViewConfiguration:(nullable id)webViewConfiguration
           completion:(nullable void (^)(BOOL))completion {
-    [self startProgram:command
-                   ssh:ssh
-           environment:environment
-           customShell:customShell
-                isUTF8:isUTF8
-         substitutions:substitutions
-           arrangement:arrangementName
-       fromArrangement:fromArrangement
-            completion:completion];
-}
-
-- (void)startProgram:(NSString *)command
-                 ssh:(BOOL)ssh
-         environment:(NSDictionary *)environment
-         customShell:(NSString *)customShell
-              isUTF8:(BOOL)isUTF8
-       substitutions:(NSDictionary *)substitutions
-         arrangement:(NSString *)arrangementName
-     fromArrangement:(BOOL)fromArrangement
-          completion:(void (^)(BOOL))completion {
     // command can be a user-configured command line, environment can carry exported
     // secrets, and substitutions can carry user values; keep them out of the ring.
     RLog(@"startProgram:%@ ssh:%@ environment:%@ customShell:%@ isUTF8:%@ substitutions:%@ arrangementName:%@ fromArrangement:%@, self=%@",
@@ -4488,9 +4454,6 @@ webViewConfiguration:(nullable id)webViewConfiguration
 }
 
 - (BOOL)isRestartable {
-    if (self.isBrowserSession) {
-        return NO;
-    }
     return _program != nil;
 }
 
@@ -4527,14 +4490,12 @@ webViewConfiguration:(nullable id)webViewConfiguration
     __weak __typeof(self) weakSelf = self;
     [self startProgram:_program
                    ssh:_sshState == iTermSSHStateProfile
-               browser:_view.isBrowser
            environment:_environment
            customShell:_customShell
                 isUTF8:_isUTF8
          substitutions:_substitutions
            arrangement:nil
        fromArrangement:NO
-  webViewConfiguration:nil
             completion:^(BOOL ok) {
         [weakSelf.delegate sessionDidRestart:self];
     }];
@@ -4864,11 +4825,6 @@ webViewConfiguration:(nullable id)webViewConfiguration
     if (diffOverlay != nil && diffOverlay.window != nil && !diffOverlay.isHidden) {
         return diffOverlay.promptResponder;
     }
-    if (@available(macOS 11, *)) {
-        if (_view.isBrowser) {
-            return _view.browserViewController.webView;
-        }
-    }
     return _textview;
 }
 
@@ -4918,9 +4874,6 @@ webViewConfiguration:(nullable id)webViewConfiguration
 }
 
 - (BOOL)hasSelection {
-    if (self.isBrowserSession) {
-        return self.view.browserViewController.hasSelection;
-    }
     return [_textview.selection hasSelection];
 }
 
@@ -6692,16 +6645,14 @@ webViewConfiguration:(nullable id)webViewConfiguration
     result[SESSION_ARRANGEMENT_NAME_CONTROLLER_STATE] = [_nameController stateDictionary];
     if (includeContents) {
         __block int numberOfLinesDropped = 0;
-        if (!self.isBrowserSession) {
-            const BOOL unlimited = [options[PTYSessionArrangementOptionsUnlimitedHistory] boolValue];
-            [result encodeDictionaryWithKey:SESSION_ARRANGEMENT_CONTENTS
-                                 generation:iTermGenerationAlwaysEncode
-                                      block:^BOOL(id<iTermEncoderAdapter>  _Nonnull encoder) {
-                return [_screen encodeContents:encoder
-                                  linesDropped:&numberOfLinesDropped
-                                     unlimited:unlimited];
-            }];
-        }
+        const BOOL unlimited = [options[PTYSessionArrangementOptionsUnlimitedHistory] boolValue];
+        [result encodeDictionaryWithKey:SESSION_ARRANGEMENT_CONTENTS
+                             generation:iTermGenerationAlwaysEncode
+                                  block:^BOOL(id<iTermEncoderAdapter>  _Nonnull encoder) {
+            return [_screen encodeContents:encoder
+                              linesDropped:&numberOfLinesDropped
+                                 unlimited:unlimited];
+        }];
         result[SESSION_ARRANGEMENT_VARIABLES] = _variables.encodableDictionaryValue;
         result[SESSION_ARRANGEMENT_ALERT_ON_NEXT_MARK] = @(_alertOnNextMark);
         result[SESSION_ARRANGEMENT_LOCKED] = @(_locked);
@@ -7268,9 +7219,6 @@ webViewConfiguration:(nullable id)webViewConfiguration
 }
 
 - (BOOL)canInstantReplayPrev {
-    if (self.isBrowserSession) {
-        return self.view.browserViewController.instantReplayAvailable;
-    }
     if (_dvrDecoder) {
         return [_dvrDecoder timestamp] != [_dvr firstTimeStamp];
     } else {
@@ -7325,14 +7273,8 @@ webViewConfiguration:(nullable id)webViewConfiguration
     [_textview setFontTable:newFontTable
           horizontalSpacing:horizontalSpacing
             verticalSpacing:verticalSpacing];
-    if (self.isBrowserSession) {
-        [_textview configureAsBrowser];
-    }
-    if (@available(macOS 11, *)) {
-        _view.browserViewController.zoom = newFontTable.browserZoom * 100.0;
-    }
     DLog(@"Line height is now %f", [_textview lineHeight]);
-    [_delegate sessionDidChangeFontSize:self adjustWindow:!_windowAdjustmentDisabled && !_view.isBrowser];
+    [_delegate sessionDidChangeFontSize:self adjustWindow:!_windowAdjustmentDisabled];
     [_composerManager updateFont];
     [_view.title invalidateTitleFont];
     DLog(@"After:\n%@", [window.contentView iterm_recursiveDescription]);
@@ -8066,43 +8008,7 @@ DLog(args); \
 
 - (void)convertVisibleSearchResultsToContentNavigationShortcutsWithAction:(iTermContentNavigationAction)action
                                                                clearOnEnd:(BOOL)clearOnEnd {
-    if (self.isBrowserSession) {
-        [self.view.browserViewController convertVisibleSearchResultsToContentNavigationShortcutsWithAction:action
-                                                                                                clearOnEnd:clearOnEnd];
-        return;
-    }
     [self.textview convertVisibleSearchResultsToContentNavigationShortcutsWithAction:action clearOnEnd:clearOnEnd];
-}
-
-#pragma mark - Terminal-First Compatibility Shims
-
-- (BOOL)isBrowserSession {
-    return _view.isBrowser;
-}
-
-- (void)browserResetFindCursor {
-}
-
-- (BOOL)browserFindInProgress {
-    return NO;
-}
-
-- (BOOL)browserContinueFind:(double *)progress range:(NSRange *)rangePtr {
-    if (progress) {
-        *progress = 1;
-    }
-    if (rangePtr) {
-        *rangePtr = NSMakeRange(NSNotFound, 0);
-    }
-    return NO;
-}
-
-- (void)browserFindString:(NSString *)aString
-         forwardDirection:(BOOL)direction
-                     mode:(iTermFindMode)mode
-               withOffset:(int)offset
-      scrollToFirstResult:(BOOL)scrollToFirstResult
-                    force:(BOOL)force {
 }
 
 // Note that the caller is responsible for respecting swapFindNextPrevious
@@ -8120,30 +8026,14 @@ DLog(args); \
 }
 
 - (void)resetFindCursor {
-    // Check if we're in browser mode
-    if ([_view isBrowser]) {
-        [self browserResetFindCursor];
-        return;
-    }
-    
     [_textview resetFindCursor];
 }
 
 - (BOOL)findInProgress {
-    // Check if we're in browser mode
-    if ([_view isBrowser]) {
-        return [self browserFindInProgress];
-    }
-    
     return [_textview findInProgress];
 }
 
 - (BOOL)continueFind:(double *)progress range:(NSRange *)rangePtr {
-    // Check if we're in browser mode
-    if ([_view isBrowser]) {
-        return [self browserContinueFind:progress range:rangePtr];
-    }
-    
     return [_textview continueFind:progress range:rangePtr];
 }
 
@@ -8172,17 +8062,6 @@ scrollToFirstResult:(BOOL)scrollToFirstResult
 extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     DLog(@"self=%@ aString=%@", self, aString);
 
-    // Check if we're in browser mode
-    if ([_view isBrowser]) {
-        [self browserFindString:aString
-               forwardDirection:direction
-                           mode:mode
-                     withOffset:offset
-            scrollToFirstResult:scrollToFirstResult
-                          force:force];
-        return;
-    }
-
     [_textview findString:aString
          forwardDirection:direction
                      mode:mode
@@ -8210,10 +8089,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (void)findViewControllerClearSearch {
     DLog(@"begin");
-    if (self.isBrowserSession) {
-        [self.view.browserViewController findPanelDidHide];
-        return;
-    }
     [_textview clearHighlights:YES];
 }
 
@@ -8700,12 +8575,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         }
         return NO;
     }
-    if (_view.isBrowser) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonNotATerminal;
-        }
-        return NO;
-    }
     if (![iTermPreferences boolForKey:kPreferenceKeyUseMetal]) {
         if (reason) {
             *reason = iTermMetalUnavailableReasonDisabled;
@@ -9110,14 +8979,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (void)enterPassword:(NSString *)password {
-    if (@available(macOS 11, *)) {
-        if (_view.isBrowser) {
-            if (@available(macOS 12, *)) {
-                [_view.browserViewController enterPassword:password];
-            }
-            return;
-        }
-    }
     [self incrementDisableFocusReporting:1];
     [_screen beginEchoProbeWithBackspace:[self backspaceData] password:password delegate:self];
 }
@@ -9165,9 +9026,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (BOOL)hasCoprocess {
-    if (self.isBrowserSession)  {
-        return NO;
-    }
     return [_shell hasCoprocess];
 }
 
@@ -10984,12 +10842,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                                       parameter:action.parameter
                                                                        escaping:action.escaping
                                                                       applyMode:action.applyMode];
-    if (self.isBrowserSession) {
-        [self.view.browserViewController.view.window makeFirstResponder:self.view.browserViewController.view];
-        [self.view.browserViewController performKeyBindingAction:keyBindingAction
-                                                           event:nil];
-        return;
-    }
     [self.textview.window makeFirstResponder:self.mainResponder];
     [self performKeyBindingAction:keyBindingAction
                             event:nil];
@@ -11187,13 +11039,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)reallyPerformKeyBindingAction:(iTermKeyBindingAction *)action event:(NSEvent *)event {
-    if (_view.isBrowser) {
-        if (@available(macOS 11, *)) {
-            if ([_view.browserViewController performKeyBindingAction:action event:event]) {
-                return;
-            }
-        }
-    }
     BOOL isTmuxGateway = (!_exited && self.tmuxMode == TMUX_GATEWAY);
     id<iTermWindowController> windowController = self.delegate.realParentWindow ?: [[iTermController sharedInstance] currentTerminal];
 
@@ -11785,10 +11630,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     if (![iTermPreferences boolForKey:kPreferenceKeyVisualIndicatorForEsc]) {
         return;
     }
-    if (_view.isBrowser) {
-        // I guess I should support this but the touchbar is all but dead.
-        return;
-    }
     _showingVisualIndicatorForEsc = YES;
 
     NSNumber *savedCursorTypeOverride = _cursorTypeOverride;
@@ -11857,9 +11698,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)regularKeyDown:(NSEvent *)event {
-    if (_view.isBrowser) {
-        return;
-    }
     DLog(@"PTYSession keyDown not short-circuted by special handler");
     const NSEventModifierFlags mask = (NSEventModifierFlagCommand | NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagControl);
 
@@ -13181,14 +13019,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     if (!event) {
         return;
     }
-    // A browser session has no PTY. The mapped path would hit regularKeyDown's browser
-    // guard and drop the key, but the literal path would write raw bytes into the
-    // browser view, so guard here uniformly so the two paths can't diverge if a browser
-    // session ever becomes an injection target.
-    if (_view.isBrowser) {
-        DLog(@"injectSynthesizedKeyEvent: browser session, ignoring");
-        return;
-    }
     // Gate exactly like a physical keystroke, via the same entry point the real key
     // path uses (textViewShouldAcceptKeyDownEvent:): keystroke monitors, copy/session
     // mode, tmux unpause, paste-abort, PLUS the responsive-keystroke cadence boost and
@@ -13821,7 +13651,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     // Skip -updateWrapperAlphaForMetalEnabled: and
     // -configureIndicatorsHelperWithRightMargin: on the partial-rect path.
     // Both depend only on session-level state (porthole/annotation/nav-shortcut
-    // presence, useMetal, browser indicators) — none of which a partial-rect
+    // presence and useMetal) — none of which a partial-rect
     // invalidation can change. Anything that does change that state already
     // funnels through the empty-rect / -requestRedraw path or calls those
     // updaters directly (e.g. -textViewDidAddOrRemovePorthole).
@@ -13831,9 +13661,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 - (void)requestRedraw {
     [_view requestRedraw];
     [self updateWrapperAlphaForMetalEnabled:_view.useMetal];
-    if (self.isBrowserSession) {
-        [_textview configureIndicatorsHelperWithRightMargin:0];
-    }
 }
 
 - (BOOL)textViewShouldDrawRect {
@@ -15595,12 +15422,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)refuseFirstResponderAtCurrentMouseLocation {
-    if (@available(macOS 11, *)) {
-        if (_view.isBrowser) {
-            [_view.browserViewController refuseFirstResponderAtCurrentMouseLocation];
-            return;
-        }
-    }
     [self.textview refuseFirstResponderAtCurrentMouseLocation];
 }
 
@@ -16424,9 +16245,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)injectData:(NSData *)data {
-    if (self.isBrowserSession) {
-        return;
-    }
     [self.screen injectData:data];
 }
 
@@ -19645,11 +19463,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)sessionViewMouseEntered:(NSEvent *)event {
     DLog(@"sessionViewMouseEntered");
-    if (@available(macOS 11, *)) {
-        if (_view.isBrowser) {
-            return;
-        }
-    }
     [_textview mouseEntered:event];
     [_textview requestDelegateRedraw];
     [_textview updateCursor:event];
@@ -20246,7 +20059,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (BOOL)textViewProfileTypeIsTerminal {
-    return !_view.isBrowser;
+    return YES;
 }
 
 - (void)textViewSaveArchive:(iTermSavePanelItem *)location {
@@ -20517,9 +20330,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)sessionViewWillDraw {
-    if (self.isBrowserSession) {
-        [_textview configureIndicatorsHelperWithRightMargin:0];
-    }
 }
 
 - (BOOL)sessionViewIsLocked {
@@ -20876,7 +20686,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     ITMGetBufferResponse *response = [[[ITMGetBufferResponse alloc] init] autorelease];
 
     const VT100GridAbsWindowedRange windowedRange = [self absoluteWindowedCoordRangeFromLineRange:request.lineRange];
-    if (windowedRange.coordRange.start.x < 0 || self.isBrowserSession) {
+    if (windowedRange.coordRange.start.x < 0) {
         response.status = ITMGetBufferResponse_Status_InvalidLineRange;
         return nil;
     }
@@ -21224,11 +21034,9 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     // The icon/color maps changed (e.g. a settings-sync import). Recompute this session's icon from
     // its current job so the change is visible without waiting for the next foreground-job change.
     //
-    // Only an Automatic-icon, non-browser session actually resolves its tab graphic from
-    // _graphicSource (see -tabGraphicForProfile:): iTermProfileIconNone shows nothing, Custom shows a
-    // fixed image, and a browser shows its favicon, none of which the maps affect. Skip the expensive
-    // process-tree walk (deepestForegroundJobForPid + ancestors) and the redundant redraw for those,
-    // matching the real branching rather than just its tmux-vs-pid split.
+    // Only an Automatic-icon session resolves its tab graphic from _graphicSource (see
+    // -tabGraphicForProfile:): iTermProfileIconNone shows nothing and Custom shows a fixed image.
+    // Skip the expensive process-tree walk and redundant redraw for those modes.
     const iTermProfileIcon icon = [iTermProfilePreferences unsignedIntegerForKey:KEY_ICON inProfile:self.profile];
     if (icon != iTermProfileIconAutomatic) {
         return;
@@ -21238,12 +21046,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         // while !_exited and never cleared), so the rootPid <= 0 guard below can't catch it. Recomputing
         // from the dead pid resolves to a nil image and would blank the icon the tab is still showing;
         // leave the current icon, matching the intent of that guard.
-        return;
-    }
-    if (_view.isBrowser) {
-        // A browser resolves its tab graphic from its favicon, not _graphicSource, so the map reload
-        // doesn't affect it. (No @available guard: isBrowser is a plain BOOL and the deployment target
-        // is macOS 12, so a macOS 11 check would always be true.)
         return;
     }
     // Mirror the branching in -tabGraphicForProfile:: tmux clients resolve by foreground job name
@@ -21973,13 +21775,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 - (void)runCoprocessWithCompletion:(void (^)(id, NSError *))completion
                        commandLine:(NSString *)command
                             mute:(NSNumber *)muteNumber {
-    if (self.isBrowserSession) {
-        NSError *error = [NSError errorWithDomain:@"com.iterm2.run-coprocess-command"
-                                             code:0
-                                         userInfo:@{ NSLocalizedDescriptionKey: @"Not supported in browser sessions" }];
-        completion(nil, error);
-        return;
-    }
     const BOOL mute = muteNumber ? muteNumber.boolValue : NO;
     if (self.hasCoprocess) {
         completion(@NO, nil);
@@ -21995,13 +21790,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                endX:(NSNumber *)endXNumber
                                endY:(NSNumber *)endYNumber
                                text:(NSString *)text {
-    if (self.isBrowserSession) {
-        NSError *error = [NSError errorWithDomain:@"com.iterm2.add-annotation-command"
-                                             code:0
-                                         userInfo:@{ NSLocalizedDescriptionKey: @"Not supported for browser sessions" }];
-        completion(nil, error);
-        return;
-    }
     const VT100GridAbsCoordRange range = VT100GridAbsCoordRangeMake(startXNumber.intValue,
                                                                     startYNumber.longLongValue,
                                                                     endXNumber.intValue,

@@ -148,6 +148,14 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Left the Companion app name and protocol branding for a separate coordinated rename so the Mac app, iPhone app, relay, bundle identifiers, and migration behavior can change together.
 - Audited submodules and confirmed this copy-only branding slice does not make any dependency removable.
 
+### 2026-08-21 Browser Session Compatibility Removal
+
+- Deleted the always-false `PTYSession.isBrowserSession` and `SessionView.isBrowser` state, the empty browser view-controller facade, and browser-only branches across session lifecycle, rendering, find, key handling, window menus, Toolbelt, AppleScript, and the Python API server.
+- Collapsed terminal startup onto one `startProgram` entry point and removed the legacy browser arguments that every surviving caller supplied as `NO` and `nil`.
+- Removed the browser password-manager window and its duplicate data-source graph while preserving the terminal Keychain service, external-provider selection key, 1Password tag, LastPass group, and adapter protocol behavior.
+- Removed the dead browser-only text-view font configuration and Metal unavailability reason.
+- Audited submodules and confirmed this compatibility removal did not make any dependency removable.
+
 ### Recent Verification
 
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
@@ -171,6 +179,8 @@ This file is a local planning document. Do not assume it belongs in a release co
 - `tools/build.sh` and the `ModernTests` scheme build pass on 2026-08-21 after pruning the remaining AI Composer compatibility path.
 - `ibtool` compiles the main menu and preference panel without document errors or warnings on 2026-08-21 after the user-facing Latterm branding pass; the preference panel retains its pre-existing layout notices.
 - `tools/build.sh` passes on 2026-08-21 after the user-facing branding and bug-report link updates.
+- `tools/build.sh` passes on 2026-08-21 after removing browser-session compatibility and duplicate password-manager paths.
+- The `ModernTests` scheme build passes on 2026-08-21 with derived data at `/tmp/iTerm2-dd-browser-shell` after the same cleanup.
 
 ## Refactor Direction
 

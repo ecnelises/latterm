@@ -2418,9 +2418,6 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
     }
 
     for (PTYSession *session in sessions) {
-        if (session.isBrowserSession) {
-            continue;
-        }
         if (request.suppressBroadcast) {
             [session writeTaskNoBroadcast:request.text];
         } else {
@@ -2846,42 +2843,21 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
 - (NSString *)getPropertyFromSession:(PTYSession *)session name:(NSString *)name {
     typedef NSString * (^GetSessionPropertyBlock)(void);
 
-    GetSessionPropertyBlock getGridSize;
-    GetSessionPropertyBlock getNumberOfLines;
+    GetSessionPropertyBlock getGridSize = ^NSString * {
+        NSDictionary *dict =
+            @{ @"width": @(session.screen.width - 1),
+               @"height": @(session.screen.height - 1) };
+        return [NSJSONSerialization it_jsonStringForObject:dict];
+    };
 
-    if (session.isBrowserSession) {
-        getGridSize = ^NSString * {
-            NSDictionary *dict =
-                @{ @"width": @0,
-                   @"height": @0 };
-            return [NSJSONSerialization it_jsonStringForObject:dict];
-        };
-
-        getNumberOfLines = ^NSString * {
-            NSDictionary *dict =
-                @{ @"overflow": @0,
-                   @"grid": @0,
-                   @"history": @0,
-                   @"first_visible": @0 };
-            return [NSJSONSerialization it_jsonStringForObject:dict];
-        };
-    } else {
-        getGridSize = ^NSString * {
-            NSDictionary *dict =
-                @{ @"width": @(session.screen.width - 1),
-                   @"height": @(session.screen.height - 1) };
-            return [NSJSONSerialization it_jsonStringForObject:dict];
-        };
-
-        getNumberOfLines = ^NSString * {
-            NSDictionary *dict =
-                @{ @"overflow": @(session.screen.totalScrollbackOverflow),
-                   @"grid": @(session.screen.currentGrid.size.height),
-                   @"history": @(session.screen.numberOfScrollbackLines),
-                   @"first_visible": @(session.textview.firstVisibleAbsoluteLineNumber) };
-            return [NSJSONSerialization it_jsonStringForObject:dict];
-        };
-    }
+    GetSessionPropertyBlock getNumberOfLines = ^NSString * {
+        NSDictionary *dict =
+            @{ @"overflow": @(session.screen.totalScrollbackOverflow),
+               @"grid": @(session.screen.currentGrid.size.height),
+               @"history": @(session.screen.numberOfScrollbackLines),
+               @"first_visible": @(session.textview.firstVisibleAbsoluteLineNumber) };
+        return [NSJSONSerialization it_jsonStringForObject:dict];
+    };
     GetSessionPropertyBlock getBuried = ^NSString * {
         BOOL isBuried = [[[iTermBuriedSessions sharedInstance] buriedSessions] containsObject:session];
         return [NSJSONSerialization it_jsonStringForObject:@(isBuried)];
@@ -3886,9 +3862,6 @@ static BOOL iTermCheckSplitTreesIsomorphic(ITMSplitTreeNode *node1, ITMSplitTree
     }
 
     iTermSelection *selection = session.textview.selection;
-    if (session.isBrowserSession) {
-        selection = nil;
-    }
     const NSInteger absoluteOffset = session.screen.totalScrollbackOverflow;
     for (iTermSubSelection *sub in selection.allSubSelections) {
         ITMSubSelection *subProto = [[ITMSubSelection alloc] init];
@@ -3933,7 +3906,7 @@ static BOOL iTermCheckSplitTreesIsomorphic(ITMSplitTreeNode *node1, ITMSplitTree
                        completion:(void (^)(ITMSelectionResponse *))completion {
     PTYSession *session = [self sessionForAPIIdentifier:request.sessionId includeBuriedSessions:YES];
     ITMSelectionResponse *response = [[ITMSelectionResponse alloc] init];
-    if (!session || session.isBrowserSession) {
+    if (!session) {
         response.status = ITMSelectionResponse_Status_RequestMalformed;
         completion(response);
         return;

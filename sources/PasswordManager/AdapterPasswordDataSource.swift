@@ -73,7 +73,6 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
     private typealias CustomCommandResponse = PasswordManagerProtocol.CustomCommandResponse
     private typealias ErrorResponse = PasswordManagerProtocol.ErrorResponse
 
-    private let browser: Bool
     private let adapterPath: String
     private var handshakeInfo: HandshakeResponse?
     private var authToken: String?
@@ -85,8 +84,7 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
     private var masterPassword: String?
     private let userAccountKey = "NoSyncAdapaterPasswordDataSource_"
 
-    init(browser: Bool, adapterPath: String, identifier: String) {
-        self.browser = browser
+    init(adapterPath: String, identifier: String) {
         self.adapterPath = adapterPath
         self.identifier = identifier
         // Get iTerm2 version
@@ -294,7 +292,7 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
         var header = PasswordManagerProtocol.RequestHeader(
             pathToDatabase: pathToDatabase,
             pathToExecutable: pathToExecutable,
-            mode: browser ? .browser : .terminal)
+            mode: .terminal)
         if let fields = handshakeInfo?.settingsFields, !fields.isEmpty {
             var settings = [String: String]()
             for field in fields {

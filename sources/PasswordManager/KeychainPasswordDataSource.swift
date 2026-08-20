@@ -215,17 +215,7 @@ fileprivate class LegacyKeychainAccount: NSObject, PasswordManagerAccount {
 }
 
 class KeychainPasswordDataSource: NSObject, PasswordManagerDataSource {
-    private let browser: Bool
-    private var serviceName: String {
-        if browser {
-            "iTerm2-Browser"
-        } else {
-            "iTerm2"
-        }
-    }
-    init(browser: Bool) {
-        self.browser = browser
-    }
+    private let serviceName = "iTerm2"
     @objc var name: String { "Keychain" }
     @objc var canResetConfiguration: Bool { false }
     @objc func resetConfiguration() { }

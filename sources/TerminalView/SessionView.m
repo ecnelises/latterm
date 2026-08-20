@@ -61,102 +61,6 @@ static NSDate* lastResizeDate_;
 
 NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewWasSelectedForInspectionNotification";
 
-@implementation iTermBrowserViewController
-
-- (void)loadView {
-    self.view = [[NSView alloc] initWithFrame:NSZeroRect];
-}
-
-- (id)webView {
-    return nil;
-}
-
-- (BOOL)hasSelection {
-    return NO;
-}
-
-- (BOOL)instantReplayAvailable {
-    return NO;
-}
-
-- (double)zoom {
-    return 100.0;
-}
-
-- (void)setZoom:(double)zoom {
-}
-
-- (void)convertVisibleSearchResultsToContentNavigationShortcutsWithAction:(NSInteger)action
-                                                               clearOnEnd:(BOOL)clearOnEnd {
-}
-
-- (void)findPanelDidHide {
-}
-
-- (void)enterPassword:(NSString *)password {
-}
-
-- (void)enterUsername:(NSString *)username {
-}
-
-- (BOOL)performKeyBindingAction:(id)action event:(NSEvent *)event {
-    return NO;
-}
-
-- (void)refuseFirstResponderAtCurrentMouseLocation {
-}
-
-- (id)executeGlobalSearch:(NSString *)query mode:(NSInteger)mode {
-    return nil;
-}
-
-- (void)revealFindResult:(id)findResult completion:(void (^)(NSRect))completion {
-    if (completion) {
-        completion(NSZeroRect);
-    }
-}
-
-- (void)performDeferredInitializationInWindow:(NSWindow *)window {
-}
-
-- (void)startInstantReplay {
-}
-
-- (void)openAutocomplete {
-}
-
-- (void)jumpToSelection {
-}
-
-- (void)revealNamedMark:(id)mark {
-}
-
-- (void)revealNamedMarkWithGUID:(NSString *)guid {
-}
-
-- (void)addNamedMark:(NSString *)name {
-}
-
-- (void)renameNamedMark:(id)mark to:(NSString *)newName {
-}
-
-- (void)removeNamedMark:(id)mark {
-}
-
-- (BOOL)canAddNamedMark {
-    return NO;
-}
-
-- (NSArray *)namedMarks {
-    return @[];
-}
-
-- (NSString *)sessionGuid {
-    return nil;
-}
-
-@end
-
 
 @interface iTermHoverContainerView : NSView
 @property (nonatomic, copy) NSString *url;
@@ -263,7 +167,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 
     iTermProgressBarView *_progressBar;
 
-    // Border view for active pane indication (used for browser sessions)
+    // Border view for active pane indication.
     iTermActivePaneBorderView *_activePaneBorderView;
 
     iTermSessionNoteView *_sessionNoteView;
@@ -500,14 +404,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
                                     self.bounds.size.height - titleHeight - toolbarHeight,
                                     self.bounds.size.width,
                                     toolbarHeight);
-}
-
-- (BOOL)isBrowser {
-    return NO;
-}
-
-- (iTermBrowserViewController *)browserViewController {
-    return nil;
 }
 
 - (void)setTerminalViewsHidden:(BOOL)hidden {
@@ -882,7 +778,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 - (void)findViewDidHide {
     self.delegate.sessionViewStatusBarViewController.mustShowSearchComponent = NO;
     self.delegate.sessionViewStatusBarViewController.temporaryLeftComponent = nil;
-    [self.browserViewController findPanelDidHide];
 }
 
 - (BOOL)useMetal {
@@ -901,8 +796,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 
         iTermMetalClipView *metalClipView = (iTermMetalClipView *)_scrollview.contentView;
         metalClipView.useMetal = useMetal;
-        // In browser mode, always keep legacy view hidden
-        _legacyView.hidden = !useMetal || self.isBrowser;
+        _legacyView.hidden = !useMetal;
         
         [self updateLayout];
         [self setNeedsDisplay:YES];
@@ -1936,8 +1830,7 @@ typedef NS_ENUM(NSInteger, SessionViewTrackingMode) {
 }
 
 - (void)setSuppressLegacyDrawing:(BOOL)suppressLegacyDrawing {
-    // In browser mode, always keep legacy view hidden
-    _legacyView.hidden = suppressLegacyDrawing || self.isBrowser;
+    _legacyView.hidden = suppressLegacyDrawing;
 }
 
 - (void)smearCursorFrom:(NSRect)from to:(NSRect)to color:(NSColor *)color {

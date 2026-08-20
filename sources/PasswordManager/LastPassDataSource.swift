@@ -27,12 +27,6 @@ class LastPassDataSource: CommandLinePasswordDataSource {
         case cached(Bool)
     }
     private var available = Availability.uncached
-    private let browser: Bool
-
-    init(browser: Bool) {
-        self.browser = browser
-    }
-
     private struct ErrorHandler {
         var requestedAuthentication = false
 
@@ -135,16 +129,8 @@ class LastPassDataSource: CommandLinePasswordDataSource {
 
     private var listAccountsRecipe: AnyRecipe<Void, [Account]> {
         var args = ["ls", "--format=%ag\t%ai\t%an\t%au"]
-        let requiredGroups: Set<String>?
-        let groupsToExclude: Set<String>?
-        if browser {
-            requiredGroups = nil
-            groupsToExclude = terminalGroups
-        } else {
-            requiredGroups = terminalGroups
-            groupsToExclude = nil
-        }
-        if let requiredGroups, requiredGroups.count == 1, let name = requiredGroups.first {
+        let requiredGroups = terminalGroups
+        if requiredGroups.count == 1, let name = requiredGroups.first {
             args.append(name)
         }
         let recipe = LastPassBasicCommandRecipe<Void, [Account]>(args, timeout: 5) { output in
@@ -161,10 +147,7 @@ class LastPassDataSource: CommandLinePasswordDataSource {
                     // Unsynced accounts are not safe because they don't have unique identifiers.
                     return nil
                 }
-                if let groupsToExclude, groupsToExclude.contains(parts[0]) {
-                    return nil
-                }
-                if let requiredGroups, !requiredGroups.contains(parts[0]) {
+                if !requiredGroups.contains(parts[0]) {
                     return nil
                 }
                 return Account(identifier: AccountIdentifier(value: parts[1]),
@@ -238,7 +221,7 @@ class LastPassDataSource: CommandLinePasswordDataSource {
     }
 
     private var addAccountRecipe: AnyRecipe<AddRequest, AccountIdentifier> {
-        let groupPrefix = (browser ? "" : "iTerm2/")
+        let groupPrefix = "iTerm2/"
         let addRecipe = LastPassDynamicCommandRecipe<AddRequest, Void> {
             let args = ["add", groupPrefix + $0.accountName, "--non-interactive"]
             let input = "Username: \($0.userName)\nPassword: \($0.password)"

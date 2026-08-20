@@ -2627,25 +2627,12 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (PTYTextView *)checkFirstResponder {
-    if (@available(macOS 11, *)) {
-        NSResponder *responder = self.window.firstResponder;
-        while (responder &&
-               ![responder isKindOfClass:[PTYTextView class]] &&
-               ![responder isKindOfClass:[iTermBrowserViewController class]]) {
-            responder = responder.nextResponder;
-        }
-        if ([responder isKindOfClass:[iTermBrowserViewController class]]) {
-            iTermBrowserViewController *vc = (iTermBrowserViewController *)responder;
-            NSString *guid = [vc sessionGuid];
-            PTYSession *session = [self.allSessions objectPassingTest:^BOOL(PTYSession *candidate, NSUInteger index, BOOL *stop) {
-                return [candidate.guid isEqualToString:guid];
-            }];
-            if (session != self.currentSession) {
-                [session notifyActive];
-            }
-        } else if ([responder isKindOfClass:[PTYTextView class]]) {
-            return (PTYTextView *)responder;
-        }
+    NSResponder *responder = self.window.firstResponder;
+    while (responder && ![responder isKindOfClass:[PTYTextView class]]) {
+        responder = responder.nextResponder;
+    }
+    if ([responder isKindOfClass:[PTYTextView class]]) {
+        return (PTYTextView *)responder;
     }
     return nil;
 }
@@ -8511,11 +8498,7 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
         RLog(@"Show the password manager as a sheet");
         _passwordManagerWindowController.delegate = nil;
         [_passwordManagerWindowController autorelease];
-        if (effectiveSession.isBrowserSession) {
-            _passwordManagerWindowController = [[iTermBrowserPasswordManagerWindowController alloc] init];
-        } else {
-            _passwordManagerWindowController = [[iTermPasswordManagerWindowController alloc] init];
-        }
+        _passwordManagerWindowController = [[iTermPasswordManagerWindowController alloc] init];
         _passwordManagerWindowController.sendUserByDefault = forUser;
         _passwordManagerWindowController.didSendUserName = didSendUserName;
         _passwordManagerWindowController.delegate = self;
@@ -8993,10 +8976,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
 }
 
 - (IBAction)irPrev:(id)sender {
-    if (self.currentSession.isBrowserSession) {
-        [self.currentSession.view.browserViewController startInstantReplay];
-        return;
-    }
     [self irAdvance:-1];
     [[self window] makeFirstResponder:[[self currentSession] mainResponder]];
     [_instantReplayWindowController updateInstantReplayView];
@@ -11981,15 +11960,12 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
             item.enabled = NO;
         }
     } else if ([item action] == @selector(runCoprocess:)) {
-        if (self.currentSession.isBrowserSession) {
-            return NO;
-        }
         result = ![[self currentSession] hasCoprocess];
     } else if ([item action] == @selector(stopCoprocess:)) {
         result = [[self currentSession] hasCoprocess];
     } else if ([item action] == @selector(startStopLogging:)) {
         PTYSession *session = self.currentSession;
-        if (!session || session.exited || session.isBrowserSession) {
+        if (!session || session.exited) {
             item.state = NSControlStateValueOff;
             return NO;
         }
@@ -12001,9 +11977,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         result = [[self currentSession] canInstantReplayNext];
     } else if ([item action] == @selector(toggleCursorGuide:)) {
         PTYSession *session = [self currentSession];
-        if (session.isBrowserSession) {
-            return NO;
-        }
         [item setState:session.highlightCursorLine ? NSControlStateValueOn : NSControlStateValueOff];
         result = YES;
     } else if ([item action] == @selector(editSessionNote:)) {
@@ -12023,9 +11996,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         [item setState:[[iTermController sharedInstance] selectionRespectsSoftBoundaries] ? NSControlStateValueOn : NSControlStateValueOff];
         result = YES;
     } else if ([item action] == @selector(toggleAutoCommandHistory:)) {
-        if (self.currentSession.isBrowserSession) {
-            return NO;
-        }
         result = [[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed];
         if (result) {
             if ([item respondsToSelector:@selector(setState:)]) {
@@ -12035,9 +12005,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
             [item setState:NSControlStateValueOff];
         }
     } else if ([item action] == @selector(toggleAutoComposer:)) {
-        if (self.currentSession.isBrowserSession) {
-            return NO;
-        }
         result = [[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed];
         if (result) {
             if ([item respondsToSelector:@selector(setState:)]) {
@@ -12048,17 +12015,11 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         }
     } else if ([item action] == @selector(toggleAlertOnNextMark:)) {
         PTYSession *currentSession = [self currentSession];
-        if (currentSession.isBrowserSession) {
-            return NO;
-        }
         if ([item respondsToSelector:@selector(setState:)]) {
             [item setState:currentSession.alertOnNextMark ? NSControlStateValueOn : NSControlStateValueOff];
         }
         result = (currentSession != nil);
     } else if (item.action == @selector(nextMark:) || item.action == @selector(previousMark:)) {
-        if (self.currentSession.isBrowserSession) {
-            return NO;
-        }
         NSResponder *firstResponder = self.window.firstResponder;
         const BOOL isTextView = [firstResponder isKindOfClass:[NSTextView class]];
         result = !isTextView;
@@ -12197,19 +12158,16 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
     } else if (item.action == @selector(clearToStartOfSelection:)) {
         return self.currentSession.hasSelection;
     } else if (item.action == @selector(clearInstantReplay:)) {
-        if (self.currentSession.isBrowserSession) {
-            return self.currentSession.view.browserViewController.instantReplayAvailable;
-        }
         return (![[self currentSession] liveSession] &&
                 self.currentSession.screen.dvr.canClear);
     } else if (item.action == @selector(compose:)) {
         return self.currentSession != nil && !self.currentSession.shouldShowAutoComposer;
     } else if (item.action == @selector(reset:)) {
-        return self.currentSession != nil && !self.currentSession.view.isBrowser;
+        return self.currentSession != nil;
     } else if (item.action == @selector(addNamedMark:)) {
         return self.currentSession != nil && [self.currentSession canAddNamedMark];
     } else if (item.action == @selector(annotateSelection:)) {
-        return !self.currentSession.isBrowserSession && self.currentSession.hasSelection;
+        return self.currentSession.hasSelection;
     } else if (item.action == @selector(clearBuffer:) ||
                item.action == @selector(clearScrollbackBuffer:) ||
                item.action == @selector(clearToStartOfSelection:) ||
@@ -12223,7 +12181,7 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
                item.action == @selector(nextAnnotation:) ||
                item.action == @selector(previousAnnotation:) ||
                item.action == @selector(clearBuffer:)) {
-        return !self.currentSession.isBrowserSession;
+        return self.currentSession != nil;
     } else if (item.action == @selector(moveTabToNewWindow:)) {
         return [_contentView.tabView numberOfTabViewItems] > 1;
     } else if (item.action == @selector(exitWorkgroup:)) {
@@ -13491,10 +13449,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 
 - (NSString *)toolbeltCurrentSessionGUID {
     return self.currentSession.guid;
-}
-
-- (BOOL)toolbeltCurrentSessionIsBrowser {
-    return self.currentSession.isBrowserSession;
 }
 
 - (NSArray<id<iTermGenericNamedMarkReading>> *)toolbeltNamedMarks {

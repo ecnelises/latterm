@@ -739,9 +739,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 @property(nonatomic, readonly, retain) iTermNaggingController *naggingController;
 @property(nonatomic, readonly, strong) PTYSessionSwiftState *swiftState;
-// Terminal-first compatibility shim. Browser sessions are no longer created.
-@property(nonatomic, readonly) BOOL isBrowserSession;
-
 #pragma mark - methods
 
 + (BOOL)arrangement:(NSDictionary *)arrangement
@@ -846,27 +843,13 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 - (void)startProgram:(NSString *)program
                  ssh:(BOOL)ssh
-         environment:(NSDictionary *)prog_env
-         customShell:(NSString *)customShell
-              isUTF8:(BOOL)isUTF8
-       substitutions:(NSDictionary *)substitutions
-         arrangement:(NSString *)arrangement
-     fromArrangement:(BOOL)fromArrangement
-          completion:(void (^)(BOOL))completion;
-
-// Terminal-first compatibility shim for legacy browser-capable callers. The browser-specific
-// arguments are ignored.
-- (void)startProgram:(NSString *)program
-                 ssh:(BOOL)ssh
-             browser:(BOOL)browser
          environment:(nullable NSDictionary *)prog_env
          customShell:(nullable NSString *)customShell
               isUTF8:(BOOL)isUTF8
-	      substitutions:(nullable NSDictionary *)substitutions
-	        arrangement:(nullable NSString *)arrangement
-	    fromArrangement:(BOOL)fromArrangement
-	webViewConfiguration:(nullable id)webViewConfiguration
-	         completion:(nullable void (^)(BOOL))completion;
+       substitutions:(nullable NSDictionary *)substitutions
+         arrangement:(nullable NSString *)arrangement
+     fromArrangement:(BOOL)fromArrangement
+          completion:(nullable void (^)(BOOL))completion;
 
 // This is an alternative to runCommandWithOldCwd and startProgram. It attaches
 // to an existing server. Use only if [iTermAdvancedSettingsModel runJobsInServers]

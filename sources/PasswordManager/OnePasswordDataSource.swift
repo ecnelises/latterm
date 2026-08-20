@@ -36,17 +36,11 @@ class OnePasswordDataSource: CommandLinePasswordDataSource {
         case cached(Bool)
     }
     private var available = Availability.uncached
-    private let tag: String?
-    private let tagToExclude: String?
+    private let tag = "iTerm2"
 
 
     private var requester: OnePasswordTokenRequester?
     private static var haveCheckedAccounts = false
-
-    init(browser: Bool) {
-        tag = browser ? nil : "iTerm2"
-        tagToExclude = browser ? "iTerm2" : nil
-    }
 
     private func asyncGetToken(_ completion: @escaping (Result<OnePasswordTokenRequester.Auth, Error>) -> ()) {
         if Self.haveCheckedAccounts {
@@ -225,11 +219,8 @@ class OnePasswordDataSource: CommandLinePasswordDataSource {
         // This is equivalent to running this command and then parsing out the relevant fields from
         // the output:
         //     op item list --tags iTerm2 --format json | op item get --format=json -
-        let tagToExclude = self.tagToExclude
         var args = ["item", "list", "--format=json", "--no-color"]
-        if let tag {
-            args.append(contentsOf: ["--tags", tag])
-        }
+        args.append(contentsOf: ["--tags", tag])
         let accountsRecipe = OnePasswordBasicCommandRecipe<Void, Data>(args, dataSource: self) { $0.stdout }
 
         let itemsRecipe = OnePasswordDynamicCommandRecipe<Data, [Account]>(
@@ -261,9 +252,6 @@ class OnePasswordDataSource: CommandLinePasswordDataSource {
                 let json = "[" + phonyJson.replacingOccurrences(of: "}\n{", with: "},\n{") + "]"
                 let items = try JSONDecoder().decode([Item].self, from: json.data(using: .utf8)!)
                 return items.compactMap {
-                    if let tagToExclude, $0.tags?.contains(tagToExclude) == true {
-                        return nil
-                    }
                     let username: String?
                     if let field = $0.fields.first(where: { field in
                         field.id == "username"
@@ -358,17 +346,12 @@ class OnePasswordDataSource: CommandLinePasswordDataSource {
     private var addAccountRecipe: AnyRecipe<AddRequest, AccountIdentifier> {
         let tag = self.tag
         return AnyRecipe(OnePasswordDynamicCommandRecipe(dataSource: self) { addRequest, token in
-            let tagArgs: [String] = if let tag {
-                ["--tags=\(tag)"]
-            } else {
-                []
-            }
             let args = [
                 "item",
                 "create",
                 "--category=login",
-                "--title=\(addRequest.accountName)"
-            ] + tagArgs + [
+                "--title=\(addRequest.accountName)",
+                "--tags=\(tag)",
                 "--generate-password",
                 "--format=json",
                 "username=\(addRequest.userName)"]

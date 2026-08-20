@@ -3923,13 +3923,9 @@ static iTermKeyEventReplayer *gReplayer;
         PTYSession *currentSession = [[[iTermController sharedInstance] currentTerminal] currentSession];
         NSArray<id<iTermGenericNamedMarkReading>> *namedMarks = [currentSession namedMarks];
         
-        // For terminal sessions, sort by namedMarkSort
-        // For browser sessions, preserve the database ordering which already sorts current page marks first
-        if (![currentSession isBrowserSession]) {
-            namedMarks = [namedMarks sortedArrayUsingComparator:^NSComparisonResult(id<VT100ScreenMarkReading> lhs, id<VT100ScreenMarkReading> rhs) {
-                return [@(lhs.namedMarkSort) compare:@(rhs.namedMarkSort)];
-            }];
-        }
+        namedMarks = [namedMarks sortedArrayUsingComparator:^NSComparisonResult(id<VT100ScreenMarkReading> lhs, id<VT100ScreenMarkReading> rhs) {
+            return [@(lhs.namedMarkSort) compare:@(rhs.namedMarkSort)];
+        }];
         for (id<iTermGenericNamedMarkReading> mark in namedMarks) {
             NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:mark.name ?: @"Unnamed Mark"
                                                               action:@selector(navigateToNamedMark:)
