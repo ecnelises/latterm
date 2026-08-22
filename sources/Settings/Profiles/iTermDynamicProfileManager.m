@@ -460,9 +460,7 @@
     }
 
     for (Profile *profile in allProfiles) {
-        const BOOL rawBrowserProfile = [profile[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
-        if (![iTermTerminalFirstFeatures browserFeaturesEnabled] &&
-            (rawBrowserProfile || [profile profileType] == ProfileTypeBrowser)) {
+        if ([Profile isLegacyBrowserCustomCommand:profile[KEY_CUSTOM_COMMAND]]) {
             continue;
         }
         if ([guids containsObject:profile[KEY_GUID]]) {

@@ -191,9 +191,10 @@ static NSInteger gLessLoggingCount;
         [self postChangeNotification];
         profile = tmuxProfile;
     }
-    if (profile.profileIsBrowser) {
+    if ([Profile isLegacyBrowserCustomCommand:profile[KEY_CUSTOM_COMMAND]]) {
         MutableProfile *sanitized = [[profile mutableCopy] autorelease];
         sanitized[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeLoginShellValue;
+        profile = sanitized;
     }
     return profile;
 }
@@ -429,6 +430,20 @@ static NSInteger gLessLoggingCount;
     // Migrate KEY_DISABLE_BOLD to KEY_USE_BOLD_FONT
     if (dict[KEY_DISABLE_BOLD] && !dict[KEY_USE_BOLD_FONT]) {
         dict[KEY_USE_BOLD_FONT] = @(![dict[KEY_DISABLE_BOLD] boolValue]);
+    }
+    if ([Profile isLegacyBrowserCustomCommand:dict[KEY_CUSTOM_COMMAND]]) {
+        dict[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeLoginShellValue;
+        [@[ @"Profile Type (Phony)",
+             @"Initial URL",
+             @"Browser Zoom",
+             @"Dev Null Mode",
+             @"Width in Points",
+             @"Height in Points",
+             @"Instant Replay",
+             KEY_TRIGGERS ] enumerateObjectsUsingBlock:^(NSString *key, NSUInteger index, BOOL *stop) {
+            [dict removeObjectForKey:key];
+        }];
+        gMigrated = YES;
     }
 }
 
@@ -784,41 +799,6 @@ static NSInteger gLessLoggingCount;
     return [self bookmarkWithGuid:defaultBookmarkGuid_];
 }
 
-- (Profile *)defaultBrowserProfileCreatingIfNeeded {
-    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
-        return nil;
-    }
-    NSString *guid = [[iTermUserDefaults userDefaults] stringForKey:KEY_DEFAULT_BROWSER_GUID];
-    {
-        Profile *profile = [self bookmarkWithGuid:guid];
-        if (profile) {
-            return profile;
-        }
-    }
-    MutableProfile *profile = [[[MutableProfile alloc] init] autorelease];
-    profile[KEY_NAME] = @"Web Browser";
-    profile[KEY_GUID] = ProfileModel.freshGuid;
-    profile[KEY_SCROLLBACK_LINES] = @0;
-    profile[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeBrowserValue;
-    [[iTermUserDefaults userDefaults] setObject:profile[KEY_GUID]
-                                              forKey:KEY_DEFAULT_BROWSER_GUID];
-    [self addBookmark:profile];
-    [self postChangeNotification];
-    return profile;
-}
-
-- (Profile *)defaultBrowserProfile {
-    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
-        return nil;
-    }
-    NSString *guid = [[iTermUserDefaults userDefaults] stringForKey:KEY_DEFAULT_BROWSER_GUID];
-    Profile *profile = [self bookmarkWithGuid:guid];
-    if (!profile.profileIsBrowser) {
-        return nil;
-    }
-    return profile;
-}
-
 - (Profile*)bookmarkWithName:(NSString*)name
 {
     int count = [bookmarks_ count];
@@ -898,20 +878,15 @@ static NSInteger gLessLoggingCount;
 
 - (void)setDefaultByGuid:(NSString*)guid {
     [guid retain];
-    Profile *profile = [self bookmarkWithGuid:guid];
-    if (profile.profileIsBrowser) {
-        [prefs_ setObject:guid forKey:KEY_DEFAULT_BROWSER_GUID];
-    } else {
-        [defaultBookmarkGuid_ release];
-        defaultBookmarkGuid_ = guid;
-        if (prefs_) {
-            [prefs_ setObject:defaultBookmarkGuid_ forKey:KEY_DEFAULT_GUID];
-        }
-        [journal_ addObject:[BookmarkJournalEntry journalWithAction:JOURNAL_SET_DEFAULT
-                                                           bookmark:[self defaultBookmark]
-                                                              model:self
-                                                         identifier:nil]];
+    [defaultBookmarkGuid_ release];
+    defaultBookmarkGuid_ = guid;
+    if (prefs_) {
+        [prefs_ setObject:defaultBookmarkGuid_ forKey:KEY_DEFAULT_GUID];
     }
+    [journal_ addObject:[BookmarkJournalEntry journalWithAction:JOURNAL_SET_DEFAULT
+                                                       bookmark:[self defaultBookmark]
+                                                          model:self
+                                                     identifier:nil]];
     [self postChangeNotification];
 }
 
@@ -1150,20 +1125,11 @@ static NSInteger gLessLoggingCount;
 @implementation NSDictionary(ProfileModel)
 
 - (ProfileType)profileType {
-    if (self.profileIsBrowser) {
-        return ProfileTypeBrowser;
-    }
     return ProfileTypeTerminal;
 }
 
-+ (ProfileType)profileTypeForCustomCommand:(id)customCommand {
-    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
-        return ProfileTypeTerminal;
-    }
-    if ([customCommand isEqual:kProfilePreferenceCommandTypeBrowserValue]) {
-        return ProfileTypeBrowser;
-    }
-    return ProfileTypeTerminal;
++ (BOOL)isLegacyBrowserCustomCommand:(id)customCommand {
+    return [customCommand isEqual:@"Browser"];
 }
 
 @end

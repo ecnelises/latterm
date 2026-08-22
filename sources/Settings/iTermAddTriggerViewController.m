@@ -32,10 +32,8 @@ static const CGFloat kLabelWidth = 124;
 
 @implementation iTermAddTriggerViewController {
     NSTextField *_regexTextField;
-    NSTextField *_contentRegexTextField;
     NSTextField *_nameTextField;
     NSTextField *_jobTextField;
-    NSTextField *_regexLabel;
     NSPopUpButton *_actionButton;
     NSView *_paramContainerView;
     NSView *_paramWrapperView;
@@ -45,7 +43,6 @@ static const CGFloat kLabelWidth = 124;
     NSButton *_cancelButton;
     NSButton *_enabledButton;
     NSButton *_toggleVisualizationButton;
-    NSButton *_contentRegexVisualizationButton;
     NSPopUpButton *_matchTypeButton;
     NSView *_performanceGraphContainer;
     NSView *_performanceRow;
@@ -57,17 +54,13 @@ static const CGFloat kLabelWidth = 124;
     id _savedDelegate;
 
     BOOL _interpolatedStrings;
-    BOOL _browserMode;
     iTermTriggerMatchType _matchType;
     void (^_completion)(NSDictionary *, BOOL);
     CGFloat _paramY;
     NSColor *_defaultTextColor;
     NSColor *_defaultBackgroundColor;
     iTermRegexVisualizationViewController *_visualizationViewController;
-    iTermRegexVisualizationViewController *_contentRegexVisualizationViewController;
     NSPopover *_popover;
-    NSPopover *_contentRegexPopover;
-    NSString *_contentRegex;
     iTermEventTriggerParameterView *_eventParamView;
     NSView *_regexRow;
     NSView *_eventParamRow;
@@ -80,7 +73,6 @@ static const CGFloat kLabelWidth = 124;
       interpolatedStrings:(BOOL)interpolatedStrings
          defaultTextColor:(NSColor *)defaultTextColor
    defaultBackgroundColor:(NSColor *)defaultBackgroundColor
-              browserMode:(BOOL)browserMode
                completion:(void (^)(NSDictionary *, BOOL))completion {
     NSPanel *panel = [[iTermFocusablePanel alloc] initWithContentRect:NSZeroRect
                                                             styleMask:NSWindowStyleMaskTitled
@@ -102,11 +94,9 @@ static const CGFloat kLabelWidth = 124;
     iTermAddTriggerViewController *vc = [[iTermAddTriggerViewController alloc] initWithName:text
                                                                                   matchType:iTermTriggerMatchTypeRegex
                                                                                       regex:regex
-                                                                               contentRegex:nil
                                                                         interpolatedStrings:interpolatedStrings
                                                                            defaultTextColor:defaultTextColor
                                                                      defaultBackgroundColor:defaultBackgroundColor
-                                                                                browserMode:browserMode
                                                                                  completion:
                                          ^(NSDictionary * _Nullable dict, BOOL updateProfile) {
         [window endSheet:panel returnCode:dict ? NSModalResponseOK : NSModalResponseCancel];
@@ -123,8 +113,7 @@ static const CGFloat kLabelWidth = 124;
     }
     
     // Set an explicit size for the content since we're using programmatic views
-    CGFloat height = browserMode ? 306 : 237;  // Extra 33 for match type row + 36 for content regex row + 29 for job row
-    NSSize contentSize = NSMakeSize(480, height);
+    NSSize contentSize = NSMakeSize(480, 237);
     NSRect contentRect = NSMakeRect(0, 0, contentSize.width, contentSize.height);
     
     [panel setFrame:[NSPanel frameRectForContentRect:contentRect styleMask:panel.styleMask] display:NO];
@@ -168,22 +157,17 @@ static const CGFloat kLabelWidth = 124;
 - (instancetype)initWithName:(NSString *)name
                    matchType:(iTermTriggerMatchType)matchType
                        regex:(NSString *)regex
-                contentRegex:(NSString * _Nullable)contentRegex
          interpolatedStrings:(BOOL)interpolatedStrings
             defaultTextColor:(NSColor *)defaultTextColor
       defaultBackgroundColor:(NSColor *)defaultBackgroundColor
-                 browserMode:(BOOL)browserMode
                   completion:(void (^)(NSDictionary * _Nullable, BOOL))completion {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _regex = [regex copy];
-        _contentRegex = [contentRegex copy];
-        _contentRegex = nil;
         _interpolatedStrings = interpolatedStrings;
         _defaultTextColor = defaultTextColor;
         _defaultBackgroundColor = defaultBackgroundColor;
         _completion = [completion copy];
-        _browserMode = browserMode;
         _matchType = matchType;
     }
     return self;
@@ -193,12 +177,10 @@ static const CGFloat kLabelWidth = 124;
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         _regex = @"";
-        _contentRegex = nil;
         _interpolatedStrings = NO;
         _defaultTextColor = [NSColor colorWithDisplayP3Red:1 green:1 blue:1 alpha:0];
         _defaultBackgroundColor = [NSColor colorWithDisplayP3Red:1 green:0 blue:0 alpha:1];
         _completion = ^(NSDictionary *ignore, BOOL ignore2) {};
-        _browserMode = NO;
         _matchType = iTermTriggerMatchTypeRegex;
     }
     return self;
@@ -208,12 +190,10 @@ static const CGFloat kLabelWidth = 124;
     self = [super initWithCoder:coder];
     if (self) {
         _regex = @"";
-        _contentRegex = nil;
         _interpolatedStrings = NO;
         _defaultTextColor = [NSColor colorWithDisplayP3Red:1 green:1 blue:1 alpha:0];
         _defaultBackgroundColor = [NSColor colorWithDisplayP3Red:1 green:0 blue:0 alpha:1];
         _completion = ^(NSDictionary *ignore, BOOL ignore2) {};
-        _browserMode = NO;
         _matchType = iTermTriggerMatchTypeRegex;
     }
     return self;
@@ -221,9 +201,7 @@ static const CGFloat kLabelWidth = 124;
 
 - (void)setTrigger:(Trigger *)trigger {
     _regex = [trigger.regex copy] ?: @"";
-    _contentRegex = [trigger.contentRegex copy];
     _regexTextField.stringValue = _regex;
-    _contentRegexTextField.stringValue = _contentRegex ?: @"";
     _nameTextField.stringValue = trigger.name ?: @"";
     _jobTextField.stringValue = trigger.job ?: @"";
     const NSInteger prototypeIndex = [_prototypes indexOfObjectPassingTest:^BOOL(Trigger * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -231,7 +209,7 @@ static const CGFloat kLabelWidth = 124;
     }];
     _enabledButton.state = trigger.disabled ? NSControlStateValueOff : NSControlStateValueOn;
     _instantButton.state = trigger.partialLine ? NSControlStateValueOn : NSControlStateValueOff;
-    // prototypeIndex == NSNotFound can happen if you have a trigger of the wrong browser/terminal mode or a trigger from a future version of the app.
+    // prototypeIndex == NSNotFound can happen for a trigger from a future version of the app.
     if (prototypeIndex != NSNotFound) {
         // Find the menu item with matching tag (since filtering may cause popup indices to differ from prototype indices)
         NSInteger itemIndex = [_actionButton.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger idx, BOOL *stop) {
@@ -250,33 +228,27 @@ static const CGFloat kLabelWidth = 124;
     _leaderOnlyRow.hidden = !_currentTrigger.hasLeaderOnlyOption;
     _leaderOnlyButton.state = [trigger.eventParams[iTermExitWorkgroupTrigger.leaderOnlyParamKey] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
     _visualizationViewController.regex = _regex ?: @"";
-    _contentRegexVisualizationViewController.regex = _contentRegex ?: @"";
     _matchType = trigger.matchType;
 
     // Update match type button with types allowed by this trigger
     [self updateMatchTypeButtonForTrigger:trigger];
 
     [_matchTypeButton selectItemWithTag:_matchType];
-    if (_browserMode) {
-        [self updateContentRegexVisibility];
-        _matchTypeButton.enabled = (trigger.allowedMatchTypes.count > 1);
-    } else {
-        [self updateEventTriggerVisibility];
-        // Filter action popup based on current match type
-        [self updateActionButtonForMatchType];
-        // Re-select the correct action after filtering
-        if (prototypeIndex != NSNotFound) {
-            NSInteger itemIndex = [_actionButton.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger idx, BOOL *stop) {
-                return item.tag == prototypeIndex;
-            }];
-            if (itemIndex != NSNotFound) {
-                [_actionButton selectItemAtIndex:itemIndex];
-            }
+    [self updateEventTriggerVisibility];
+    // Filter action popup based on current match type
+    [self updateActionButtonForMatchType];
+    // Re-select the correct action after filtering
+    if (prototypeIndex != NSNotFound) {
+        NSInteger itemIndex = [_actionButton.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger idx, BOOL *stop) {
+            return item.tag == prototypeIndex;
+        }];
+        if (itemIndex != NSNotFound) {
+            [_actionButton selectItemAtIndex:itemIndex];
         }
-        // Set the event params if this is an event trigger
-        if (iTermTriggerMatchTypeIsEvent(_matchType) && trigger.eventParams) {
-            _eventParamView.eventParams = trigger.eventParams;
-        }
+    }
+    // Set the event params if this is an event trigger
+    if (iTermTriggerMatchTypeIsEvent(_matchType) && trigger.eventParams) {
+        _eventParamView.eventParams = trigger.eventParams;
     }
 
     // Show or hide the performance graph row based on whether the trigger has a performance histogram
@@ -345,12 +317,6 @@ static const CGFloat kLabelWidth = 124;
     _eventParamRow = [self createEventParamRow];
     _eventParamRow.hidden = YES;
     [stackView addArrangedSubview:_eventParamRow];
-    
-    // Content Regular Expression row (browser mode only)
-    if (_browserMode) {
-        NSView *contentRegexRow = [self createContentRegexRow];
-        [stackView addArrangedSubview:contentRegexRow];
-    }
     
     // Name row
     NSView *nameRow = [self createRowWithLabelText:@"Name:" hasVisualizationButton:NO];
@@ -599,7 +565,6 @@ static const CGFloat kLabelWidth = 124;
     
     if ([labelText isEqualToString:@"Regular Expression:"]) {
         _regexTextField = textField;
-        _regexLabel = label;
     } else if ([labelText isEqualToString:@"Name:"]) {
         _nameTextField = textField;
     } else if ([labelText isEqualToString:@"Job:"]) {
@@ -795,23 +760,16 @@ static const CGFloat kLabelWidth = 124;
     _matchTypeButton.translatesAutoresizingMaskIntoConstraints = NO;
     [_matchTypeButton it_addItemWithTitle:@"Regular Expression" tag:iTermTriggerMatchTypeRegex];
 
-    if (_browserMode) {
-        // Browser-specific match types
-        [_matchTypeButton it_addItemWithTitle:@"URL" tag:iTermTriggerMatchTypeURLRegex];
-        [_matchTypeButton it_addItemWithTitle:@"Page Content" tag:iTermTriggerMatchTypePageContentRegex];
-    } else {
-        // Terminal-specific event types, sorted alphabetically by display name
-        [[_matchTypeButton menu] addItem:[NSMenuItem separatorItem]];
-        NSArray<NSNumber *> *sortedEventTypes = [[iTermEventTriggerMatchTypeHelper allEventTypes] sortedArrayUsingComparator:^NSComparisonResult(NSNumber *a, NSNumber *b) {
-            NSString *titleA = [iTermEventTriggerMatchTypeHelper displayNameFor:(iTermTriggerMatchType)a.integerValue];
-            NSString *titleB = [iTermEventTriggerMatchTypeHelper displayNameFor:(iTermTriggerMatchType)b.integerValue];
-            return [titleA localizedCaseInsensitiveCompare:titleB];
-        }];
-        for (NSNumber *typeNum in sortedEventTypes) {
-            iTermTriggerMatchType type = (iTermTriggerMatchType)typeNum.integerValue;
-            NSString *title = [iTermEventTriggerMatchTypeHelper displayNameFor:type];
-            [_matchTypeButton it_addItemWithTitle:title tag:type];
-        }
+    [[_matchTypeButton menu] addItem:[NSMenuItem separatorItem]];
+    NSArray<NSNumber *> *sortedEventTypes = [[iTermEventTriggerMatchTypeHelper allEventTypes] sortedArrayUsingComparator:^NSComparisonResult(NSNumber *a, NSNumber *b) {
+        NSString *titleA = [iTermEventTriggerMatchTypeHelper displayNameFor:(iTermTriggerMatchType)a.integerValue];
+        NSString *titleB = [iTermEventTriggerMatchTypeHelper displayNameFor:(iTermTriggerMatchType)b.integerValue];
+        return [titleA localizedCaseInsensitiveCompare:titleB];
+    }];
+    for (NSNumber *typeNum in sortedEventTypes) {
+        iTermTriggerMatchType type = (iTermTriggerMatchType)typeNum.integerValue;
+        NSString *title = [iTermEventTriggerMatchTypeHelper displayNameFor:type];
+        [_matchTypeButton it_addItemWithTitle:title tag:type];
     }
 
     _matchTypeButton.target = self;
@@ -870,135 +828,6 @@ static const CGFloat kLabelWidth = 124;
                                                    attribute:NSLayoutAttributeNotAnAttribute
                                                   multiplier:1.0
                                                     constant:23]];
-    
-    return row;
-}
-
-- (NSView *)createContentRegexRow {
-    NSView *row = [[NSView alloc] init];
-    row.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    // Create label
-    NSTextField *label = [[NSTextField alloc] init];
-    label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.stringValue = @"Content Regex:";
-    label.editable = NO;
-    label.bordered = NO;
-    label.backgroundColor = [NSColor clearColor];
-    label.alignment = NSTextAlignmentRight;
-    label.lineBreakMode = NSLineBreakByClipping;
-    label.usesSingleLineMode = YES;
-    [row addSubview:label];
-    
-    // Create text field
-    _contentRegexTextField = [[NSTextField alloc] init];
-    _contentRegexTextField.translatesAutoresizingMaskIntoConstraints = NO;
-    _contentRegexTextField.bordered = YES;
-    _contentRegexTextField.editable = YES;
-    _contentRegexTextField.delegate = self;
-    [row addSubview:_contentRegexTextField];
-    
-    // Create visualization button
-    _contentRegexVisualizationButton = [[NSButton alloc] init];
-    _contentRegexVisualizationButton.translatesAutoresizingMaskIntoConstraints = NO;
-    _contentRegexVisualizationButton.bezelStyle = NSBezelStyleRounded;
-    _contentRegexVisualizationButton.bordered = YES;
-    _contentRegexVisualizationButton.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchart)
-                                                    accessibilityDescription:@"Show content regex visualization"
-                                                           fallbackImageName:@"flowchart"
-                                                                    forClass:[self class]];
-    _contentRegexVisualizationButton.target = self;
-    _contentRegexVisualizationButton.action = @selector(toggleContentRegexVisualization:);
-    [row addSubview:_contentRegexVisualizationButton];
-    
-    // Constraints
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                   attribute:NSLayoutAttributeLeading
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:row
-                                                   attribute:NSLayoutAttributeLeading
-                                                  multiplier:1.0
-                                                    constant:0]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                   attribute:NSLayoutAttributeWidth
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:nil
-                                                   attribute:NSLayoutAttributeNotAnAttribute
-                                                  multiplier:1.0
-                                                    constant:kLabelWidth]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                   attribute:NSLayoutAttributeCenterY
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:row
-                                                   attribute:NSLayoutAttributeCenterY
-                                                  multiplier:1.0
-                                                    constant:0]];
-    
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexTextField
-                                                   attribute:NSLayoutAttributeLeading
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:label
-                                                   attribute:NSLayoutAttributeTrailing
-                                                  multiplier:1.0
-                                                    constant:6]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexTextField
-                                                   attribute:NSLayoutAttributeCenterY
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:row
-                                                   attribute:NSLayoutAttributeCenterY
-                                                  multiplier:1.0
-                                                    constant:0]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexTextField
-                                                   attribute:NSLayoutAttributeHeight
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:nil
-                                                   attribute:NSLayoutAttributeNotAnAttribute
-                                                  multiplier:1.0
-                                                    constant:21]];
-    
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexVisualizationButton
-                                                   attribute:NSLayoutAttributeLeading
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:_contentRegexTextField
-                                                   attribute:NSLayoutAttributeTrailing
-                                                  multiplier:1.0
-                                                    constant:6]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexVisualizationButton
-                                                   attribute:NSLayoutAttributeTrailing
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:row
-                                                   attribute:NSLayoutAttributeTrailing
-                                                  multiplier:1.0
-                                                    constant:0]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexVisualizationButton
-                                                   attribute:NSLayoutAttributeCenterY
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:row
-                                                   attribute:NSLayoutAttributeCenterY
-                                                  multiplier:1.0
-                                                    constant:0]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexVisualizationButton
-                                                   attribute:NSLayoutAttributeWidth
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:nil
-                                                   attribute:NSLayoutAttributeNotAnAttribute
-                                                  multiplier:1.0
-                                                    constant:28]];
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:_contentRegexVisualizationButton
-                                                   attribute:NSLayoutAttributeHeight
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:nil
-                                                   attribute:NSLayoutAttributeNotAnAttribute
-                                                  multiplier:1.0
-                                                    constant:28]];
-    
-    [row addConstraint:[NSLayoutConstraint constraintWithItem:row
-                                                   attribute:NSLayoutAttributeHeight
-                                                   relatedBy:NSLayoutRelationEqual
-                                                      toItem:nil
-                                                   attribute:NSLayoutAttributeNotAnAttribute
-                                                  multiplier:1.0
-                                                    constant:28]];
     
     return row;
 }
@@ -1409,13 +1238,10 @@ static const CGFloat kLabelWidth = 124;
     [super viewDidLoad];
     
     _regexTextField.stringValue = _regex;
-    if (_contentRegexTextField) {
-        _contentRegexTextField.stringValue = _contentRegex ?: @"";
-    }
     _nameTextField.stringValue = @"";
     _instantButton.state = [iTermUserDefaults addTriggerInstant] ? NSControlStateValueOn : NSControlStateValueOff;
     _updateProfileButton.state = [iTermUserDefaults addTriggerUpdateProfile] ? NSControlStateValueOn : NSControlStateValueOff;
-    _prototypes = [[TriggerController triggerClassesForTerminal:!_browserMode] mapWithBlock:^id(Class triggerClass) {
+    _prototypes = [[TriggerController triggerClasses] mapWithBlock:^id(Class triggerClass) {
         Trigger *trigger = [[triggerClass alloc] init];
         if (_regex) {
             trigger.regex = _regex;
@@ -1441,11 +1267,6 @@ static const CGFloat kLabelWidth = 124;
         }
     }
     
-    // Set up initial content regex visibility and hide instant button in browser mode
-    if (_browserMode) {
-        [self updateContentRegexVisibility];
-        [self updateButtonLayoutForBrowserMode];
-    }
 }
 
 - (void)removeOkCancel {
@@ -1524,7 +1345,6 @@ static const CGFloat kLabelWidth = 124;
 
 - (IBAction)matchTypeDidChange:(id)sender {
     _matchType = (iTermTriggerMatchType)_matchTypeButton.selectedTag;
-    [self updateContentRegexVisibility];
     [self updateEventTriggerVisibility];
     [self updateActionButtonForMatchType];
     if (_didChange) {
@@ -1533,10 +1353,6 @@ static const CGFloat kLabelWidth = 124;
 }
 
 - (void)updateActionButtonForMatchType {
-    if (_browserMode) {
-        return;
-    }
-
     // Remember the currently selected action class
     Trigger *currentPrototype = [self currentPrototype];
     Class currentClass = currentPrototype.class;
@@ -1609,11 +1425,6 @@ static const CGFloat kLabelWidth = 124;
 }
 
 - (void)updateMatchTypeButtonForTrigger:(Trigger *)trigger {
-    if (_browserMode) {
-        // Browser mode doesn't change match types based on action
-        return;
-    }
-
     // Clear the popup
     [_matchTypeButton removeAllItems];
 
@@ -1646,7 +1457,6 @@ static const CGFloat kLabelWidth = 124;
 
     NSMutableDictionary *mutableTriggerDictionary = [@{ kTriggerActionKey: trigger.action,
                                                         kTriggerRegexKey: isEventTrigger ? @"" : _regexTextField.stringValue,
-                                                        kTriggerContentRegexKey: _contentRegexTextField.stringValue ?: @"",
                                                         kTriggerParameterKey: [trigger param] ?: @0,
                                                         kTriggerPartialLineKey: @(instant),
                                                         kTriggerDisabledKey: @NO,
@@ -1678,7 +1488,7 @@ static const CGFloat kLabelWidth = 124;
     if (selectedItem && selectedItem.tag >= 0 && selectedItem.tag < (NSInteger)_prototypes.count) {
         return _prototypes[selectedItem.tag];
     }
-    // Fallback to index (for initial state or browser mode)
+    // Fallback to the initial index.
     const NSInteger index = [_actionButton indexOfSelectedItem];
     if (index >= 0 && index < (NSInteger)_prototypes.count) {
         return _prototypes[index];
@@ -1797,10 +1607,6 @@ static const CGFloat kLabelWidth = 124;
     return NSStringFromClass([_currentTrigger class]);
 }
 
-- (NSString *)contentRegex {
-    return _contentRegex;
-}
-
 - (BOOL)enabled {
     return _enabledButton.state == NSControlStateValueOn;
 }
@@ -1844,108 +1650,6 @@ static const CGFloat kLabelWidth = 124;
                                              accessibilityDescription:@"Show visualization"
                                                     fallbackImageName:@"flowchart"
                                                              forClass:[self class]];
-    
-    [_contentRegexPopover close];
-    _contentRegexPopover = nil;
-    _contentRegexVisualizationViewController = nil;
-    if (_contentRegexVisualizationButton) {
-        _contentRegexVisualizationButton.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchart)
-                                                         accessibilityDescription:@"Show content regex visualization"
-                                                                fallbackImageName:@"flowchart"
-                                                                         forClass:[self class]];
-    }
-}
-
-- (void)updateContentRegexVisibility {
-    if (!_browserMode || !_contentRegexTextField) {
-        return;
-    }
-    
-    BOOL shouldShowContentRegex = (_matchType == iTermTriggerMatchTypePageContentRegex);
-    _contentRegexTextField.superview.hidden = !shouldShowContentRegex;
-    
-    // Update the regex label text based on match type
-    if (_regexLabel) {
-        if (_matchType == iTermTriggerMatchTypePageContentRegex) {
-            _regexLabel.stringValue = @"URL Regex:";
-        } else {
-            _regexLabel.stringValue = @"Regular Expression:";
-        }
-    }
-}
-
-- (IBAction)toggleContentRegexVisualization:(NSButton *)button {
-    if (!_contentRegexPopover || !_contentRegexPopover.isShown) {
-        [_contentRegexPopover close];
-        _contentRegexVisualizationViewController = [[iTermRegexVisualizationViewController alloc] initWithRegex:_contentRegexTextField.stringValue ?: @""
-                                                                                                        maxSize:button.window.screen.visibleFrame.size];
-        NSPopover *popover = [[NSPopover alloc] init];
-        popover.contentViewController = _contentRegexVisualizationViewController;
-        popover.behavior = NSPopoverBehaviorApplicationDefined;
-        [popover showRelativeToRect:button.bounds ofView:button preferredEdge:NSRectEdgeMaxX];
-        _contentRegexPopover = popover;
-
-        button.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchartFill)
-                             accessibilityDescription:@"Hide content regex visualization"
-                                    fallbackImageName:@"flowchart.fill"
-                                             forClass:[self class]];
-    } else {
-        [_contentRegexPopover close];
-        _contentRegexPopover = nil;
-        button.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchart)
-              accessibilityDescription:@"Show content regex visualization"
-                     fallbackImageName:@"flowchart"
-                              forClass:[self class]];
-    }
-}
-
-- (void)updateButtonLayoutForBrowserMode {
-    if (!_browserMode) {
-        return;
-    }
-    
-    // Hide the instant button
-    _instantButton.hidden = YES;
-    
-    // Find and remove the existing leading constraint for the enabled button
-    NSView *buttonsRow = _instantButton.superview;
-    if (!buttonsRow) {
-        return;
-    }
-    
-    NSLayoutConstraint *enabledButtonLeadingConstraint = nil;
-    for (NSLayoutConstraint *constraint in buttonsRow.constraints) {
-        if (constraint.firstItem == _enabledButton && 
-            constraint.firstAttribute == NSLayoutAttributeLeading &&
-            constraint.secondItem == _instantButton &&
-            constraint.secondAttribute == NSLayoutAttributeTrailing) {
-            enabledButtonLeadingConstraint = constraint;
-            break;
-        }
-    }
-    
-    if (enabledButtonLeadingConstraint) {
-        [buttonsRow removeConstraint:enabledButtonLeadingConstraint];
-        
-        // Add new constraint connecting enabled button directly to spacer
-        NSView *spacer = nil;
-        for (NSView *subview in buttonsRow.subviews) {
-            if (subview != _instantButton && subview != _enabledButton && subview != _updateProfileButton) {
-                spacer = subview;
-                break;
-            }
-        }
-        
-        if (spacer) {
-            [buttonsRow addConstraint:[NSLayoutConstraint constraintWithItem:_enabledButton
-                                                                   attribute:NSLayoutAttributeLeading
-                                                                   relatedBy:NSLayoutRelationEqual
-                                                                      toItem:spacer
-                                                                   attribute:NSLayoutAttributeTrailing
-                                                                  multiplier:1.0
-                                                                    constant:0]];
-        }
-    }
 }
 
 #pragma mark - iTermTriggerParameterController
@@ -1991,9 +1695,6 @@ static const CGFloat kLabelWidth = 124;
     if (textField == _regexTextField) {
         _regex = [[textField stringValue] copy];
         _visualizationViewController.regex = _regex ?: @"";
-    } else if (textField == _contentRegexTextField) {
-        _contentRegex = [[textField stringValue] copy];
-        _contentRegexVisualizationViewController.regex = _contentRegex ?: @"";
     } else if (textField != _nameTextField && textField != _jobTextField) {
         if ([textField.identifier isEqual:kStatusTextComboBoxIdentifier]) {
             param = [_currentTrigger paramByReplacingComboBoxValue:textField.stringValue

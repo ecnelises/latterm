@@ -106,7 +106,7 @@ static NSString *const iTermToolProfilesProfileListViewState = @"iTermToolProfil
 }
 
 + (ProfileType)supportedProfileTypes {
-    return ProfileTypeBrowser | ProfileTypeTerminal;
+    return ProfileTypeAll;
 }
 
 - (void)refreshTerminal:(NSNotification *)notification {

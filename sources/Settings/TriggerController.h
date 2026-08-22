@@ -40,10 +40,8 @@ extern NSString *const kStatusTextComboBoxIdentifier;
 @property (nonatomic) BOOL hasSelection;
 @property (nonatomic, weak) IBOutlet id<TriggerDelegate> delegate;
 @property (nonatomic, readonly) NSTableView *tableView;
-@property (nonatomic) BOOL browserMode;
 
-- (instancetype)initInBrowserMode:(BOOL)browserMode;
-+ (NSArray<Class> *)triggerClassesForTerminal:(BOOL)terminal;
++ (NSArray<Class> *)triggerClasses;
 + (NSView *)viewForParameterForTrigger:(Trigger *)trigger
                                   size:(CGSize)size
                                  value:(id)value
@@ -64,4 +62,3 @@ extern NSString *const kStatusTextComboBoxIdentifier;
 - (void)profileDidChange;
 
 @end
-

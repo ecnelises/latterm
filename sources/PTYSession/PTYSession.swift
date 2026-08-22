@@ -845,8 +845,8 @@ extension PTYSession {
         }
         // No inner isRestartable() re-check inside the closure: under
         // current invariants -isRestartable becomes true once _program
-        // is assigned and never flips back (no code path clears
-        // _program; browser-ness is fixed at session creation). The
+        // is assigned and never flips back because no code path clears
+        // _program. The
         // outer guard is enough, so the closure only needs the weak
         // self check.
         let restartWithCurrentSelection: () -> Void = { [weak self] in
@@ -948,15 +948,6 @@ extension PTYSession {
                     profile[KEY_PROMPT_CLOSE] = PROMPT_ALWAYS
                     profile[KEY_SESSION_END_ACTION] =
                         iTermSessionEndAction.default.rawValue
-                    // Browser profile + configured URL: seed
-                    // KEY_INITIAL_URL so the browser session's
-                    // deferred-URL load picks it up.
-                    if !config.urlString.isEmpty,
-                       let customCommand = profile[KEY_CUSTOM_COMMAND as String] as? String,
-                       customCommand == kProfilePreferenceCommandTypeBrowserValue {
-                        profile[KEY_INITIAL_URL as String] = config.urlString
-                    }
-
                     let newSession = factory.newSession(withProfile: profile,
                                                         parent: self)
                     // Durably pin the default end action: the profile

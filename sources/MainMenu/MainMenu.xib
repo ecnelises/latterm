@@ -2042,7 +2042,6 @@ CQ
                 <outlet property="_splitVerticallyWithCurrentProfile" destination="1200" id="TXu-qW-aIJ"/>
                 <outlet property="_toolbeltMenuItem" destination="1297" id="QkM-ZJ-lT3"/>
                 <outlet property="_triggers" destination="DB9-tf-hPg" id="gAA-pF-wPx"/>
-                <outlet property="_webMenuItem" destination="Dn5-OV-QtF" id="pmG-vt-lNW"/>
                 <outlet property="bookmarkMenu" destination="592" id="874"/>
                 <outlet property="irPrev" destination="976" id="980"/>
                 <outlet property="maximizePane" destination="1233" id="1237"/>

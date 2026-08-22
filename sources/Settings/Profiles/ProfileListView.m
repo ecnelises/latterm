@@ -583,7 +583,6 @@ const CGFloat kDefaultTagsWidth = 80;
                                            tags:(NSArray *)tags
                                        selected:(BOOL)selected
                                       isDefault:(BOOL)isDefault
-                                      isBrowser:(BOOL)isBrowser
                                       isDynamic:(BOOL)isDynamic
                                          filter:(NSString *)filter {
     NSColor *highlightedBackgroundColor = [NSColor colorWithCalibratedRed:1 green:1 blue:0 alpha:0.4];
@@ -607,25 +606,10 @@ const CGFloat kDefaultTagsWidth = 80;
                               defaultAttributes:plainAttributes
                           highlightedAttributes:highlightedNameAttributes] mutableCopy] autorelease];
 
-    if (isDefault && !isBrowser) {
+    if (isDefault) {
         NSAttributedString *star = [[[NSAttributedString alloc] initWithString:@"★ "
                                                                     attributes:plainAttributes] autorelease];
         [theAttributedString insertAttributedString:star atIndex:0];
-    }
-    if (isBrowser) {
-        NSAttributedString *browserIcon;
-        if (@available(macOS 11.0, *)) {
-            NSTextAttachment *attachment = [[[NSTextAttachment alloc] init] autorelease];
-            NSString *imageName = isDefault ? SFSymbolGetString(SFSymbolSafariFill) : SFSymbolGetString(SFSymbolSafari);
-            NSImage *image = [NSImage imageWithSystemSymbolName:imageName accessibilityDescription:nil];
-            image.size = NSMakeSize(16, 16);
-            attachment.image = image;
-            NSAttributedString *safari = [NSAttributedString attributedStringWithAttachment:attachment];
-            NSAttributedString *space = [[[NSAttributedString alloc] initWithString:@" "
-                                                           attributes:plainAttributes] autorelease];
-            browserIcon = [safari attributedStringByAppendingAttributedString:space];
-            [theAttributedString insertAttributedString:browserIcon atIndex:0];
-        }
     }
     if (isDynamic) {
         if (@available(macOS 12.0, *)) {
@@ -724,14 +708,11 @@ const CGFloat kDefaultTagsWidth = 80;
         DLog(@"Getting name of profile at row %d. The dictionary's address is %p. Its name is %@",
              (int)rowIndex, bookmark, bookmark[KEY_NAME]);
         Profile *defaultProfile = [[ProfileModel sharedInstance] defaultBookmark];
-        const BOOL browser = bookmark.profileIsBrowser;
-        Profile *defaultBrowserProfile = browser ? [[ProfileModel sharedInstance] defaultBrowserProfile] : nil;
         *multilinePtr = [bookmark[KEY_TAGS] count] > 0;
         return [self attributedStringForName:bookmark[KEY_NAME] ?: @""
                                         tags:bookmark[KEY_TAGS]
-                                    selected:[[tableView_ selectedRowIndexes] containsIndex:rowIndex]
-                                   isDefault:[bookmark[KEY_GUID] isEqualToString:defaultProfile[KEY_GUID]] || [bookmark[KEY_GUID] isEqualToString:defaultBrowserProfile[KEY_GUID]]
-                                   isBrowser:browser
+                                   selected:[[tableView_ selectedRowIndexes] containsIndex:rowIndex]
+                                   isDefault:[bookmark[KEY_GUID] isEqualToString:defaultProfile[KEY_GUID]]
                                    isDynamic:bookmark.profileIsDynamic
                                       filter:[searchField_ stringValue]];
     } else if (aTableColumn == commandColumn_) {
@@ -744,8 +725,6 @@ const CGFloat kDefaultTagsWidth = 80;
             theString = [NSString stringWithFormat:@"ssh %@", bookmark[KEY_COMMAND_LINE]];
         } else if ([customCommand isEqualToString:kProfilePreferenceCommandTypeLoginShellValue]) {
             theString = @"Login shell";
-        } else if (bookmark.profileIsBrowser) {
-            theString = @"URL";
         }
         return [self attributedStringForCommand:theString
                                        selected:[[tableView_ selectedRowIndexes] containsIndex:rowIndex]

@@ -17,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) void (^didChange)(void);
 @property (nonatomic, readonly) NSString *regex;
-@property (nonatomic, readonly, nullable) NSString *contentRegex;
 @property (nonatomic, readonly) NSString *name;
 @property (nonatomic, readonly, nullable) NSString *job;
 @property (nonatomic, readonly) id parameter;
@@ -28,24 +27,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) NSDictionary<NSString *, id> *eventParams;
 @property (nonatomic, strong) NSColor *defaultTextColor;
 @property (nonatomic, strong) NSColor *defaultBackgroundColor;
-@property (nonatomic) BOOL browserMode;
 
 + (void)addTriggerForText:(NSString *)text
                    window:(NSWindow *)window
                interpolatedStrings:(BOOL)interpolatedStrings
          defaultTextColor:(NSColor *)defaultTextColor
    defaultBackgroundColor:(NSColor *)defaultBackgroundColor
-              browserMode:(BOOL)browserMode
                completion:(void (^)(NSDictionary *, BOOL))completion;
 
 - (instancetype)initWithName:(NSString *)name
                    matchType:(iTermTriggerMatchType)matchType
                        regex:(NSString *)regex
-                contentRegex:(NSString * _Nullable)contentRegex
          interpolatedStrings:(BOOL)interpolatedStrings
             defaultTextColor:(NSColor *)defaultTextColor
       defaultBackgroundColor:(NSColor *)defaultBackgroundColor
-                 browserMode:(BOOL)browserMode
                   completion:(void (^)(NSDictionary * _Nullable, BOOL))completion NS_DESIGNATED_INITIALIZER;
 
 - (void)setTrigger:(Trigger *)trigger;

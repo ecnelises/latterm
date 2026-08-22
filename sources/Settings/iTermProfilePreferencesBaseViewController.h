@@ -21,7 +21,6 @@
 - (void)profilePreferencesViewController:(iTermProfilePreferencesBaseViewController *)viewController
                     willSetObjectWithKey:(NSString *)key;
 - (BOOL)profilePreferencesRevealViewController:(iTermProfilePreferencesBaseViewController *)viewController;
-- (void)profilePreferencesSessionTypeDidChange;
 @end
 
 @interface iTermProfilePreferencesBaseViewController : iTermPreferencesBaseViewController
@@ -36,6 +35,4 @@
 
 // Called just before selected profile changes.
 - (void)willReloadProfile;
-- (void)updateBrowserSpecific;
-
 @end

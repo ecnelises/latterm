@@ -34,10 +34,9 @@ extension NSView {
 @objc
 extension iTermPreferencesBaseViewController {
     // Returns whether the tab view item can remain because it has visible subviews.
-    @objc(setVisibilityForTerminalEnclosures:browserEnclosures:hiddenModeEnclosures:sharedProfilesEnclosures:tabViewItem:)
+    @objc(setVisibilityForTerminalEnclosures:hiddenModeEnclosures:sharedProfilesEnclosures:tabViewItem:)
     func setVisibility(
         forTerminalEnclosures terminal: Bool,
-        browserEnclosures browser: Bool,
         hiddenModeEnclosures hidden: Bool,
         sharedProfilesEnclosures sharedProfiles: Bool,
         tabViewItem: NSTabViewItem) -> Bool {
@@ -45,7 +44,6 @@ extension iTermPreferencesBaseViewController {
                 return false
             }
             return view.setVisibility(forTerminalEnclosures: terminal,
-                                      browserEnclosures: browser,
                                       hiddenModeEnclosures: hidden,
                                       sharedProfilesEnclosures: sharedProfiles,
                                       stateStorage: internalState,

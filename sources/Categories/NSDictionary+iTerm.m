@@ -72,15 +72,6 @@ static const NSEventModifierFlags iTermHotkeyModifierMask = (NSEventModifierFlag
 
 @implementation NSDictionary (iTerm)
 
-- (BOOL)profileIsBrowser {
-    return [iTermTerminalFirstFeatures browserFeaturesEnabled] &&
-           [[NSString castFrom:self[KEY_CUSTOM_COMMAND]] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
-}
-
-- (BOOL)profileIsTerminal {
-    return !self.profileIsBrowser;
-}
-
 + (instancetype)it_dictionaryWithContentsOfData:(NSData *)data {
     NSError *error = nil;
     NSDictionary *dictionary = [NSPropertyListSerialization propertyListWithData:data

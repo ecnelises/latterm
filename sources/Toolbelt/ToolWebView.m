@@ -118,7 +118,7 @@ static NSString *const iTermToolWebViewLogger = @"logger";
 }
 
 + (ProfileType)supportedProfileTypes {
-    return ProfileTypeBrowser | ProfileTypeTerminal;
+    return ProfileTypeAll;
 }
 
 - (void)loadURL {

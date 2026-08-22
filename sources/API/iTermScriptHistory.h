@@ -37,7 +37,6 @@ extern NSString *const iTermScriptHistoryEntryFieldRPCValue;  // RPC changed
 + (instancetype)globalEntry;
 + (instancetype)apsEntry;
 + (instancetype)dynamicProfilesEntry;
-+ (instancetype)browserEntry:(NSString *)identifier;
 + (instancetype)smartSelectionAnctionsEntry;
 - (instancetype)initWithName:(NSString *)name
                     fullPath:(nullable NSString *)fullPath
@@ -64,14 +63,13 @@ extern NSString *const iTermScriptHistoryNumberOfEntriesDidChangeNotification;
 - (void)addHistoryEntry:(iTermScriptHistoryEntry *)entry;
 - (void)removeHistoryEntry:(iTermScriptHistoryEntry *)entry;
 // Removes every entry that has stopped running. Persistent pseudo-entries (the
-// app, APS, dynamic profiles, browser loggers) are always running and survive.
+// app, APS, and dynamic profiles) are always running and survive.
 - (void)removeTerminatedEntries;
 - (iTermScriptHistoryEntry *)entryWithIdentifier:(NSString *)identifier;
 - (iTermScriptHistoryEntry *)runningEntryWithPath:(NSString *)path;
 - (iTermScriptHistoryEntry *)runningEntryWithFullPath:(NSString *)fullPath;
 - (void)addAPSLoggingEntryIfNeeded;
 - (void)addDynamicProfilesLoggingEntryIfNeeded;
-- (void)addBrowserLoggingEntryIfNeeded:(NSString *)identifier;
 @end
 
 NS_ASSUME_NONNULL_END

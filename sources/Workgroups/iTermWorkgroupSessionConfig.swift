@@ -85,10 +85,8 @@ import Foundation
 // NSOutlineView datasource needs to traverse by parent lookup anyway and
 // decoupling storage from traversal keeps mutations trivial.
 //
-// Whether this session is a terminal or a browser is decided by the
-// profile, not by the workgroup; we store `command` and `urlString` as
-// independent fields and the runtime consumes whichever is appropriate
-// for the resolved profile.
+// `urlString` is retained independently from `command` for URL-based
+// launch substitutions and backward-compatible decoding.
 struct iTermWorkgroupSessionConfig: Codable, Equatable {
     let uniqueIdentifier: String
     var parentID: String?

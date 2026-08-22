@@ -46,17 +46,7 @@ class TerminalModeEnclosure: ModalEnclosure {
     }
 }
 
-// Visible if the profile being edited is in browser mode
-@objc(iTermBrowserModeEnclosure)
-@IBDesignable
-class BrowserModeEnclosure: ModalEnclosure {
-    @objc
-    override var visibleForProfileTypes: ProfileType {
-        return [.browser]
-    }
-}
-
-// Visible if browser is allowed, even if plugin is not installed.
+// Always hidden. Retained for preference rows unavailable in this fork.
 @objc(iTermHiddenModeEnclosure)
 @IBDesignable
 class HiddenModeEnclosure: ModalEnclosure {
@@ -94,7 +84,6 @@ extension NSView {
 }
 
 fileprivate let terminalModeKey = "terminal mode"
-fileprivate let browserModeKey = "browser mode"
 fileprivate let hiddenModeKey = "hidden mode"
 fileprivate let sharedProfilesModeKey = "shared profiles mode"
 fileprivate let key = "frames"
@@ -102,16 +91,14 @@ fileprivate let key = "frames"
 @objc
 extension NSView {
     // Returns whether the tab view item can remain because it has visible subviews.
-    @objc(setVisibilityForTerminalEnclosures:browserEnclosures:hiddenModeEnclosures:sharedProfilesEnclosures:stateStorage:shrinkage:)
+    @objc(setVisibilityForTerminalEnclosures:hiddenModeEnclosures:sharedProfilesEnclosures:stateStorage:shrinkage:)
     func setVisibility(forTerminalEnclosures terminal: Bool,
-                       browserEnclosures browser: Bool,
                        hiddenModeEnclosures hidden: Bool,
                        sharedProfilesEnclosures sharedProfiles: Bool,
                        stateStorage: NSMutableDictionary,
                        shrinkage: UnsafeMutablePointer<NSSize>?) -> Bool {
         let tabViewItemView = self
         let configuration = SavedFrames.Configuration(terminal: terminal,
-                                                      browser: browser,
                                                       hidden: hidden,
                                                       sharedProfiles: sharedProfiles)
         if savedFrames(stateStorage: stateStorage)?.configuration == configuration {
@@ -130,15 +117,6 @@ extension NSView {
                 if let enclosure = subview as? TerminalModeEnclosure {
                     enclosures.append(subview as! ModalEnclosure)
                     if terminal {
-                        reveal.append(enclosure)
-                    } else {
-                        remove.append(enclosure)
-                    }
-                    return false
-                }
-                if let enclosure = subview as? BrowserModeEnclosure {
-                    enclosures.append(subview as! ModalEnclosure)
-                    if browser {
                         reveal.append(enclosure)
                     } else {
                         remove.append(enclosure)
@@ -193,7 +171,6 @@ extension NSView {
     private class SavedFrames: NSObject {
         struct Configuration: Equatable {
             var terminal = false
-            var browser = false
             var hidden = false
             var sharedProfiles = false
         }

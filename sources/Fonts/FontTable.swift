@@ -118,10 +118,6 @@ class FontTable: NSObject, FontProviderProtocol {
     @objc
     let anyNonASCIIDefaultLigatures: Bool
 
-    // 1.0 = 100%
-    @objc
-    let browserZoom: CGFloat
-
     @objc
     var fontForCharacterSizeCalculations: NSFont {
         return asciiFont.font
@@ -129,12 +125,7 @@ class FontTable: NSObject, FontProviderProtocol {
 
     @objc
     override convenience init() {
-        self.init(ascii: FontBox.defaultFont, nonAscii: nil, browserZoom: 1.0)
-    }
-
-    @objc
-    convenience init(ascii: PTYFontInfo, nonAscii: PTYFontInfo?, browserZoom: CGFloat) {
-        self.init(defaultFont: ascii, nonAsciiFont: nonAscii, config: nil, browserZoom: browserZoom)
+        self.init(defaultFont: FontBox.defaultFont, nonAsciiFont: nil, config: nil)
     }
 
     struct Entry: Codable, Equatable, Hashable {
@@ -239,19 +230,15 @@ class FontTable: NSObject, FontProviderProtocol {
     @objc
     convenience init(defaultFont: PTYFontInfo,
                      nonAsciiFont: PTYFontInfo?,
-                     configString: String?,
-                     browserZoom: CGFloat) {
+                     configString: String?) {
         self.init(defaultFont: defaultFont,
                   nonAsciiFont: nonAsciiFont,
-                  config: Config.makeTuple(configString),
-                  browserZoom: browserZoom)
+                  config: Config.makeTuple(configString))
     }
 
     private init(defaultFont: PTYFontInfo,
                  nonAsciiFont: PTYFontInfo?,
-                 config tuple: (String, Config)?,
-                 browserZoom: CGFloat) {
-        self.browserZoom = browserZoom
+                 config tuple: (String, Config)?) {
         defaultFont.boldVersion = defaultFont.computedBoldVersion()
         defaultFont.italicVersion = defaultFont.computedItalicVersion()
         defaultFont.boldItalicVersion = defaultFont.computedBoldItalicVersion()
@@ -407,9 +394,6 @@ class FontTable: NSObject, FontProviderProtocol {
               let nonASCII = defaultNonASCIIFont else {
             return (other.defaultNonASCIIFont == nil) && (defaultNonASCIIFont == nil)
         }
-        if round(other.browserZoom) != round(browserZoom) {
-            return false
-        }
         return otherNonASCII == nonASCII
     }
 
@@ -423,8 +407,7 @@ class FontTable: NSObject, FontProviderProtocol {
             nonAsciiFont: defaultNonASCIIFont.map {
                 PTYFontInfo(font: $0.font.it_fontByAdding(toPointSize: delta))
             },
-            config: config.map { ($0.stringValue, $0.byAddingPointSize(delta)) },
-            browserZoom: min(5, max(0.05, browserZoom + delta * 0.05)))
+            config: config.map { ($0.stringValue, $0.byAddingPointSize(delta)) })
     }
 
     @objc(fontTableForProfile:)
@@ -433,15 +416,13 @@ class FontTable: NSObject, FontProviderProtocol {
                                                      inProfile: profile,
                                                      ligaturesEnabled: iTermProfilePreferences.bool(forKey: KEY_ASCII_LIGATURES,
                                                                                                     inProfile: profile)) ?? NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-        let profileBrowserZoom = iTermProfilePreferences.double(forKey: KEY_BROWSER_ZOOM, inProfile: profile) / 100.0
         let useNonASCIIFont = iTermProfilePreferences.bool(forKey: KEY_USE_NONASCII_FONT,
                                                            inProfile: profile)
         if !useNonASCIIFont {
             return FontTable(
                 defaultFont: PTYFontInfo(font: asciiFont),
                 nonAsciiFont: nil,
-                configString: nil,
-                browserZoom: profileBrowserZoom)
+                configString: nil)
         }
 
         let nonASCIIFont = iTermProfilePreferences.font(forKey: KEY_NON_ASCII_FONT,
@@ -453,8 +434,7 @@ class FontTable: NSObject, FontProviderProtocol {
         return FontTable(
             defaultFont: PTYFontInfo(font: asciiFont),
             nonAsciiFont: nonASCIIFont.map { PTYFontInfo(font: $0) },
-            configString: config,
-            browserZoom: profileBrowserZoom)
+            configString: config)
     }
 
     @objc

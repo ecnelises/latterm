@@ -115,7 +115,7 @@ static NSButton *iTermToolActionsNewButton(NSString *imageName, NSString *title,
 }
 
 + (ProfileType)supportedProfileTypes {
-    return ProfileTypeBrowser | ProfileTypeTerminal;
+    return ProfileTypeAll;
 }
 
 #pragma mark - ToolbeltTool

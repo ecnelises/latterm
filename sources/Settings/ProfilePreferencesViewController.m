@@ -97,7 +97,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     IBOutlet NSTabViewItem *_textTab;
     IBOutlet NSTabViewItem *_windowTab;
     IBOutlet NSTabViewItem *_terminalTab;
-    IBOutlet NSTabViewItem *_webTab;
     IBOutlet NSTabViewItem *_sessionTab;
     IBOutlet NSTabViewItem *_keysTab;
     IBOutlet NSTabViewItem *_advancedTab;
@@ -122,9 +121,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 
     // Advanced tab view controller
     IBOutlet ProfilesAdvancedPreferencesViewController *_advancedViewController;
-
-    // Web tab view controller
-    IBOutlet ProfilesWebPreferencesViewController *_webViewController;
 
     IBOutlet NSView *_noProfileSelectedView;
 
@@ -199,7 +195,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     NSArray *tuples = @[ @[ _generalTab, _generalViewController.view ?: [NSNull null] ],
                          @[ _colorsTab, _colorsViewController.view ?: [NSNull null] ],
                          @[ _textTab, _textViewController.view ?: [NSNull null] ],
-                         @[ _webTab, _webViewController.view ?: [NSNull null] ],
                          @[ _windowTab, _windowViewController.view ?: [NSNull null] ],
                          @[ _terminalTab, _terminalViewController.view ?: [NSNull null] ],
                          @[ _sessionTab, _sessionViewController.view ?: [NSNull null] ],
@@ -218,7 +213,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     NSArray *tuples = @[ @[ _generalTab, _generalViewController ?: [NSNull null] ],
                          @[ _colorsTab, _colorsViewController ?: [NSNull null] ],
                          @[ _textTab, _textViewController ?: [NSNull null] ],
-                         @[ _webTab, _webViewController ?: [NSNull null] ],
                          @[ _windowTab, _windowViewController ?: [NSNull null] ],
                          @[ _terminalTab, _terminalViewController ?: [NSNull null] ],
                          @[ _sessionTab, _sessionViewController ?: [NSNull null] ],
@@ -306,9 +300,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 
     [self updateSubviewsForProfile:profile];
     [self reloadData];
-    for (iTermProfilePreferencesBaseViewController *vc in self.tabViewControllers) {
-        [vc updateBrowserSpecific];
-    }
     if (sideEffects) {
         [[NSNotificationCenter defaultCenter] postNotificationName:kPreferencePanelDidUpdateProfileFields
                                                             object:nil
@@ -322,7 +313,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
     (void)[_generalViewController setVisibilityForTerminalEnclosures:YES
-                                                   browserEnclosures:YES
                                                 hiddenModeEnclosures:YES
                                             sharedProfilesEnclosures:YES
                                                          tabViewItem:_generalTab];
@@ -411,15 +401,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     NSString *guid = [[[ProfileModel sharedInstance] defaultProfile] objectForKey:KEY_GUID];
     if (guid) {
         [self openToProfileWithGuid:guid];
-    }
-}
-
-- (void)selectDefaultBrowserProfile {
-    NSString *guid = [[ProfileModel sharedInstance] defaultBrowserProfile][KEY_GUID];
-    if (guid) {
-        [self openToProfileWithGuid:guid];
-    } else {
-        [self selectDefaultProfile];
     }
 }
 
@@ -521,7 +502,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
     NSArray *vcs = @[ _generalViewController ?: [NSNull null],
                       _colorsViewController ?: [NSNull null],
                       _textViewController ?: [NSNull null],
-                      _webViewController ?: [NSNull null],
                       _windowViewController ?: [NSNull null],
                       _terminalViewController ?: [NSNull null],
                       _sessionViewController ?: [NSNull null],
@@ -560,20 +540,16 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (ProfileType)profileType {
-    Profile *profile = [self selectedProfile];
-    return [Profile profileTypeForCustomCommand:profile[KEY_CUSTOM_COMMAND]];
+    return ProfileTypeTerminal;
 }
 
 - (void)updateEnclosureVisibilityForProfile:(Profile *)profile {
-    const BOOL browserMode = [iTermTerminalFirstFeatures browserFeaturesEnabled] &&
-                             [Profile profileTypeForCustomCommand:profile[KEY_CUSTOM_COMMAND]] == ProfileTypeBrowser;
     const BOOL profileIsShared = [[ProfileModel sharedInstance] bookmarkWithGuid:profile[KEY_GUID]] != nil;
     NSInteger i = 0;
     for (NSArray *tuple in [self tabViewControllerTuples]) {
         NSTabViewItem *tabViewItem = tuple[0];
         iTermProfilePreferencesBaseViewController *vc = tuple[1];
-        const BOOL wantTab = [vc setVisibilityForTerminalEnclosures:!browserMode
-                                                  browserEnclosures:browserMode
+        const BOOL wantTab = [vc setVisibilityForTerminalEnclosures:YES
                                                hiddenModeEnclosures:NO
                                            sharedProfilesEnclosures:profileIsShared
                                                         tabViewItem:tabViewItem];
@@ -826,7 +802,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
     _bulkCopyController.keysForColors = [_colorsViewController keysForBulkCopy];
     _bulkCopyController.keysForText = [_textViewController keysForBulkCopy];
-    _bulkCopyController.keysForWeb = [_webViewController keysForBulkCopy];
     _bulkCopyController.keysForWindow = [_windowViewController keysForBulkCopy];
     _bulkCopyController.keysForTerminal = [_terminalViewController keysForBulkCopy];
     _bulkCopyController.keysForSession = [_sessionViewController keysForBulkCopy];
@@ -1145,10 +1120,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 #pragma mark - iTermProfilesPreferencesBaseViewControllerDelegate
 
-- (void)profilePreferencesSessionTypeDidChange {
-    [self refresh];
-}
-
 - (BOOL)profilePreferencesRevealViewController:(iTermProfilePreferencesBaseViewController *)viewController {
     for (NSArray *tuple in [self tabViewTuples]) {
         NSTabViewItem *item = tuple[0];
@@ -1295,15 +1266,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
 - (void)switchToProfileOfType:(ProfileType)profileType {
     if (profileType & ProfileTypeTerminal) {
         [self selectDefaultProfile];
-        return;
-    }
-    if (profileType & ProfileTypeBrowser) {
-        if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
-            [self selectDefaultProfile];
-            return;
-        }
-        [self selectDefaultBrowserProfile];
-        return;
     }
 }
 

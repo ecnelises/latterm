@@ -468,12 +468,6 @@
 - (NSDictionary *)profile:(NSDictionary *)aDict
         modifiedToOpenURL:(NSString *)url
             forObjectType:(iTermObjectType)objectType {
-    const BOOL browser = [aDict[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
-    if (browser) {
-        MutableProfile *temp = [aDict mutableCopy];
-        temp[KEY_INITIAL_URL] = url;
-        return temp;
-    }
     const BOOL custom = [aDict[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeCustomValue];
     if (aDict == nil ||
         [[ITAddressBookMgr bookmarkCommandSwiftyString:aDict

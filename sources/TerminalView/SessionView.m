@@ -344,7 +344,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     [other addSubviewBelowFindView:_toolbarView];
     _toolbarView = nil;
     // Both views' reserved-height calculations just changed, so re-run layout
-    // to reposition scrollview/browser content and the toolbar itself.
+    // to reposition the scroll view and toolbar.
     [self updateLayout];
     [other updateLayout];
 }
@@ -354,7 +354,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     // SessionView's frame often didn't change size during the swap, so
     // -resizeSubviewsWithOldSize: didn't fire, and updatePaneTitles'
     // setToolbarItems: path returns changedToolbar==NO (the toolbar was moved,
-    // not added or removed). Force a layout so browser / scrollview frames
+    // not added or removed). Force a layout so scroll-view frames
     // reflect this view's current toolbar state.
     RLog(@"layoutContentsForNewlyActiveSession on %p frame=%@ toolbar=%p scrollview.frame=%@",
          self, NSStringFromRect(self.frame), _toolbarView,
@@ -913,7 +913,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     // first frame. Until then it's just a solid gray rectangle.
     _metalView.paused = YES;
     _metalView.enableSetNeedsDisplay = NO;
-    // In browser mode, keep metal view hidden
     _metalView.hidden = NO;
     _metalView.alphaValue = 0;
 
@@ -2310,7 +2309,7 @@ typedef NS_OPTIONS(NSUInteger, iTermCornerFlags) {
         return 0;
     }
 
-    // Get the border view's frame (scrollview or browser view) in window coordinates
+    // Get the scroll view's frame in window coordinates.
     NSRect borderFrame = _scrollview.frame;
     NSRect frameInWindow = [self convertRect:borderFrame toView:nil];
 

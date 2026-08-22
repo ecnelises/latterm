@@ -12,7 +12,6 @@
 // These match labels in the profiles tab view. I guess it should be identifiers but I would probably forget to set them.
 extern NSString *const iTermBulkCopyIdentifierColors;
 extern NSString *const iTermBulkCopyIdentifierText;
-extern NSString *const iTermBulkCopyIdentifierWeb;
 extern NSString *const iTermBulkCopyIdentifierWindow;
 extern NSString *const iTermBulkCopyIdentifierTerminal;
 extern NSString *const iTermBulkCopyIdentifierSession;
@@ -26,7 +25,6 @@ extern NSString *const iTermBulkCopyIdentifierAdvanced;
 @property(nonatomic, copy) NSString *sourceGuid;
 @property(nonatomic, copy) NSArray *keysForColors;
 @property(nonatomic, copy) NSArray *keysForText;
-@property(nonatomic, copy) NSArray *keysForWeb;
 @property(nonatomic, copy) NSArray *keysForWindow;
 @property(nonatomic, copy) NSArray *keysForTerminal;
 @property(nonatomic, copy) NSArray *keysForSession;

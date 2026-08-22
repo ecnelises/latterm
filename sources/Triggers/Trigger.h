@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString * const kTriggerMatchTypeKey;
 extern NSString * const kTriggerRegexKey;
-extern NSString * const kTriggerContentRegexKey;
 extern NSString * const kTriggerActionKey;
 extern NSString * const kTriggerPerformanceKey;
 extern NSString * const kTriggerParameterKey;
@@ -126,7 +125,6 @@ extern NSString * const kTriggerVariableValueRegexKey;
 
 @property (nonatomic, readonly) iTermTriggerMatchType matchType;
 @property (nonatomic, copy) NSString *regex;
-@property (nonatomic, copy, readonly) NSString *contentRegex;
 @property (nonatomic, copy, readonly) NSString *name;
 @property (nonatomic, copy, readonly, nullable) NSString *job;
 @property (nonatomic, copy, readonly, nullable) NSString *provenance;
@@ -154,7 +152,6 @@ extern NSString * const kTriggerVariableValueRegexKey;
 @property (nullable, nonatomic, readonly) NSString *helpText;
 @property (nonatomic, readonly) NSSet<NSNumber *> *allowedMatchTypes;
 @property (nonatomic, strong) iTermHistogram *performanceHistogram;
-@property (nonatomic, readonly) BOOL isBrowserTrigger;
 
 + (nullable NSSet<NSString *> *)synonyms;
 + (nullable Trigger *)triggerFromUntrustedDict:(NSDictionary *)dict;

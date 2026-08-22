@@ -212,14 +212,3 @@ static NSString *const stateKey = @"session guids with changed screens";
 }
 
 @end
-
-@implementation iTermGlobalBrowserSearchResult
-
-- (void)revealWithState:(NSMutableDictionary *)state
-             completion:(void (^)(NSRect))completion {
-    if (completion) {
-        completion(NSZeroRect);
-    }
-}
-
-@end

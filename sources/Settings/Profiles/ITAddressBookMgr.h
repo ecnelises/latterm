@@ -38,7 +38,6 @@
 #define KEY_DEFAULT_GUID                @"Default Bookmark Guid"  // use this instead (not in a bookmark)
 #define KEY_DEPRECATED_BOOKMARKS        @"Bookmarks"  // Deprecated
 #define KEY_NEW_BOOKMARKS               @"New Bookmarks"
-#define KEY_DEFAULT_BROWSER_GUID        @"Default Browser Profile Guid"
 
 #pragma mark - Profile-level keys
 // IMPORTANT: If you add keys, also modify doCopyFrom in PreferencePanel.m.
@@ -48,8 +47,6 @@
 #define KEY_DESCRIPTION                 @"Description"  // Deprecated
 #define KEY_CUSTOM_COMMAND              @"Custom Command"
 #define KEY_COMMAND_LINE                @"Command"
-#define KEY_PROFILE_TYPE_PHONY          @"Profile Type (Phony)"  // Not actually stored - has a synthetic getter and setter
-#define KEY_INITIAL_URL                 @"Initial URL"  // string
 #define KEY_INITIAL_TEXT                @"Initial Text"  // String. Evaluated as a swifty string.
 #define KEY_CUSTOM_DIRECTORY            @"Custom Directory"  // values are Yes, No, Recycle, Advanced
 #define KEY_WORKING_DIRECTORY           @"Working Directory"
@@ -145,9 +142,6 @@
 #define KEY_WIDTH_PERCENTAGE       @"Width Percentage"
 #define KEY_HEIGHT_PERCENTAGE      @"Height Percentage"
 
-// for browser only, at least for now
-#define KEY_WIDTH                  @"Width in Points"  // NSNumber
-#define KEY_HEIGHT                 @"Height in Points"  // NSNumber
 #define KEY_FULLSCREEN             @"Full Screen"  // DEPRECATED
 #define KEY_WINDOW_TYPE            @"Window Type"
 #define KEY_USE_CUSTOM_WINDOW_TITLE           @"Use Custom Window Title"
@@ -198,11 +192,6 @@
 #define KEY_NON_ASCII_LIGATURES    @"Non-ASCII Ligatures"
 #define KEY_BACKGROUND_IMAGE_MODE  @"Background Image Mode"  // iTermBackgroundImageMode enum
 #define KEY_POWERLINE              @"Draw Powerline Glyphs"
-
-// Web
-#define KEY_BROWSER_ZOOM           @"Browser Zoom"  // 100 = 100%
-#define KEY_BROWSER_DEV_NULL       @"Dev Null Mode"
-#define KEY_INSTANT_REPLAY         @"Instant Replay"
 
 // Terminal
 #define KEY_DISABLE_WINDOW_RESIZING           @"Disable Window Resizing"
@@ -393,7 +382,6 @@ extern NSString *const kProfilePreferenceCommandTypeCustomValue;
 extern NSString *const kProfilePreferenceCommandTypeLoginShellValue;
 extern NSString *const kProfilePreferenceCommandTypeCustomShellValue;
 extern NSString *const kProfilePreferenceCommandTypeSSHValue;
-extern NSString *const kProfilePreferenceCommandTypeBrowserValue;
 
 // I chose 1250 because on a 6k display each cell would be less than 5 points wide,
 // which won't be legible. It needs an upper bound because of issue 8592.
@@ -565,8 +553,6 @@ static inline iTermLoggingStyle iTermLoggingStyleFromUserDefaultsValue(NSUIntege
 typedef NS_ENUM(NSInteger, iTermTriggerMatchType) {
     // Regex-based (0-99)
     iTermTriggerMatchTypeRegex = 0,
-    iTermTriggerMatchTypeURLRegex = 1,
-    iTermTriggerMatchTypePageContentRegex = 2,
 
     // Event-based (100+)
     iTermTriggerMatchTypeEventPromptDetected = 100,

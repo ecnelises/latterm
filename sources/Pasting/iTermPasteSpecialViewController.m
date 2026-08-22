@@ -99,7 +99,6 @@ static NSString *const kSubstitution = @"Substitution";
     _profileType = profileType;
     NSSize shrinkage;
     (void)[self.view setVisibilityForTerminalEnclosures:!!(profileType & ProfileTypeTerminal)
-                                      browserEnclosures:!!(profileType & ProfileTypeBrowser)
                                    hiddenModeEnclosures:NO
                                sharedProfilesEnclosures:false
                                            stateStorage:[NSMutableDictionary dictionary]

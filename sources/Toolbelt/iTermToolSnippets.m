@@ -199,7 +199,7 @@ static NSButton *iTermToolSnippetsNewButton(NSString *imageName, NSString *title
 }
 
 + (ProfileType)supportedProfileTypes {
-    return ProfileTypeBrowser | ProfileTypeTerminal;
+    return ProfileTypeAll;
 }
 
 - (void)buildTree {

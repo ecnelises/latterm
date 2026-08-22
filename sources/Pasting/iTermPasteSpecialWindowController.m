@@ -161,9 +161,6 @@
     const CGFloat heightBefore = _pasteSpecialViewController.view.frame.size.height;
     _pasteSpecialViewController.profileType = _profileType;
     const CGFloat heightAfter = _pasteSpecialViewController.view.frame.size.height;
-    if (_profileType != ProfileTypeTerminal) {
-        _terminalModeEnclosure.hidden = YES;
-    }
     const CGFloat shrinkage = heightBefore - heightAfter;
 
     NSRect frame = _statsLabel.frame;

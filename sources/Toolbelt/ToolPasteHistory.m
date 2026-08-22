@@ -124,7 +124,7 @@ static const CGFloat kMargin = 4;
 }
 
 + (ProfileType)supportedProfileTypes {
-    return ProfileTypeBrowser | ProfileTypeTerminal;
+    return ProfileTypeAll;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item {

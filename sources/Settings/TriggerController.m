@@ -173,13 +173,8 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
 }
 
 - (instancetype)init {
-    return [self initInBrowserMode:NO];
-}
-
-- (instancetype)initInBrowserMode:(BOOL)browserMode {
     self = [self initWithWindowNibName:@"iTermTriggersPanel"];
     if (self) {
-        _browserMode = browserMode;
         [self loadTriggers];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(reloadAllProfiles:)
@@ -189,26 +184,9 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
     return self;
 }
 
-- (void)setBrowserMode:(BOOL)browserMode {
-    if (_browserMode == browserMode) {
-        return;
-    }
-    _browserMode = browserMode;
-    [self loadTriggers];
-
-    // Recreate the detail view controller with the correct browser mode
-    if (_detailViewController) {
-        [_detailViewController.view removeFromSuperview];
-        [self createDetailViewController];
-        
-        // Update the detail view if a trigger is selected
-        [self updateDetailViewController];
-    }
-}
-
 - (void)loadTriggers {
     NSMutableArray *triggers = [NSMutableArray array];
-    for (Class class in [self.class triggerClassesForTerminal:!_browserMode]) {
+    for (Class class in [self.class triggerClasses]) {
         [triggers addObject:[[class alloc] init]];
     }
     for (Trigger *trigger in triggers) {
@@ -225,13 +203,11 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
     }
     
     _detailViewController = [[iTermAddTriggerViewController alloc] initWithName:@""
-                                                                      matchType:_browserMode ? iTermTriggerMatchTypeURLRegex : iTermTriggerMatchTypeRegex
+                                                                      matchType:iTermTriggerMatchTypeRegex
                                                                           regex:@""
-                                                                   contentRegex:nil
                                                             interpolatedStrings:[iTermProfilePreferences boolForKey:KEY_TRIGGERS_USE_INTERPOLATED_STRINGS inProfile:[self bookmark]]
                                                                defaultTextColor:[NSColor colorWithDisplayP3Red:1 green:1 blue:1 alpha:0]
                                                          defaultBackgroundColor:[NSColor colorWithDisplayP3Red:1 green:0 blue:0 alpha:1]
-                                                                    browserMode:_browserMode
                                                                      completion:^(NSDictionary *ignore, BOOL ignore2) {}];
     
     // Only proceed if we have a container view
@@ -255,10 +231,8 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
     };
 }
 
-+ (NSArray<Class> *)triggerClassesForTerminal:(BOOL)terminal {
-    NSArray *allClasses;
-    if (terminal) {
-        allClasses = @[
++ (NSArray<Class> *)triggerClasses {
+    NSArray *allClasses = @[
             [AlertTrigger class],
             [AnnotateTrigger class],
             [BellTrigger class],
@@ -287,9 +261,6 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
             [SetHostnameTrigger class],
             [StopTrigger class],
             [iTermSetTabStatusTrigger class] ];
-    } else {
-        allClasses = @[];
-    }
     return [allClasses sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
                   return [[obj1 title] compare:[obj2 title]];
               }];
@@ -359,12 +330,12 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
 }
 
 - (int)numberOfTriggers {
-    return [[self.class triggerClassesForTerminal:!self.browserMode] count];
+    return [[self.class triggerClasses] count];
 }
 
 - (int)indexOfAction:(NSString *)action {
     int n = [self numberOfTriggers];
-    NSArray *classes = [self.class triggerClassesForTerminal:!self.browserMode];
+    NSArray *classes = [self.class triggerClasses];
     for (int i = 0; i < n; i++) {
         NSString *className = NSStringFromClass(classes[i]);
         if ([className isEqualToString:action]) {
@@ -380,7 +351,7 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
 
 // Index in triggerClasses of an object of class "c"
 - (NSInteger)indexOfTriggerClass:(Class)c {
-    NSArray *classes = [self.class triggerClassesForTerminal:!self.browserMode];
+    NSArray *classes = [self.class triggerClasses];
     for (int i = 0; i < classes.count; i++) {
         if (classes[i] == c) {
             return i;
@@ -467,12 +438,7 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
 }
 
 - (NSDictionary *)defaultTriggerDictionary {
-    int index;
-    if (_browserMode) {
-        index = 0;
-    } else {
-        index = [self indexOfTriggerClass:[BounceTrigger class]];
-    }
+    const int index = [self indexOfTriggerClass:[BounceTrigger class]];
     Trigger *trigger = _triggers[index];
     return @{ kTriggerRegexKey: @"",
               kTriggerActionKey: [trigger action] };
@@ -1400,7 +1366,6 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
         [[self triggerDictionariesForCurrentProfile][row] mutableCopy];
     triggerDictionary[kTriggerMatchTypeKey] = @(_detailViewController.matchType);
     triggerDictionary[kTriggerRegexKey] = _detailViewController.regex;
-    triggerDictionary[kTriggerContentRegexKey] = _detailViewController.contentRegex ?: @"";
     triggerDictionary[kTriggerParameterKey] = _detailViewController.parameter;
     triggerDictionary[kTriggerActionKey] = _detailViewController.action;
     triggerDictionary[kTriggerDisabledKey] = @(!_detailViewController.enabled);

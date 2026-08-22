@@ -157,7 +157,6 @@
 #pragma mark - Triggers
 
 - (IBAction)editTriggers:(id)sender {
-    _triggerWindowController.browserMode = NO;
     [_triggerWindowController windowWillOpen];
     __weak __typeof(self) weakSelf = self;
     [self.view.window beginSheet:_triggerWindowController.window completionHandler:^(NSModalResponse returnCode) {

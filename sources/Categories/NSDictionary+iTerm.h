@@ -17,9 +17,6 @@
 
 @interface NSDictionary<__covariant KeyType, __covariant ObjectType> (iTerm)
 
-@property(nonatomic, readonly) BOOL profileIsBrowser;
-@property(nonatomic, readonly) BOOL profileIsTerminal;
-
 + (instancetype)it_dictionaryWithContentsOfData:(NSData *)data;
 
 + (CGFloat)defaultAlphaForColorPresetKey:(NSString *)key;
@@ -110,4 +107,3 @@ typedef NSDictionary iTermHotKeyDescriptor;
 - (void)it_mergeFrom:(NSDictionary<KeyType, ObjectType> *)other;
 - (void)it_addObject:(id)object toMutableArrayForKey:(KeyType)key;
 @end
-

@@ -17,7 +17,6 @@
                 <outlet property="_copyTerminal" destination="JQ9-AJ-VBd" id="x0z-Sg-c96"/>
                 <outlet property="_copyText" destination="aM3-9L-MGa" id="Ftg-1B-86y"/>
                 <outlet property="_copyTo" destination="uE4-LX-CTT" id="4Hs-wS-t4J"/>
-                <outlet property="_copyWeb" destination="8Xb-3V-rNL" id="wzM-qM-ho1"/>
                 <outlet property="_copyWindow" destination="tp8-sU-UEo" id="hY7-qn-ecJ"/>
                 <outlet property="window" destination="viC-2q-HiR" id="kXD-z4-sL3"/>
             </connections>
@@ -93,17 +92,6 @@
                         </buttonCell>
                         <connections>
                             <outlet property="nextKeyView" destination="CEn-pG-8pg" id="6ji-Jw-GjM"/>
-                        </connections>
-                    </button>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8Xb-3V-rNL">
-                        <rect key="frame" x="318" y="340" width="54" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Web" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="DnD-Zx-Die">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <outlet property="nextKeyView" destination="CEn-pG-8pg" id="mkc-Do-5lK"/>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CEn-pG-8pg">

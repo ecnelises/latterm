@@ -96,7 +96,7 @@ class ToolNamedMarks: NSView, ToolbeltTool, NSTableViewDelegate, NSTableViewData
     }
 
     static var supportedProfileTypes: ProfileType {
-        ProfileType(rawValue: ProfileType.terminal.rawValue | ProfileType.browser.rawValue)
+        .all
     }
 
     @objc func shutdown() {

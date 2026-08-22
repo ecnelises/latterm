@@ -21,6 +21,7 @@ Terminal-first fork changes:
 - Rebranded main-app alerts, tips, and
   default filenames from iTerm2 to Latterm.
 - Removed obsolete browser session shims.
+- Removed obsolete browser profile settings.
 - Simplified terminal password management.
 
 Major New Features:

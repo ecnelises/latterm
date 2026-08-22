@@ -18,10 +18,8 @@ enum iTermWorkgroupEntryMechanism: Int {
     // A terminal trigger (e.g. the Claude Code integration trigger
     // that fires when claude launches in a session).
     case trigger
-    // A browser trigger.
-    case browserTrigger
     // The user, via the Workgroups menu.
-    case menu
+    case menu = 2
     // The user accepted the Claude Code onboarding prompt (Try It Now).
     case onboarding
 
@@ -29,8 +27,6 @@ enum iTermWorkgroupEntryMechanism: Int {
         switch self {
         case .trigger:
             return "A trigger in session \(sessionGUID) entered this workgroup."
-        case .browserTrigger:
-            return "A browser trigger in session \(sessionGUID) entered this workgroup."
         case .menu:
             return "The user entered this workgroup from the Workgroups menu in session \(sessionGUID)."
         case .onboarding:

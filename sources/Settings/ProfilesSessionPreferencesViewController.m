@@ -626,7 +626,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
         [[iTermStatusBarSetupViewController alloc] initWithLayoutDictionary:layoutDictionary
                                                              darkBackground:[NSAppearance it_decorationsAreDarkWithTerminalBackgroundColorIsDark:dark]
                                                                allowRainbow:[self allowRainbow]
-                                                                profileType:[Profile profileTypeForCustomCommand:[self stringForKey:KEY_CUSTOM_COMMAND]]];
+                                                                profileType:ProfileTypeTerminal];
     _statusBarSetupViewController.defaultTextColor = [[iTermTheme sharedInstance] statusBarTextColorForEffectiveAppearance:[self appearanceForCurrentTheme]
                                                                                                                marginColor:nil
                                                                                                                   colorMap:[self colorMap]

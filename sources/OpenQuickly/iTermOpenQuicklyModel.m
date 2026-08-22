@@ -65,7 +65,6 @@ static const double kProfileNameMultiplierForArrangementItem = 0.11;
 // Multipliers for profile items
 static const double kProfileNameMultiplierForProfileItem = 0.1;
 
-// Browser bookmarks
 static const double kProfileNameMultiplierForBookmarkItem = 0.097;
 
 // Menu items. Higher-scoring items are often duplicates of these; there are also many of them so
@@ -521,10 +520,6 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 
 - (void)addChangeColorPresetToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
                         withMatcher:(iTermMinimumSubsequenceMatcher *)matcher {
-    if ([[[[[iTermController sharedInstance] currentTerminal] currentSession] profile] profileIsBrowser]) {
-        // Browser does not support color presets.
-        return;
-    }
     iTermColorPresetDictionary *allPresets = [iTermColorPresets allColorPresets];
     NSColor *defaultColor = [NSColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1];
     const BOOL dark = [[NSApp effectiveAppearance] it_isDark];
@@ -555,10 +550,6 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 - (void)addChangeProfileToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
                     withMatcher:(iTermMinimumSubsequenceMatcher *)matcher {
     for (Profile *profile in [[ProfileModel sharedInstance] bookmarks]) {
-        if (profile.profileType != iTermController.sharedInstance.currentTerminal.currentSession.profile.profileType) {
-            // Prevent selecting a type that will fail
-            continue;
-        }
         iTermOpenQuicklyChangeProfileItem *changeProfileItem = [[iTermOpenQuicklyChangeProfileItem alloc] init];
         NSMutableAttributedString *attributedName = [[NSMutableAttributedString alloc] init];
         changeProfileItem.score = [self scoreForProfile:profile matcher:matcher attributedName:attributedName];

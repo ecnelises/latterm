@@ -4686,7 +4686,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
             if (!canRetry) {
                 return;
             }
-            // Browser is added after a delay so we need to retry for it.
+            // The responder may be attached after a delay, so retry once.
             __weak __typeof(self) weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf makeCurrentSessionFirstResponderWithRetry:NO];
@@ -6929,7 +6929,6 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         [self setWindowTitle];
     }
 
-    // The web browser is added after a spin of the runloop to dodge auto layout bugs.
     if ([[[[tabViewItem identifier] activeSession] mainResponder] window] == [self window]) {
         [[self window] makeFirstResponder:[[[tabViewItem identifier] activeSession] mainResponder]];
     }

@@ -67,7 +67,6 @@ NSString *const kProfilePreferenceCommandTypeCustomValue = @"Yes";
 NSString *const kProfilePreferenceCommandTypeLoginShellValue = @"No";
 NSString *const kProfilePreferenceCommandTypeCustomShellValue = @"Custom Shell";
 NSString *const kProfilePreferenceCommandTypeSSHValue = @"SSH";
-NSString *const kProfilePreferenceCommandTypeBrowserValue = @"Browser";
 
 const NSTimeInterval kMinimumAntiIdlePeriod = 1.0;
 const NSInteger iTermMaxInitialSessionSize = 1250;
@@ -866,11 +865,6 @@ iTermPercentage iTermPercentageFromProfile(Profile *profile, iTermWindowType win
 
 + (NSString *)bookmarkCommandSwiftyString:(Profile *)bookmark
                             forObjectType:(iTermObjectType)objectType {
-    const BOOL browser = [iTermTerminalFirstFeatures browserFeaturesEnabled] &&
-                         [bookmark[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue];
-    if (browser) {
-        return bookmark[KEY_COMMAND_LINE];
-    }
     const BOOL custom = [bookmark[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeCustomValue];
     const BOOL ssh = [bookmark[KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeSSHValue];
     if (custom || ssh) {

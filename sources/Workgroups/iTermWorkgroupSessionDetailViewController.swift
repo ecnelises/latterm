@@ -648,15 +648,11 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         // only its toolbar items are user-editable.
         let isRoot: Bool
         if case .root = s.kind { isRoot = true } else { isRoot = false }
-        let isBrowser = resolvedProfileIsBrowser(for: s)
         profileRow.isHidden = isRoot
-        // Browser sessions have no command, so the deferred-launch
-        // / prompt-overlay path that .codeReview drives doesn't apply
-        // — hide Mode there too.
-        modeRow.isHidden = isRoot || isBrowser
-        commandRow.isHidden = isRoot || isBrowser
+        modeRow.isHidden = isRoot
+        commandRow.isHidden = isRoot
         perFileCommandRow.isHidden = !shouldShowPerFileCommandRow(for: s)
-        urlRow.isHidden = isRoot || !isBrowser
+        urlRow.isHidden = true
         // Every session is a potential peer-group leader (root and any
         // non-peer host can carry a peer group), so every kind gets an
         // editable display name. Required for .peer; for the others
@@ -749,21 +745,6 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
             profilePopup.addItem(withTitle: name)
             profilePopup.lastItem?.representedObject = guid
         }
-    }
-
-    private func resolvedProfileIsBrowser(for session: iTermWorkgroupSessionConfig) -> Bool {
-        guard let model = ProfileModel.sharedInstance() else { return false }
-        let profile: [AnyHashable: Any]?
-        if let guid = session.profileGUID,
-           let p = model.bookmark(withGuid: guid) {
-            profile = p
-        } else {
-            profile = model.defaultBookmark()
-        }
-        guard let dict = profile,
-              let customCommand = dict[KEY_CUSTOM_COMMAND as String] as? String
-            else { return false }
-        return customCommand == kProfilePreferenceCommandTypeBrowserValue
     }
 
     // MARK: - Control actions
@@ -1022,12 +1003,11 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
 
     // Per-file command is only meaningful when the user actually has a
     // changedFileSelector in this session's toolbar — that's the only
-    // thing that fires it. Browsers and the root never use it. Single
+    // thing that fires it. The root never uses it. Single
     // source of truth so toolbar mutations and the initial show()
     // don't drift apart.
     private func shouldShowPerFileCommandRow(for s: iTermWorkgroupSessionConfig) -> Bool {
         if case .root = s.kind { return false }
-        if resolvedProfileIsBrowser(for: s) { return false }
         return s.toolbarItems.contains(where: {
             if case .changedFileSelector = $0 { return true }
             return false

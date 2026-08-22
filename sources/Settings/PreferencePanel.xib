@@ -470,12 +470,6 @@ Gw
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             </view>
                                                         </tabViewItem>
-                                                        <tabViewItem label="Web" identifier="Web" id="euE-Xk-BXP" userLabel="Web">
-                                                            <view key="view" id="7Ix-sk-alt" userLabel="Filler">
-                                                                <rect key="frame" x="10" y="33" width="592" height="404"/>
-                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                            </view>
-                                                        </tabViewItem>
                                                         <tabViewItem label="Window" identifier="Window" id="4909">
                                                             <view key="view" id="4910" userLabel="Filler">
                                                                 <rect key="frame" x="10" y="33" width="592" height="404"/>
@@ -1504,8 +1498,6 @@ CA
                 <outlet property="_textTab" destination="4763" id="LM3-ed-Kwk"/>
                 <outlet property="_textViewController" destination="lhd-u6-xr5" id="XTC-Yc-Vqb"/>
                 <outlet property="_toggleTagsButton" destination="nFj-0n-SWO" id="nd4-hz-FRN"/>
-                <outlet property="_webTab" destination="euE-Xk-BXP" id="bUd-yZ-7eg"/>
-                <outlet property="_webViewController" destination="cZm-PZ-opq" id="PON-j4-BW9"/>
                 <outlet property="_windowTab" destination="4909" id="Njn-hX-mEc"/>
                 <outlet property="_windowViewController" destination="BMA-OA-Kzc" id="6zk-Vv-rly"/>
                 <outlet property="delegate" destination="-2" id="AYk-4p-lit"/>
@@ -1698,15 +1690,6 @@ CA
                 <outlet property="view" destination="G2G-W6-kWa" id="dro-S5-ibW"/>
             </connections>
         </customObject>
-        <viewController id="cZm-PZ-opq" userLabel="Prefs&gt;Profiles&gt;Web View Controller" customClass="ProfilesWebPreferencesViewController">
-            <connections>
-                <outlet property="browserPageZoom" destination="VXt-Ga-Uvg" id="Kjz-s5-nNG"/>
-                <outlet property="delegate" destination="HVI-63-mNz" id="KdR-au-w45"/>
-                <outlet property="devNullMode" destination="dRY-Y3-E01" id="zRT-Lu-Rob"/>
-                <outlet property="enableInstantReplay" destination="Mfp-Bd-POU" id="W47-38-Y9m"/>
-                <outlet property="view" destination="AAg-E0-J0n" id="UBv-g2-plh"/>
-            </connections>
-        </viewController>
         <customObject id="BMA-OA-Kzc" userLabel="Prefs&gt;Profiles&gt;Window View Controller" customClass="ProfilesWindowPreferencesViewController">
             <connections>
                 <outlet property="_backgroundImageFolderIntervalField" destination="LPm-4S-0v9" id="e2p-e1-KwQ"/>
@@ -1724,7 +1707,6 @@ CA
                 <outlet property="_columnsUnitsButton" destination="hcl-cH-cmc" id="aP6-UG-v2Q"/>
                 <outlet property="_customTabTitle" destination="C87-Oe-7P9" id="UOd-3O-GQb"/>
                 <outlet property="_customWindowTitle" destination="j1C-qn-Cjv" id="4IV-M9-IBf"/>
-                <outlet property="_heightField" destination="vLD-CZ-b4g" id="z4V-gS-UUe"/>
                 <outlet property="_heightLabel" destination="4913" id="liU-m6-uxW"/>
                 <outlet property="_hideAfterOpening" destination="6354" id="ivO-Qa-O3r"/>
                 <outlet property="_initialUseTransparency" destination="zKb-TP-OY3" id="Mg9-Ah-4bM"/>
@@ -1750,7 +1732,6 @@ CA
                 <outlet property="_useBlur" destination="4976" id="ZfQ-et-Uge"/>
                 <outlet property="_useCustomTabTitle" destination="Sem-hU-dHu" id="Mtd-3k-GUP"/>
                 <outlet property="_useCustomWindowTitle" destination="54y-dV-lgv" id="Fqi-lb-bV7"/>
-                <outlet property="_widthField" destination="eOz-YY-IzC" id="Zjt-IM-pO1"/>
                 <outlet property="_widthLabel" destination="4912" id="lPV-RC-UcS"/>
                 <outlet property="_windowStyle" destination="4916" id="HIG-WO-wce"/>
                 <outlet property="_windowStyleLabel" destination="4918" id="65O-r4-WZw"/>
@@ -3612,84 +3593,6 @@ CA
             <accessibility identifier="prefsProfilesText"/>
             <point key="canvasLocation" x="560" y="1538.5"/>
         </customView>
-        <customView id="AAg-E0-J0n" userLabel="Prefs - Profiles - Web" customClass="iTermSizeRememberingView">
-            <rect key="frame" x="0.0" y="0.0" width="577" height="332"/>
-            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-            <subviews>
-                <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HBp-sZ-6Au" customClass="iTermBrowserModeEnclosure">
-                    <rect key="frame" x="20" y="226" width="522" height="86"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <subviews>
-                        <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="EhU-tQ-9dJ">
-                            <rect key="frame" x="-2" y="70" width="106" height="16"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Page Zoom:" id="9ce-ui-ZGz">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
-                        <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jlj-GH-Ow7">
-                            <rect key="frame" x="-1" y="42" width="106" height="16"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Privacy:" id="I7W-YQ-zKh">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
-                        <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3Zy-E1-0s7" customClass="iTermSlider">
-                            <rect key="frame" x="111" y="66" width="391" height="20"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <subviews>
-                                <slider toolTip="How much of the background image is visible through the background color." verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VXt-Ga-Uvg">
-                                    <rect key="frame" x="-2" y="-6" width="365" height="28"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                    <sliderCell key="cell" continuous="YES" alignment="left" minValue="5" maxValue="500" doubleValue="5" tickMarkPosition="below" sliderType="linear" id="BPB-c8-rCC"/>
-                                    <connections>
-                                        <action selector="settingChanged:" target="cZm-PZ-opq" id="nKW-xF-NlD"/>
-                                        <outlet property="nextKeyView" destination="4976" id="7MW-sK-Jy7"/>
-                                    </connections>
-                                </slider>
-                            </subviews>
-                        </customView>
-                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dRY-Y3-E01">
-                            <rect key="frame" x="109" y="41" width="393" height="18"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="check" title="Use /dev/null mode (no history, cookies, or other data saved)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="lJx-wQ-cSk">
-                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="settingChanged:" target="cZm-PZ-opq" id="cDR-nV-C7g"/>
-                            </connections>
-                        </button>
-                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Mfp-Bd-POU">
-                            <rect key="frame" x="109" y="19" width="312" height="18"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="check" title="Enable Instant Replay (costs memory and CPU)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="MML-g6-oeR">
-                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="settingChanged:" target="cZm-PZ-opq" id="yi0-to-Vtk"/>
-                            </connections>
-                        </button>
-                        <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0kl-Ai-fRp">
-                            <rect key="frame" x="-1" y="20" width="106" height="16"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Instant Replay:" id="YKe-63-gdc">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
-                    </subviews>
-                </customView>
-            </subviews>
-            <accessibility identifier="prefsProfilesText"/>
-            <point key="canvasLocation" x="466.5" y="653"/>
-        </customView>
         <customView id="77f-eM-Dma" userLabel="Prefs - Profiles - Window" customClass="iTermSizeRememberingView">
             <rect key="frame" x="0.0" y="0.0" width="609" height="838"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3830,56 +3733,6 @@ CA
                                         </popUpButton>
                                     </subviews>
                                 </customView>
-                            </subviews>
-                        </customView>
-                        <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tTn-Gt-hqo" customClass="iTermBrowserModeEnclosure">
-                            <rect key="frame" x="142" y="248" width="410" height="21"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <subviews>
-                                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eOz-YY-IzC">
-                                    <rect key="frame" x="0.0" y="0.0" width="45" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" usesSingleLineMode="YES" id="fGA-sn-GXJ">
-                                        <font key="font" metaFont="system"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                    <connections>
-                                        <outlet property="delegate" destination="BMA-OA-Kzc" id="GXz-ad-K4A"/>
-                                        <outlet property="nextKeyView" destination="vLD-CZ-b4g" id="Xuc-pQ-bCb"/>
-                                    </connections>
-                                </textField>
-                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wQd-rd-5jG">
-                                    <rect key="frame" x="49" y="3" width="97" height="16"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="points wide by" id="7mI-9O-gwD">
-                                        <font key="font" metaFont="system"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                </textField>
-                                <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vLD-CZ-b4g">
-                                    <rect key="frame" x="152" y="0.0" width="45" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="3Rf-1k-ZNC">
-                                        <font key="font" metaFont="system"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                    <connections>
-                                        <outlet property="delegate" destination="BMA-OA-Kzc" id="i1C-ag-rNv"/>
-                                        <outlet property="nextKeyView" destination="4916" id="zgX-am-Nh6"/>
-                                    </connections>
-                                </textField>
-                                <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iOE-8b-XAP">
-                                    <rect key="frame" x="203" y="3" width="81" height="16"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="points high" id="t7k-rQ-bX5">
-                                        <font key="font" metaFont="system"/>
-                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                    </textFieldCell>
-                                </textField>
                             </subviews>
                         </customView>
                         <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="voD-m3-aOu">

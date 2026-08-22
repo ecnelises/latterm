@@ -272,18 +272,8 @@
 - (void)willReloadProfile {
 }
 
-- (void)updateBrowserSpecific {
-}
-
 - (ProfileType)profileType {
-    if (![iTermTerminalFirstFeatures browserFeaturesEnabled]) {
-        return ProfileTypeTerminal;
-    }
-    if ([[self stringForKey:KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeBrowserValue]) {
-        return ProfileTypeBrowser;
-    } else {
-        return ProfileTypeTerminal;
-    }
+    return ProfileTypeTerminal;
 }
 
 - (void)reloadProfile {

@@ -24,7 +24,6 @@
 @class PTYSession;
 @class PSMTabBarControl;
 @class TabColorPickerState;
-@class iTermBrowserWebView;
 @class iTermPromptOnCloseReason;
 @class iTermSessionFactory;
 @class iTermToolbeltView;

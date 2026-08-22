@@ -280,7 +280,6 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     IBOutlet NSMenuItem *_captureGPUFrameMenuItem;
     IBOutlet NSMenuItem *_namedMarksMenuItem;
     IBOutlet NSMenuItem *_toolbeltMenuItem;
-    IBOutlet NSMenuItem *_webMenuItem;
     IBOutlet NSMenuItem *_archivesMenuItem;
     
     // If set, skip performing launch actions.
@@ -519,11 +518,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     [[iTermBuriedSessions sharedInstance] setMenus:[NSArray arrayWithObjects:_buriedSessions, _statusIconBuriedSessions, nil]];
     _triggers.submenu.delegate = self;
     _namedMarksMenuItem.submenu.delegate = self;
-    if ([iTermTerminalFirstFeatures browserFeaturesEnabled]) {
-        [[iTermMainMenuMangler instance] startWithWeb:_webMenuItem];
-    } else {
-        [_webMenuItem.menu removeItem:_webMenuItem];
-    }
     // Set menu item icons for macOS 26+
 #if DEBUG
     if (NSClassFromString(@"XCTestCase") == nil &&

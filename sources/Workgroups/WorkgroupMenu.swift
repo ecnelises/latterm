@@ -87,8 +87,8 @@ final class WorkgroupMenu: NSObject, NSMenuDelegate {
         }
         // The shared menu/trigger policy: in no workgroup yet AND the
         // controller would proceed. Routing through the one seam keeps
-        // this enable check, the browser/terminal triggers, and enter()
-        // itself from drifting as refusal predicates evolve.
+        // this enable check, trigger entry, and enter() itself from
+        // drifting as refusal predicates evolve.
         return iTermWorkgroupController.instance.canEnterFromUI(
             workgroupUniqueIdentifier: id, on: session)
     }

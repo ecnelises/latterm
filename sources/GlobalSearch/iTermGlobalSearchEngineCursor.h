@@ -59,15 +59,4 @@ typedef NS_ENUM(NSUInteger, iTermGlobalSearchEngineCursorPass) {
 - (instancetype)init NS_UNAVAILABLE;
 @end
 
-@interface iTermGlobalSearchEngineBrowserCursor: NSObject<iTermGlobalSearchEngineCursorProtocol>
-@property (nonatomic, strong) PTYSession *session;
-@property (nonatomic) iTermFindMode mode;
-@property (nonatomic, copy) NSString *query;
-
-- (instancetype)initWithQuery:(NSString *)query
-                         mode:(iTermFindMode)mode
-                      session:(PTYSession *)session;
-- (instancetype)init NS_UNAVAILABLE;
-@end
-
 NS_ASSUME_NONNULL_END

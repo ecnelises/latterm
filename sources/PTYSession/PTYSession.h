@@ -900,7 +900,7 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // Inject a synthesized key event into the session as if the user typed it at the
 // keyboard. Runs it through the SAME path a physical key takes - the accept/gating
 // check (keystroke monitors, copy mode, tmux unpause), profile key bindings (e.g.
-// Delete sends ^H), the browser guard, and the session's key mapper - so behavior
+// Delete sends ^H) and the session's key mapper, so behavior
 // matches a real press, then (for a discrete tap) delivers the matching key-up when
 // the program wants key-ups. Broadcast to split panes is suppressed. Used by the
 // companion app's on-screen keyboard.

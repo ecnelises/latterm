@@ -20,7 +20,6 @@
 
 NSString * const kTriggerMatchTypeKey = @"matchType";
 NSString * const kTriggerRegexKey = @"regex";
-NSString * const kTriggerContentRegexKey = @"contentregex";
 NSString * const kTriggerActionKey = @"action";
 NSString * const kTriggerParameterKey = @"parameter";
 NSString * const kTriggerPartialLineKey = @"partial";
@@ -41,7 +40,6 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
     // line. -1 means it has not fired on the current line.
     long long _lastLineNumber;
     NSString *regex_;
-    NSString *contentRegex_;
     id param_;
     NSDictionary<NSString *, id> *_eventParams;
     iTermSwiftyStringWithBackreferencesEvaluator *_evaluator;
@@ -51,7 +49,6 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
 
 @synthesize regex = regex_;
 @synthesize param = param_;
-@synthesize contentRegex = contentRegex_;
 @synthesize eventParams = _eventParams;
 
 + (NSSet<NSString *> *)synonyms {
@@ -78,7 +75,6 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
     }
     Trigger *trigger = [[class alloc] init];
     trigger.regex = [NSString castFrom:dict[kTriggerRegexKey]];
-    trigger.contentRegex = [NSString castFrom:dict[kTriggerContentRegexKey]];
     trigger.param = dict[kTriggerParameterKey];
     trigger.partialLine = [[NSNumber coerceFrom:dict[kTriggerPartialLineKey]] boolValue];
     trigger.disabled = [[NSNumber coerceFrom:dict[kTriggerDisabledKey]] boolValue];
@@ -106,8 +102,8 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@: %p name=%@ regex=%@ contentRegex=%@ param=%@>",
-            NSStringFromClass(self.class), self, self.name, self.regex, self.contentRegex, self.param];
+    return [NSString stringWithFormat:@"<%@: %p name=%@ regex=%@ param=%@>",
+            NSStringFromClass(self.class), self, self.name, self.regex, self.param];
 }
 
 - (NSString *)action {
@@ -238,10 +234,6 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
 - (void)setRegex:(NSString *)regex {
     regex_ = [regex copy];
     _compiledRegex = [NSRegularExpression regularExpressionWithPattern:regex_ options:0 error:nil];
-}
-
-- (void)setContentRegex:(NSString * _Nonnull)contentRegex {
-    contentRegex_ = [contentRegex copy];
 }
 
 - (void)enumerateMatchesInString:(NSString *)string
@@ -517,7 +509,6 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
 - (NSDictionary *)dictionaryValue {
     return [@{ kTriggerActionKey: NSStringFromClass(self.class),
                kTriggerRegexKey: self.regex ?: @"",
-               kTriggerContentRegexKey: self.contentRegex ?: @"",
                kTriggerMatchTypeKey: @(self.matchType),
                kTriggerParameterKey: self.param ?: @"",
                kTriggerPartialLineKey: @(self.partialLine),
@@ -638,15 +629,8 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
 
     switch (self.matchType) {
         case iTermTriggerMatchTypeRegex:
-        case iTermTriggerMatchTypeURLRegex:
             return [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"/%@/", self.regex ?: @""]
                                                    attributes:monospacedAttributes];
-        case iTermTriggerMatchTypePageContentRegex:
-            return [@[ [[NSAttributedString alloc] initWithString:@"Content: " attributes: plainAttributes],
-                      [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"/%@/", self.contentRegex ?: @""] attributes:monospacedAttributes],
-                      [[NSAttributedString alloc] initWithString:@" URL: " attributes: plainAttributes],
-                      [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"/%@/", self.regex ?: @""] attributes:monospacedAttributes]
-                    ] attributedComponentsJoinedByAttributedString:nil];
         default:
             return [[NSAttributedString alloc] initWithString:@"" attributes:plainAttributes];
     }
@@ -777,10 +761,6 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
     }
     return [[NSAttributedString alloc] initWithString:string
                                            attributes:self.regularAttributes];
-}
-
-- (BOOL)isBrowserTrigger {
-    return NO;
 }
 
 #pragma mark - iTermObject

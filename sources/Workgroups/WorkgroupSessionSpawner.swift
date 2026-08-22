@@ -127,15 +127,6 @@ final class DefaultWorkgroupSessionSpawner: WorkgroupSessionSpawner {
         profile[KEY_PROMPT_CLOSE as String] = PROMPT_ALWAYS
         profile[KEY_SESSION_END_ACTION as String] =
             iTermSessionEndAction.default.rawValue
-        // Browser profile + configured URL: the launcher reads
-        // KEY_INITIAL_URL to seed the deferred-URL load on the new
-        // browser session (see iTermSessionLauncher.m:466). Terminal
-        // profiles ignore the key.
-        if !config.urlString.isEmpty,
-           let customCommand = profile[KEY_CUSTOM_COMMAND as String] as? String,
-           customCommand == kProfilePreferenceCommandTypeBrowserValue {
-            profile[KEY_INITIAL_URL as String] = config.urlString
-        }
         return profile
     }
 

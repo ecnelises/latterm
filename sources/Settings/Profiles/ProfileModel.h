@@ -28,9 +28,7 @@
 
 typedef NS_OPTIONS(NSUInteger, ProfileType) {
     ProfileTypeTerminal = 1,
-    ProfileTypeBrowser = 1 << 1,
-
-    ProfileTypeAll = (ProfileTypeTerminal | ProfileTypeBrowser)
+    ProfileTypeAll = ProfileTypeTerminal
 };
 
 @protocol iTermProfileModelMenuController;
@@ -113,8 +111,6 @@ extern NSString *const iTermProfileDidChange;
 - (void)load:(NSArray*)prefs;
 - (Profile*)defaultBookmark;  // prefer defaultProfile
 - (Profile *)defaultProfile;
-- (Profile *)defaultBrowserProfileCreatingIfNeeded;
-- (Profile *)defaultBrowserProfile;
 - (Profile*)bookmarkWithName:(NSString*)name;
 - (Profile*)bookmarkWithGuid:(NSString*)guid;
 - (int)indexOfBookmarkWithName:(NSString*)name;
@@ -160,6 +156,5 @@ extern NSString *const iTermProfileDidChange;
 
 @interface NSDictionary(ProfileModel)
 @property(nonatomic, readonly) ProfileType profileType;
-+ (ProfileType)profileTypeForCustomCommand:(id)customCommand;  // pass the value of KEY_CUSTOM_COMMAND
++ (BOOL)isLegacyBrowserCustomCommand:(id)customCommand;
 @end
-

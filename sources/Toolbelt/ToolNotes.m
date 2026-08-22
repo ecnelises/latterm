@@ -429,7 +429,7 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
 }
 
 + (ProfileType)supportedProfileTypes {
-    return ProfileTypeBrowser | ProfileTypeTerminal;
+    return ProfileTypeAll;
 }
 
 - (NSString *)filename {

@@ -64,12 +64,4 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addResult:(iTermGlobalFoldSearchResult *)result;
 @end
 
-@class iTermBrowserFindResult;
-
-@interface iTermGlobalBrowserSearchResult: NSObject<iTermGlobalSearchResultProtocol>
-@property (nonatomic, weak) PTYSession *session;
-@property (nonatomic, copy) NSAttributedString *snippet;
-@property (nonatomic, strong) iTermBrowserFindResult *findResult;
-@end
-
 NS_ASSUME_NONNULL_END

@@ -68,7 +68,7 @@ extern NSString *iTermSmartSelectionActionContextKeyRemoteHost;
                                       owner:(id<iTermObject>)owner;
 
 - (IBAction)ok:(id)sender;
-- (void)setActions:(NSArray *)newActions browser:(BOOL)browser;
+- (void)setActions:(NSArray *)newActions;
 - (IBAction)add:(id)sender;
 - (IBAction)remove:(id)sender;
 

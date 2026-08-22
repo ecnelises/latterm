@@ -22,14 +22,12 @@ typedef enum {
     BulkCopyTerminal,
     BulkCopyKeyboard,
     BulkCopySession,
-    BulkCopyAdvanced,
-    BulkCopyWeb
+    BulkCopyAdvanced
 } BulkCopySettings;
 
 // These match labels in the profiles tab view. I guess it should be identifiers but I would probably forget to set them.
 NSString *const iTermBulkCopyIdentifierColors = @"Colors";
 NSString *const iTermBulkCopyIdentifierText = @"Text";
-NSString *const iTermBulkCopyIdentifierWeb = @"Web";
 NSString *const iTermBulkCopyIdentifierWindow = @"Window";
 NSString *const iTermBulkCopyIdentifierTerminal = @"Terminal";
 NSString *const iTermBulkCopyIdentifierSession = @"Session";
@@ -41,7 +39,6 @@ NSString *const iTermBulkCopyIdentifierAdvanced = @"Advanced";
     IBOutlet NSTextField *_bulkCopyLabel;
     IBOutlet NSButton *_copyColors;
     IBOutlet NSButton *_copyText;
-    IBOutlet NSButton *_copyWeb;
     IBOutlet NSButton *_copyTerminal;
     IBOutlet NSButton *_copyWindow;
     IBOutlet NSButton *_copyKeyboard;
@@ -72,7 +69,6 @@ NSString *const iTermBulkCopyIdentifierAdvanced = @"Advanced";
     NSDictionary *map = @{
         iTermBulkCopyIdentifierColors: _copyColors,
         iTermBulkCopyIdentifierText: _copyText,
-        iTermBulkCopyIdentifierWeb: _copyWeb,
         iTermBulkCopyIdentifierWindow: _copyWindow,
         iTermBulkCopyIdentifierTerminal: _copyTerminal,
         iTermBulkCopyIdentifierSession: _copySession,
@@ -147,9 +143,6 @@ NSString *const iTermBulkCopyIdentifierAdvanced = @"Advanced";
         if ([_copyText state] == NSControlStateValueOn) {
             [self copyAttributes:BulkCopyText fromProfileWithGuid:_sourceGuid toProfileWithGuid:destGuid];
         }
-        if ([_copyWeb state] == NSControlStateValueOn) {
-            [self copyAttributes:BulkCopyWeb fromProfileWithGuid:_sourceGuid toProfileWithGuid:destGuid];
-        }
         if ([_copyWindow state] == NSControlStateValueOn) {
             [self copyAttributes:BulkCopyWindow fromProfileWithGuid:_sourceGuid toProfileWithGuid:destGuid];
         }
@@ -202,9 +195,6 @@ NSString *const iTermBulkCopyIdentifierAdvanced = @"Advanced";
             break;
         case BulkCopyText:
             keys = _keysForText;
-            break;
-        case BulkCopyWeb:
-            keys = _keysForWeb;
             break;
         case BulkCopyWindow:
             keys = _keysForWindow;

@@ -2227,7 +2227,6 @@ ITERM_WEAKLY_REFERENCEABLE
                                                 isArchive:options[PTYSessionArrangementOptionsArchive] != nil
                                      largeContentProvider:options[PTYSessionArrangementOptionsLargeContentProvider]];
             // NOTE: THE SCREEN SIZE IS NOW OUT OF SYNC WITH THE VIEW SIZE. IT MUST BE FIXED!
-            // Store browser state for restoration in startProgram:
         }
         if (arrangement[SESSION_ARRANGEMENT_KEYLABELS]) {
             // restoreKeyLabels wants the cursor position to be set so do it after restoring contents.
@@ -4430,9 +4429,6 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (iTermSessionEndAction)endAction {
-    if (self.profile.profileIsBrowser) {
-        return iTermSessionEndActionClose;
-    }
     // Workgroup-spawned members force the default end action so a profile
     // sync can't flip them to Close and have them auto-close on program
     // exit, which would tear the whole workgroup down. See
@@ -7611,8 +7607,7 @@ static NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger = @"
         [self setSessionSpecificProfileValues:@{
             KEY_NORMAL_FONT: [newFontTable.asciiFont.font stringValue],
             KEY_NON_ASCII_FONT: [newFontTable.defaultNonASCIIFont.font stringValue] ?: [NSNull null],
-            KEY_FONT_CONFIG: newFontTable.configString ?: [NSNull null],
-            KEY_BROWSER_ZOOM: @(newFontTable.browserZoom * 100.0)
+            KEY_FONT_CONFIG: newFontTable.configString ?: [NSNull null]
         }];
 
         // Update the model's copy of the bookmark.
@@ -13052,7 +13047,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             [self writeTaskNoBroadcast:literalText];
         } else {
             // Route through the real key-down path so profile key bindings (e.g. Delete
-            // sends ^H, remapped keys), the browser guard, and the session's key mapper
+            // sends ^H and remapped keys) and the session's key mapper
             // all apply exactly as for a physical press.
             //
             // Known tradeoff: broadcast suppression relies on _injectingSynthesizedKey
@@ -13957,7 +13952,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
 - (void)openTriggersViewController {
     [_triggerWindowController autorelease];
-    _triggerWindowController = [[TriggerController alloc] initInBrowserMode:NO];
+    _triggerWindowController = [[TriggerController alloc] init];
     _triggerWindowController.guid = self.profile[KEY_GUID];
     _triggerWindowController.delegate = self;
     [_triggerWindowController windowWillOpen];
@@ -14069,7 +14064,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                  interpolatedStrings:[self.profile[KEY_TRIGGERS_USE_INTERPOLATED_STRINGS] boolValue]
                                     defaultTextColor:cs.suggestedTextColor
                               defaultBackgroundColor:cs.suggestedBackgroundColor
-                                         browserMode:NO
                                           completion:^(NSDictionary * _Nonnull dict, BOOL updateProfile) {
         if (!dict) {
             return;
@@ -15845,10 +15839,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 - (BOOL)setProfile:(NSDictionary *)newProfile
     preservingName:(BOOL)preserveName
       adjustWindow:(BOOL)adjustWindow {
-    if (self.profile.profileType != newProfile.profileType) {
-        DLog(@"Can't change browserness from %@ to %@", self.profile, newProfile);
-        return NO;
-    }
     DLog(@"Set profile to\n%@", newProfile);
     // Force triggers to be checked. We may be switching to a profile without triggers
     // and we don't want them to run on the lines of text above _triggerLine later on
@@ -19400,7 +19390,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         NSSet *fontKeys = nil;
         if (fontZoomDelta != 0) {
             fontKeys = [NSSet setWithObjects:KEY_NORMAL_FONT, KEY_NON_ASCII_FONT,
-                        KEY_FONT_CONFIG, KEY_BROWSER_ZOOM, nil];
+                        KEY_FONT_CONFIG, nil];
             DLog(@"APS excluding font keys from divorced overrides because fontZoomDelta=%@", @(fontZoomDelta));
         }
         DLog(@"APS restoring divorced overrides: %@", [savedProfile.overriddenFields allObjects]);

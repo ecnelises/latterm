@@ -31,17 +31,16 @@ typedef struct {
     NSString *placeholder;
     NSString *parameterLabel;
     ContextMenuActions tag;
-    BOOL browser;  // Can browser profiles use it?
 } ContextMenuActionDeclaration;
 
 static ContextMenuActionDeclaration gContextMenuActionDeclarations[] = {
-    { @"Open File…",               @"Enter file name",          @"File:",      kOpenFileContextMenuAction,             YES },
-    { @"Open URL…",                @"Enter URL",                @"URL:",       kOpenUrlContextMenuAction,              YES },
-    { @"Run Command…",             @"Enter command",            @"Command:",   kRunCommandContextMenuAction,           NO  },
-    { @"Run Coprocess…",           @"Enter coprocess command",  @"Coprocess:", kRunCoprocessContextMenuAction,         NO  },
-    { @"Send text…",               @"Enter text",               @"Text:",      kSendTextContextMenuAction,             NO  },
-    { @"Run Command in Window…",   @"Enter command",            @"Command:",   kRunCommandInWindowContextMenuAction,   YES },
-    { @"Copy",                     @"Enter text",               @"Text:",      kCopyContextMenuAction,                 YES },
+    { @"Open File…",               @"Enter file name",          @"File:",      kOpenFileContextMenuAction },
+    { @"Open URL…",                @"Enter URL",                @"URL:",       kOpenUrlContextMenuAction },
+    { @"Run Command…",             @"Enter command",            @"Command:",   kRunCommandContextMenuAction },
+    { @"Run Coprocess…",           @"Enter coprocess command",  @"Coprocess:", kRunCoprocessContextMenuAction },
+    { @"Send text…",               @"Enter text",               @"Text:",      kSendTextContextMenuAction },
+    { @"Run Command in Window…",   @"Enter command",            @"Command:",   kRunCommandInWindowContextMenuAction },
+    { @"Copy",                     @"Enter text",               @"Text:",      kCopyContextMenuAction },
 };
 
 static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMenuActions tag) {
@@ -69,8 +68,6 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
     IBOutlet NSView *_detailContainer;
 
     NSMutableArray *_model;
-    BOOL _browser;
-
     NSUndoManager *_undoManager;
 }
 
@@ -369,18 +366,14 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
     [self updateDetailView];
 }
 
-- (void)setActions:(NSArray *)newActions browser:(BOOL)browser {
+- (void)setActions:(NSArray *)newActions {
     if (!newActions) {
         newActions = [NSMutableArray array];
     }
-    _browser = browser;
     _model = [newActions mutableCopy];
     [_tableView reloadData];
     [_action.menu removeAllItems];
     for (NSInteger i = 0; i < sizeof(gContextMenuActionDeclarations) / sizeof(*gContextMenuActionDeclarations); i++) {
-        if (_browser && !gContextMenuActionDeclarations[i].browser) {
-            continue;
-        }
         NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:gContextMenuActionDeclarations[i].title
                                                       action:nil
                                                keyEquivalent:@""];

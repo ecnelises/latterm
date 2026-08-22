@@ -239,7 +239,7 @@ typedef struct {
                              KEY_DYNAMIC_PROFILE_PARENT_NAME,
                              KEY_DYNAMIC_PROFILE_PARENT_GUID,
                              KEY_DYNAMIC_PROFILE_FILENAME, KEY_TMUX_PANE_TITLE,
-                             KEY_SUBTITLE, KEY_CUSTOM_LOCALE, KEY_INITIAL_URL,
+                             KEY_SUBTITLE, KEY_CUSTOM_LOCALE,
                              KEY_PROGRESS_BAR_COLOR_SCHEME];
 
         NSArray *color = @[ KEY_FOREGROUND_COLOR, KEY_BACKGROUND_COLOR, KEY_BOLD_COLOR,
@@ -357,8 +357,6 @@ typedef struct {
             KEY_RUN_COMMAND_IN_LOGIN_SHELL,
             KEY_DYNAMIC_PROFILE_REWRITABLE,
             KEY_DYNAMIC_PROFILE,
-            KEY_BROWSER_DEV_NULL,
-            KEY_INSTANT_REPLAY,
         ];
         NSArray *number = @[
             KEY_MINIMUM_CONTRAST COLORS_LIGHT_MODE_SUFFIX,
@@ -410,17 +408,12 @@ typedef struct {
             KEY_RIGHT_COMMAND,
             KEY_FUNCTION,
 
-            KEY_BROWSER_ZOOM,
-            KEY_WIDTH, KEY_HEIGHT,
-
             KEY_CURSOR_BLINK_FADE_IN_DURATION,
             KEY_CURSOR_BLINK_FADE_OUT_DURATION,
             KEY_CURSOR_BLINK_FADE_IN_CURVE,
             KEY_CURSOR_BLINK_FADE_OUT_CURVE,
             KEY_CURSOR_BLINK_VISIBLE_DWELL,
-            KEY_CURSOR_BLINK_HIDDEN_DWELL,
-
-            KEY_PROFILE_TYPE_PHONY
+            KEY_CURSOR_BLINK_HIDDEN_DWELL
         ];
         NSArray *stringArrays = @[ KEY_TAGS, KEY_JOBS, KEY_BOUND_HOSTS, KEY_SNIPPETS_FILTER ];
         NSArray *dictArrays = @[ KEY_HOTKEY_ALTERNATE_SHORTCUTS, KEY_TRIGGERS, KEY_SMART_SELECTION_RULES,
@@ -625,15 +618,13 @@ typedef struct {
             KEY_ICON:                                               @"Type of icon to display for this profile",
             KEY_ICON_PATH:                                          @"Path to custom icon image file",
             KEY_TAGS:                                               @"Tags for organizing and filtering profiles",
-            KEY_CUSTOM_COMMAND:                                     @"Command type: Login Shell, Custom Command, Custom Shell, SSH, or Browser",
-            KEY_PROFILE_TYPE_PHONY:                                 @"Profile type for UI display",
+            KEY_CUSTOM_COMMAND:                                     @"Command type: Login Shell, Custom Command, Custom Shell, or SSH",
             KEY_COMMAND_LINE:                                       @"Command to run when session starts",
             KEY_INITIAL_TEXT:                                       @"Text to send to session after shell starts",
             KEY_CUSTOM_DIRECTORY:                                   @"Initial directory type: Home, Custom, Recycle, or Advanced",
             KEY_WORKING_DIRECTORY:                                  @"Custom initial working directory path",
             KEY_BADGE_FORMAT:                                       @"Text template for the badge overlay",
             KEY_SUBTITLE:                                           @"Subtitle shown below profile name in Open Quickly",
-            KEY_INITIAL_URL:                                        @"Initial URL for Browser profile type",
             KEY_SSH_CONFIG:                                         @"SSH connection configuration dictionary",
             KEY_FOREGROUND_COLOR:                                   @"Default text color",
             KEY_BACKGROUND_COLOR:                                   @"Terminal background color",
@@ -839,11 +830,6 @@ typedef struct {
             KEY_TIMESTAMPS_VISIBLE:                                 @"Whether timestamps are visible",
             KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE:        @"Whether to use different colors for light and dark mode",
             KEY_SNIPPETS_FILTER:                                    @"Tags to filter available snippets",
-            KEY_BROWSER_ZOOM:                                       @"Zoom level for Browser profile (100=100%)",
-            KEY_BROWSER_DEV_NULL:                                   @"Whether Browser profile discards output",
-            KEY_WIDTH:                                              @"Initial width in points for Browser profile",
-            KEY_HEIGHT:                                             @"Initial height in points for Browser profile",
-            KEY_INSTANT_REPLAY:                                     @"Whether instant replay is enabled for Browser profile",
 
             KEY_BINDINGS:                                           @"Variable bindings"
         };
@@ -860,14 +846,12 @@ typedef struct {
                   KEY_ICON_PATH: @"",
                   KEY_TAGS: [NSNull null],
                   KEY_CUSTOM_COMMAND: kProfilePreferenceCommandTypeLoginShellValue,
-                  KEY_PROFILE_TYPE_PHONY: @0,
                   KEY_COMMAND_LINE: @"",
                   KEY_INITIAL_TEXT: @"",
                   KEY_CUSTOM_DIRECTORY: kProfilePreferenceInitialDirectoryHomeValue,
                   KEY_WORKING_DIRECTORY: @"",
                   KEY_BADGE_FORMAT: @"",
                   KEY_SUBTITLE: @"",
-                  KEY_INITIAL_URL: @"iterm2-about:welcome",
                   KEY_SSH_CONFIG: @{},
 
                   // Note: these defaults aren't used, except for link color, cursor guide color, and match color, because they are always specified.
@@ -1184,12 +1168,6 @@ typedef struct {
                   KEY_TIMESTAMPS_VISIBLE: [[iTermUserDefaults userDefaults] objectForKey:@"ShowTimestampsByDefault"] ?: @NO,
                   KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE: @NO,
                   KEY_SNIPPETS_FILTER: @[],
-
-                  KEY_BROWSER_ZOOM: @100,
-                  KEY_BROWSER_DEV_NULL: @NO,
-                  KEY_WIDTH: @1000,
-                  KEY_HEIGHT: @800,
-                  KEY_INSTANT_REPLAY: @NO,
 
                   KEY_BINDINGS: @{},
 

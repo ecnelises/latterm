@@ -67,8 +67,6 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     IBOutlet NSTextField *_columnsField;
     IBOutlet NSTextField *_rowsField;
 
-    IBOutlet NSTextField *_widthField;
-    IBOutlet NSTextField *_heightField;
     IBOutlet NSTextField *_percentageWidthField;
     IBOutlet NSTextField *_percentageHeightField;
     IBOutlet NSTextField *_widthLabel;
@@ -247,12 +245,6 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
                           type:kPreferenceInfoTypeIntegerTextField];
     info.range = NSMakeRange(1, iTermMaxInitialSessionSize);
 
-    info = [self defineControl:_widthField
-                           key:KEY_WIDTH
-                   displayName:@"Window width in pixels"
-                          type:kPreferenceInfoTypeIntegerTextField];
-    info.range = NSMakeRange(1, iTermMaxInitialSessionSize);
-
     info = [self defineControl:_percentageWidthField
                            key:KEY_WIDTH_PERCENTAGE
                    displayName:@"Window width in percentage of screen width"
@@ -264,13 +256,6 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
                    displayName:@"Window height in percentage of screen height"
                           type:kPreferenceInfoTypeIntegerTextField];
     info.range = NSMakeRange(1, 100);
-
-    info = [self defineControl:_heightField
-                           key:KEY_HEIGHT
-                   displayName:@"Window height in pixels"
-                          type:kPreferenceInfoTypeIntegerTextField];
-    info.range = NSMakeRange(1, iTermMaxInitialSessionSize);
-
 
     [self defineControl:_hideAfterOpening
                     key:KEY_HIDE_AFTER_OPENING
