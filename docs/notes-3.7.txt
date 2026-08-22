@@ -23,6 +23,8 @@ Terminal-first fork changes:
 - Removed obsolete browser session shims.
 - Removed obsolete browser profile settings.
 - Simplified terminal password management.
+- Removed redundant libsixel build artifacts while
+  preserving universal SIXEL image decoding.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

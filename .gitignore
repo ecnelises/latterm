@@ -25,6 +25,7 @@ iTerm2.xcodeproj/project.xcworkspace/xcuserdata/gnachman.xcuserdatad/
 iTerm2.xcodeproj/project.xcworkspace/xcuserdata/gnachman.xcuserdatad/UserInterfaceState.xcuserstate
 api/library/python/iterm2/docs/_build/
 ThirdParty/libsixel-arm
+ThirdParty/libsixel-x86
 ThirdParty/libsixel/lib/libsixel-arm.a
 ThirdParty/libsixel/lib/libsixel-x86.a
 plists/iTerm2.plist
