@@ -15711,7 +15711,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				A6EC804E281BBBE100493544 /* PBXTargetDependency */,
 				72C2CC5C310C06D75087E2A6 /* PBXTargetDependency */,
 			);
 			name = iTerm2SharedARC;
@@ -19701,10 +19700,6 @@
 			isa = PBXTargetDependency;
 			target = A66717851DCE36C3000CE608 /* iTerm2SharedARC */;
 			targetProxy = A6E1524E27614A2D00D0F41C /* PBXContainerItemProxy */;
-		};
-		A6EC804E281BBBE100493544 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = A6EC804D281BBBE100493544 /* SwiftyMarkdown */;
 		};
 		CC48416BE7001BC48B0F9368 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -24606,25 +24601,12 @@
 				minimumVersion = 5.0.0;
 			};
 		};
-		A6891DCC2818621900751F40 /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/gnachman/SwiftyMarkdown";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		223B2226AFD38553CBB6D072 /* CompanionProtocol */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CompanionProtocol;
-		};
-		A6EC804D281BBBE100493544 /* SwiftyMarkdown */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A6891DCC2818621900751F40 /* XCRemoteSwiftPackageReference "SwiftyMarkdown" */;
-			productName = SwiftyMarkdown;
 		};
 		AC1ED2504AA2D268CA4C341F /* Yams */ = {
 			isa = XCSwiftPackageProductDependency;
