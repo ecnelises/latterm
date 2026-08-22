@@ -5,16 +5,12 @@
 #import "PTYSplitView.h"
 
 @protocol PTYSplitViewDelegate;
-@class ToolCommandHistoryView;
-@class ToolDirectoriesView;
 @class ToolJobs;
 @class ToolNamedMarks;
 @class ToolStatus;
 @class ToolbeltSplitView;
 
 extern NSString *const kActionsToolName;
-extern NSString *const kCommandHistoryToolName;
-extern NSString *const kRecentDirectoriesToolName;
 extern NSString *const kJobsToolName;
 extern NSString *const kNotesToolName;
 extern NSString *const kPasteHistoryToolName;
@@ -30,7 +26,6 @@ extern NSString *const kToolbeltShouldHide;
 @interface iTermToolbeltView : NSView <PTYSplitViewDelegate, ToolWrapperDelegate>
 
 @property(nonatomic, assign) id<iTermToolbeltViewDelegate> delegate;
-@property(nonatomic, readonly) ToolDirectoriesView *directoriesView;
 @property(nonatomic, readonly) ToolJobs *jobsView;
 @property(nonatomic, retain) NSDictionary *proportions;
 

@@ -25,7 +25,6 @@
 #import "iTermPreferenceDidChangeNotification.h"
 #import "iTermRemotePreferences.h"
 #import "iTermScriptsMenuController.h"
-#import "iTermShellHistoryController.h"
 #import "iTermUserDefaults.h"
 #import "iTermUserDefaultsObserver.h"
 #import "iTermWarning.h"
@@ -324,12 +323,9 @@ enum {
     info.range = NSMakeRange(0, 1000);
 
     info = [self defineControl:_savePasteHistory
-                           key:kPreferenceKeySavePasteAndCommandHistory
+                           key:kPreferenceKeySavePasteHistory
                    relatedView:nil
                           type:kPreferenceInfoTypeCheckbox];
-    info.onChange = ^() {
-        [[iTermShellHistoryController sharedInstance] backingStoreTypeDidChange];
-    };
 
     info = [self defineControl:_gpuRendering
                            key:kPreferenceKeyUseMetal

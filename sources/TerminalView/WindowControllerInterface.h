@@ -427,34 +427,6 @@
 
 - (void)sessionHostDidChange:(PTYSession *)session to:(id<VT100RemoteHostReading>)host;
 
-#pragma mark - Command history
-
-// Remove the ACH window. It won't come back until showAutoCommandHistoryForSession is called.
-- (void)hideAutoCommandHistoryForSession:(PTYSession *)session;
-
-// Should updateAutoCommandHistoryForPrefix:inSession:popIfNeeded: be called?
-- (BOOL)wantsCommandHistoryUpdatesFromSession:(PTYSession *)session;
-- (BOOL)autoCommandHistoryEnabledForSession:(PTYSession *)session;
-
-// Set the current command prefix for a given session, updating the ACH window
-// if open. If it was shown with showAutoCommandHistoryForSession but then
-// taken offscreen because there were no entries, this may cause it to return
-// to visibility. It won't return to visibility if
-// hideAutoCommandHistoryForSession was called.
-- (void)updateAutoCommandHistoryForPrefix:(NSString *)prefix inSession:(PTYSession *)session popIfNeeded:(BOOL)popIfNeeded;
-
-// Show the ACH window. Follow up with a call to updateAutoCommandHistoryForPrefix.
-- (void)showAutoCommandHistoryForSession:(PTYSession *)session;
-
-// Indicates if the ACH window is shown and visible for |session|.
-- (BOOL)autoCommandHistoryIsOpenForSession:(PTYSession *)session;
-- (BOOL)commandHistoryIsOpenForSession:(PTYSession *)session;
-- (void)closeCommandHistory;
-
-- (void)openCommandHistory:(id)sender;
-- (void)openCommandHistoryWithPrefix:(NSString *)prefix 
-                 sortChronologically:(BOOL)sortChronologically
-                  currentSessionOnly:(BOOL)currentSessionOnly;
 - (void)nextMark:(id)sender;
 - (void)previousMark:(id)sender;
 

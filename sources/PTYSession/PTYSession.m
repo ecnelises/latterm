@@ -100,7 +100,6 @@
 #import "iTermColorMap.h"
 #import "iTermColorPresets.h"
 #import "iTermColorSuggester.h"
-#import "iTermCommandHistoryCommandUseMO+Additions.h"
 #import "iTermCommandRunnerPool.h"
 #import "iTermComposerManager.h"
 #import "iTermController.h"
@@ -150,7 +149,6 @@
 #import "iTermPromptOnCloseReason.h"
 #import "iTermRateLimitedUpdate.h"
 #import "iTermRawKeyMapper.h"
-#import "iTermRecentDirectoryMO.h"
 #import "iTermRestorableSession.h"
 #import "iTermRightGutterPanelRegistry.h"
 #import "iTermRule.h"
@@ -168,7 +166,6 @@
 #import "iTermSessionTitleBuiltInFunction.h"
 #import "iTermSetFindStringNotification.h"
 #import "iTermSharedImageStore.h"
-#import "iTermShellHistoryController.h"
 #import "iTermShortcut.h"
 #import "iTermShortcutInputView.h"
 #import "iTermSlowOperationGateway.h"
@@ -12458,9 +12455,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)textViewShouldDrawFilledInCursor {
-    // If the auto-command history popup is open for this session, the filled-in cursor should be
-    // drawn even though the textview isn't in the key window.
-    return [self textViewIsActiveSession] && [[_delegate realParentWindow] autoCommandHistoryIsOpenForSession:self];
+    return NO;
 }
 
 - (void)textViewWillNeedUpdateForBlink {
@@ -13238,54 +13233,42 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
 - (VT100GridAbsCoordRange)textViewRangeOfLastCommandOutput {
     DLog(@"Fetching range of last command output...");
-    if (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-        DLog(@"Command history has never been used.");
-        [iTermShellHistoryController showInformationalMessageInWindow:_view.window];
-        return VT100GridAbsCoordRangeMake(-1, -1, -1, -1);
-    } else {
-        iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_screen];
-        long long absCursorY = _screen.cursorY - 1 + _screen.numberOfScrollbackLines + _screen.totalScrollbackOverflow;
+    iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_screen];
+    long long absCursorY = _screen.cursorY - 1 + _screen.numberOfScrollbackLines + _screen.totalScrollbackOverflow;
 
-        if (self.isAtShellPrompt ||
-            _screen.startOfRunningCommandOutput.x == -1 ||
-            (absCursorY == _screen.startOfRunningCommandOutput.y && _screen.cursorX == 1)) {
-            DLog(@"Returning cached range.");
-            return [extractor rangeByTrimmingWhitespaceFromRange:_screen.lastCommandOutputRange
-                                                         leading:NO
-                                                        trailing:iTermTextExtractorTrimTrailingWhitespaceOneLine];
-        } else {
-            DLog(@"Returning range of current command.");
-            VT100GridAbsCoordRange range = VT100GridAbsCoordRangeMake(_screen.startOfRunningCommandOutput.x,
-                                                                      _screen.startOfRunningCommandOutput.y,
-                                                                      _screen.cursorX - 1,
-                                                                      absCursorY);
-            return [extractor rangeByTrimmingWhitespaceFromRange:range
-                                                         leading:NO
-                                                        trailing:iTermTextExtractorTrimTrailingWhitespaceOneLine];
-        }
+    if (self.isAtShellPrompt ||
+        _screen.startOfRunningCommandOutput.x == -1 ||
+        (absCursorY == _screen.startOfRunningCommandOutput.y && _screen.cursorX == 1)) {
+        DLog(@"Returning cached range.");
+        return [extractor rangeByTrimmingWhitespaceFromRange:_screen.lastCommandOutputRange
+                                                     leading:NO
+                                                    trailing:iTermTextExtractorTrimTrailingWhitespaceOneLine];
+    } else {
+        DLog(@"Returning range of current command.");
+        VT100GridAbsCoordRange range = VT100GridAbsCoordRangeMake(_screen.startOfRunningCommandOutput.x,
+                                                                  _screen.startOfRunningCommandOutput.y,
+                                                                  _screen.cursorX - 1,
+                                                                  absCursorY);
+        return [extractor rangeByTrimmingWhitespaceFromRange:range
+                                                     leading:NO
+                                                    trailing:iTermTextExtractorTrimTrailingWhitespaceOneLine];
     }
 }
 
 - (VT100GridAbsCoordRange)textViewRangeOfCurrentCommand {
     DLog(@"Fetching range of current command");
-    if (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-        DLog(@"Command history has never been used.");
-        [iTermShellHistoryController showInformationalMessageInWindow:_view.window];
-        return VT100GridAbsCoordRangeMake(-1, -1, -1, -1);
+    VT100GridAbsCoordRange range;
+    iTermTextExtractorTrimTrailingWhitespace trailing;
+    if (self.isAtShellPrompt) {
+        range = VT100GridAbsCoordRangeFromCoordRange(_screen.extendedCommandRange,
+                                                     _screen.totalScrollbackOverflow);
+        trailing = iTermTextExtractorTrimTrailingWhitespaceAll;
     } else {
-        VT100GridAbsCoordRange range;
-        iTermTextExtractorTrimTrailingWhitespace trailing;
-        if (self.isAtShellPrompt) {
-            range = VT100GridAbsCoordRangeFromCoordRange(_screen.extendedCommandRange,
-                                                         _screen.totalScrollbackOverflow);
-            trailing = iTermTextExtractorTrimTrailingWhitespaceAll;
-        } else {
-            range = _lastOrCurrentlyRunningCommandAbsRange;
-            trailing = iTermTextExtractorTrimTrailingWhitespaceOneLine;
-        }
-        iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_screen];
-        return [extractor rangeByTrimmingWhitespaceFromRange:range leading:YES trailing:trailing];
+        range = _lastOrCurrentlyRunningCommandAbsRange;
+        trailing = iTermTextExtractorTrimTrailingWhitespaceOneLine;
     }
+    iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_screen];
+    return [extractor rangeByTrimmingWhitespaceFromRange:range leading:YES trailing:trailing];
 }
 
 - (NSArray<iTermSubSelection *> *)textViewSubSelectionsOfCurrentCommand {
@@ -13307,16 +13290,12 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)textViewCanSelectOutputOfLastCommand {
-    // Return YES if command history has never been used so we can show the informational message.
-    return (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed] ||
-            _screen.lastCommandOutputRange.start.x >= 0);
+    return _screen.lastCommandOutputRange.start.x >= 0;
 
 }
 
 - (BOOL)textViewCanSelectCurrentCommand {
-    // Return YES if command history has never been used so we can show the informational message.
-    return (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed] ||
-            self.isAtShellPrompt ||
+    return (self.isAtShellPrompt ||
             (_lastOrCurrentlyRunningCommandAbsRange.start.x >= 0 &&
              // It cannot select when the currently running command is lost due to scrollback overflow.
              _lastOrCurrentlyRunningCommandAbsRange.start.y >= _screen.totalScrollbackOverflow));
@@ -16812,10 +16791,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (NSArray<iTermCommandHistoryCommandUseMO *> *)commandUses {
-    return [[iTermShellHistoryController sharedInstance] commandUsesForHost:self.currentHost];
-}
-
 - (iTermQuickLookController *)quickLookController {
     return _textview.quickLookController;
 }
@@ -17277,62 +17252,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (BOOL)eligibleForAutoCommandHistory {
-    if (!_textview.cursorVisible) {
-        return NO;
-    }
-    VT100GridCoord coord = _screen.commandRange.end;
-    coord.y -= _screen.numberOfScrollbackLines;
-    if (!VT100GridCoordEquals(_screen.currentGrid.cursor, coord)) {
-        return NO;
-    }
-
-    const screen_char_t c = [_screen.currentGrid characterAt:coord];
-    return c.code == 0;
-}
-
-- (NSArray *)autocompleteSuggestionsForCurrentCommand {
-    DLog(@"begin");
-    NSString *command;
-    if (_screen.commandRange.start.x < 0) {
-        DLog(@"no command range");
-        return nil;
-    }
-    command = [_screen commandInRange:_screen.commandRange];
-    id<VT100RemoteHostReading> host = [_screen remoteHostOnLine:[_screen numberOfLines]];
-    DLog(@"command=%@ host=%@", command, host);
-
-    NSString *trimmedCommand =
-    [command stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-    return [[iTermShellHistoryController sharedInstance] commandHistoryEntriesWithPrefix:trimmedCommand
-                                                                                  onHost:host];
-}
-
-- (void)screenCommandDidChangeTo:(NSString *)command
-                        atPrompt:(BOOL)atPrompt
-                      hadCommand:(BOOL)hadCommand
-                     haveCommand:(BOOL)haveCommand {
-    DLog(@"FinalTerm: command=%@ atPropt=%@ hadCommand=%@ haveCommand=%@",
-         command, @(atPrompt), @(hadCommand), @(haveCommand));
-    if (!haveCommand && hadCommand) {
-        DLog(@"ACH Hide because don't have a command, but just had one");
-        [[_delegate realParentWindow] hideAutoCommandHistoryForSession:self];
-        return;
-    }
-    if (!hadCommand && atPrompt) {
-        DLog(@"ACH Show because I have a range but didn't have a command");
-        [[_delegate realParentWindow] showAutoCommandHistoryForSession:self];
-    }
-    if ([[_delegate realParentWindow] wantsCommandHistoryUpdatesFromSession:self]) {
-        DLog(@"ACH Update command to %@", command);
-        if (haveCommand && self.eligibleForAutoCommandHistory) {
-            [[_delegate realParentWindow] updateAutoCommandHistoryForPrefix:command
-                                                                  inSession:self
-                                                                popIfNeeded:NO];
-        }
-    }
-}
-
 - (iTermAppSwitchingPreventionDetector *)appSwitchingPreventionDetector {
     if (!_appSwitchingPreventionDetector) {
         _appSwitchingPreventionDetector = [[iTermAppSwitchingPreventionDetector alloc] init];
@@ -17359,10 +17278,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     NSString *trimmedCommand =
     [command stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     if (trimmedCommand.length) {
-        [[iTermShellHistoryController sharedInstance] addCommand:trimmedCommand
-                                                          onHost:host
-                                                     inDirectory:directory
-                                                        withMark:mark];
         [_commands addObject:trimmedCommand];
         [self trimCommandsIfNeeded];
     }
@@ -17379,8 +17294,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     // `_screen.commandRange` is from the beginning of command, to the cursor, not necessarily the end of the command.
     // `absRange` here includes the entire command and a new line.
     _lastOrCurrentlyRunningCommandAbsRange = absRange;
-    DLog(@"Hide ACH because command ended");
-    [[_delegate realParentWindow] hideAutoCommandHistoryForSession:self];
     [_promptSubscriptions enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj.promptMonitorRequest.modesArray it_contains:ITMPromptMonitorMode_CommandStart]) {
             ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
@@ -17665,12 +17578,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     const BOOL autoComposerEnabled = [iTermPreferences boolForKey:kPreferenceAutoComposer];
     if (_config.autoComposerEnabled != autoComposerEnabled) {
         _config.autoComposerEnabled = autoComposerEnabled;
-        dirty = YES;
-    }
-
-    const BOOL wantsCommandChangeNotifications = [_delegate.realParentWindow autoCommandHistoryEnabledForSession:self];
-    if (_config.wantsCommandChangeNotifications != wantsCommandChangeNotifications) {
-        _config.wantsCommandChangeNotifications = wantsCommandChangeNotifications;
         dirty = YES;
     }
 
@@ -18664,9 +18571,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)screenDidUpdateReturnCodeForMark:(id<VT100ScreenMarkReading>)mark
                               remoteHost:(id<VT100RemoteHostReading>)remoteHost {
-    [[iTermShellHistoryController sharedInstance] setStatusOfCommandAtMark:mark
-                                                                    onHost:remoteHost
-                                                                        to:mark.code];
     [self screenNeedsRedraw];
 }
 
@@ -18730,15 +18634,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                   tabIndex:[self screenTabIndex]
                  viewIndex:[self screenViewIndex]];
     }
-}
-
-- (void)screenUpdateCommandUseWithGuid:(NSString *)screenmarkGuid
-                                onHost:(id<VT100RemoteHostReading>)lastRemoteHost
-                         toReferToMark:(id<VT100ScreenMarkReading>)screenMark {
-    iTermCommandHistoryCommandUseMO *commandUse =
-    [[iTermShellHistoryController sharedInstance] commandUseWithMarkGuid:screenMark.guid
-                                                                  onHost:lastRemoteHost];
-    commandUse.mark = screenMark;
 }
 
 - (void)screenExecutorDidUpdate:(VT100ScreenTokenExecutorUpdate *)update {
@@ -19068,57 +18963,9 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [_textview keyDown:event];
 }
 
-- (BOOL)composerCommandHistoryIsOpen {
-    if (!_composerManager.dropDownComposerViewIsVisible) {
-        return NO;
-    }
-    return [[_delegate realParentWindow] commandHistoryIsOpenForSession:self];
-}
-
 - (BOOL)popupHandleSelector:(SEL)selector
                      string:(NSString *)string
                currentValue:(NSString *)currentValue {
-    if ([self composerCommandHistoryIsOpen]) {
-        if (selector == @selector(deleteBackward:)) {
-            [[_delegate realParentWindow] closeCommandHistory];
-            [_composerManager deleteLastCharacter];
-            return YES;
-        }
-        return NO;
-    }
-    if (![[_delegate realParentWindow] autoCommandHistoryIsOpenForSession:self]) {
-        return NO;
-    }
-    if (selector == @selector(cancel:)) {
-        [[_delegate realParentWindow] hideAutoCommandHistoryForSession:self];
-        return YES;
-    }
-    if (selector == @selector(insertNewline:)) {
-        if ([currentValue isEqualToString:[self currentCommand]]) {
-            // Send the enter key on.
-            [self insertText:@"\n"];
-            return YES;
-        } else {
-            return NO;  // select the row
-        }
-    }
-    if (selector == @selector(deleteBackward:)) {
-        [_textview keyDown:[NSEvent keyEventWithType:NSEventTypeKeyDown
-                                            location:NSZeroPoint
-                                       modifierFlags:[NSEvent modifierFlags]
-                                           timestamp:0
-                                        windowNumber:_textview.window.windowNumber
-                                             context:nil
-                                          characters:@"\x7f"
-                         charactersIgnoringModifiers:@"\x7f"
-                                           isARepeat:NO
-                                             keyCode:51]];  // 51 is the keycode for delete; not in any header file :(
-        return YES;
-    }
-    if (selector == @selector(insertText:) || selector == @selector(insertTab:)) {
-        [self insertText:string];
-        return YES;
-    }
     return NO;
 }
 
@@ -20884,15 +20731,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)directoryTracker:(iTermSessionDirectoryTracker *)tracker
-        recordUsageOfPath:(NSString *)path
-                   onHost:(id<VT100RemoteHostReading>)host
-                 isChange:(BOOL)isChange {
-    [[iTermShellHistoryController sharedInstance] recordUseOfPath:path
-                                                           onHost:host
-                                                         isChange:isChange];
-}
-
-- (void)directoryTracker:(iTermSessionDirectoryTracker *)tracker
         createMarkForPolledDirectory:(NSString *)directory {
     const long absLine = _screen.lineNumberOfCursor + _screen.totalScrollbackOverflow;
     [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
@@ -22480,9 +22318,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 - (void)composerManagerOpenHistory:(iTermComposerManager *)composerManager
                             prefix:(nonnull NSString *)prefix
                          forSearch:(BOOL)forSearch {
-    [[_delegate realParentWindow] openCommandHistoryWithPrefix:prefix
-                                           sortChronologically:!forSearch
-                                            currentSessionOnly:YES];
 }
 
 - (void)composerManagerShowCompletions:(NSArray<NSString *> *)completions {
@@ -22655,13 +22490,6 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 }
 
 - (void)sendCommand:(NSString *)command {
-    if (_screen.commandRange.start.x < 0) {
-        id<VT100RemoteHostReading> host = [self currentHost] ?: [VT100RemoteHost localhost];
-        [[iTermShellHistoryController sharedInstance] addCommand:command
-                                                          onHost:host
-                                                     inDirectory:[_screen workingDirectoryOnLine:_screen.commandRange.start.y]
-                                                        withMark:nil];
-    }
     __weak __typeof(self) weakSelf = self;
     if ([self haveAutoComposer]) {
         if (_composerManager.haveShellProvidedText) {

@@ -19,7 +19,7 @@ extension iTermApplicationDelegate {
         }
 
         let toolbeltText = """
-        The **Toolbelt** provides a versatile, dockable sidebar that offers quick access to frequently used features and information. It supports multiple panels that can be displayed simultaneously, including clipboard history, recently opened directories, command history, a scratchpad for notes, and more.
+        The **Toolbelt** provides a versatile, dockable sidebar that offers quick access to frequently used features and information. It supports multiple panels that can be displayed simultaneously, including clipboard history, profiles, a scratchpad for notes, and more.
         """
 
         let tips = [
@@ -82,8 +82,6 @@ extension iTermApplicationDelegate {
             Tip(identifier: "Fold Selected Lines",
                 imageName: "FoldMenuTip",
                 text: "**Fold** lets you collapse multiple lines into a single line to hide distracting text. You can always unfold it by clicking the arrow in the margin, selecting the text and using **Edit > Unfold in Selection**, or right-clicking and choosing **Unfold**."),
-            Tip(identifier: "Toolbelt.Command History",
-                text: "If Shell Integration is installed, **Command History** shows a searchable list of recently run commands on the current host."),
             Tip(identifier: "Toolbelt.Notes",
                 imageName: "NotesMenuTip",
                 text: "**Notes** is a single, persistent notepad in your Toolbelt. It’s useful for keeping track of what you’re doing or composing messages."),
@@ -91,8 +89,6 @@ extension iTermApplicationDelegate {
                 text: "**Paste History** shows text that you have copied and pasted in Latterm. You can configure it to be saved long term."),
             Tip(identifier: "Toolbelt.Profiles",
                 text: "Shows a list of your profiles so you can create new sessions easily."),
-            Tip(identifier: "Toolbelt.Recent Directories",
-                text: "Shows your most used directories, sorted by a combination of frequency and recency of use. Requires Shell Integration."),
             Tip(identifier: "Toolbelt.Snippets",
                 imageName: "SnippetsTip",
                 text: "Snippets are pieces of text that you save to reuse later. They’re great for frequently used commands, hard-to-remember directories, and much more."),
@@ -186,8 +182,6 @@ extension iTermApplicationDelegate {
             "Paste Special.Limit Multi-Line Paste Warning to Shell Prompt",
             "Paste Special.Warn Before Pasting One Line Ending in a Newline at Shell Prompt",
             "Marks and Annotations.Set Mark",
-            "Toolbelt.Command History",
-            "Toolbelt.Recent Directories",
             "Auto Composer",
         ]
         let visibleTips = TerminalFirstFeatures.terminalFirstEnabled()

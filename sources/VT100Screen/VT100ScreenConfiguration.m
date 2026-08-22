@@ -53,7 +53,6 @@
 @property (nonatomic, readwrite) BOOL autoComposerEnabled;
 @property (nonatomic, readwrite) BOOL useLineStyleMarks;
 @property (nonatomic, readwrite) BOOL optionIsMetaForSpecialChars;
-@property (nonatomic, readwrite) BOOL wantsCommandChangeNotifications;
 @property (nonatomic, readwrite) BOOL osc52;
 @property (nonatomic, readwrite) BOOL sessionIsVisible;
 @property (nonatomic, readwrite) BOOL audibleBell;
@@ -108,7 +107,6 @@
 @synthesize autoComposerEnabled = _autoComposerEnabled;
 @synthesize useLineStyleMarks = _useLineStyleMarks;
 @synthesize optionIsMetaForSpecialChars = _optionIsMetaForSpecialChars;
-@synthesize wantsCommandChangeNotifications = _wantsCommandChangeNotifications;
 @synthesize osc52 = _osc52;
 @synthesize sessionIsVisible = _sessionIsVisible;
 @synthesize audibleBell = _audibleBell;
@@ -167,7 +165,6 @@
         _autoComposerEnabled = other.autoComposerEnabled;
         _useLineStyleMarks = other.useLineStyleMarks;
         _optionIsMetaForSpecialChars = other.optionIsMetaForSpecialChars;
-        _wantsCommandChangeNotifications = other.wantsCommandChangeNotifications;
         _osc52 = other.osc52;
         _sessionIsVisible = other.sessionIsVisible;
         _audibleBell = other.audibleBell;
@@ -234,7 +231,6 @@
                             @"autoComposerEnabled": @(_autoComposerEnabled),
                             @"useLineStyleMarks": @(_useLineStyleMarks),
                             @"optionIsMetaForSpecialChars": @(_optionIsMetaForSpecialChars),
-                            @"wantsCommandChangeNotifications": @(_wantsCommandChangeNotifications),
                             @"osc52": @(_osc52),
                             @"sessionIsVisible": @(_sessionIsVisible),
                             @"audibleBell": @(_audibleBell),
@@ -304,7 +300,6 @@
 @dynamic autoComposerEnabled;
 @dynamic useLineStyleMarks;
 @dynamic optionIsMetaForSpecialChars;
-@dynamic wantsCommandChangeNotifications;
 @dynamic osc52;
 @dynamic sessionIsVisible;
 @dynamic audibleBell;

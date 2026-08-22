@@ -14,7 +14,6 @@ import XCTest
 class MockDirectoryTrackerDelegate: NSObject, @preconcurrency iTermSessionDirectoryTrackerDelegate {
     var didChangeDirectoryCalled = false
     var didUpdateCurrentDirectoryPath: String?
-    var recordedPaths: [(path: String, host: (any VT100RemoteHostReading)?, isChange: Bool)] = []
     var createMarkDirectory: String?
     var didChangeLocalDirectoryCalled = false
     var lastChangedLocalDirectory: String?
@@ -31,13 +30,6 @@ class MockDirectoryTrackerDelegate: NSObject, @preconcurrency iTermSessionDirect
 
     func directoryTrackerDidUpdateCurrentDirectory(_ tracker: iTermSessionDirectoryTracker, path: String?) {
         didUpdateCurrentDirectoryPath = path
-    }
-
-    func directoryTracker(_ tracker: iTermSessionDirectoryTracker,
-                          recordUsageOfPath path: String,
-                          onHost host: (any VT100RemoteHostReading)?,
-                          isChange: Bool) {
-        recordedPaths.append((path: path, host: host, isChange: isChange))
     }
 
     func directoryTracker(_ tracker: iTermSessionDirectoryTracker,
@@ -78,7 +70,6 @@ class MockDirectoryTrackerDelegate: NSObject, @preconcurrency iTermSessionDirect
     func reset() {
         didChangeDirectoryCalled = false
         didUpdateCurrentDirectoryPath = nil
-        recordedPaths = []
         createMarkDirectory = nil
         didChangeLocalDirectoryCalled = false
         lastChangedLocalDirectory = nil
@@ -493,7 +484,7 @@ final class iTermSessionDirectoryTrackerTests: XCTestCase, @preconcurrency iTerm
 
     // MARK: - 6. Screen Delegate Method Tests
 
-    func testScreenLogWorkingDirectory_Pushed_RecordsHistory() {
+    func testScreenLogWorkingDirectory_Pushed_UpdatesState() {
         // Given
         let host = VT100RemoteHost.localhost()
 
@@ -505,33 +496,11 @@ final class iTermSessionDirectoryTrackerTests: XCTestCase, @preconcurrency iTerm
                                           accepted: true)
 
         // Then
-        XCTAssertEqual(mockDelegate.recordedPaths.count, 1)
-        XCTAssertEqual(mockDelegate.recordedPaths[0].path, "/Users/test")
-        XCTAssertTrue(mockDelegate.recordedPaths[0].isChange)
         XCTAssertEqual(tracker.lastDirectory, "/Users/test")
         XCTAssertTrue(tracker.lastRemoteHost?.isEqual(toRemoteHost: host) ?? false)
     }
 
-    func testScreenLogWorkingDirectory_Pushed_SameDirectorySameHost_NotAChange() {
-        // Given
-        let host = VT100RemoteHost.localhost()
-        tracker.setLastDirectory("/Users/test", remote: false, pushed: true)
-        tracker.recordLastRemoteHost(host)
-        mockDelegate.reset()
-
-        // When
-        tracker.screenLogWorkingDirectory(onAbsoluteLine: 100,
-                                          remoteHost: host,
-                                          withDirectory: "/Users/test",
-                                          pushType: .weakPush,
-                                          accepted: true)
-
-        // Then
-        XCTAssertEqual(mockDelegate.recordedPaths.count, 1)
-        XCTAssertFalse(mockDelegate.recordedPaths[0].isChange)
-    }
-
-    func testScreenLogWorkingDirectory_Pull_DoesNotRecordHistory() {
+    func testScreenLogWorkingDirectory_Pull_UpdatesState() {
         // When
         tracker.screenLogWorkingDirectory(onAbsoluteLine: 100,
                                           remoteHost: nil,
@@ -540,7 +509,7 @@ final class iTermSessionDirectoryTrackerTests: XCTestCase, @preconcurrency iTerm
                                           accepted: true)
 
         // Then
-        XCTAssertTrue(mockDelegate.recordedPaths.isEmpty)
+        XCTAssertEqual(tracker.lastDirectory, "/Users/test")
     }
 
     func testScreenLogWorkingDirectory_NotAccepted_DoesNotUpdateState() {

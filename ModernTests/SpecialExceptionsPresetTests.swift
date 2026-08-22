@@ -36,8 +36,7 @@ final class SpecialExceptionsPresetTests: XCTestCase {
         let configString = entries.isEmpty ? nil : FontTable.Config(entries: entries).stringValue
         let table = FontTable(defaultFont: ascii,
                               nonAsciiFont: nonAscii,
-                              configString: configString,
-                              browserZoom: 1.0)
+                              configString: configString)
         return (table, fonts)
     }
 

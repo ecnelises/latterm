@@ -15,10 +15,8 @@
 @protocol iTermMark;
 @class iTermToolSnippets;
 @protocol ProcessInfoProvider;
-@class ToolCommandHistoryView;
 @protocol VT100ScreenMarkReading;
 @protocol VT100RemoteHostReading;
-@class iTermCommandHistoryCommandUseMO;
 @protocol iTermGenericNamedMarkReading;
 @class ToolNamedMarks;
 @class ToolStatus;
@@ -40,7 +38,6 @@
 - (void)toolbeltDidSelectNamedMark:(id<iTermGenericNamedMarkReading>)mark;
 - (BOOL)toolbeltCurrentSessionHasGuid:(NSString *)guid;
 - (NSString *)toolbeltCurrentSessionGUID;
-- (NSArray<iTermCommandHistoryCommandUseMO *> *)toolbeltCommandUsesForCurrentSession;
 - (void)toolbeltApplyActionToCurrentSession:(iTermAction *)action;
 - (void)toolbeltOpenAdvancedPasteWithString:(NSString *)text escaping:(iTermSendTextEscaping)escaping;
 - (void)toolbeltOpenComposerWithString:(NSString *)text escaping:(iTermSendTextEscaping)escaping;
@@ -60,7 +57,6 @@
 
 @property(nonatomic, assign) id<iTermToolbeltViewDelegate> delegate;
 @property(nonatomic, readonly) BOOL haveOnlyOneTool;
-@property(nonatomic, readonly) ToolCommandHistoryView *commandHistoryView;
 @property(nonatomic, readonly) ToolNamedMarks *namedMarksView;
 @property(nonatomic, readonly) iTermToolSnippets *snippetsView;
 - (void)hideToolbelt;

@@ -166,26 +166,6 @@ tips = [
         "url": "https://iterm2.com/download.sh"
         },
     {
-        "title": "Command Completion",
-        "body": "If you install Shell Integration, ⇧⌘; helps you complete commands. It remembers the commands you’ve run on each host that has Shell Integration installed. It knows how often that command was run and how recently to help make the best suggestions.",
-        "url": "https://iterm2.com/shell_integration.html"
-        },
-    {
-        "title": "Recent Directories",
-        "body": "iTerm2 remembers which directories you use the most on each host that has Shell Integration installed. There’s a Toolbelt tool to browse them, and ⌥⌘/ gives you a popup sorted by frequency and recency of use.",
-        "url": "https://iterm2.com/shell_integration.html"
-        },
-    {
-        "title": "Favorite Directories",
-        "body": "If you have Shell Integration installed, you can “star” a directory to keep it always at the bottom of the Recent Directories tool in the Toolbelt. Right click and choose “Toggle Star.”",
-        "url": "https://iterm2.com/shell_integration.html"
-        },
-    {
-        "title": "Shell Integration History",
-        "body": "Install Shell Integration and turn on “Prefs > General > Save copy/paste and command history to disk” to remember command history per host across restarts of iTerm2.",
-        "url": "https://iterm2.com/shell_integration.html"
-        },
-    {
         "title": "Paste File as Base64",
         "body": "Copy a file to the pasteboard in Finder and then use “Edit > Paste Special > Paste File Base64-Encoded” for easy uploads of binary files. Use ”base64 -D” (or -d on Linux) on the remote host to decode it."
         },

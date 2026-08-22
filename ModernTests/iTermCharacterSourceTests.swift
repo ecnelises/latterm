@@ -34,7 +34,7 @@ final class iTermCharacterSourceTests: XCTestCase {
         // Create font table with a standard monospace font
         let font = NSFont(name: "Menlo", size: 12) ?? NSFont.userFixedPitchFont(ofSize: 12)!
         let fontInfo = PTYFontInfo(font: font)
-        fontTable = FontTable(ascii: fontInfo, nonAscii: nil, browserZoom: 1.0)
+        fontTable = FontTable(defaultFont: fontInfo, nonAsciiFont: nil, configString: nil)
 
         // Create bitmap context large enough for 5x5 cells
         let contextWidth = cellWidth * CGFloat(maxParts)
@@ -376,7 +376,7 @@ final class iTermCharacterSourceTests: XCTestCase {
         }
 
         let fontInfo = PTYFontInfo(font: font)
-        let testFontTable = FontTable(ascii: fontInfo, nonAscii: nil, browserZoom: 1.0)
+        let testFontTable = FontTable(defaultFont: fontInfo, nonAsciiFont: nil, configString: nil)
 
         let testDescriptor = iTermCharacterSourceTestHelper.descriptor(
             with: testFontTable,
@@ -499,7 +499,7 @@ final class iTermCharacterSourceTests: XCTestCase {
         }
 
         let fontInfo = PTYFontInfo(font: font)
-        let testFontTable = FontTable(ascii: fontInfo, nonAscii: nil, browserZoom: 1.0)
+        let testFontTable = FontTable(defaultFont: fontInfo, nonAsciiFont: nil, configString: nil)
 
         let testDescriptor = iTermCharacterSourceTestHelper.descriptor(
             with: testFontTable,

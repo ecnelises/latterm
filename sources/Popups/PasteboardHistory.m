@@ -131,14 +131,14 @@
 }
 
 - (void)_writeHistoryToDisk {
-    if ([iTermPreferences boolForKey:kPreferenceKeySavePasteAndCommandHistory]) {
+    if ([iTermPreferences boolForKey:kPreferenceKeySavePasteHistory]) {
         NSError *error = nil;
         NSData *data =
         [NSKeyedArchiver archivedDataWithRootObject:[self _entriesToDict]
                               requiringSecureCoding:NO
                                               error:&error];
         if (error) {
-            RLog(@"Failed to archive command history: %@", error);
+            RLog(@"Failed to archive paste history: %@", error);
             return;
         }
         [data writeToFile:path_ atomically:NO];
@@ -341,4 +341,3 @@
 }
 
 @end
-

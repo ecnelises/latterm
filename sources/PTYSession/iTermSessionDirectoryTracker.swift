@@ -26,12 +26,6 @@ protocol iTermSessionDirectoryTrackerDelegate: AnyObject {
     /// Called when shell integration updates the current directory.
     func directoryTrackerDidUpdateCurrentDirectory(_ tracker: iTermSessionDirectoryTracker, path: String?)
 
-    /// Records path usage in shell history.
-    func directoryTracker(_ tracker: iTermSessionDirectoryTracker,
-                          recordUsageOfPath path: String,
-                          onHost host: (any VT100RemoteHostReading)?,
-                          isChange: Bool)
-
     /// Called when the poller finds a valid working directory that should create a mark.
     func directoryTracker(_ tracker: iTermSessionDirectoryTracker,
                           createMarkForPolledDirectory directory: String)
@@ -374,7 +368,7 @@ class iTermSessionDirectoryTracker: NSObject {
     }
 
     /// Poll for the local working directory and update lastLocalDirectory only.
-    /// Does not affect lastDirectory, shell history, or path variable.
+    /// Does not affect lastDirectory or the path variable.
     /// Used when OSC 7/shell integration is providing directory updates but we still
     /// want to track the local directory for session restoration.
     @objc
@@ -448,15 +442,6 @@ class iTermSessionDirectoryTracker: NSObject {
             // mark for the result when the poll completes because this mark is
             // from a higher-quality data source.
             invalidateOutstandingRequests()
-        }
-
-        // Update shell integration DB.
-        if pushed, let dir = directory {
-            let isSame = (dir == lastDirectory) && remoteHost?.isEqual(toRemoteHost: lastRemoteHost) == true
-            delegate?.directoryTracker(self,
-                                       recordUsageOfPath: dir,
-                                       onHost: remoteHost,
-                                       isChange: !isSame)
         }
 
         if accepted {

@@ -230,7 +230,6 @@ class MainMenu:
         SHOW_TIMESTAMPS = MenuItemIdentifier("Show Timestamps", "Show Timestamps")
         SHOW_ANNOTATIONS = MenuItemIdentifier("Show Annotations", "Show Annotations")
         SHOW_COMPOSER = MenuItemIdentifier("Show Composer", "Composer")
-        AUTO_COMMAND_COMPLETION = MenuItemIdentifier("Auto Command Completion", "Auto Command Completion")
         OPEN_QUICKLY = MenuItemIdentifier("Open Quickly", "Open Quickly")
         MAXIMIZE_ACTIVE_PANE = MenuItemIdentifier("Maximize Active Pane", "Maximize Active Pane")
         MAKE_TEXT_BIGGER = MenuItemIdentifier("Make Text Bigger", "Make Text Bigger")
@@ -246,8 +245,6 @@ class MainMenu:
         STOP_COPROCESS = MenuItemIdentifier("Stop Coprocess", "Stop Coprocess")
         RESTART_SESSION = MenuItemIdentifier("Restart Session", "Restart Session")
         OPEN_AUTOCOMPLETE = MenuItemIdentifier("Open Autocomplete…", "Open Autocomplete…")
-        OPEN_COMMAND_HISTORY = MenuItemIdentifier("Open Command History…", "Open Command History…")
-        OPEN_RECENT_DIRECTORIES = MenuItemIdentifier("Open Recent Directories…", "Open Recent Directories…")
         OPEN_PASTE_HISTORY = MenuItemIdentifier("Open Paste History…", "Open Paste History…")
 
         class Triggers(enum.Enum):
@@ -366,4 +363,3 @@ class MainMenu:
         COPY_MODE_SHORTCUTS = MenuItemIdentifier("Copy Mode Shortcuts", "Copy Mode Shortcuts")
         OPEN_SOURCE_LICENSES = MenuItemIdentifier("Open Source Licenses", "Open Source Licenses")
         GPU_RENDERER_AVAILABILITY = MenuItemIdentifier("GPU Renderer Availability", "GPU Renderer Availability")
-

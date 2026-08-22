@@ -136,7 +136,6 @@
 #import "iTermSetFindStringNotification.h"
 #import "iTermSetupCfgParser.h"
 #import "iTermSharedImageStore.h"
-#import "iTermShellHistoryController.h"
 #import "iTermSlider.h"
 #import "iTermSlowOperationGateway.h"
 #import "iTermSocket.h"

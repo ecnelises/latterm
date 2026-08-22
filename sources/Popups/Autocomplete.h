@@ -6,8 +6,6 @@
 #import "PTYSession.h"
 #import "LineBuffer.h"
 
-@class iTermCommandHistoryEntryMO;
-
 @interface AutocompleteView : iTermPopupWindowController
 
 - (void)onOpen;
@@ -17,9 +15,4 @@
 - (void)more;
 - (void)less;
 
-// Add a bunch of iTermCommandHistoryEntryMO*s. 'context' gives the prefix that
-// generated the entries.
-- (void)addCommandEntries:(NSArray<iTermCommandHistoryEntryMO *> *)entries context:(NSString *)context;
-
 @end
-

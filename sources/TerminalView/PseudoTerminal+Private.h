@@ -119,7 +119,6 @@ extern NSString *const TERMINAL_ARRANGEMENT_LAYOUT_LOCKED;
 }
 
 @property (nonatomic, retain) NSCustomTouchBarItem *tabsTouchBarItem;
-@property (nonatomic, retain) NSCandidateListTouchBarItem<NSString *> *autocompleteCandidateListItem;
 @property(nonatomic, readonly) BOOL wellFormed;
 @property(nonatomic, readwrite) BOOL isReplacingWindow;
 @property(nonatomic, copy) NSString *swipeIdentifier;
@@ -152,5 +151,4 @@ extern NSString *const TERMINAL_ARRANGEMENT_LAYOUT_LOCKED;
 - (void)safelySetSessionSize:(PTYSession*)aSession rows:(int)rows columns:(int)columns;
 
 @end
-
 

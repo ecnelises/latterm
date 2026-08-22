@@ -43,7 +43,6 @@ iTermTriggerCallbackScheduler,
 iTermTriggerSession,
 iTermTriggerScopeProvider> {
     VT100GridCoordRange _previousCommandRange;
-    iTermIdempotentOperationJoiner *_commandRangeChangeJoiner;
     dispatch_queue_t _queue;
     PTYTriggerEvaluator *_triggerEvaluator;
     dispatch_group_t _tmuxGroup;

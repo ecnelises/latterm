@@ -63,7 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL autoComposerEnabled;
 @property (nonatomic, readonly) BOOL useLineStyleMarks;
 @property (nonatomic, readonly)BOOL optionIsMetaForSpecialChars;
-@property (nonatomic, readonly) BOOL wantsCommandChangeNotifications;
 @property (nonatomic, readonly) BOOL osc52;
 @property (nonatomic, readonly) BOOL sessionIsVisible;
 
@@ -136,7 +135,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readwrite) BOOL autoComposerEnabled;
 @property (nonatomic, readwrite) BOOL useLineStyleMarks;
 @property (nonatomic, readwrite) BOOL optionIsMetaForSpecialChars;
-@property (nonatomic, readwrite) BOOL wantsCommandChangeNotifications;
 @property (nonatomic, readwrite) BOOL osc52;
 @property (nonatomic, readwrite) BOOL sessionIsVisible;
 

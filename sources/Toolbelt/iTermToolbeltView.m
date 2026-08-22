@@ -5,8 +5,6 @@
 #import "NSArray+iTerm.h"
 #import "NSImage+iTerm.h"
 #import "NSObject+iTerm.h"
-#import "ToolCommandHistoryView.h"
-#import "ToolDirectoriesView.h"
 #import "ToolJobs.h"
 #import "ToolNotes.h"
 #import "ToolPasteHistory.h"
@@ -29,8 +27,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 NSString *const kActionsToolName = @"Actions";
-NSString *const kCommandHistoryToolName = @"Command History";
-NSString *const kRecentDirectoriesToolName = @"Recent Directories";
 NSString *const kJobsToolName = @"Jobs";
 NSString *const kNotesToolName = @"Notes";
 NSString *const kPasteHistoryToolName = @"Paste History";
@@ -78,10 +74,8 @@ static NSString *const kDynamicToolURL = @"URL";
 + (void)initialize {
     gRegisteredTools = [[NSMutableDictionary alloc] init];
     [iTermToolbeltView registerToolWithName:kActionsToolName withClass:[iTermToolActions class]];
-    [iTermToolbeltView registerToolWithName:kCommandHistoryToolName withClass:[ToolCommandHistoryView class]];
     [iTermToolbeltView registerToolWithName:kNamedMarksToolName withClass:[ToolNamedMarks class]];
     [iTermToolbeltView registerToolWithName:kStatusToolName withClass:[ToolStatus class]];
-    [iTermToolbeltView registerToolWithName:kRecentDirectoriesToolName withClass:[ToolDirectoriesView class]];
     [iTermToolbeltView registerToolWithName:kJobsToolName withClass:[ToolJobs class]];
     [iTermToolbeltView registerToolWithName:kNotesToolName withClass:[ToolNotes class]];
     [iTermToolbeltView registerToolWithName:kPasteHistoryToolName withClass:[ToolPasteHistory class]];
@@ -432,11 +426,6 @@ static NSString *const kDynamicToolURL = @"URL";
     return [_tools objectForKey:theName] != nil;
 }
 
-- (ToolDirectoriesView *)directoriesView {
-    iTermToolWrapper *wrapper = [_tools objectForKey:@"Recent Directories"];
-    return (ToolDirectoriesView *)wrapper.tool;
-}
-
 - (ToolJobs *)jobsView {
     iTermToolWrapper *wrapper = [_tools objectForKey:kJobsToolName];
     return (ToolJobs *)wrapper.tool;
@@ -568,8 +557,6 @@ static NSString *const kDynamicToolURL = @"URL";
 }
 
 - (void)refreshTools {
-    [[self commandHistoryView] updateCommands];
-    [[self directoriesView] updateDirectories];
     [[self jobsView] updateJobs];
     [[self snippetsView] currentSessionDidChange];
     [[self namedMarksView] setNamedMarks:[self.delegate toolbeltNamedMarks]];
@@ -648,11 +635,6 @@ static NSString *const kDynamicToolURL = @"URL";
 
 - (void)toggleShowToolWithName:(NSString *)theName {
     [iTermToolbeltView toggleShouldShowTool:theName];
-}
-
-- (ToolCommandHistoryView *)commandHistoryView {
-    iTermToolWrapper *wrapper = [_tools objectForKey:kCommandHistoryToolName];
-    return (ToolCommandHistoryView *)wrapper.tool;
 }
 
 - (ToolNamedMarks *)namedMarksView {

@@ -13,7 +13,6 @@
 #import "ITAddressBookMgr.h"
 #import "iTermProfilePreferences.h"
 #import "iTermSemanticHistoryPrefsController.h"
-#import "iTermShellHistoryController.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
 #import "NSTextField+iTerm.h"

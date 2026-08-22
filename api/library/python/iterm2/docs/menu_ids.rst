@@ -141,7 +141,6 @@ View > Show Cursor Guide                                                        
 View > Show Timestamps                                                                  `Show Timestamps`                                                             
 View > Show Annotations                                                                 `Show Annotations`                                                            
 View > Show Composer                                                                    `Composer`                                                                    
-View > Auto Command Completion                                                          `Auto Command Completion`                                                     
 View > Auto Composer                                                                    `Auto Composer`                                                               
 View > Open Quickly                                                                     `Open Quickly`                                                                
 View > Maximize Active Pane                                                             `Maximize Active Pane`                                                        
@@ -157,8 +156,6 @@ Session > Stop Coprocess                                                        
 Session > Restart Session                                                               `Restart Session`                                                             
 Session > Duplicate Session                                                             `Duplicate Session`                                                           
 Session > Open Autocomplete…                                                            `Open Autocomplete…`                                                          
-Session > Open Command History…                                                         `Open Command History…`                                                       
-Session > Open Recent Directories…                                                      `Open Recent Directories…`                                                    
 Session > Open Paste History…                                                           `Open Paste History…`                                                         
 Session > Open AI Chat…                                                                 `Open AI Chat`                                                                
 Session > Triggers > Add Trigger…                                                       `Add Trigger`                                                                 
@@ -270,4 +267,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
-

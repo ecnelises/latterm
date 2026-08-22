@@ -3,9 +3,7 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplicationDelegate.h"
-#import "iTermCommandHistoryEntryMO+Additions.h"
 #import "iTermController.h"
-#import "iTermShellHistoryController.h"
 #import "iTermTextExtractor.h"
 #import "LineBuffer.h"
 #import "NSArray+iTerm.h"
@@ -766,50 +764,6 @@ precededByWhitespace:(BOOL)precededByWhitespace
             [self.delegate popupIsSearching:NO];
         }
     }
-}
-
-- (void)addCommandEntries:(NSArray<iTermCommandHistoryEntryMO *> *)entries
-                  context:(NSString *)context {
-    DLog(@"Added %@ entries", @(entries.count));
-    int i = 0;
-    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    for (iTermCommandHistoryEntryMO *entry in entries) {
-        if (![entry.command hasPrefix:context]) {
-            continue;
-        }
-        NSString *command = [entry.command substringFromIndex:context.length];
-        NSArray *parts = [command componentsSeparatedByCharactersInSet:[iTermTextExtractor wordSeparatorCharacterSet]];
-        if ([parts count] == 0) {
-            continue;
-        }
-        command = parts[0];
-        if ([command length] == 0) {
-            continue;
-        }
-        double score = [self scoreResultNumber:i++
-                                  queryContext:context_
-                                 resultContext:context_  // Maximize similarity because the whole prompt is in our favor
-                           joiningPrefixLength:[prefix_ length]
-                                          word:command];
-
-        // Boost the score for more uses of the command
-        score *= sqrt(entry.numberOfUses.integerValue);
-
-        // Divide the score by sqrt(the number of days since last use).
-        NSTimeInterval timeSinceLastUse = now - entry.timeOfLastUse.doubleValue;
-        score /= MAX(1, sqrt(timeSinceLastUse / (24 * 60 * 60.0)));
-
-        score = MIN(10, score);  // Limit score of commands so really relevant context has a chance.
-        PopupEntry* e = [PopupEntry entryWithString:command
-                                              score:score];
-        if (whitespaceBeforeCursor_) {
-            [e setPrefix:[NSString stringWithFormat:@"%@ ", prefix_]];
-        } else {
-            [e setPrefix:prefix_];
-        }
-        [[self unfilteredModel] addHit:e];
-    }
-    [self reloadData:YES];
 }
 
 - (iTermTextExtractor *)textExtractor {

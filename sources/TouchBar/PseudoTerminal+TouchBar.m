@@ -38,7 +38,6 @@ static NSString *const iTermTouchBarIdentifierManPage = @"iTermTouchBarIdentifie
 static NSString *const iTermTouchBarIdentifierColorPreset = @"iTermTouchBarIdentifierColorPreset";
 static NSString *const iTermTouchBarIdentifierFunctionKeys = @"iTermTouchBarIdentifierFunctionKeys";
 static NSString *const iTermTouchBarIdentifierColorPresetScrollview = @"iTermTouchBarIdentifierColorPresetScrollview";
-static NSString *const iTermTouchBarIdentifierAutocomplete = @"iTermTouchBarIdentifierAutocomplete";
 static NSString *const iTermTouchBarFunctionKeysScrollView  = @"iTermTouchBarFunctionKeysScrollView";
 static NSString *const iTermTouchBarIdentifierStatus = @"iTermTouchBarIdentifierStatus";
 
@@ -156,7 +155,6 @@ ITERM_IGNORE_PARTIAL_BEGIN
                           iTermTouchBarIdentifierAddMark,
                           iTermTouchBarIdentifierNextMark,
                           iTermTouchBarIdentifierPreviousMark,
-                          iTermTouchBarIdentifierAutocomplete,
                           iTermTouchBarIdentifierStatus ];
         NSArray<iTermTouchbarItem *> *items = [iTermTouchbarMappings sortedTouchbarItemsInDictionary:[iTermTouchbarMappings globalTouchBarMap]];
         NSArray<NSString *> *customIDs = [items mapWithBlock:^id(iTermTouchbarItem *anObject) {
@@ -431,17 +429,6 @@ ITERM_IGNORE_PARTIAL_BEGIN
 
 
         return self.tabsTouchBarItem;
-    } else if ([identifier isEqualToString:iTermTouchBarIdentifierAutocomplete]) {
-        self.autocompleteCandidateListItem = [[[NSCandidateListTouchBarItem alloc] initWithIdentifier:identifier] autorelease];
-        self.autocompleteCandidateListItem.delegate = self;
-        self.autocompleteCandidateListItem.customizationLabel = @"Autocomplete Suggestions";
-        NSAttributedString *(^commandUseToAttributedString)(NSString *commandUse,
-                                                            NSInteger index) = ^(NSString *command,
-                                                                                 NSInteger index) {
-            return [[[NSAttributedString alloc] initWithString:command ?: @""] autorelease];
-        };
-        self.autocompleteCandidateListItem.attributedStringForCandidate = commandUseToAttributedString;
-        return self.autocompleteCandidateListItem;
     }
 
     NSImage *image = nil;
@@ -699,4 +686,3 @@ ITERM_IGNORE_PARTIAL_BEGIN
 @end
 
 ITERM_IGNORE_PARTIAL_END
-

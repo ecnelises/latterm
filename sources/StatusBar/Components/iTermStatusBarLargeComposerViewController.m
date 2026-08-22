@@ -7,9 +7,7 @@
 
 #import "iTermStatusBarLargeComposerViewController.h"
 
-#import "CommandHistoryPopup.h"
 #import "NSArray+iTerm.h"
-#import "NSDate+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSEvent+iTerm.h"
 #import "NSResponder+iTerm.h"
@@ -20,9 +18,6 @@
 #import "VT100RemoteHost.h"
 #import "WindowControllerInterface.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermCommandHistoryEntryMO+CoreDataProperties.h"
-#import "iTermPopupWindowController.h"
-#import "iTermShellHistoryController.h"
 #import "iTermSlowOperationGateway.h"
 #import "iTermTextPopoverViewController.h"
 
@@ -75,7 +70,7 @@
 
 @end
 
-@interface iTermStatusBarLargeComposerViewController ()<PopupDelegate, iTermPopupWindowPresenter, NSTextViewDelegate>
+@interface iTermStatusBarLargeComposerViewController ()<NSTextViewDelegate>
 
 @end
 
@@ -94,7 +89,6 @@
     IBOutlet NSScrollView *_scrollView;
     IBOutlet NSTextField *_sendTip;
 
-    CommandHistoryPopupWindowController *_historyWindowController;
     NSInteger _completionGeneration;
     iTermTextPopoverViewController *_popoverVC;
 }
@@ -231,37 +225,6 @@
     return [content substringWithRange:NSMakeRange(lowerBound, upperBound - lowerBound)];
 }
 
-- (void)openCommandHistory:(id)sender {
-    [self.textView setSuggestion:nil];
-    if (!_historyWindowController) {
-        _historyWindowController = [[CommandHistoryPopupWindowController alloc] initForAutoComplete:NO];
-    }
-    if ([[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-        NSString *prefix;
-        NSString *content = self.textView.stringExcludingPrefix;
-        const NSRange selectedRange = self.textView.selectedRangeExcludingPrefix;
-        if (selectedRange.location > content.length) {
-            return;
-        }
-        const NSInteger newlineBefore = [content rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]
-                                                                 options:NSBackwardsSearch
-                                                                   range:NSMakeRange(0, selectedRange.location)].location;
-        if (newlineBefore == NSNotFound) {
-            prefix = [content substringToIndex:selectedRange.location];
-        } else {
-            prefix = [content substringWithRange:NSMakeRange(newlineBefore + 1, selectedRange.location - newlineBefore - 1)];
-        }
-        [_historyWindowController popWithDelegate:self inWindow:self.view.window];
-        [_historyWindowController loadCommands:[_historyWindowController commandsForHost:self.host
-                                                                          partialCommand:prefix
-                                                                                  expand:YES]
-                                partialCommand:prefix
-                           sortChronologically:NO];
-    } else {
-        [iTermShellHistoryController showInformationalMessageInWindow:self.view.window];
-    }
-}
-
 - (IBAction)help:(id)sender {
     [_popoverVC.popover close];
     _popoverVC = [[iTermTextPopoverViewController alloc] initWithNibName:@"iTermTextPopoverViewController"
@@ -289,8 +252,7 @@
         @"⌘-click\tOpen in explainshell.com",
         @"⇧↩\tSend contents or selection",
         @"⌥⇧↩\tSend command at cursor",
-        @"⌥↩\tEnqueue command at cursor",
-        @"⇧⌘;\tView command history"
+        @"⌥↩\tEnqueue command at cursor"
     ]];
     [_popoverVC appendString:[lines componentsJoinedByString:@"\n"]];
     [_popoverVC.textView.textStorage addAttribute:NSParagraphStyleAttributeName value:style range:NSMakeRange(0, _popoverVC.textView.textStorage.string.length)];
@@ -298,79 +260,6 @@
     [_popoverVC.popover showRelativeToRect:_help.bounds
                                     ofView:_help
                              preferredEdge:NSRectEdgeMaxY];
-}
-
-#pragma mark - PopupDelegate
-
-- (BOOL)popupWindowShouldAvoidChangingWindowOrderOnClose {
-    return NO;
-}
-
-- (NSRect)popupScreenVisibleFrame {
-    return self.view.window.screen.visibleFrame;
-}
-
-- (VT100Screen *)popupVT100Screen {
-    return nil;
-}
-
-- (id<iTermPopupWindowPresenter>)popupPresenter {
-    return self;
-}
-
-- (void)popupInsertText:(NSString *)text popup:(iTermPopupWindowController *)popupWindowController {
-    NSString *string = text;
-    if ([popupWindowController shouldEscapeShellCharacters]) {
-        string = [text stringWithEscapedShellCharactersIncludingNewlines:YES];
-    }
-    [self.textView insertText:string replacementRange:self.textView.selectedRange];
-}
-
-- (void)popupPreview:(NSString *)text {
-}
-
-- (void)popupKeyDown:(NSEvent *)event {
-    [self.textView keyDown:event];
-}
-
-- (BOOL)popupHandleSelector:(SEL)selector string:(NSString *)string currentValue:(NSString *)currentValue {
-    return NO;
-}
-
-- (void)popupWillClose:(iTermPopupWindowController *)popup {
-    _historyWindowController = nil;
-}
-
-- (BOOL)popupWindowIsInFloatingHotkeyWindow {
-    id<iTermWindowController> windowController = (id<iTermWindowController>)self.view.window.delegate;
-    if ([windowController conformsToProtocol:@protocol(iTermWindowController)]) {
-        return [windowController isFloatingHotKeyWindow];
-    }
-    return NO;
-}
-
-- (void)popupIsSearching:(BOOL)searching {
-}
-
-- (BOOL)popupShouldTakePrefixFromScreen {
-    return NO;
-}
-
-- (NSArray<NSString *> *)popupWordsBeforeInsertionPoint:(int)count {
-    const NSRange insertionPoint = self.textView.selectedRangeExcludingPrefix;
-    NSString *string = [[self.textView stringExcludingPrefix] substringToIndex:insertionPoint.location];
-    return [string componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-}
-
-#pragma mark - iTermPopupWindowPresenter
-
-- (void)popupWindowWillPresent:(iTermPopupWindowController *)popupWindowController {
-}
-
-- (NSRect)popupWindowOriginRectInScreenCoords {
-    NSRange range = [self.textView selectedRange];
-    range.length = 0;
-    return [self.textView firstRectForCharacterRange:range actualRange:NULL];
 }
 
 #pragma mark - NSTextViewDelegate
@@ -384,31 +273,6 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [weakSelf.textView setSuggestion:nil];
     });
-}
-
-- (iTermCompletionItem *)historySuggestionForPrefix:(NSString *)prefix {
-    return [[self historySuggestionsForPrefix:prefix maxResults:1 removePrefix:NO] firstObject];
-}
-
-- (NSArray<iTermCompletionItem *> *)historySuggestionsForPrefix:(NSString *)prefix
-                                                     maxResults:(NSInteger)maxResults
-                                                   removePrefix:(BOOL)removePrefix {
-    NSArray<iTermCommandHistoryEntryMO *> *entries =
-    [[iTermShellHistoryController sharedInstance] commandHistoryEntriesWithPrefix:prefix
-                                                                           onHost:self.host];
-    return [[entries subarrayToIndex:maxResults] mapWithBlock:^id _Nullable(iTermCommandHistoryEntryMO * _Nonnull entry) {
-        NSString *value;
-        if (removePrefix) {
-            value = [entry.command substringFromIndex:prefix.length];
-        } else {
-            value = entry.command.copy;
-        }
-        NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:entry.timeOfLastUse.doubleValue];
-        return [[iTermCompletionItem alloc] initWithValue:value
-                                                   detail:[NSString stringWithFormat:@"Last used %@", [NSDateFormatter dateDifferenceStringFromDate:date
-                                                                                                                                            options:iTermDateDifferenceOptionsLowercase]]
-                                                     kind:iTermCompletionItemKindHistory];
-    }];
 }
 
 // NOTE: This must not change the suggestion directly. It has to do it in dispatch_async because
@@ -445,17 +309,12 @@
                                        fullPrefix:[self textBeforeCursor]
                                        fullSuffix:[self textAfterCursor]
                                          explicit:NO
-                                      earlyResult:^iTermCompletionItem *(NSArray<iTermCompletionItem *> *early,
-                                                                         NSArray<iTermCompletionItem *> *history) {
-        return [weakSelf setEarlyResult:early
-                                history:history
-                                 prefix:command];
+                                      earlyResult:^iTermCompletionItem *(NSArray<iTermCompletionItem *> *early) {
+        return [weakSelf setEarlyResult:early prefix:command];
     }
                                        completion:^(BOOL suggestionOnly,
-                                                    NSArray<iTermCompletionItem *> *completions,
-                                                    NSArray<iTermCompletionItem *> *commands) {
+                                                    NSArray<iTermCompletionItem *> *completions) {
         [weakSelf didFetchCompletions:completions
-                             commands:commands
                            generation:generation
                        suggestionOnly:suggestionOnly
                                prefix:command];
@@ -472,17 +331,12 @@
                                        fullPrefix:[self textBeforeCursor]
                                        fullSuffix:[self textAfterCursor]
                                          explicit:YES
-                                      earlyResult:^iTermCompletionItem *(NSArray<iTermCompletionItem *> *early,
-                                                                         NSArray<iTermCompletionItem *> *history) {
-        return [weakSelf setEarlyResult:early
-                                history:history
-                                 prefix:command];
+                                      earlyResult:^iTermCompletionItem *(NSArray<iTermCompletionItem *> *early) {
+        return [weakSelf setEarlyResult:early prefix:command];
     }
                                     completion:^(BOOL _suggestionOnly,
-                                                 NSArray<iTermCompletionItem *> *completions,
-                                                 NSArray<iTermCompletionItem *> *commands) {
+                                                 NSArray<iTermCompletionItem *> *completions) {
         [weakSelf didFetchCompletions:completions
-                             commands:commands
                            generation:generation
                        suggestionOnly:NO
                                prefix:command];
@@ -490,68 +344,34 @@
 }
 
 - (void)didFetchCompletions:(NSArray<iTermCompletionItem *> *)completions
-                   commands:(NSArray<iTermCompletionItem *> *)commands
                  generation:(NSInteger)generation
              suggestionOnly:(BOOL)suggestionOnly
                      prefix:(NSString *)prefix {
     DLog(@"didFetchCompletion with suggestionOnly=%@", @(suggestionOnly));
-    if (!completions && !commands) {
-        DLog(@"No completions and no commands so set suggestion to nil");
+    if (!completions) {
+        DLog(@"No completions so set suggestion to nil");
         [self.textView setCompletions:@[] prefix:@""];
         [self.textView setSuggestion:nil];
         return;
     }
-    if (!completions) {
-        DLog(@"No completions");
-        [self didFindCompletions:@[]
-              historySuggestions:commands
-                   forGeneration:generation
-                          escape:NO
-                  suggestionOnly:suggestionOnly
-                          prefix:prefix];
-    } else {
-        DLog(@"There were completions");
-        [self didFindCompletions:completions
-              historySuggestions:commands
-                   forGeneration:generation
-                          escape:YES
-                  suggestionOnly:suggestionOnly
-                          prefix:prefix];
-    }
+    [self didFindCompletions:completions
+               forGeneration:generation
+              suggestionOnly:suggestionOnly
+                      prefix:prefix];
 }
 
-// completionBlock(filename completions, commands from history)
-// If both are nil then autocomplete is not supported and no history was found.
-// If filename completions is nil then autocomplete is not supported.
+// If completions is nil then autocomplete is not supported.
 - (NSInteger)fetchCompletionsForCommand:(NSString *)command
                              fullPrefix:(NSString *)fullPrefix
                              fullSuffix:(NSString *)fullSuffix
                                explicit:(BOOL)explicit
-                            earlyResult:(iTermCompletionItem * (^)(NSArray<iTermCompletionItem *> *,
-                                                                   NSArray<iTermCompletionItem *> *))earlyResult
+                            earlyResult:(iTermCompletionItem * (^)(NSArray<iTermCompletionItem *> *))earlyResult
                              completion:(void (^)(BOOL suggestionOnly,
-                                                  NSArray<iTermCompletionItem *> *,
                                                   NSArray<iTermCompletionItem *> *))completionBlock {
     const BOOL autocompleteSupported = [self.delegate largeComposerViewControllerShouldFetchSuggestions:self forHost:self.host tmuxController:self.tmuxController];
     if (!autocompleteSupported) {
         DLog(@"Autocomplete not supported");
-        iTermCompletionItem *historySuggestion = [self historySuggestionForPrefix:command];
-        historySuggestion = [historySuggestion mapValue:^NSString * _Nonnull(NSString *value) {
-            return [value stringByTrimmingTrailingCharactersFromCharacterSet:[NSCharacterSet newlineCharacterSet]];
-        }];
-
-        if (historySuggestion) {
-            const NSInteger generation = ++_completionGeneration;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                iTermCompletionItem *item = [[iTermCompletionItem alloc] initWithValue:[historySuggestion.value substringFromIndex:command.length]
-                                                                                detail:historySuggestion.value
-                                                                                  kind:historySuggestion.kind];
-                completionBlock(YES, nil, @[ item ]);
-            });
-            return generation;
-        }
-
-        completionBlock(YES, nil, nil);
+        completionBlock(YES, nil);
         return 0;
     }
 
@@ -585,9 +405,6 @@
         directories = @[self.workingDirectory ?: NSHomeDirectory()];
     }
 
-    NSArray<iTermCompletionItem *> *historySuggestions = [self historySuggestionsForPrefix:command
-                                                                                maxResults:32
-                                                                              removePrefix:YES];
     __weak __typeof(self) weakSelf = self;
     iTermSuggestionRequest *request = [[iTermSuggestionRequest alloc] initWithPrefix:prefix
                                                                           fullPrefix:fullPrefix
@@ -602,13 +419,13 @@
         }
     }
                                                                          earlyResult:^iTermCompletionItem *(NSArray<iTermCompletionItem *> *early) {
-        return earlyResult(early, historySuggestions);
+        return earlyResult(early);
     }
 
                                                                           completion:^(BOOL suggestionOnly,
                                                                                        NSArray<iTermCompletionItem *> *items) {
         DLog(@"iTermStatusBarLargeComposerViewController got suggestions");
-        completionBlock(suggestionOnly, items ?: @[], historySuggestions ?: @[]);
+        completionBlock(suggestionOnly, items ?: @[]);
     }];
     [self.delegate largeComposerViewController:self
                               fetchSuggestions:request
@@ -617,19 +434,14 @@
 }
 
 - (iTermCompletionItem *)setEarlyResult:(NSArray<iTermCompletionItem *> *)files
-                                history:(NSArray<iTermCompletionItem *> *)historySuggestions
                                  prefix:(NSString *)prefix {
     NSArray<iTermCompletionItem *> *completions =
-    [[files mapWithBlock:^id _Nullable(iTermCompletionItem *item) {
+    [files mapWithBlock:^id _Nullable(iTermCompletionItem *item) {
             NSString *escaped = [item.value stringWithBackslashEscapedShellCharactersIncludingNewlines:YES];
             return [[iTermCompletionItem alloc] initWithValue:escaped
                                                        detail:item.detail
                                                          kind:item.kind];
-        }] arrayByAddingObjectsFromArray:historySuggestions];
-    if ([_historyWindowController.window isVisible]) {
-        DLog(@"History window is visible so return");
-        return nil;
-    }
+        }];
     if (completions.count == 0) {
         DLog(@"No completions");
         return nil;
@@ -644,33 +456,23 @@
         return [[iTermCompletionItem alloc] initWithValue:suggestion
                                                    detail:[prefix stringByAppendingString:suggestion]
                                                      kind:iTermCompletionItemKindFile];
-    } else if (historySuggestions.count > 0) {
-        self.textView.suggestion = historySuggestions.lastObject.value;
-        return historySuggestions.lastObject;
     }
     return nil;
 }
 
 - (void)didFindCompletions:(NSArray<iTermCompletionItem *> *)filenameCompletions
-        historySuggestions:(NSArray<iTermCompletionItem *> *)historySuggestions
              forGeneration:(NSInteger)generation
-                    escape:(BOOL)shouldEscape
             suggestionOnly:(BOOL)suggestionOnly
                     prefix:(NSString *)prefix {
     DLog(@"didFindCompletions");
     // Escape filename completions.
     NSArray<iTermCompletionItem *> *completions =
-    [[filenameCompletions mapWithBlock:^id _Nullable(iTermCompletionItem *item) {
+    [filenameCompletions mapWithBlock:^id _Nullable(iTermCompletionItem *item) {
         return [item mapValue:^NSString * _Nonnull(NSString *filename) {
             return [filename stringWithBackslashEscapedShellCharactersIncludingNewlines:YES];
         }];
-    }] arrayByAddingObjectsFromArray:historySuggestions];
+    }];
 
-    if ([_historyWindowController.window isVisible]) {
-        DLog(@"History window is visible so return");
-        [self.textView setCompletions:@[] prefix:@""];
-        return;
-    }
     if (generation != _completionGeneration) {
         DLog(@"Generation is out of date");
         return;

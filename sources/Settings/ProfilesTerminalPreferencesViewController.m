@@ -10,7 +10,6 @@
 
 #import "ITAddressBookMgr.h"
 #import "iTermController.h"
-#import "iTermShellHistoryController.h"
 #import "iTerm2SharedARC-Swift.h"
 
 @implementation ProfilesTerminalPreferencesViewController {
@@ -324,9 +323,6 @@
                     key:KEY_SHOW_OFFSCREEN_COMMANDLINE
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
-    if ([[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-        _shellIntegrationRequiredButton.hidden = YES;
-    }
     info = [self defineControl:_showOffscreenCommandLineForCurrentCommand
                     key:KEY_SHOW_OFFSCREEN_COMMANDLINE_FOR_CURRENT_COMMAND
             relatedView:nil
@@ -449,10 +445,6 @@ static NSInteger CompareEncodingByLocalizedName(id a, id b, void *unused) {
 
 #pragma mark - Action
 
-- (IBAction)help:(id)sender {
-    [iTermShellHistoryController showInformationalMessageInWindow:self.view.window];
-}
-
 // The "send to phone" capability (a paired revision-2 phone that can be notified)
 // is reported asynchronously over the companion connection, so it usually becomes
 // true AFTER this pane first loads. Recompute the checkbox's enabled state each
@@ -509,12 +501,7 @@ static NSInteger CompareEncodingByLocalizedName(id a, id b, void *unused) {
 }
 
 - (IBAction)shellIntegrationRequired:(id)sender {
-    NSString *html;
-    if ([iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled]) {
-        html = @"This feature requires shell integration to be installed. <a href=\"https://iterm2.com/documentation-shell-integration.html\">Learn more.</a>";
-    } else {
-        html = @"This feature is unavailable because shell integration is disabled in the terminal-first fork.";
-    }
+    NSString *html = @"This feature requires the shell to emit OSC 133 semantic prompt markers.";
     NSAttributedString *attributedString = [NSAttributedString attributedStringWithHTML:html
                                                                                    font:[NSFont systemFontOfSize:[NSFont systemFontSize]]
                                                                          paragraphStyle:[NSParagraphStyle defaultParagraphStyle]];

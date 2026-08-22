@@ -4,9 +4,7 @@
 #import "PseudoTerminal.h"
 
 #import "ColorsMenuItemView.h"
-#import "CommandHistoryPopup.h"
 #import "Coprocess.h"
-#import "DirectoriesPopup.h"
 #import "FakeWindow.h"
 #import "FutureMethods.h"
 #import "FutureMethods.h"
@@ -57,8 +55,6 @@
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
 #import "TmuxLayoutParser.h"
-#import "ToolCommandHistoryView.h"
-#import "ToolDirectoriesView.h"
 #import "ToolJobs.h"
 #import "VT100RemoteHost.h"
 #import "VT100Screen.h"
@@ -77,8 +73,6 @@
 #import "iTermBroadcastPasswordHelper.h"
 #import "iTermBuiltInFunctions.h"
 #import "iTermColorPresets.h"
-#import "iTermCommandHistoryCommandUseMO+Additions.h"
-#import "iTermCommandHistoryEntryMO+Additions.h"
 #import "iTermController.h"
 #import "iTermEncoderAdapter.h"
 #import "iTermFindCursorView.h"
@@ -117,7 +111,6 @@
 #import "iTermSessionLauncher.h"
 #import "iTermSessionRestorationStatusProtocol.h"
 #import "iTermSessionTitleBuiltInFunction.h"
-#import "iTermShellHistoryController.h"
 #import "iTermSquash.h"
 #import "iTermSwiftyString.h"
 #import "iTermSwiftyStringGraph.h"
@@ -252,8 +245,6 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
 
 @property(nonatomic, assign) BOOL windowInitialized;
 
-// Session ID of session that currently has an auto-command history window open
-@property(nonatomic, copy) NSString *autoCommandHistorySessionGuid;
 @property(nonatomic, assign) NSTimeInterval timeOfLastResize;
 
 // Used for delaying and coalescing title changes. After a title change request
@@ -287,8 +278,6 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
     BOOL _resizeInProgressFlag;
 
     PasteboardHistoryWindowController* pbHistoryView;
-    CommandHistoryPopupWindowController *commandHistoryPopup;
-    DirectoriesPopupWindowController *_directoriesPopupWindowController;
     AutocompleteView* autocompleteView;
 
     // Window number, used for keyboard shortcut to select a window.
@@ -463,7 +452,6 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
     if (self) {
         _automaticallySelectNewTabs = YES;
         _automaticallyOrderFrontNewTabs = YES;
-        self.autoCommandHistorySessionGuid = nil;
     }
     return self;
 }
@@ -1066,21 +1054,15 @@ ITERM_WEAKLY_REFERENCEABLE
     [_broadcastInputHelper release];
     [_windowPositioner release];
     [autocompleteView shutdown];
-    [commandHistoryPopup shutdown];
-    [_directoriesPopupWindowController shutdown];
     [pbHistoryView shutdown];
     [pbHistoryView release];
-    [commandHistoryPopup release];
-    [_directoriesPopupWindowController release];
     [autocompleteView release];
     [lastArrangement_ release];
-    [_autoCommandHistorySessionGuid release];
     [_shortcutAccessoryViewController release];
     [_titleBarAccessoryTabBarViewController release];
     [_didEnterLionFullscreen release];
     [_desiredTitle release];
     [_tabsTouchBarItem release];
-    [_autocompleteCandidateListItem release];
     [_passwordManagerWindowController release];
     [_touchBarRateLimitedUpdate invalidate];
     [_touchBarRateLimitedUpdate release];
@@ -1273,12 +1255,6 @@ ITERM_WEAKLY_REFERENCEABLE
     if (popup == pbHistoryView) {
         [pbHistoryView autorelease];
         pbHistoryView = nil;
-    } else if (popup == commandHistoryPopup) {
-        [commandHistoryPopup autorelease];
-        commandHistoryPopup = nil;
-    } else if (popup == _directoriesPopupWindowController) {
-        [_directoriesPopupWindowController autorelease];
-        _directoriesPopupWindowController = nil;
     } else if (popup == autocompleteView) {
         [autocompleteView autorelease];
         autocompleteView = nil;
@@ -4505,8 +4481,6 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     // Close popups.
     [pbHistoryView close];
     [autocompleteView close];
-    [commandHistoryPopup close];
-    [_directoriesPopupWindowController close];
 
     [self disableBlur];
     // If a fullscreen window is closing, hide the menu bar unless it's only fullscreen because it's
@@ -5060,9 +5034,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     _contentView.tabBarControl.cmdPressed = NO;
 
     if ([[pbHistoryView window] isVisible] ||
-        [[autocompleteView window] isVisible] ||
-        [[commandHistoryPopup window] isVisible] ||
-        [[_directoriesPopupWindowController window] isVisible]) {
+        [[autocompleteView window] isVisible]) {
         return;
     }
 
@@ -6896,9 +6868,6 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     RLog(@"Did select tab view %@", tabViewItem);
     [_contentView.tabBarControl setFlashing:YES];
 
-    if (self.autoCommandHistorySessionGuid) {
-        [self hideAutoCommandHistory];
-    }
     PTYTab *tab = [tabViewItem identifier];
     for (PTYSession *aSession in [tab sessions]) {
         RLog(@"Clear new-output flag in %@", aSession);
@@ -8551,7 +8520,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
 }
 
 - (void)tabDidClearScrollbackBufferInSession:(PTYSession *)session {
-    [[_contentView.toolbelt commandHistoryView] removeSelection];
     [self refreshTools];
 }
 
@@ -9081,181 +9049,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
     [self openPopupWindow:pbHistoryView];
 }
 
-- (IBAction)openCommandHistory:(id)sender {
-    if (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-        [iTermShellHistoryController showInformationalMessageInWindow:self.window];
-        return;
-    }
-    [self openCommandHistoryWithPrefix:[[self currentSession] currentCommand]
-                   sortChronologically:NO
-                    currentSessionOnly:NO];
-}
-
-- (void)openCommandHistoryWithPrefix:(NSString *)prefix
-                 sortChronologically:(BOOL)sortChronologically
-                  currentSessionOnly:(BOOL)currentSessionOnly {
-    if (!commandHistoryPopup) {
-        commandHistoryPopup = [[CommandHistoryPopupWindowController alloc] initForAutoComplete:NO];
-        commandHistoryPopup.forwardKeyDown = YES;
-    }
-    [self openPopupWindow:commandHistoryPopup];
-    NSArray<iTermCommandHistoryCommandUseMO *> *candidates =
-    [commandHistoryPopup commandsForHost:[[self currentSession] currentHost]
-                                                            partialCommand:prefix
-                                  expand:YES];
-    NSString *currentSessionGUID = self.currentSession.guid;
-    NSArray<iTermCommandHistoryCommandUseMO *> *filtered;
-    if (currentSessionOnly) {
-        filtered = [candidates filteredArrayUsingBlock:^BOOL(iTermCommandHistoryCommandUseMO *commandUse) {
-            return [commandUse.mark.sessionGuid isEqual:currentSessionGUID];
-        }];
-    } else {
-        filtered = candidates;
-    }
-    [commandHistoryPopup loadCommands:filtered
-                       partialCommand:prefix
-                  sortChronologically:sortChronologically];
-}
-
-- (BOOL)commandHistoryIsOpenForSession:(PTYSession *)session {
-    return self.currentSession == session && [[commandHistoryPopup window] isVisible];
-}
-
-- (void)closeCommandHistory {
-    [commandHistoryPopup close];
-}
-
-- (IBAction)openDirectories:(id)sender {
-    if (!_directoriesPopupWindowController) {
-        _directoriesPopupWindowController = [[DirectoriesPopupWindowController alloc] init];
-    }
-    if ([[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-        [self openPopupWindow:_directoriesPopupWindowController];
-        [_directoriesPopupWindowController loadDirectoriesForHost:[[self currentSession] currentHost]];
-    } else {
-        [iTermShellHistoryController showInformationalMessageInWindow:self.window];
-    }
-}
-
-- (void)hideAutoCommandHistory {
-    [commandHistoryPopup close];
-    self.autoCommandHistorySessionGuid = nil;
-}
-
-- (BOOL)autoCommandHistoryEnabledForSession:(PTYSession *)session {
-    return ([session.guid isEqualToString:self.autoCommandHistorySessionGuid] ||
-            [iTermPreferences boolForKey:kPreferenceAutoCommandHistory]);
-}
-
-- (void)hideAutoCommandHistoryForSession:(PTYSession *)session {
-    if ([session.guid isEqualToString:self.autoCommandHistorySessionGuid]) {
-        [self hideAutoCommandHistory];
-        RLog(@"ACH Cancel delayed perform of show ACH window");
-        [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                                 selector:@selector(reallyShowAutoCommandHistoryForSession:)
-                                                   object:session];
-    }
-}
-
-- (BOOL)wantsCommandHistoryUpdatesFromSession:(PTYSession *)session {
-    if ([session.guid isEqualToString:self.autoCommandHistorySessionGuid]) {
-        return YES;
-    }
-    if (_autocompleteCandidateListItem && session == self.currentSession) {
-        return YES;
-    }
-    return NO;
-}
-
-// NOTE: If you change the conditions under which action is taken here also
-// update wantsCommandHistoryUpdatesFromSession:
-- (void)updateAutoCommandHistoryForPrefix:(NSString *)prefix
-                                inSession:(PTYSession *)session
-                              popIfNeeded:(BOOL)popIfNeeded {
-    // prefix is the partial command line the user is typing; keep it out of the ring.
-    RLog(@"ACH prefix=%@ session=%@ popIfNeeded=%@", RLogRedact(prefix, @(prefix.length)), session, @(popIfNeeded));
-    if ([session.guid isEqualToString:self.autoCommandHistorySessionGuid]) {
-        if (!commandHistoryPopup) {
-            commandHistoryPopup = [[CommandHistoryPopupWindowController alloc] initForAutoComplete:YES];
-        }
-        NSArray<iTermCommandHistoryCommandUseMO *> *commands = [commandHistoryPopup commandsForHost:[session currentHost]
-                                                                                     partialCommand:prefix
-                                                                                             expand:NO];
-        // commands are prior shell command lines (with directories); keep them out of the ring.
-        RLog(@"ACH commands=%@", RLogRedact(commands, @(commands.count)));
-        if (commands.count) {
-            if (popIfNeeded) {
-                RLog(@"ACH Pop");
-                [commandHistoryPopup popWithDelegate:session inWindow:self.window];
-            }
-        } else {
-            RLog(@"ACH no commands");
-            [commandHistoryPopup close];
-            return;
-        }
-        if ([commands count] == 1) {
-            iTermCommandHistoryCommandUseMO *commandUse = commands[0];
-            if ([commandUse.command isEqualToString:prefix]) {
-                RLog(@"ACH one command that equals prefix");
-                [commandHistoryPopup close];
-                return;
-            }
-        }
-        if (![[commandHistoryPopup window] isVisible]) {
-            RLog(@"ACH show");
-            [self showAutoCommandHistoryForSession:session];
-        }
-        RLog(@"ACH load commands");
-        [commandHistoryPopup loadCommands:commands
-                           partialCommand:prefix
-                      sortChronologically:NO];
-    }
-    if (_autocompleteCandidateListItem && session == self.currentSession) {
-        iTermShellHistoryController *history = [iTermShellHistoryController sharedInstance];
-        NSArray<NSString *> *commands = [[history commandHistoryEntriesWithPrefix:prefix onHost:[session currentHost]] mapWithBlock:^id(iTermCommandHistoryEntryMO *anObject) {
-            return anObject.command;
-        }];
-        // candidates are shell-history command lines; keep them out of the ring.
-        RLog(@"ACH Set candidates=%@", RLogRedact(commands, @(commands.count)));
-        [_autocompleteCandidateListItem setCandidates:commands ?: @[]
-                                     forSelectedRange:NSMakeRange(0, prefix.length)
-                                             inString:prefix];
-    }
-
-}
-
-- (void)showAutoCommandHistoryForSession:(PTYSession *)session {
-    if ([iTermPreferences boolForKey:kPreferenceAutoCommandHistory]) {
-        // Use a delay so we don't get a flurry of windows appearing when restoring arrangements.
-        RLog(@"ACH show after 0.2 second delay for session %@", session);
-        [self performSelector:@selector(reallyShowAutoCommandHistoryForSession:)
-                   withObject:session
-                   afterDelay:0.2];
-    }
-}
-
-- (void)reallyShowAutoCommandHistoryForSession:(PTYSession *)session {
-    RLog(@"ACH session=%@ currentSession=%@ window.isKey=%@ currentCommand=%@ eligible=%@",
-         session,
-         self.currentSession,
-         @(self.window.isKeyWindow),
-         RLogRedact(session.currentCommand, @(session.currentCommand.length)),
-         @(session.eligibleForAutoCommandHistory));
-    if ([self currentSession] == session &&
-        [[self window] isKeyWindow] &&
-        [[session currentCommand] length] > 0 &&
-        session.eligibleForAutoCommandHistory) {
-        self.autoCommandHistorySessionGuid = session.guid;
-        [self updateAutoCommandHistoryForPrefix:[session currentCommand]
-                                      inSession:session
-                                    popIfNeeded:YES];
-    }
-}
-
-- (BOOL)autoCommandHistoryIsOpenForSession:(PTYSession *)session {
-    return [[commandHistoryPopup window] isVisible] && [self.autoCommandHistorySessionGuid isEqualToString:session.guid];
-}
-
 - (IBAction)openAutocomplete:(id)sender {
     if (!autocompleteView) {
         autocompleteView = [[AutocompleteView alloc] init];
@@ -9266,9 +9059,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
     } else {
         RLog(@"Will open popup");
         [self openPopupWindow:autocompleteView];
-        NSString *currentCommand = [[self currentSession] currentCommand];
-        [autocompleteView addCommandEntries:[[self currentSession] autocompleteSuggestionsForCurrentCommand]
-                                    context:currentCommand];
     }
 }
 
@@ -9746,9 +9536,6 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
 }
 
 - (void)tabActiveSessionDidChange {
-    if (self.autoCommandHistorySessionGuid) {
-        [self hideAutoCommandHistory];
-    }
     [_contentView.toolbelt refreshTools];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:iTermSnippetsTagsDidChange object:nil];
@@ -11994,23 +11781,10 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
     } else if ([item action] == @selector(toggleSelectionRespectsSoftBoundaries:)) {
         [item setState:[[iTermController sharedInstance] selectionRespectsSoftBoundaries] ? NSControlStateValueOn : NSControlStateValueOff];
         result = YES;
-    } else if ([item action] == @selector(toggleAutoCommandHistory:)) {
-        result = [[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed];
-        if (result) {
-            if ([item respondsToSelector:@selector(setState:)]) {
-                [item setState:[iTermPreferences boolForKey:kPreferenceAutoCommandHistory] ? NSControlStateValueOn : NSControlStateValueOff];
-            }
-        } else {
-            [item setState:NSControlStateValueOff];
-        }
     } else if ([item action] == @selector(toggleAutoComposer:)) {
-        result = [[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed];
-        if (result) {
-            if ([item respondsToSelector:@selector(setState:)]) {
-                [item setState:[iTermPreferences boolForKey:kPreferenceAutoComposer] ? NSControlStateValueOn : NSControlStateValueOff];
-            }
-        } else {
-            [item setState:NSControlStateValueOff];
+        result = YES;
+        if ([item respondsToSelector:@selector(setState:)]) {
+            [item setState:[iTermPreferences boolForKey:kPreferenceAutoComposer] ? NSControlStateValueOn : NSControlStateValueOff];
         }
     } else if ([item action] == @selector(toggleAlertOnNextMark:)) {
         PTYSession *currentSession = [self currentSession];
@@ -12043,17 +11817,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         return [[self currentSession] tmuxMode] == TMUX_NONE;
     } else if ([item action] == @selector(resetCharset:)) {
         result = ![[[self currentSession] screen] allCharacterSetPropertiesHaveDefaultValues];
-    } else if ([item action] == @selector(openCommandHistory:)) {
-        if (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-            return YES;
-        }
-        id<VT100RemoteHostReading> host = [[self currentSession] currentHost] ?: [VT100RemoteHost localhost];
-        return [[iTermShellHistoryController sharedInstance] haveCommandsForHost:host];
-    } else if ([item action] == @selector(openDirectories:)) {
-        if (![[iTermShellHistoryController sharedInstance] commandHistoryHasEverBeenUsed]) {
-            return YES;
-        }
-        return [[iTermShellHistoryController sharedInstance] haveDirectoriesForHost:[[self currentSession] currentHost]];
     } else if ([item action] == @selector(movePaneDividerDown:)) {
         return [[self currentTab] canMoveCurrentSessionDividerBy:1
                                                     horizontally:NO];
@@ -12214,11 +11977,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 - (IBAction)returnToDefaultSize:(id)sender {
     [iTermAdjustFontSizeHelper returnToDefaultSize:self.currentSession
                                      resetRowsCols:[sender isAlternate]];
-}
-
-- (IBAction)toggleAutoCommandHistory:(id)sender {
-    [iTermPreferences setBool:![iTermPreferences boolForKey:kPreferenceAutoCommandHistory]
-                       forKey:kPreferenceAutoCommandHistory];
 }
 
 - (IBAction)toggleAutoComposer:(id)sender {
@@ -13071,12 +12829,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
     if (autocompleteView.delegate == session) {
         autocompleteView.delegate = nil;
     }
-    if (commandHistoryPopup.delegate == session) {
-        commandHistoryPopup.delegate = nil;
-    }
-    if (_directoriesPopupWindowController.delegate == session) {
-        _directoriesPopupWindowController.delegate = nil;
-    }
     [[NSNotificationCenter defaultCenter] postNotificationName:kCurrentSessionDidChange object:nil];
     if ([[PreferencePanel sessionsInstance] isWindowLoaded]) {
         if ([iTermAdvancedSettingsModel pinEditSession] &&
@@ -13505,10 +13257,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         session.sessionNoteModel = [[[iTermSessionNoteModel alloc] init] autorelease];
     }
     return session.sessionNoteModel;
-}
-
-- (NSArray<iTermCommandHistoryCommandUseMO *> *)toolbeltCommandUsesForCurrentSession {
-    return [self.currentSession commandUses];
 }
 
 - (void)toolbeltAddNamedMark {

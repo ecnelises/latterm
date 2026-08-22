@@ -246,12 +246,9 @@ static const int64_t VT100ScreenMutableStateSideEffectFlagLineBufferDidDropLines
         self.ansi = self.terminal.isAnsi;
         self.wraparoundMode = self.terminal.wraparoundMode;
         self.insert = self.terminal.insertMode;
-        _commandRangeChangeJoiner = [iTermIdempotentOperationJoiner joinerWithScheduler:_tokenExecutor];
         _terminal.delegate = self;
         _tokenExecutor.delegate = self;
     } else {
-        [_commandRangeChangeJoiner invalidate];
-        _commandRangeChangeJoiner = nil;
         _tokenExecutor.delegate = nil;
         _terminal.delegate = nil;
     }
@@ -3518,8 +3515,6 @@ void VT100ScreenEraseCell(screen_char_t *sct,
          VT100GridCoordRangeDescription(current));
     _previousCommandRange = current;
     const BOOL haveCommand = current.start.x >= 0 && [self haveCommandInRange:current];
-    const BOOL atPrompt = current.start.x >= 0;
-
     if (haveCommand) {
         id<VT100ScreenMarkReading> mark = [self screenMarkOnLine:self.lastPromptLine - self.cumulativeScrollbackOverflow];
         const VT100GridAbsCoordRange commandRange = VT100GridAbsCoordRangeFromCoordRange(current, self.cumulativeScrollbackOverflow);
@@ -3538,37 +3533,6 @@ void VT100ScreenEraseCell(screen_char_t *sct,
             }];
         }
     }
-    if (self.config.wantsCommandChangeNotifications) {
-        // If semantic history goes nuts and the end-of-command code isn't received (which seems to be a
-        // common problem, probably because of buggy old versions of SH scripts) , the command can grow
-        // without bound. We'll limit the length of a command to avoid performance problems.
-        NSString *command = haveCommand ? [self commandInRange:current maxLines:2] : @"";
-        
-        __weak __typeof(self) weakSelf = self;
-        [_commandRangeChangeJoiner setNeedsUpdateWithBlock:^{
-            // This runs as a side-effect
-            assert([NSThread isMainThread]);
-            DLog(@"[side effects] Command range change joiner will perform side effect]");
-            [weakSelf performSideEffect:^(id<VT100ScreenDelegate> delegate) {
-                [weakSelf notifyDelegateOfCommandChange:command
-                                               atPrompt:atPrompt
-                                            haveCommand:haveCommand
-                                    sideEffectPerformer:weakSelf.sideEffectPerformer
-                                               delegate:delegate];
-            } name:@"command range did change"];
-        }];
-    }
-}
-
-- (void)notifyDelegateOfCommandChange:(NSString *)command
-                             atPrompt:(BOOL)atPrompt
-                          haveCommand:(BOOL)haveCommand
-                  sideEffectPerformer:(id<VT100ScreenSideEffectPerforming>)sideEffectPerformer
-                             delegate:(id<VT100ScreenDelegate>)delegate {
-    [delegate screenCommandDidChangeTo:command
-                              atPrompt:atPrompt
-                            hadCommand:self.hadCommand
-                           haveCommand:haveCommand];
     self.hadCommand = haveCommand;
 }
 
@@ -6231,7 +6195,6 @@ lengthExcludingInBandSignaling:data.length
     [self appendCarriageReturnLineFeed];
 }
 
-// Link marks for commands to CommandUse objects in command history.
 // Notify delegate of annotations so they get added as subviews, and set the delegate of not view controllers to self.
 // Materialize portholes.
 - (void)fixUpDeserializedIntervalTree:(iTermEventuallyConsistentIntervalTree *)intervalTree
@@ -6243,7 +6206,6 @@ lengthExcludingInBandSignaling:data.length
     // Restoration deserializes fold marks straight into the tree at fresh coordinates, bypassing the
     // interactive create path, so the cached bottommost-fold line must be recomputed.
     _foldCacheDirty = YES;
-    id<VT100RemoteHostReading> lastRemoteHost = nil;
     // Collect maps for ResilientCoordinate fold/porthole resolution. Decoded
     // RCs that referenced a fold or porthole come up in .unresolvedFold /
     // .unresolvedPorthole; we hand them their target marks after the first
@@ -6264,22 +6226,10 @@ lengthExcludingInBandSignaling:data.length
             if ([object conformsToProtocol:@protocol(iTermResilientCoordinateHolder)]) {
                 [rcHolders addObject:(id<iTermResilientCoordinateHolder>)object];
             }
-            if ([object isKindOfClass:[VT100RemoteHost class]]) {
-                lastRemoteHost = (id<VT100RemoteHostReading>)object;
-            } else if ([object isKindOfClass:[VT100ScreenMark class]]) {
+            if ([object isKindOfClass:[VT100ScreenMark class]]) {
                 id<VT100ScreenMarkReading> screenMark = (id<VT100ScreenMarkReading>)object;
                 // Breaking the rules here because I don't want the doppelganger to get a delegate.
                 ((VT100ScreenMark *)screenMark).delegate = self;
-                if (screenMark.firstLineOfCommand) {
-                    // Find the matching object in command history and link it.
-                    id<VT100RemoteHostReading> lastRemoteHostDoppelganger = lastRemoteHost.doppelganger;
-                    id<VT100ScreenMarkReading> screenMarkDoppelganger = screenMark.doppelganger;
-                    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-                        [delegate screenUpdateCommandUseWithGuid:screenMark.guid
-                                                          onHost:lastRemoteHostDoppelganger
-                                                   toReferToMark:screenMarkDoppelganger];
-                    } name:@"fix up deserialized interval tree 1"];
-                }
                 if ([screenMark.guid isEqualToString:guidOfLastCommandMark]) {
                     self.lastCommandMark = screenMark;
                 }

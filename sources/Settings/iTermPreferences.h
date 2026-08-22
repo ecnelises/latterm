@@ -94,7 +94,7 @@ extern NSString *const kPreferenceKeyConfirmClosingMultipleTabs;
 extern NSString *const kPreferenceKeyPromptOnQuit;
 extern NSString *const kPreferenceKeyPromptOnQuitEvenIfThereAreNoWindows;
 extern NSString *const kPreferenceKeyInstantReplayMemoryMegabytes;
-extern NSString *const kPreferenceKeySavePasteAndCommandHistory;
+extern NSString *const kPreferenceKeySavePasteHistory;
 extern NSString *const kPreferenceKeyAddBonjourHostsToProfiles;
 extern NSString *const kPreferenceKeyCheckForUpdatesAutomatically;
 extern NSString *const kPreferenceKeyCheckForTestReleases;
@@ -241,8 +241,6 @@ extern NSString *const kPreferenceKeyAppVersion;
 extern NSString *const kPreferenceKeyAllAppVersions;
 extern NSString *const kPreferenceKeySavedWindowPositions;
 
-// Auto-command history (set through menu)
-extern NSString *const kPreferenceAutoCommandHistory;
 extern NSString *const kPreferenceAutoComposer;
 
 extern NSString *const kPreferenceKeyPasteSpecialChunkSize;

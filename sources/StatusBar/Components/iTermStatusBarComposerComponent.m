@@ -9,7 +9,6 @@
 
 #import "iTermController.h"
 #import "iTermPreferences.h"
-#import "iTermShellHistoryController.h"
 #import "iTermsStatusBarComposerViewController.h"
 #import "iTermVariableScope.h"
 #import "iTermVariables.h"
@@ -82,10 +81,6 @@
     if (!_viewController) {
         _viewController = [[iTermsStatusBarComposerViewController alloc] initWithNibName:@"iTermsStatusBarComposerViewController" bundle:[NSBundle bundleForClass:self.class]];
         _viewController.delegate = self;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(commandHistoryDidChange:)
-                                                     name:kCommandHistoryDidChangeNotificationName
-                                                   object:nil];
         // Give the session a chance to finish initializing and then reload data.
         dispatch_async(dispatch_get_main_queue(), ^{
             [self->_viewController reloadData];
@@ -171,10 +166,7 @@
 }
 
 - (NSArray<NSString *> *)statusBarComposerSuggestions:(iTermsStatusBarComposerViewController *)composer {
-    NSArray<NSString *> *commands = [[[[self.session commandUses] mapWithBlock:^id(iTermCommandHistoryCommandUseMO *anObject) {
-        return anObject.command;
-    }] reverseObjectEnumerator] allObjects];
-    return commands;
+    return @[];
 }
 
 - (NSFont *)statusBarComposerFont:(iTermsStatusBarComposerViewController *)composer {
@@ -195,13 +187,6 @@
 
 - (void)statusBarComposerRevealComposer:(iTermsStatusBarComposerViewController *)composer {
     [self.delegate statusBarComponentComposerRevealComposer:self];
-}
-
-#pragma mark - Notifications
-
-- (void)commandHistoryDidChange:(NSNotification *)notification {
-    // TODO: This is not very efficient.
-    [_viewController reloadData];
 }
 
 @end

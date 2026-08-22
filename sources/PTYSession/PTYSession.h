@@ -106,7 +106,6 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class VT100Screen;
 @class VT100Terminal;
 @class iTermColorMap;
-@class iTermCommandHistoryCommandUseMO;
 @class iTermController;
 @class iTermNotificationController;
 @class iTermPromptOnCloseReason;
@@ -582,7 +581,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 @property(nonatomic, readonly) int tmuxPane;
 
 // FinalTerm
-@property(nonatomic, readonly, nullable) NSArray *autocompleteSuggestionsForCurrentCommand;
 @property(nonatomic, readonly, nullable) NSString *currentCommand;
 @property(nonatomic, readonly, nullable) NSString *currentCommandUpToCursor;
 
@@ -603,7 +601,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (void)clearTabStatus;
 
 // Commands issued, directories entered, and hosts connected to during this session.
-// Requires shell integration.
 @property(nonatomic, readonly) NSMutableArray<NSString *> *commands;  // of NSString
 @property(nonatomic, readonly) NSMutableArray<NSString *> *directories;  // of NSString
 @property(nonatomic, readonly) NSMutableArray<id<VT100RemoteHostReading>> *hosts;  // of VT100RemoteHost
@@ -643,9 +640,8 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (void)asyncGetCurrentLocationWithCompletion:(void (^)(NSURL * _Nullable url))completion;
 
 // A UUID that uniquely identifies this session.
-// Used to link serialized data back to a restored session (e.g., which session
-// a command in command history belongs to). Also to link content from an
-// arrangement provided to us by the OS during system window restoration with a
+// Used to link serialized data back to a restored session and to link content
+// from an arrangement provided to us by the OS during system window restoration with a
 // session in a saved arrangement when we're opening a saved arrangement at
 // startup instead of respecting the wishes of system window restoration.
 // Also used by the websocket API to reference a session.
@@ -661,9 +657,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // Indicates if this session predates a tmux split pane. Used to figure out which pane is new when
 // layout changes due to a user-initiated pane split.
 @property(nonatomic, assign) BOOL sessionIsSeniorToTmuxSplitPane;
-
-@property(nonatomic, readonly) NSArray<iTermCommandHistoryCommandUseMO *> *commandUses;
-@property(nonatomic, readonly) BOOL eligibleForAutoCommandHistory;
 
 // If we want to show quicklook this will not be nil.
 @property(nonatomic, readonly, nullable) iTermQuickLookController *quickLookController;

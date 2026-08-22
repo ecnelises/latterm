@@ -169,7 +169,6 @@ class MainMenuMangler: NSObject {
         "Show Timestamps": "clock",
         "Show Annotations": "text.bubble",
         "Edit Session Note": "text.pad.header",
-        "Auto Command Completion": "text.badge.checkmark",
         "Open Quickly": "magnifyingglass",
         "Maximize Active Pane": "rectangle.compress.vertical",
         "Make Text Bigger": "textformat.size.larger",
@@ -191,8 +190,6 @@ class MainMenuMangler: NSObject {
         "Run Coprocess…": "figure.run.square.stack",
         "Stop Coprocess": "figure.run",
         "Restart Session": "arrow.clockwise",
-        "Open Command History…": "book.pages",
-        "Open Recent Directories…": "folder",
         "Open Paste History…": "book.pages",
         // Open Trigger removed - no identifier in XIB
         "Reset": "restart",

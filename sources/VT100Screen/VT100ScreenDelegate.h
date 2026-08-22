@@ -347,7 +347,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionResizePermission) {
                                remoteHost:(id<VT100RemoteHostReading> _Nullable)remoteHost;
 
 // Poll for the local working directory and update lastLocalDirectory only.
-// Does not affect the interval tree, shell history, or path variable.
+// Does not affect the interval tree or path variable.
 // Used when OSC 7/shell integration is providing directory updates but we still
 // want to track the local directory for session restoration.
 - (void)screenPollLocalDirectoryOnly;
@@ -358,11 +358,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionResizePermission) {
 - (void)screenReportCapabilities;
 
 // FinalTerm stuff
-- (void)screenCommandDidChangeTo:(NSString * _Nonnull)command
-                        atPrompt:(BOOL)atPrompt
-                      hadCommand:(BOOL)hadCommand
-                     haveCommand:(BOOL)haveCommand;
-
 - (void)screenDidExecuteCommand:(NSString * _Nullable)command
                        absRange:(VT100GridAbsCoordRange)range
                          onHost:(id<VT100RemoteHostReading> _Nullable)host
@@ -431,10 +426,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionResizePermission) {
 - (void)screenPostUserNotification:(NSString * _Nonnull)string rich:(BOOL)rich;
 // Called while joined. Don't let `mutableState` escape.
 - (void)screenSync:(VT100ScreenMutableState * _Nonnull)mutableState;
-- (void)screenUpdateCommandUseWithGuid:(NSString * _Nonnull)screenmarkGuid
-                                onHost:(id<VT100RemoteHostReading> _Nullable)lastRemoteHost
-                         toReferToMark:(id<VT100ScreenMarkReading> _Nonnull)screenMark;
-
 - (void)screenExecutorDidUpdate:(VT100ScreenTokenExecutorUpdate * _Nonnull)update;
 - (VT100ScreenState * _Nonnull)screenSwitchToSharedState;
 - (void)screenRestoreState:(VT100ScreenState * _Nonnull)state;

@@ -20,7 +20,6 @@
 #import "iTermOrderEnforcer.h"
 #import "iTermPreferences.h"
 #import "iTermSelection.h"
-#import "iTermShellHistoryController.h"
 #import "iTermTextExtractor.h"
 #import "iTermTemporaryDoubleBufferedGridController.h"
 #import "NSArray+iTerm.h"

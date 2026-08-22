@@ -50,8 +50,8 @@
 static void HandleSigChld(int n) {
     // This is safe to do because write(2) is listed in the sigaction(2) man page
     // as allowed in a signal handler. Calling a method is *NOT* safe since something might
-    // be fiddling with the runtime. I saw a lot of crashes where CoreData got interrupted by
-    // a sigchild while doing class_addMethod and that caused a crash because of a method call.
+    // be fiddling with the runtime. Calling Objective-C code from SIGCHLD can interrupt
+    // class_addMethod and crash inside the runtime.
     UnblockTaskNotifier();
 }
 

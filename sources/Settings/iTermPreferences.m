@@ -43,7 +43,7 @@ NSString *const kPreferenceKeyConfirmClosingMultipleTabs = @"OnlyWhenMoreTabs"; 
 NSString *const kPreferenceKeyPromptOnQuit = @"PromptOnQuit";
 NSString *const kPreferenceKeyPromptOnQuitEvenIfThereAreNoWindows = @"PromptOnQuitEvenIfThereAreNoWindows";
 NSString *const kPreferenceKeyInstantReplayMemoryMegabytes = @"IRMemory";
-NSString *const kPreferenceKeySavePasteAndCommandHistory = @"SavePasteHistory";  // The key predates command history
+NSString *const kPreferenceKeySavePasteHistory = @"SavePasteHistory";
 NSString *const kPreferenceKeyAddBonjourHostsToProfiles = @"EnableRendezvous";  // The key predates the name Bonjour
 NSString *const kPreferenceKeyCheckForUpdatesAutomatically = @"SUEnableAutomaticChecks";  // Key defined by Sparkle
 NSString *const kPreferenceKeyCheckForTestReleases = @"CheckTestRelease";
@@ -186,7 +186,6 @@ NSString *const kPreferenceKeyReportHorizontalScrollEvents = @"ReportHorizontalS
 NSString *const kPreferenceKeyAppVersion = @"iTerm Version";  // Excluded from syncing
 NSString *const kPreferenceKeyAllAppVersions = @"NoSyncAllAppVersions";  // Array of known iTerm2 versions this user has used on this machine.
 NSString *const kPreferenceKeySavedWindowPositions = @"NoSyncSavedWindowPositions";
-NSString *const kPreferenceAutoCommandHistory = @"AutoCommandHistory";
 NSString *const kPreferenceAutoComposer = @"AutoComposer";
 NSString *const kPreferenceKeyOSVersion = @"NoSyncLastOSVersion";
 
@@ -435,7 +434,7 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
                   kPreferenceKeyPromptOnQuit: @YES,
                   kPreferenceKeyPromptOnQuitEvenIfThereAreNoWindows: @NO,
                   kPreferenceKeyInstantReplayMemoryMegabytes: @4,
-                  kPreferenceKeySavePasteAndCommandHistory: @NO,
+                  kPreferenceKeySavePasteHistory: @NO,
                   kPreferenceKeyAddBonjourHostsToProfiles: @NO,
                   kPreferenceKeyCheckForUpdatesAutomatically: @YES,
                   kPreferenceKeyCheckForTestReleases: @NO,
@@ -567,7 +566,6 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
                   kPreferenceKeyClickToSelectCommand: @YES,
                   kPreferenceKeyWrapDroppedFilenamesInQuotesWhenPasting: @NO,
 
-                  kPreferenceAutoCommandHistory: @NO,
                   kPreferenceAutoComposer: @NO,
                   
                   kPreferenceKeyPasteSpecialChunkSize: @1024,

@@ -9,7 +9,6 @@
 
 #import "iTermController.h"
 #import "iTermSessionLauncher.h"
-#import "iTermShellHistoryController.h"
 #import "iTermVariableScope.h"
 #import "iTermVariableReference.h"
 #import "NSArray+iTerm.h"
@@ -21,7 +20,6 @@
 #import "iTermProfile.h"
 #import "ProfileModel.h"
 #import "iTermProfilePreferences.h"
-#import "VT100RemoteHost.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -339,26 +337,8 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
     NSMenu *menu = [[NSMenu alloc] init];
     NSView *containingView = view.superview;
 
-    id<VT100RemoteHostReading> remoteHost = [self remoteHost];
-    for (iTermRecentDirectoryMO *directory in [[[iTermShellHistoryController sharedInstance] directoriesSortedByScoreOnHost:remoteHost] it_arrayByKeepingFirstN:10]) {
-        NSString *title;
-        if (directory.starred.boolValue) {
-            title = [@"★ " stringByAppendingString:directory.path];
-        } else {
-            title = directory.path;
-        }
-        NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:title
-                                                      action:@selector(directorySelected:)
-                                               keyEquivalent:@""];
-        item.target = self;
-        item.representedObject = directory.path;
-        [menu addItem:item];
-    }
-
     NSString *currentPath = self.fullString;
     if (currentPath.length) {
-        [menu addItem:[NSMenuItem separatorItem]];
-
         NSMenuItem *copyPath = [[NSMenuItem alloc] initWithTitle:@"Copy Path"
                                                           action:@selector(copyCurrentPath:)
                                                    keyEquivalent:@""];
@@ -393,23 +373,6 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
     }
 
     [menu popUpMenuPositioningItem:menu.itemArray.firstObject atLocation:NSMakePoint(0, 0) inView:containingView];
-}
-
-- (void)directorySelected:(NSMenuItem *)sender {
-    NSString *path = sender.representedObject;
-    [self.delegate statusBarComponent:self
-                          writeString:[NSString stringWithFormat:@"cd %@", [path stringWithEscapedShellCharactersIncludingNewlines:YES]]];
-}
-
-- (id<VT100RemoteHostReading>)remoteHost {
-    // Carry the published locality so isLocalhost (used for path completion)
-    // survives a local hostname change instead of falling back to a name compare.
-    const VT100RemoteHostLocality locality =
-        [VT100RemoteHost localityForIsLocalhostVariableValue:[self.scope valueForVariableName:iTermVariableKeySessionIsLocalhost]];
-    VT100RemoteHost *result = [[VT100RemoteHost alloc] initWithUsername:[self.scope valueForVariableName:iTermVariableKeySessionUsername]
-                                                               hostname:[self.scope valueForVariableName:iTermVariableKeySessionHostname]
-                                                               locality:locality];
-    return result;
 }
 
 - (void)copyCurrentPath:(NSMenuItem *)sender {
