@@ -5,7 +5,23 @@
 //  Created by George Nachman on 7/3/24.
 //
 
-import Foundation
+import AppKit
+
+private class ButtonWithCustomCursor: NSButton {
+    var cursor: NSCursor? {
+        didSet {
+            window?.invalidateCursorRects(for: self)
+        }
+    }
+
+    override func resetCursorRects() {
+        if let cursor {
+            addCursorRect(bounds, cursor: cursor)
+        } else {
+            super.resetCursorRects()
+        }
+    }
+}
 
 
 @available(macOS, introduced: 11)

@@ -635,22 +635,9 @@ static iTermPreferencesSearchEngine *gSearchEngine;
                                              selector:@selector(scrimMouseUp:)
                                                  name:iTermPrefsScrimMouseUpNotification
                                                object:nil];
-    BOOL addVC = YES;
-#if DEBUG
-    if (@available(macOS 26.1, *)) {} else if (@available(macOS 26, *)) {
-        addVC = NO;
-    }
-#endif
-    if (addVC) {
-        iTermDonateViewController *vc = [[iTermDonateViewController alloc] init];
-        [self.window addTitlebarAccessoryViewController:vc];
-    }
-
-    if (@available(macOS 11, *)) {
-        if (!_editCurrentSessionMode && iTermUserDefaultsUnsavedController.allowed) {
-            iTermUserDefaultsUnsavedController *unsaved = [[iTermUserDefaultsUnsavedController alloc] init];
-            [self.window addTitlebarAccessoryViewController:unsaved];
-        }
+    if (!_editCurrentSessionMode && iTermUserDefaultsUnsavedController.allowed) {
+        iTermUserDefaultsUnsavedController *unsaved = [[iTermUserDefaultsUnsavedController alloc] init];
+        [self.window addTitlebarAccessoryViewController:unsaved];
     }
     if (!_editCurrentSessionMode) {
         [_profilesViewController selectDefaultProfile];

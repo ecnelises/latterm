@@ -1921,8 +1921,8 @@ CA
                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                     </textFieldCell>
                 </textField>
-                <customView identifier="AfterProfileTypeContainer" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jFD-jQ-u7E" userLabel="After profile type container">
-                    <rect key="frame" x="16" y="0.0" width="650" height="389"/>
+                <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jFD-jQ-u7E" userLabel="Profile settings container">
+                    <rect key="frame" x="16" y="59" width="650" height="389"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <subviews>
                         <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2141" userLabel="Shortcut key label">

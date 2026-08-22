@@ -14,8 +14,7 @@ Terminal-first fork changes:
   the legacy SSH helper bootstrap path.
 - Removed regex-based prompt detection triggers.
 - Removed obsolete AI test fixtures and assets.
-- Replaced the green dollar-sign app icon with
-  a blue hash prompt.
+- Restored the upstream channel-specific icons.
 - Removed the remaining AI Composer controls,
   routing, and secure settings.
 - Rebranded main-app alerts, tips, and
@@ -25,6 +24,10 @@ Terminal-first fork changes:
 - Simplified terminal password management.
 - Removed redundant libsixel build artifacts while
   preserving universal SIXEL image decoding.
+- Removed obsolete browser-profile spacing from
+  Profiles > General.
+- Removed the upstream donation prompt from
+  Settings.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
