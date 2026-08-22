@@ -11,7 +11,7 @@ VERSION="0.$COMPACTDATE-adhoc"
 echo "$VERSION" > version.txt
 NAME=$(echo $VERSION | sed -e "s/\\./_/g")
 make clean
-make SIGNED=1 UNIVERSAL=1 release || die "make release failed"
+make SIGNED=1 release || die "make release failed"
 [ -d build/Deployment/iTerm2.app ] || die "Build did not produce build/Deployment/iTerm2.app"
 rm -rf build/Deployment/iTerm.app
 mv build/Deployment/iTerm2.app build/Deployment/iTerm.app || die "Failed to rename iTerm2.app to iTerm.app"

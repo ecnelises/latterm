@@ -43,31 +43,16 @@ ifndef SIGNED
   SIGNING_FLAGS = CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 endif
 
-# Architecture: native-only by default (faster builds).
-# Use UNIVERSAL=1 to build universal (arm64 + x86_64) binaries for release.
-NATIVE_ARCH := $(shell uname -m)
-ifndef UNIVERSAL
-  ARCH_FLAGS = ARCHS="$(NATIVE_ARCH)" ONLY_ACTIVE_ARCH=YES
-endif
-
-# Architecture for cmake-based deps.
-ifdef UNIVERSAL
-  CMAKE_ARCHS = x86_64;arm64
-else
-  CMAKE_ARCHS = $(NATIVE_ARCH)
-endif
-
-# Rust target triple for the native architecture.
-ifeq ($(NATIVE_ARCH),arm64)
-  RUST_NATIVE_TARGET = aarch64-apple-darwin
-else
-  RUST_NATIVE_TARGET = x86_64-apple-darwin
-endif
+# Latterm targets Apple Silicon only.
+TARGET_ARCH := arm64
+ARCH_FLAGS = ARCHS="$(TARGET_ARCH)" ONLY_ACTIVE_ARCH=YES
+CMAKE_ARCHS = $(TARGET_ARCH)
+RUST_TARGET = aarch64-apple-darwin
 
 .PHONY: clean all backup-old-iterm restart setup dangerous-setup _setup-main help doctor
 
 help:
-	@echo "$(APP_NAME) — $(VERSION) ($(NATIVE_ARCH))"
+	@echo "$(APP_NAME) — $(VERSION) ($(TARGET_ARCH))"
 	@echo ""
 	@echo "First time:"
 	@echo "  make setup            Install all build dependencies (interactive)"
@@ -100,7 +85,6 @@ help:
 	@echo ""
 	@echo "Options:"
 	@echo "  SIGNED=1          Enable code signing"
-	@echo "  UNIVERSAL=1       Build universal (arm64 + x86_64) binaries"
 	@echo "  BUILD_DIR=/path   Override build output directory"
 	@echo ""
 	@echo "Homebrew: $(HOMEBREW_PREFIX)"
@@ -234,8 +218,7 @@ _setup-main:
 	fi
 	@$(HOMEBREW_PREFIX)/bin/python3 -c "import objc" 2>/dev/null || $(HOMEBREW_PREFIX)/bin/pip3 install --break-system-packages pyobjc
 	@PATH="$(ORIG_PATH):$$HOME/.cargo/bin" command -v cbindgen >/dev/null || $(or $(RUSTUP),$$HOME/.cargo/bin/rustup) run stable cargo install cbindgen
-	# Note: this installs arm tooling as well
-	$(or $(RUSTUP),$$HOME/.cargo/bin/rustup) target add x86_64-apple-darwin
+	$(or $(RUSTUP),$$HOME/.cargo/bin/rustup) target add $(RUST_TARGET)
 	git submodule update --init --recursive
 	PATH="$(ORIG_PATH)" xcodebuild -downloadComponent MetalToolchain || \
 		echo "WARNING: Metal Toolchain download failed. You can retry later with: xcodebuild -downloadComponent MetalToolchain"
@@ -243,7 +226,7 @@ _setup-main:
 	@echo "Setup complete. Run 'make paranoid-deps' to build native dependencies."
 
 doctor:
-	@echo "$(APP_NAME) build environment — $(NATIVE_ARCH)"
+	@echo "$(APP_NAME) build environment — $(TARGET_ARCH)"
 	@echo ""
 	@printf "  %-18s" "Homebrew:"; (PATH="$(ORIG_PATH)" brew --version 2>/dev/null | head -1) || echo "NOT FOUND"
 	@printf "  %-18s" "Homebrew prefix:"; echo "$(HOMEBREW_PREFIX)"
@@ -388,33 +371,13 @@ preview:
 	cp plists/preview-iTerm2.plist plists/iTerm2.plist
 	make Deployment
 
-x86libsixel: force
-	mkdir -p submodules/libsixel/build-x86
-	cd submodules/libsixel/build-x86 && PKG_CONFIG=$(PKG_CONFIG) CC="/usr/bin/clang -target x86_64-apple-macos$(DEPLOYMENT_TARGET)" LDFLAGS="-target x86_64-apple-macos$(DEPLOYMENT_TARGET)" CFLAGS="-target x86_64-apple-macos$(DEPLOYMENT_TARGET)" LIBTOOLFLAGS="-target x86_64-apple-macos$(DEPLOYMENT_TARGET)" ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ../configure -host=x86_64-apple-darwin --prefix=${PWD}/ThirdParty/libsixel-x86 --without-libcurl --without-jpeg --without-png --disable-python --disable-shared && $(MAKE) && $(MAKE) install
-
-armsixel: force
+libsixel: force
 	mkdir -p submodules/libsixel/build-arm
 	cd submodules/libsixel/build-arm && PKG_CONFIG=$(PKG_CONFIG) CC="/usr/bin/clang -target arm64-apple-macos$(DEPLOYMENT_TARGET)" LDFLAGS="-target arm64-apple-macos$(DEPLOYMENT_TARGET)" CFLAGS="-target arm64-apple-macos$(DEPLOYMENT_TARGET)" LIBTOOLFLAGS="-target arm64-apple-macos$(DEPLOYMENT_TARGET)" ../configure --host=aarch64-apple-darwin --prefix=${PWD}/ThirdParty/libsixel-arm --without-libcurl --without-jpeg --without-png --disable-python --disable-shared && $(MAKE) && $(MAKE) install
-
-ifdef UNIVERSAL
-# Usage: go to an intel mac and run make x86libsixel and commit it. Go to an arm mac and run make armsixel && make libsixel.
-fatlibsixel: force armsixel x86libsixel
-	lipo -create -output ThirdParty/libsixel/lib/libsixel.a ThirdParty/libsixel-arm/lib/libsixel.a ThirdParty/libsixel-x86/lib/libsixel.a
-	cp ThirdParty/libsixel-arm/include/sixel.h ThirdParty/libsixel/include/sixel.h
-else
-fatlibsixel: force
-ifeq ($(NATIVE_ARCH),arm64)
-	$(MAKE) armsixel
 	cp ThirdParty/libsixel-arm/lib/libsixel.a ThirdParty/libsixel/lib/libsixel.a
 	cp ThirdParty/libsixel-arm/include/sixel.h ThirdParty/libsixel/include/sixel.h
-else
-	$(MAKE) x86libsixel
-	cp ThirdParty/libsixel-x86/lib/libsixel.a ThirdParty/libsixel/lib/libsixel.a
-	cp ThirdParty/libsixel-x86/include/sixel.h ThirdParty/libsixel/include/sixel.h
-endif
-endif
 
-armopenssl: force
+openssl: force
 	echo Begin building configure-armopenssl
 	cd submodules/openssl && make clean && make distclean || echo make failed
 	cd submodules/openssl && ./Configure darwin64-arm64-cc no-shared -fPIC -mmacosx-version-min=$(DEPLOYMENT_TARGET)
@@ -423,82 +386,24 @@ armopenssl: force
 	rm -rf submodules/openssl/build-arm
 	mkdir submodules/openssl/build-arm
 	cp submodules/openssl/*.a submodules/openssl/build-arm
-
-x86openssl: force
-	echo Begin building configure-x86openssl
-	cd submodules/openssl && make clean && make distclean || echo make failed
-	cd submodules/openssl && ./Configure darwin64-x86_64-cc no-shared -fPIC -mmacosx-version-min=$(DEPLOYMENT_TARGET)
-	echo Begin building x86openssl
-	cd submodules/openssl && $(MAKE)
-	rm -rf submodules/openssl/build-x86
-	mkdir submodules/openssl/build-x86
-	cp submodules/openssl/*.a submodules/openssl/build-x86
-
-ifdef UNIVERSAL
-fatopenssl: force
-	echo Begin building fatopenssl
-	$(MAKE) armopenssl
-	$(MAKE) x86openssl
-	cd submodules/openssl/ && lipo -create -output libcrypto.a build-x86/libcrypto.a build-arm/libcrypto.a
-	cd submodules/openssl/ && lipo -create -output libssl.a build-x86/libssl.a build-arm/libssl.a
-	cd submodules/openssl; rm -rf build-fat; mkdir build-fat; mkdir build-fat/lib; cp -R include/ build-fat/include/
-	cp submodules/openssl/libcrypto.a submodules/openssl/libssl.a submodules/NMSSH/NMSSH-OSX/Libraries/lib
-	cp submodules/openssl/*a submodules/openssl/build-fat/lib
-else
-fatopenssl: force
-	echo Begin building openssl for $(NATIVE_ARCH)
-ifeq ($(NATIVE_ARCH),arm64)
-	$(MAKE) armopenssl
 	cd submodules/openssl; rm -rf build-fat; mkdir -p build-fat/lib; cp -R include/ build-fat/include/
 	cp submodules/openssl/build-arm/*.a submodules/openssl/build-fat/lib
 	cp submodules/openssl/build-arm/libcrypto.a submodules/openssl/build-arm/libssl.a submodules/NMSSH/NMSSH-OSX/Libraries/lib
-else
-	$(MAKE) x86openssl
-	cd submodules/openssl; rm -rf build-fat; mkdir -p build-fat/lib; cp -R include/ build-fat/include/
-	cp submodules/openssl/build-x86/*.a submodules/openssl/build-fat/lib
-	cp submodules/openssl/build-x86/libcrypto.a submodules/openssl/build-x86/libssl.a submodules/NMSSH/NMSSH-OSX/Libraries/lib
-endif
-endif
 
-x86libssh2: force
-	echo Begin building x86libssh2
-	mkdir -p submodules/libssh2/build_x86_64
-	# Add this flag to enable tracing:
-	# -DCMAKE_C_FLAGS="-DLIBSSH2DEBUG"
-	cd submodules/libssh2/build_x86_64 && $(CMAKE) -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -DOPENSSL_INCLUDE_DIR=${PWD}/submodules/openssl/build-fat/include -DOPENSSL_ROOT_DIR=${PWD}/submodules/openssl/build-fat -DBUILD_EXAMPLES=NO -DBUILD_TESTING=NO -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCRYPTO_BACKEND=OpenSSL -DCMAKE_OSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) .. && $(MAKE) libssh2_static
-
-armlibssh2: force
+libssh2: force openssl
 	echo Begin building armlibssh2
 	mkdir -p submodules/libssh2/build_arm64
 	# Add this flag to enable tracing:
 	# -DCMAKE_C_FLAGS="-DLIBSSH2DEBUG"
 	cd submodules/libssh2/build_arm64 && $(CMAKE) -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -DOPENSSL_INCLUDE_DIR=${PWD}/submodules/openssl/include -DOPENSSL_ROOT_DIR=${PWD}/submodules/openssl -DBUILD_EXAMPLES=NO -DBUILD_TESTING=NO -DCMAKE_OSX_ARCHITECTURES=arm64 -DCRYPTO_BACKEND=OpenSSL -DCMAKE_OSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) .. && $(MAKE) libssh2_static
-
-ifdef UNIVERSAL
-fatlibssh2: force fatopenssl
-	echo Begin building fatlibssh2
-	$(MAKE) x86libssh2
-	$(MAKE) armlibssh2
-	cd submodules/libssh2 && lipo -create -output libssh2.a build_arm64/src/libssh2.a build_x86_64/src/libssh2.a
-	cp submodules/libssh2/libssh2.a submodules/NMSSH/NMSSH-OSX/Libraries/lib/libssh2.a
-else
-fatlibssh2: force fatopenssl
-	echo Begin building libssh2 for $(NATIVE_ARCH)
-ifeq ($(NATIVE_ARCH),arm64)
-	$(MAKE) armlibssh2
 	cp submodules/libssh2/build_arm64/src/libssh2.a submodules/NMSSH/NMSSH-OSX/Libraries/lib/libssh2.a
-else
-	$(MAKE) x86libssh2
-	cp submodules/libssh2/build_x86_64/src/libssh2.a submodules/NMSSH/NMSSH-OSX/Libraries/lib/libssh2.a
-endif
-endif
 
 CoreParse: force
 	rm -rf ThirdParty/CoreParse.framework
-	cd submodules/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=../../ThirdParty VALID_ARCHS="arm64 x86_64" $(SIGNING_FLAGS) $(ARCH_FLAGS)
+	cd submodules/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=../../ThirdParty VALID_ARCHS="arm64" $(SIGNING_FLAGS) $(ARCH_FLAGS)
 	cp "submodules/CoreParse//CoreParse/Tokenisation/Token Recognisers/CPRegexpRecogniser.h" ThirdParty/CoreParse.framework/Versions/A/Headers/CPRegexpRecogniser.h
 
-NMSSH: force fatlibssh2
+NMSSH: force libssh2
 	echo Begin building NMSSH
 	rm -rf ThirdParty/NMSSH.framework
 	cp submodules/libssh2/include/* submodules/NMSSH/NMSSH-OSX/Libraries/include/libssh2
@@ -507,19 +412,12 @@ NMSSH: force fatlibssh2
 paranoid-NMSSH: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" NMSSH
 
-ifdef UNIVERSAL
 librailroad_dsl: force
-	$(RUSTUP) target add x86_64-apple-darwin
-	$(RUSTUP) target add aarch64-apple-darwin
-	cd submodules/railroad_dsl && $(RUSTUP) run stable cargo build --release --target aarch64-apple-darwin && $(RUSTUP) run stable cargo build --release --target x86_64-apple-darwin && lipo -create target/aarch64-apple-darwin/release/librailroad_dsl.dylib target/x86_64-apple-darwin/release/librailroad_dsl.dylib -output ../../ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib && cp include/railroad_dsl.h ../../ThirdParty/librailroad_dsl/include && install_name_tool -id @rpath/librailroad_dsl.dylib ../../ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib
-else
-librailroad_dsl: force
-	$(RUSTUP) target add $(RUST_NATIVE_TARGET)
-	cd submodules/railroad_dsl && $(RUSTUP) run stable cargo build --release --target $(RUST_NATIVE_TARGET) && cp target/$(RUST_NATIVE_TARGET)/release/librailroad_dsl.dylib ../../ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib && cp include/railroad_dsl.h ../../ThirdParty/librailroad_dsl/include && install_name_tool -id @rpath/librailroad_dsl.dylib ../../ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib
-endif
+	$(RUSTUP) target add $(RUST_TARGET)
+	cd submodules/railroad_dsl && $(RUSTUP) run stable cargo build --release --target $(RUST_TARGET) && cp target/$(RUST_TARGET)/release/librailroad_dsl.dylib ../../ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib && cp include/railroad_dsl.h ../../ThirdParty/librailroad_dsl/include && install_name_tool -id @rpath/librailroad_dsl.dylib ../../ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib
 
 pwmadapters: force
-	cd pwmplugin/ && UNIVERSAL=$(UNIVERSAL) ./build.sh
+	cd pwmplugin/ && ./build.sh
 
 # Build, notarize, staple, and zip the companion consent plugin, then copy the
 # notarized zip into the website repo's downloads folder. build.sh prompts for
@@ -543,7 +441,7 @@ companion-iphone-archive: force
 	@echo "IPA:     Companion/Build/ios/export/"
 
 it2cli: force
-	cd it2cli/ && UNIVERSAL=$(UNIVERSAL) ./build.sh
+	cd it2cli/ && ./build.sh
 	cp it2cli/.build/release/it2 it2cli/bin
 
 paranoid-it2cli: force
@@ -576,8 +474,8 @@ paranoid-deps: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" deps
 	xcodebuild -version > last-xcode-version
 
-paranoid-fatlibssh2: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" fatlibssh2
+paranoid-libssh2: force
+	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libssh2
 
 paranoid-BetterFontPicker: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" BetterFontPicker
@@ -591,8 +489,8 @@ paranoid-libgit2: force
 paranoid-sparkle: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" sparkle
 
-paranoid-fatlibsixel: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" fatlibsixel
+paranoid-libsixel: force
+	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libsixel
 
 paranoid-librailroad_dsl: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" librailroad_dsl
@@ -607,7 +505,7 @@ paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force fatlibsixel CoreParse NMSSH bindeps libgit2 sparkle librailroad_dsl sfsymbolenum pwmadapters
+deps: force libsixel CoreParse NMSSH bindeps libgit2 sparkle librailroad_dsl sfsymbolenum pwmadapters
 
 sfsymbolenum:
 	cp submodules/SFSymbolEnum/Sources/SFSymbolEnum/* ThirdParty/SFSymbolEnum

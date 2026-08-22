@@ -4,11 +4,8 @@ ifndef SIGNED
   SIGNING_FLAGS = CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 endif
 
-# Architecture: native-only by default (faster builds).
-# Use UNIVERSAL=1 to build universal (arm64 + x86_64) binaries for release.
-ifndef UNIVERSAL
-  ARCH_FLAGS = ARCHS="$(shell uname -m)" ONLY_ACTIVE_ARCH=YES
-endif
+# Latterm targets Apple Silicon only.
+ARCH_FLAGS = ARCHS="arm64" ONLY_ACTIVE_ARCH=YES
 
 all: force
 	rm -rf SearchableComboListView.framework
