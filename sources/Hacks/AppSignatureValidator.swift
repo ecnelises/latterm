@@ -51,7 +51,7 @@ class AppSignatureValidator: NSObject {
         let team = currentAppTeamID()
         let message = if team == nil {
             "A required file appears to be missing or corrupted and Latterm’s code signature could not be verified.\n\nYou should download a fresh copy of the app and reinstall it."
-        } else if team == "H7V7XYVQ7D" {
+        } else if team != "R7ZJJDMW42" {
             "A required file appears to be missing or corrupted and Latterm’s code signature did not match that of the official distribution.\n\nYou should download a fresh copy of the app and reinstall it."
         } else {
             "A required file appears to be missing or corrupted, yet against all odds the code signature for Latterm is valid. Please file a bug at https://github.com/ecnelises/latterm/issues"

@@ -31,15 +31,9 @@
 [submodule "submodules/Highlightr"]
 	path = submodules/Highlightr
 	url = https://github.com/gnachman/Highlightr
-[submodule "submodules/powerline-extra-symbols"]
-	path = submodules/powerline-extra-symbols
-	url = https://github.com/ryanoasis/powerline-extra-symbols
 [submodule "submodules/railroad_dsl"]
 	path = submodules/railroad_dsl
 	url = https://github.com/gnachman/railroad_dsl
-[submodule "submodules/SFSymbolEnum"]
-	path = submodules/SFSymbolEnum
-	url = https://github.com/gnachman/SFSymbolEnum
 [submodule "Companion/CompanionCore/Sources/CNoise/vendor"]
 	path = Companion/CompanionCore/Sources/CNoise/vendor
 	url = https://github.com/rweather/noise-c.git

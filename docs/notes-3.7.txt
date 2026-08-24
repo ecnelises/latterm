@@ -28,6 +28,8 @@ Terminal-first fork changes:
   Profiles > General.
 - Removed the upstream donation prompt from
   Settings.
+- Release builds now use the Latterm bundle
+  identifier and Developer ID team.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
@@ -813,6 +815,10 @@ Settings Improvements:
   changes.
 
 Bug Fixes:
+
+- Fix tabs becoming narrower than their
+  titlebar slot after leaving native full
+  screen.
 - Retrospective debug logging no longer fills its
   in-memory ring so quickly on busy hosts. Several
   high-frequency sites that logged large payloads

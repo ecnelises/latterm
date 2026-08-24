@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-# Re-sign a locally-built iTerm2.app with the keychain-access-groups entitlement so
+# Re-sign a locally-built Latterm.app with the keychain-access-groups entitlement so
 # `make run-keychain` can exercise the data-protection-keychain migration without an
 # Xcode-driven signed build (which would need a device-registered Mac App Development
 # profile). keychain-access-groups is a RESTRICTED entitlement: launchd refuses to
 # spawn the app (RBSRequestErrorDomain "Launch failed", errno 163) unless an embedded
 # provisioning profile authorizes it AND the signing certificate is inside that
-# profile. So this finds an installed "iTerm2 Dev ID App Prov Prof" whose embedded
+# profile. So this finds an installed "Latterm Dev ID App Prov Prof" whose embedded
 # Developer ID cert you actually hold, embeds it, and signs with that exact cert.
 #
 # codesign does NOT expand Xcode build-setting variables, so the team prefix is
@@ -15,9 +15,9 @@
 #
 set -euo pipefail
 
-APP="${1:?usage: codesign_keychain_test.sh <path-to-iTerm2.app>}"
-TEAM=H7V7XYVQ7D
-PROFILE_NAME="iTerm2 Dev ID App Prov Prof"
+APP="${1:?usage: codesign_keychain_test.sh <path-to-Latterm.app>}"
+TEAM=R7ZJJDMW42
+PROFILE_NAME="Latterm Dev ID App Prov Prof"
 [ -d "$APP" ] || { echo "error: app not found: $APP" >&2; exit 1; }
 
 # Find a profile named $PROFILE_NAME that (a) authorizes keychain-access-groups and
@@ -58,7 +58,7 @@ cat > "$ent" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-	<key>keychain-access-groups</key><array><string>${TEAM}.com.googlecode.iterm2</string></array>
+	<key>keychain-access-groups</key><array><string>${TEAM}.com.ecnelises.latterm</string></array>
 	<key>com.apple.security.get-task-allow</key><true/>
 	<key>com.apple.security.cs.allow-jit</key><true/>
 	<key>com.apple.security.cs.disable-library-validation</key><true/>
@@ -73,8 +73,8 @@ find "$APP" -name '*.cstemp' -delete 2>/dev/null || true
 codesign --force --deep --entitlements "$ent" --sign "$cert" "$APP"
 rm -f "$ent"
 
-if codesign -d --entitlements :- "$APP" 2>/dev/null | grep -q "${TEAM}.com.googlecode.iterm2"; then
-  echo "keychain-access-group '${TEAM}.com.googlecode.iterm2' embedded OK"
+if codesign -d --entitlements :- "$APP" 2>/dev/null | grep -q "${TEAM}.com.ecnelises.latterm"; then
+  echo "keychain-access-group '${TEAM}.com.ecnelises.latterm' embedded OK"
 else
   echo "error: keychain-access-groups entitlement missing after signing" >&2
   exit 1

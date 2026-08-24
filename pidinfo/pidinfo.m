@@ -53,7 +53,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _queue = dispatch_queue_create("com.iterm2.pidinfo", DISPATCH_QUEUE_CONCURRENT);
+        _queue = dispatch_queue_create("com.ecnelises.latterm.pidinfo", DISPATCH_QUEUE_CONCURRENT);
     }
     return self;
 }
@@ -901,5 +901,4 @@ void iTermMutatePathFindersDict(void (^NS_NOESCAPE block)(NSMutableDictionary<NS
 }
 
 @end
-
 

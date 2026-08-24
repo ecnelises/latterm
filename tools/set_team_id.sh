@@ -5,7 +5,7 @@
 # To find your team ID:
 #   1. Open Keychain Access
 #   2. Find your "Apple Development" or "Developer ID" certificate
-#   3. The team ID is the string in parentheses, e.g., "H7V7XYVQ7D"
+#   3. Read the certificate's Organizational Unit (OU), e.g., "R7ZJJDMW42"
 
 set -e
 

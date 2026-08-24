@@ -70,7 +70,29 @@ make run
 
 - Code signing is disabled by default for command-line builds.
 - `make` now resolves `BUILD_DIR` from the checked-in `iTerm2.xcodeproj`, which avoids the previous failure where `make run` could not determine the build output path.
-- Signed and notarized release packaging is not yet adapted for Latterm. The upstream release scripts still contain iTerm2-specific Developer ID, Apple account, team ID, app-name, and build-path assumptions. Public release packaging needs a separate signing/notarization cleanup before distribution.
+- Contributor builds remain unsigned by default. Official releases use the
+  `R7ZJJDMW42` Developer ID team, the `com.ecnelises.latterm` bundle identity,
+  and a local notarytool keychain profile; no Apple credentials are stored in
+  the repository.
+
+### Signed Release
+
+Install a “Developer ID Application” certificate for team `R7ZJJDMW42`, then
+store App Store Connect notarization credentials once:
+
+```bash
+xcrun notarytool store-credentials latterm-notary \
+  --apple-id "YOUR_APPLE_ID" \
+  --team-id R7ZJJDMW42
+```
+
+Build, verify, notarize, staple, and package an exact version with:
+
+```bash
+tools/release_latterm.sh 3.7.2026082401
+```
+
+The final zip and SHA-256 file are written under `Build/Releases/<version>/`.
 
 ## Relationship To iTerm2
 

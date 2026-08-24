@@ -566,7 +566,7 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
     NSString *message;
     if (!team) {
         message = @"A required file appears to be missing or corrupted and Latterm’s code signature could not be verified. You should download a fresh copy of the app and reinstall it.";
-    } else if (![team isEqualToString:@"H7V7XYVQ7D"]) {
+    } else if (![team isEqualToString:@"R7ZJJDMW42"]) {
         message = @"A required file appears to be missing or corrupted and Latterm’s code signature did not match that of the official distribution. You should download a fresh copy of the app and reinstall it.";
     } else {
         message = @"A required file appears to be missing or corrupted, yet against all odds the code signature for Latterm is valid. Please file a bug at https://github.com/ecnelises/latterm/issues";

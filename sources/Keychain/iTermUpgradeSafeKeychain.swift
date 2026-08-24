@@ -278,7 +278,7 @@ enum iTermUpgradeSafeKeychain {
 
     /// The app's own keychain access group, read from OUR code signature's
     /// keychain-access-groups entitlement so it is never hardcoded (it resolves to the
-    /// team-prefixed value, e.g. "TEAMID.com.googlecode.iterm2"). nil on a build with no
+    /// team-prefixed value, e.g. "TEAMID.com.ecnelises.latterm"). nil on a build with no
     /// such entitlement (unsigned/dev), where callers then omit the group and the
     /// data-protection write fails cleanly, falling back to the login keychain. Cached:
     /// the signature can't change while the process runs.
@@ -290,11 +290,11 @@ enum iTermUpgradeSafeKeychain {
             return nil
         }
         // Match by SUFFIX, not array position: correct today (a single entry resolving to
-        // "TEAMID.com.googlecode.iterm2"), but if a second access group is ever added
+        // "TEAMID.com.ecnelises.latterm"), but if a second access group is ever added
         // (e.g. a shared group for an XPC helper) or the OS reorders them, pinning
         // groups.first could silently target the wrong group and make stored secrets read
         // as errSecItemNotFound. Fall back to the first entry only if none matches.
-        return groups.first(where: { $0.hasSuffix(".com.googlecode.iterm2") }) ?? groups.first
+        return groups.first(where: { $0.hasSuffix(".com.ecnelises.latterm") }) ?? groups.first
     }()
 
     private static func dataProtectionQuery(service: String, account: String) -> [String: Any] {

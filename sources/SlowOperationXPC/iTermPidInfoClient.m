@@ -33,7 +33,7 @@
     self = [super init];
     if (self) {
         // The local queue will be used while waiting for the XPC job to start.
-        _localQueue = dispatch_queue_create("com.iterm2.pidinfo", DISPATCH_QUEUE_CONCURRENT);
+        _localQueue = dispatch_queue_create("com.ecnelises.latterm.pidinfo", DISPATCH_QUEUE_CONCURRENT);
         // Don't let more than this many threads get wedged.
         _sema = dispatch_semaphore_create(32);
         _timeout = 0.5;

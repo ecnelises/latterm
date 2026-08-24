@@ -79,6 +79,8 @@ help:
 	@echo "  make Beta         Build Beta configuration"
 	@echo "  make Nightly      Build Nightly configuration"
 	@echo "  make Deployment   Build Deployment configuration"
+	@echo "  tools/release_latterm.sh VERSION"
+	@echo "                     Sign, notarize, and package a release"
 	@echo ""
 	@echo "Diagnose:"
 	@echo "  make doctor       Check all build dependencies"
@@ -300,7 +302,7 @@ run: Development
 # .app with codesign. keychain-access-groups is a RESTRICTED entitlement: launchd
 # refuses to spawn the app unless an embedded provisioning profile authorizes it and
 # the signing cert is inside that profile, so tools/codesign_keychain_test.sh finds an
-# installed "iTerm2 Dev ID App Prov Prof" whose cert you hold, embeds it, and signs
+# installed "Latterm Dev ID App Prov Prof" whose cert you hold, embeds it, and signs
 # with that cert. The signed app must be launched via `open` (LaunchServices), not by
 # exec'ing the binary directly (macOS kills a directly-exec'd signed app). `open -W`
 # blocks until it quits, like `run`. Runs with -suite; AI-key accounts are NOT
@@ -505,12 +507,7 @@ paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force libsixel CoreParse NMSSH bindeps libgit2 sparkle librailroad_dsl sfsymbolenum pwmadapters
-
-sfsymbolenum:
-	cp submodules/SFSymbolEnum/Sources/SFSymbolEnum/* ThirdParty/SFSymbolEnum
-	cd submodules/SFSymbolEnum && swift generateSFSymbolEnum.swift --objc > ../../ThirdParty/SFSymbolEnum/SFSymbolEnum.h
-	cd submodules/SFSymbolEnum && swift generateSFSymbolEnum.swift --objc-impl > ../../ThirdParty/SFSymbolEnum/SFSymbolEnum.m
+deps: force libsixel CoreParse NMSSH bindeps libgit2 sparkle librailroad_dsl pwmadapters
 
 # Regenerate NSCharacterSet+iTerm.m and iTermCharacterSets.m from latest Unicode data.
 # Run this when a new Unicode version is released.
@@ -520,9 +517,6 @@ unicode:
 
 DepsIfNeeded: force
 	tools/rebuild-deps-if-needed
-
-powerline-extra-symbols: force
-	cp submodules/powerline-extra-symbols/src/*eps ThirdParty/PowerlineExtraSymbols/
 
 BetterFontPicker: force
 	cd BetterFontPicker && $(MAKE)
