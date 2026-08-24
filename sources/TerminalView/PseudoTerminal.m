@@ -5201,6 +5201,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
                     if (lionFullScreen_ && _contentView.tabBarControlOnLoan) {
                         topInset += 3;
+                        bottomInset -= 3;
                     }
                     if (lionFullScreen_ && tabPosition == PSMTab_BottomTab) {
                         topInset += 4;

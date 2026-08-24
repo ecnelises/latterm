@@ -30,6 +30,8 @@ Terminal-first fork changes:
   Settings.
 - Release builds now use the Latterm bundle
   identifier and Developer ID team.
+- Fixed Tahoe tabs becoming shorter in native
+  fullscreen.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

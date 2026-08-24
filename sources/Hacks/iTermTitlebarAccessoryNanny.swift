@@ -239,19 +239,6 @@ class iTermTitlebarAccessoryNanny: NSObject {
         for vc in toReadd {
             window.addTitlebarAccessoryViewController(vc)
         }
-        // AppKit may replace the requested accessory frame while reattaching it.
-        // Reapply pending frames on the next run-loop turn, after its titlebar
-        // layout pass has finished. Otherwise the tab bar can keep a narrow view
-        // inside a wider titlebar slot after leaving full screen.
-        if !toReadd.isEmpty {
-            DispatchQueue.main.async { [weak self] in
-                guard let self else {
-                    return
-                }
-                RLog("Reapplying titlebar accessory frames after forced re-add")
-                self.needsUpdate = true
-            }
-        }
     }
 
     @objc(has:)

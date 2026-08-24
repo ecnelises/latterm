@@ -1210,14 +1210,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 }
 
 - (void)setFrame:(NSRect)frame {
-    const NSSize previousSize = self.frame.size;
     [super setFrame:frame];
-    if (!NSEqualSizes(previousSize, self.frame.size)) {
-        // A titlebar accessory can be assigned a transient width while it is
-        // reattached after a full-screen transition. Re-layout the cells when
-        // its final frame arrives so they do not retain that narrower width.
-        [self setNeedsUpdate:YES];
-    }
     [self syncTabProgressBars];
 }
 
