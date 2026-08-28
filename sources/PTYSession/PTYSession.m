@@ -3313,11 +3313,28 @@ ITERM_WEAKLY_REFERENCEABLE
                     DLog(@"Sending initial text immediately");
                     [self sendInitialText];
                 }
+                [self showUnavailableWorkingDirectoryNoticeIfNeeded];
                 if (completion) {
                     completion(YES);
                 }
             }];
         }];
+    }];
+}
+
+- (void)showUnavailableWorkingDirectoryNoticeIfNeeded {
+    NSString *unavailable = self.unavailableWorkingDirectory;
+    if (!unavailable.length) {
+        return;
+    }
+    self.unavailableWorkingDirectory = nil;
+    NSString *message =
+        [NSString stringWithFormat:@"The directory “%@” is unavailable. Started in home directory instead.",
+                                   unavailable];
+    [_screen mutateAsynchronously:^(VT100Terminal *terminal,
+                                    VT100ScreenMutableState *mutableState,
+                                    id<VT100ScreenDelegate> delegate) {
+        [mutableState appendBannerMessage:message];
     }];
 }
 

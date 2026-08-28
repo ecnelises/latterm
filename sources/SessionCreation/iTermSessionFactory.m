@@ -334,6 +334,20 @@ NS_ASSUME_NONNULL_BEGIN
             DLog(@"pwd was empty. Use home directory of %@", pwd);
         }
     }
+    const BOOL willLaunch = !self.hasServerConnection && self.partialAttachment == nil;
+    if (willLaunch && !self.ssh && pwd.length > 0) {
+        NSString *resolved = [pwd stringByStandardizingPath];
+        BOOL isDirectory = NO;
+        const BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:resolved
+                                                                  isDirectory:&isDirectory];
+        if (!exists || !isDirectory) {
+            DLog(@"Working directory %@ (resolved %@) is unavailable; falling back to home directory",
+                 pwd,
+                 resolved);
+            self.session.unavailableWorkingDirectory = pwd;
+            pwd = NSHomeDirectory();
+        }
+    }
     _workingDirectory = [pwd copy];
     _environment = [self.environment ?: @{} dictionaryBySettingObject:_workingDirectory
                                                                forKey:@"PWD"];

@@ -21,6 +21,7 @@
 #include <string.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <util.h>
@@ -484,9 +485,15 @@ static void iTermSpawnInitializeActions(const char *argpath,
         }
     }
     if (initialPwd) {
-        rc = posix_spawn_file_actions_addchdir_np(actionsPtr, initialPwd);
-        if (rc != 0) {
-            iTermSpawnFailed(argpath, errorFd, "posix_spawn_file_actions_addchdir_np", rc);
+        // This function runs after fork(), so stat() is safe here. Match the fork-and-exec path's
+        // best-effort working-directory behavior instead of failing the launch when a restored
+        // directory disappears between arrangement loading and process creation.
+        struct stat sb;
+        if (stat(initialPwd, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+            rc = posix_spawn_file_actions_addchdir_np(actionsPtr, initialPwd);
+            if (rc != 0) {
+                iTermSpawnFailed(argpath, errorFd, "posix_spawn_file_actions_addchdir_np", rc);
+            }
         }
     }
 }

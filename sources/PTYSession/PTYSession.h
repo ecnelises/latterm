@@ -626,6 +626,10 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // symlinks resolved is returned.
 @property(nonatomic, readonly, nullable) NSString *currentLocalWorkingDirectory;
 
+// If a restored local working directory is unavailable, launch in the home directory and retain
+// the requested path long enough to explain the fallback in the terminal.
+@property(nonatomic, nullable, copy) NSString *unavailableWorkingDirectory;
+
 // Async version of currentLocalWorkingDirectory.
 - (void)asyncCurrentLocalWorkingDirectory:(void (^)(NSString * _Nullable pwd))completion;
 

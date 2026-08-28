@@ -42,6 +42,9 @@ Terminal-first fork changes:
 - Fixed a terminal-window lifecycle leak.
 - Fixed unsafe logging format strings.
 - Fixed maximized split-pane teardown crashes.
+- Restored sessions now fall back to home when
+  their saved working directory is unavailable.
+- Fixed tilde-based custom working directories.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

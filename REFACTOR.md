@@ -196,7 +196,7 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Corrected the stale CSI parser test inventory so DECSCL, which has been supported since 2024, is tested as supported instead of making the parser suite fail before reaching the new boundary cases.
 - Ported the frame-canonicalizer window-leak fix (`6a281f3f9`), per-token autorelease pools for bounded terminal repaint memory (`6bdd9953f`), Metal smooth-blink cursor compositing (`368a48dfe`), and format-string safety fixes (`f436dec38`).
 - Deliberately skipped AI/model/chat, browser, shell-integration, Companion, Workgroups, Tab Groups, Kitty drag-and-drop, and uv Python migration changes because they conflict with the terminal-first scope or require separate product decisions.
-- Deferred larger but relevant candidates to focused follow-up slices: missing-working-directory restoration (`45e0ed47c` and `5f0c03c0f`), tmux focus/geometry fixes (`918fc2762`, `6bf0b1426`, `2f4e6740f`, `f8bb3771f`), URL detection (`0da24d685`, `071dd60aa`), Hangul composition (`1b6b3ccb6`), Advanced Paste (`5164130b2`), and terminal/window rendering performance (`14c75a3c6`, `46d7e066e`, `6947f5902`, `89b533af0`, `a9e55316e`).
+- Deferred larger but relevant candidates to focused follow-up slices: tmux focus/geometry fixes (`918fc2762`, `6bf0b1426`, `2f4e6740f`, `f8bb3771f`), URL detection (`0da24d685`, `071dd60aa`), Hangul composition (`1b6b3ccb6`), Advanced Paste (`5164130b2`), and terminal/window rendering performance (`14c75a3c6`, `46d7e066e`, `6947f5902`, `89b533af0`, `a9e55316e`).
 - Audited dependency changes in the range and did not restore any removed submodule or accept upstream's regenerated binary dependency artifacts.
 
 ### 2026-08-29 XCTest Host Alignment
@@ -212,8 +212,17 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Replaced raw teardown assertions with crash-reporting assertions and a recovery path that rebuilds the split tree from the saved arrangement when the root subview count is already corrupt.
 - Audited submodules; this terminal view state-management fix uses no dependency changes.
 
+### 2026-08-29 Missing Working Directory Recovery
+
+- Ported the unavailable-working-directory recovery and tilde-expansion follow-up (`45e0ed47c` and `5f0c03c0f`) so restored local sessions fall back to the home directory instead of closing when their saved directory no longer exists.
+- Limited the local filesystem check to new local launches, preserving remote SSH paths, server connections, and partial attachments, and report the fallback with a one-time terminal banner.
+- Made the `posix_spawn` working-directory action best effort as a second defense against a directory disappearing immediately before process creation.
+- Audited submodules; session launch recovery uses no dependency changes.
+
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/iTermSessionRestorationTests` passes all 3 arrangement/profile restoration tests on 2026-08-29 after the unavailable-working-directory recovery.
+- `tools/build.sh` passes on 2026-08-29 after porting the local launch fallback and `posix_spawn` race defense.
 - `tools/run_tests.expect ModernTests/iTermPTYTabRecursiveRestoreSplittersTests` passes all 10 split-tree reconstruction tests on 2026-08-29 after the maximized-pane state repair.
 - `tools/build.sh` passes on 2026-08-29 after porting the maximized-pane teardown recovery.
 - A direct `xcodebuild test -project iTerm2.xcodeproj -scheme iTerm2Tests -only-testing:iTerm2XCTests/VT100CSIParserTest` passes all 38 selected tests on 2026-08-29 without a separate app build or `test-without-building` workaround.
