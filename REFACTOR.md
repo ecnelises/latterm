@@ -199,10 +199,19 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Deferred larger but relevant candidates to focused follow-up slices: missing-working-directory restoration (`45e0ed47c` and `5f0c03c0f`), tmux focus/geometry fixes (`918fc2762`, `6bf0b1426`, `2f4e6740f`, `f8bb3771f`), maximized-pane teardown (`31ea32275`), URL detection (`0da24d685`, `071dd60aa`), Hangul composition (`1b6b3ccb6`), Advanced Paste (`5164130b2`), and terminal/window rendering performance (`14c75a3c6`, `46d7e066e`, `6947f5902`, `89b533af0`, `a9e55316e`).
 - Audited dependency changes in the range and did not restore any removed submodule or accept upstream's regenerated binary dependency artifacts.
 
+### 2026-08-29 XCTest Host Alignment
+
+- Aligned the shared `iTerm2Tests` scheme with its existing `Latterm.app` `TEST_HOST`: build, launch, and profile actions now select the real `iTerm2`/`Latterm.app` target instead of the obsolete `iTerm2Tests.app` runner target.
+- Disabled Xcode's Development debug-dylib layout for `Latterm.app` so hosted XCTest bundles can link the stable `Contents/MacOS/Latterm` executable path without a prebuild workaround.
+- Confirmed the legacy `iTerm2Tests.app` target is no longer needed by the shared XCTest scheme. Deleting that target and its dedicated runner sources remains a separate project-file cleanup after verifying no external workflow invokes it directly.
+- Audited submodules; this scheme/build-setting-only slice changes no dependency ownership.
+
 ### Recent Verification
 
+- A direct `xcodebuild test -project iTerm2.xcodeproj -scheme iTerm2Tests -only-testing:iTerm2XCTests/VT100CSIParserTest` passes all 38 selected tests on 2026-08-29 without a separate app build or `test-without-building` workaround.
+- `tools/build.sh` passes on 2026-08-29 after aligning the XCTest scheme and disabling the Development debug-dylib layout.
 - `tools/build.sh` passes on 2026-08-29 after the selected upstream security, terminal parsing, rendering, memory, lifecycle, and logging fixes were ported.
-- `VT100CSIParserTest` passes all 38 tests on 2026-08-29, including the eight new CSI/SGR parameter-boundary regressions. The test bundle was executed with `test-without-building` against a separately built `Latterm.app` because the existing `iTerm2Tests.app` scheme host still has unrelated undefined `IT2ChannelDisconnect` and `IT2Runner` symbols.
+- `VT100CSIParserTest` covers the eight new CSI/SGR parameter-boundary regressions added during the upstream review.
 - `tools/build.sh` passes on 2026-08-28 after removing the terminal-first feature gate and its unreachable branches.
 - `make zip UNIVERSAL=1` passes on 2026-08-23 and produces an unsigned universal Deployment package at `Build/Deployment/Latterm-3_7_20260823.zip`; both the app executable and SIXEL sandbox worker contain arm64 and x86_64 slices, and `unzip -t` reports no errors.
 - Development builds of the `iTerm2` and `ModernTests` schemes pass with `-jobs 2` on 2026-08-23, using derived data at `/tmp/iTerm2-dd-libsixel-clean` after redundant libsixel artifact cleanup.

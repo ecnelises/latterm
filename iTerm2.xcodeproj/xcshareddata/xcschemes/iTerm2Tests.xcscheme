@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "1DD39AD3180B8117004E56D5"
-               BuildableName = "iTerm2Tests.app"
-               BlueprintName = "iTerm2Tests"
+               BlueprintIdentifier = "874206460564169600CFC3F1"
+               BuildableName = "Latterm.app"
+               BlueprintName = "iTerm2"
                ReferencedContainer = "container:iTerm2.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -55,9 +55,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1DD39AD3180B8117004E56D5"
-            BuildableName = "iTerm2Tests.app"
-            BlueprintName = "iTerm2Tests"
+            BlueprintIdentifier = "874206460564169600CFC3F1"
+            BuildableName = "Latterm.app"
+            BlueprintName = "iTerm2"
             ReferencedContainer = "container:iTerm2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -79,9 +79,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "1DD39AD3180B8117004E56D5"
-            BuildableName = "iTerm2Tests.app"
-            BlueprintName = "iTerm2Tests"
+            BlueprintIdentifier = "874206460564169600CFC3F1"
+            BuildableName = "Latterm.app"
+            BlueprintName = "iTerm2"
             ReferencedContainer = "container:iTerm2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
