@@ -16,6 +16,7 @@ extern NSNotificationName const iTermSoftwareUpdateWillRestartNotification;
 
 - (void)checkForUpdates:(nullable id)sender;
 - (BOOL)isUpdaterOwnedWindowController:(NSWindowController *)windowController;
+- (void)configureFeedURL:(NSURL *)feedURL;
 
 @end
 
@@ -31,7 +32,7 @@ extern NSNotificationName const iTermSoftwareUpdateWillRestartNotification;
 
 - (void)checkForUpdates:(nullable id)sender;
 - (BOOL)isUpdaterOwnedWindowController:(nullable NSWindowController *)windowController;
-- (void)configureFeedURL:(NSURL *)feedURL alternateAppName:(nullable NSString *)alternateAppName;
+- (void)configureFeedURL:(NSURL *)feedURL;
 
 @end
 

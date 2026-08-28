@@ -257,8 +257,17 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Preserved dotted-number, prerelease, and build-number ordering while making arbitrarily long numeric components compare without integer overflow.
 - Reduced direct Sparkle source usage to the software-update adapter; dependency-source migration no longer risks coupling API/runtime download logic to the updater framework.
 
+### 2026-08-29 Official Sparkle 2 Dependency
+
+- Audited the old Sparkle fork and confirmed its alternate application-name patch is obsolete because Sparkle 2 falls back to bundle-identifier matching.
+- Replaced the checked-in framework and git submodule with the official Sparkle 2.9.6 Swift package, and migrated the adapter from the global `SUUpdater` singleton to an owned `SPUStandardUpdaterController`.
+- Moved dynamic appcast selection to the Sparkle 2 updater delegate, cleared the deprecated stored feed override, and retained EdDSA verification, automatic/manual checks, and restart signaling.
+- Removed the old framework link/copy references, dependency recipes, signing-project reference, and Sparkle gitlink, reducing the repository from eight git submodules to seven.
+
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/iTermSoftwareUpdateServiceTests` passes all 3 update-operation, dynamic-feed, and restart-state tests on 2026-08-29.
+- `tools/build.sh` passes on 2026-08-29 and the built app embeds and links official `Sparkle.framework` 2.9.6.
 - `tools/run_tests.expect ModernTests/iTermVersionComparatorTests` passes all 3 dotted-number, Python-version, prerelease, build-number, and large-component tests on 2026-08-29.
 - `tools/build.sh` passes on 2026-08-29 with all non-updater Sparkle imports removed.
 - `tools/run_tests.expect ModernTests/iTermSoftwareUpdateServiceTests` passes both forwarding and restart-state tests on 2026-08-29.
@@ -623,8 +632,8 @@ Before shipping public binaries:
 - Notarize with `xcrun notarytool submit --wait`, staple the result, and
   verify with `codesign --verify`, `codesign -dv --verbose=4`, and
   `spctl -a -vvv -t exec`.
-- Update Sparkle/appcast packaging only after the app naming and signing
-  chain are stable.
+- Validate the retained Sparkle 2 appcast packaging end to end after the app
+  naming and signing chain are stable.
 
 Success criteria:
 

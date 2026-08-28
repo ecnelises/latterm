@@ -30,7 +30,6 @@ PROJECT_FILES=(
     "SignPlugin/SignPlugin.xcodeproj/project.pbxproj"
     "iTermCompanion/iTermCompanion.xcodeproj/project.pbxproj"
     "Companion/iTerm2Companion.xcodeproj/project.pbxproj"
-    "submodules/Sparkle/Sparkle.xcodeproj/project.pbxproj"
 )
 
 cd "$REPO_ROOT"

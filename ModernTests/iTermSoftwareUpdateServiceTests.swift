@@ -13,6 +13,7 @@ final class iTermSoftwareUpdateServiceTests: XCTestCase {
         let willRestartNotification = Notification.Name("iTermSoftwareUpdateServiceTestsWillRestart")
         var checkedSender: AnyObject?
         var ownsWindowController = false
+        var configuredFeedURL: URL?
 
         func checkForUpdates(_ sender: Any?) {
             checkedSender = sender as AnyObject?
@@ -20,6 +21,10 @@ final class iTermSoftwareUpdateServiceTests: XCTestCase {
 
         func isUpdaterOwnedWindowController(_ windowController: NSWindowController) -> Bool {
             return ownsWindowController
+        }
+
+        func configureFeedURL(_ feedURL: URL) {
+            configuredFeedURL = feedURL
         }
     }
 
@@ -55,5 +60,15 @@ final class iTermSoftwareUpdateServiceTests: XCTestCase {
 
         wait(for: [restarted], timeout: 1)
         XCTAssertTrue(service.isRestarting)
+    }
+
+    func testConfiguresDynamicFeedThroughDriver() {
+        let driver = FakeDriver()
+        let service = iTermSoftwareUpdateService(driver: driver)
+        let feedURL = URL(string: "https://example.com/appcast.xml")!
+
+        service.configureFeedURL(feedURL)
+
+        XCTAssertEqual(driver.configuredFeedURL, feedURL)
     }
 }

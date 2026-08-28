@@ -13,13 +13,30 @@
 NSNotificationName const iTermSoftwareUpdateWillRestartNotification =
     @"iTermSoftwareUpdateWillRestartNotification";
 
-@interface iTermSparkleUpdateDriver : NSObject<iTermSoftwareUpdateDriver>
+@interface iTermSparkleUpdateDriver : NSObject<iTermSoftwareUpdateDriver, SPUUpdaterDelegate>
+
+@property(nonatomic, strong) SPUStandardUpdaterController *updaterController;
+@property(nonatomic, copy, nullable) NSString *feedURLString;
+
 @end
 
 @implementation iTermSparkleUpdateDriver
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+        [defaults removeObjectForKey:@"SUFeedAlternateAppNameKey"];
+        _updaterController =
+            [[SPUStandardUpdaterController alloc] initWithUpdaterDelegate:self
+                                                      userDriverDelegate:nil];
+        [_updaterController.updater clearFeedURLFromUserDefaults];
+    }
+    return self;
+}
+
 - (BOOL)automaticallyChecksForUpdates {
-    return SUUpdater.sharedUpdater.automaticallyChecksForUpdates;
+    return self.updaterController.updater.automaticallyChecksForUpdates;
 }
 
 - (NSNotificationName)willRestartNotification {
@@ -27,13 +44,22 @@ NSNotificationName const iTermSoftwareUpdateWillRestartNotification =
 }
 
 - (void)checkForUpdates:(id)sender {
-    [SUUpdater.sharedUpdater checkForUpdates:sender];
+    [self.updaterController checkForUpdates:sender];
 }
 
 - (BOOL)isUpdaterOwnedWindowController:(NSWindowController *)windowController {
     NSBundle *controllerBundle = [NSBundle bundleForClass:windowController.class];
-    NSBundle *updaterBundle = [NSBundle bundleForClass:SUUpdater.class];
+    NSBundle *updaterBundle = [NSBundle bundleForClass:SPUStandardUpdaterController.class];
     return [controllerBundle.bundlePath isEqualToString:updaterBundle.bundlePath];
+}
+
+- (void)configureFeedURL:(NSURL *)feedURL {
+    self.feedURLString = feedURL.absoluteString;
+    [self.updaterController.updater resetUpdateCycle];
+}
+
+- (nullable NSString *)feedURLStringForUpdater:(SPUUpdater *)updater {
+    return self.feedURLString;
 }
 
 @end
@@ -88,14 +114,8 @@ NSNotificationName const iTermSoftwareUpdateWillRestartNotification =
     return [self.driver isUpdaterOwnedWindowController:windowController];
 }
 
-- (void)configureFeedURL:(NSURL *)feedURL alternateAppName:(NSString *)alternateAppName {
-    [[iTermUserDefaults userDefaults] setObject:feedURL.absoluteString forKey:@"SUFeedURL"];
-    if (alternateAppName) {
-        [[iTermUserDefaults userDefaults] setObject:alternateAppName
-                                            forKey:@"SUFeedAlternateAppNameKey"];
-    } else {
-        [[iTermUserDefaults userDefaults] removeObjectForKey:@"SUFeedAlternateAppNameKey"];
-    }
+- (void)configureFeedURL:(NSURL *)feedURL {
+    [self.driver configureFeedURL:feedURL];
 }
 
 - (void)updateDriverWillRestart:(NSNotification *)notification {

@@ -1348,8 +1348,7 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
     NSURL *url = [NSURL URLWithString:appCast];
     NSNumber *shard = @([iTermController shard]);
     url = [url URLByAppendingQueryParameter:[NSString stringWithFormat:@"shard=%@", shard]];
-    // Preserve the existing archive layout, whose application directory is named "iTerm".
-    [iTermSoftwareUpdateService.sharedInstance configureFeedURL:url alternateAppName:@"iTerm"];
+    [iTermSoftwareUpdateService.sharedInstance configureFeedURL:url];
 }
 
 - (BOOL)selectionRespectsSoftBoundaries {

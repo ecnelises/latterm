@@ -64,7 +64,7 @@ git tag "v$COMPACTDATE"
 git push --tags
 cd build/Nightly
 
-# For the purposes of auto-update, the app's folder must be named iTerm.app since Sparkle won't accept a name change.
+# Preserve the legacy archive name. Sparkle 2 matches it to Latterm by bundle identifier.
 rm -rf iTerm.app
 mv iTerm2.app iTerm.app
 

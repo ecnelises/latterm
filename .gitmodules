@@ -6,10 +6,6 @@
 	path = submodules/CoreParse
 	url = https://github.com/gnachman/CoreParse
 	ignore = dirty
-[submodule "submodules/Sparkle"]
-	path = submodules/Sparkle
-	url = https://github.com/gnachman/Sparkle.git
-	ignore = dirty
 [submodule "submodules/libsixel"]
 	path = submodules/libsixel
 	url = https://github.com/saitoha/libsixel

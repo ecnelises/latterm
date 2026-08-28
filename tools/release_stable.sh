@@ -62,8 +62,8 @@ function Build {
   pushd "build/$BUILDTYPE"
  
   # Create the zip file
-  # For the purposes of auto-update, the app's folder must be named iTerm.app
-  # since Sparkle won't accept a name change.
+  # Preserve the legacy archive name. Sparkle 2 can match it to Latterm by
+  # bundle identifier when installing the update.
   rm -rf iTerm.app
   mv iTerm2.app iTerm.app
 
