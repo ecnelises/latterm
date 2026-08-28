@@ -157,6 +157,7 @@
 #import "iTermURLStore.h"
 #import "iTermUserDefaults.h"
 #import "iTermUserDefaultsObserver.h"
+#import "iTermVersionComparator.h"
 #import "iTermVariableReference.h"
 #import "iTermVariableScope.h"
 #import "iTermVariables.h"

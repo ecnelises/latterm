@@ -249,10 +249,18 @@ This file is a local planning document. Do not assume it belongs in a release co
 
 - Added an app-owned software-update service and driver seam so launch, restart preservation, menu actions, update-window filtering, and feed configuration no longer depend directly on Sparkle APIs.
 - Replaced the XIB-instantiated `SUUpdater` object with lazy service ownership while retaining automatic checks, manual checks, restart notification handling, version comparison, feed selection, and the legacy archive app-name override.
-- Confined application-update Sparkle APIs to one adapter implementation. The Sparkle submodule remains until its three unrelated version-comparison consumers are migrated and the updater dependency source can be replaced without losing signed appcast updates.
+- Confined application-update Sparkle APIs to one adapter implementation. The Sparkle submodule now remains only as the source of the updater framework and can be replaced without changing application consumers.
+
+### 2026-08-29 App-Owned Version Comparison
+
+- Replaced the last three non-updater Sparkle consumers in Python runtime discovery, dependency editing, and optional-component compatibility checks with an app-owned comparator.
+- Preserved dotted-number, prerelease, and build-number ordering while making arbitrarily long numeric components compare without integer overflow.
+- Reduced direct Sparkle source usage to the software-update adapter; dependency-source migration no longer risks coupling API/runtime download logic to the updater framework.
 
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/iTermVersionComparatorTests` passes all 3 dotted-number, Python-version, prerelease, build-number, and large-component tests on 2026-08-29.
+- `tools/build.sh` passes on 2026-08-29 with all non-updater Sparkle imports removed.
 - `tools/run_tests.expect ModernTests/iTermSoftwareUpdateServiceTests` passes both forwarding and restart-state tests on 2026-08-29.
 - `tools/build.sh` passes on 2026-08-29 after isolating application updates behind the app-owned service.
 - `tools/build.sh` passes on 2026-08-29 after removing the uninitialized relay-operations gitlink and its only local helper.

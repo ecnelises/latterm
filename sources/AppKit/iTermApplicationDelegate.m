@@ -128,6 +128,7 @@
 #import "iTermURLStore.h"
 #import "iTermUntitledWindowStateMachine.h"
 #import "iTermUserDefaults.h"
+#import "iTermVersionComparator.h"
 #import "iTermWarning.h"
 #import "iTermWebSocketCookieJar.h"
 #import <Quartz/Quartz.h>
@@ -2390,7 +2391,8 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (BOOL)version:(NSString *)version newerThan:(NSString *)otherVersion {
-    return [iTermSoftwareUpdateService.sharedInstance isVersion:version newerThan:otherVersion];
+    return [iTermVersionComparator compareVersion:version
+                                        toVersion:otherVersion] == NSOrderedDescending;
 }
 
 - (IBAction)copyPerformanceStats:(id)sender {

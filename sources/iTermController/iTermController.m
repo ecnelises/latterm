@@ -70,6 +70,7 @@
 #import "iTermSetCurrentTerminalHelper.h"
 #import "iTermSystemVersion.h"
 #import "iTermUserDefaults.h"
+#import "iTermVersionComparator.h"
 #import "iTermWarning.h"
 #import "iTermWebSocketCookieJar.h"
 
@@ -1200,8 +1201,8 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
         return;
     }
     const BOOL haveUsedOlderVersion = [[iTermPreferences allAppVersionsUsedOnThisMachine].allObjects anyWithBlock:^BOOL(NSString *version) {
-        return [iTermSoftwareUpdateService.sharedInstance isVersion:firstVersionRespectingSetting
-                                                           newerThan:version];
+        return [iTermVersionComparator compareVersion:firstVersionRespectingSetting
+                                            toVersion:version] == NSOrderedDescending;
     }];
     if (!haveUsedOlderVersion) {
         return;

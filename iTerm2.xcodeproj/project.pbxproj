@@ -2436,6 +2436,8 @@
 		A66E805427545CBC003ABDF9 /* SecureKeyboardEntry.png in Resources */ = {isa = PBXBuildFile; fileRef = A66E805127545CBC003ABDF9 /* SecureKeyboardEntry.png */; };
 		A66EF82C1EF59CFC0005891A /* iTermRateLimitedUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = A66EF82A1EF59CFC0005891A /* iTermRateLimitedUpdate.h */; };
 		A66EF82D1EF59CFC0005891A /* iTermRateLimitedUpdate.m in Sources */ = {isa = PBXBuildFile; fileRef = A66EF82B1EF59CFC0005891A /* iTermRateLimitedUpdate.m */; };
+		A6F0A0052F9ABCDE00123456 /* iTermVersionComparator.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F0A0072F9ABCDE00123456 /* iTermVersionComparator.h */; };
+		A6F0A0062F9ABCDE00123456 /* iTermVersionComparator.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F0A0082F9ABCDE00123456 /* iTermVersionComparator.m */; };
 		A66F3CF01FEA3D9E00AA2021 /* iTermHistogram.h in Headers */ = {isa = PBXBuildFile; fileRef = A66F3CEE1FEA3D9E00AA2021 /* iTermHistogram.h */; };
 		A66F3CF11FEA3D9E00AA2021 /* iTermHistogram.mm in Sources */ = {isa = PBXBuildFile; fileRef = A66F3CEF1FEA3D9E00AA2021 /* iTermHistogram.mm */; };
 		A66F52A9210458CA00571168 /* iTermNetworkUtilization.h in Headers */ = {isa = PBXBuildFile; fileRef = A66F52A7210458CA00571168 /* iTermNetworkUtilization.h */; };
@@ -7002,6 +7004,8 @@
 		A66E805127545CBC003ABDF9 /* SecureKeyboardEntry.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = SecureKeyboardEntry.png; path = images/SecureKeyboardEntry.png; sourceTree = "<group>"; };
 		A66EF82A1EF59CFC0005891A /* iTermRateLimitedUpdate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermRateLimitedUpdate.h; sourceTree = "<group>"; };
 		A66EF82B1EF59CFC0005891A /* iTermRateLimitedUpdate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermRateLimitedUpdate.m; sourceTree = "<group>"; };
+		A6F0A0072F9ABCDE00123456 /* iTermVersionComparator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermVersionComparator.h; sourceTree = "<group>"; };
+		A6F0A0082F9ABCDE00123456 /* iTermVersionComparator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermVersionComparator.m; sourceTree = "<group>"; };
 		A66F3CEE1FEA3D9E00AA2021 /* iTermHistogram.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermHistogram.h; sourceTree = "<group>"; };
 		A66F3CEF1FEA3D9E00AA2021 /* iTermHistogram.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = iTermHistogram.mm; sourceTree = "<group>"; };
 		A66F52A7210458CA00571168 /* iTermNetworkUtilization.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermNetworkUtilization.h; sourceTree = "<group>"; };
@@ -13125,6 +13129,8 @@
 				537BFDDD2102B4060098C91F /* iTermPublisher.m */,
 				A66EF82A1EF59CFC0005891A /* iTermRateLimitedUpdate.h */,
 				A66EF82B1EF59CFC0005891A /* iTermRateLimitedUpdate.m */,
+				A6F0A0072F9ABCDE00123456 /* iTermVersionComparator.h */,
+				A6F0A0082F9ABCDE00123456 /* iTermVersionComparator.m */,
 				A690555A241E09EC0020EA6A /* iTermResult.h */,
 				A690555B241E09EC0020EA6A /* iTermResult.m */,
 				5300984E2259A44D00A69348 /* iTermSoundPlayer.h */,
@@ -15181,6 +15187,7 @@
 				A6566753219EA582005FE60E /* NSNull+iTerm.h in Headers */,
 				A6F718CA2266DB380053488E /* iTermURLActionHelper.h in Headers */,
 				A66EF82C1EF59CFC0005891A /* iTermRateLimitedUpdate.h in Headers */,
+				A6F0A0052F9ABCDE00123456 /* iTermVersionComparator.h in Headers */,
 				A6E2A6392B910EEE00EC6070 /* iTermTaskQueue.h in Headers */,
 				A6BF035021E176C30097DA86 /* iTermVariableScope.h in Headers */,
 				5370678B21C9D2780088D0F3 /* SIGError.h in Headers */,
@@ -18723,6 +18730,7 @@
 				A60D21F4259C66D9004AC979 /* NSPopUpButton+iTerm.m in Sources */,
 				A67D197A2238D50800BD0D4D /* iTermSetFindStringNotification.m in Sources */,
 				A66EF82D1EF59CFC0005891A /* iTermRateLimitedUpdate.m in Sources */,
+				A6F0A0062F9ABCDE00123456 /* iTermVersionComparator.m in Sources */,
 				A6B60CAC245E33C200DBD6A7 /* PSMCachedTitle.m in Sources */,
 				A6D3985E2BDACC1300C4C1AD /* SFSymbolsHelpers.swift in Sources */,
 				A67D1953223704C400BD0D4D /* VT100SixelParser.m in Sources */,

@@ -13,8 +13,6 @@ final class iTermSoftwareUpdateServiceTests: XCTestCase {
         let willRestartNotification = Notification.Name("iTermSoftwareUpdateServiceTestsWillRestart")
         var checkedSender: AnyObject?
         var ownsWindowController = false
-        var comparisonResult = ComparisonResult.orderedSame
-        var comparedVersions: (String, String)?
 
         func checkForUpdates(_ sender: Any?) {
             checkedSender = sender as AnyObject?
@@ -22,11 +20,6 @@ final class iTermSoftwareUpdateServiceTests: XCTestCase {
 
         func isUpdaterOwnedWindowController(_ windowController: NSWindowController) -> Bool {
             return ownsWindowController
-        }
-
-        func compareVersion(_ version: String, toVersion otherVersion: String) -> ComparisonResult {
-            comparedVersions = (version, otherVersion)
-            return comparisonResult
         }
     }
 
@@ -43,11 +36,6 @@ final class iTermSoftwareUpdateServiceTests: XCTestCase {
         driver.ownsWindowController = true
         XCTAssertTrue(service.isUpdaterOwnedWindowController(windowController))
         XCTAssertFalse(service.isUpdaterOwnedWindowController(nil))
-
-        driver.comparisonResult = .orderedDescending
-        XCTAssertTrue(service.isVersion("3.8", newerThan: "3.7"))
-        XCTAssertEqual(driver.comparedVersions?.0, "3.8")
-        XCTAssertEqual(driver.comparedVersions?.1, "3.7")
     }
 
     func testTranslatesDriverRestartIntoStableApplicationState() {

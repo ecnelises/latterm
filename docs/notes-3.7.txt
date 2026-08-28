@@ -53,6 +53,8 @@ Terminal-first fork changes:
   system CommonMark parser.
 - Isolated automatic updates behind an app-owned
   service while retaining existing behavior.
+- Moved Python/runtime version comparisons to an
+  app-owned utility.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

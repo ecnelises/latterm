@@ -8,11 +8,10 @@
 #import "iTermOptionalComponentDownloadWindowController.h"
 
 #import "DebugLogging.h"
+#import "iTermVersionComparator.h"
 #import "NSArray+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"
-
-@import Sparkle;
 
 // SEE ALSO iTermWebSocketConnectionMinimumPythonLibraryVersion
 // NOTE: This forces upgrades of full-environment scripts.
@@ -232,17 +231,16 @@ didCompleteWithError:(nullable NSError *)error {
         // Assume it's new enough for whatever is there since we can't tell what the real version is.
         return YES;
     }
-    id<SUVersionComparison> comparator = [SUStandardVersionComparator defaultComparator];
     NSComparisonResult result;
     if (minVersion) {
-        result = [comparator compareVersion:version toVersion:minVersion];
+        result = [iTermVersionComparator compareVersion:version toVersion:minVersion];
         if (result == NSOrderedAscending) {
             return NO;
         }
     }
 
     if (maxVersion) {
-        result = [comparator compareVersion:version toVersion:maxVersion];
+        result = [iTermVersionComparator compareVersion:version toVersion:maxVersion];
         if (result == NSOrderedDescending) {
             return NO;
         }

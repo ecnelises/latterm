@@ -15,13 +15,12 @@
 #import "iTermScriptsMenuController.h"
 #import "iTermSetupCfgParser.h"
 #import "iTermTuple.h"
+#import "iTermVersionComparator.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"
 #import "NSFileManager+iTerm.h"
 #import "NSStringITerm.h"
 #import "NSTextField+iTerm.h"
-
-#import <Sparkle/Sparkle.h>
 
 @interface iTermDependencyEditorWindowController ()<NSTableViewDataSource, NSTableViewDelegate>
 
@@ -541,8 +540,8 @@
     if ([selectedVersion isEqualToString:_pythonVersion]) {
         return;
     }
-    SUStandardVersionComparator *comparator = [[SUStandardVersionComparator alloc] init];
-    if ([comparator compareVersion:selectedVersion toVersion:_pythonVersion] == NSOrderedAscending) {
+    if ([iTermVersionComparator compareVersion:selectedVersion
+                                     toVersion:_pythonVersion] == NSOrderedAscending) {
         iTermWarning *warning = [[iTermWarning alloc] init];
         warning.title = @"You have asked to downgrade to an older Python version. Dependencies will need to be reinstalled. This may go badly. Are you sure you want to do this?";
         warning.heading = @"Confirm Python Downgrade";

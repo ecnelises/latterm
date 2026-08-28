@@ -36,11 +36,6 @@ NSNotificationName const iTermSoftwareUpdateWillRestartNotification =
     return [controllerBundle.bundlePath isEqualToString:updaterBundle.bundlePath];
 }
 
-- (NSComparisonResult)compareVersion:(NSString *)version toVersion:(NSString *)otherVersion {
-    return [SUStandardVersionComparator.defaultComparator compareVersion:version
-                                                                toVersion:otherVersion];
-}
-
 @end
 
 @interface iTermSoftwareUpdateService ()
@@ -91,10 +86,6 @@ NSNotificationName const iTermSoftwareUpdateWillRestartNotification =
         return NO;
     }
     return [self.driver isUpdaterOwnedWindowController:windowController];
-}
-
-- (BOOL)isVersion:(NSString *)version newerThan:(NSString *)otherVersion {
-    return [self.driver compareVersion:version toVersion:otherVersion] == NSOrderedDescending;
 }
 
 - (void)configureFeedURL:(NSURL *)feedURL alternateAppName:(NSString *)alternateAppName {

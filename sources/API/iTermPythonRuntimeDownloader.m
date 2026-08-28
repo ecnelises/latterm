@@ -18,6 +18,7 @@
 #import "iTermRateLimitedUpdate.h"
 #import "iTermSetupCfgParser.h"
 #import "iTermSignatureVerifier.h"
+#import "iTermVersionComparator.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSFileManager+iTerm.h"
@@ -25,8 +26,6 @@
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"
 #import "NSWorkspace+iTerm.h"
-
-#import <Sparkle/Sparkle.h>
 
 NSString *const iTermPythonRuntimeDownloaderDidInstallRuntimeNotification = @"iTermPythonRuntimeDownloaderDidInstallRuntimeNotification";
 
@@ -60,11 +59,10 @@ NSString *const iTermPythonRuntimeDownloaderDidInstallRuntimeNotification = @"iT
 // 3.7.1 exist in `versionsPath` it will return 3.7.1. Returns nil if none found.
 - (NSString *)threePartVersionForTwoPartVersion:(NSString *)twoPartVersion
                                              at:(NSString *)versionsPath {
-    SUStandardVersionComparator *comparator = [[SUStandardVersionComparator alloc] init];
     return [[[iTermPythonRuntimeDownloader pythonVersionsAt:versionsPath] filteredArrayUsingBlock:^BOOL(NSString *anObject) {
         return [anObject.it_twoPartVersionNumber isEqualToString:twoPartVersion];
     }] maxWithComparator:^NSComparisonResult(NSString *a, NSString *b) {
-        return [comparator compareVersion:a toVersion:b];
+        return [iTermVersionComparator compareVersion:a toVersion:b];
     }];
 }
 
@@ -555,10 +553,9 @@ NSString *const iTermPythonRuntimeDownloaderDidInstallRuntimeNotification = @"iT
 + (NSString *)bestPythonVersionAt:(NSString *)path {
     // TODO: This is convenient but I'm not sure it's technically correct for all possible Python
     // versions. But it'll do for three dotted numbers, which is the norm.
-    SUStandardVersionComparator *comparator = [[SUStandardVersionComparator alloc] init];
     NSArray<NSString *> *versions = [self pythonVersionsAt:path];
     return [versions maxWithComparator:^NSComparisonResult(NSString *a, NSString *b) {
-        return [comparator compareVersion:a toVersion:b];
+        return [iTermVersionComparator compareVersion:a toVersion:b];
     }];
 }
 
