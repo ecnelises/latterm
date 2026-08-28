@@ -464,9 +464,6 @@ paranoid-cc-status: force
 paranoid-CoreParse: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" CoreParse
 
-paranoid-SwiftyMarkdown: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" SwiftyMarkdown
-
 paranoid-deps: force
 	tools/check-submodule-cleanliness
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" deps
@@ -520,22 +517,16 @@ BetterFontPicker-Dev: force
 ColorPicker: force
 	cd ColorPicker && $(MAKE)
 
-bindeps: SwiftyMarkdown BetterFontPicker
+bindeps: BetterFontPicker
 	$(MAKE) ColorPicker
 	$(MAKE) SearchableComboListView
 
 SearchableComboListView: force
 	cd SearchableComboListView && $(MAKE)
 
-SwiftyMarkdown: force
-	cd submodules/SwiftyMarkdown && xcodebuild -configuration Release 'CONFIGURATION_BUILD_DIR=$$(SRCROOT)/Build/$$(CONFIGURATION)' $(SIGNING_FLAGS) $(ARCH_FLAGS)
-	rm -rf ThirdParty/SwiftyMarkdown.framework
-	mv submodules/SwiftyMarkdown/build/Release/SwiftyMarkdown.framework ThirdParty/SwiftyMarkdown.framework
-
 cleandeps: force
 	cd submodules/CoreParse/ && git clean -f -d .
 	cd submodules/NMSSH && git restore .
-	cd submodules/SwiftyMarkdown && git restore .
 	cd submodules/libsixel && git clean -f -d .
 	cd submodules/libssh2 && git clean -f -d .
 	cd submodules/openssl && git clean -f -d .

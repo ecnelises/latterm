@@ -540,7 +540,7 @@ extension String {
 }
 
 extension String {
-    /// Escapes ASCII punctuation so SwiftyMarkdown/CommonMark will render the text literally.
+    /// Escapes ASCII punctuation so CommonMark will render the text literally.
     var escapedForMarkdown: String {
          let escapables: Set<Character> = Set("*[_")
         var out = String()

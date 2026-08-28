@@ -5,8 +5,8 @@
 //  Created by George Nachman on 4/29/22.
 //
 
+import AppKit
 import Foundation
-import SwiftyMarkdown
 
 class AttributeToControlSequenceConverter {
     private var currentCodes = [String]()
@@ -164,68 +164,170 @@ extension NSAttributedString {
 
     @objc(attributedStringWithMarkdown:font:paragraphStyle:)
     class func attributedString(markdown: String, font: NSFont, paragraphStyle: NSParagraphStyle) -> NSAttributedString? {
-        let md = SwiftyMarkdown(string: markdown)
-        if let fixedPitchFontName = NSFont.userFixedPitchFont(ofSize: NSFont.systemFontSize)?.fontName {
-            md.code.fontName = fixedPitchFontName
-        }
-        let points = NSFont.systemFontSize
-        md.setFontSizeForAllStyles(with: points)
-        // I couldn't find a definitive source to map headings to ems. I used this, which looks fine.
-        // https://stackoverflow.com/questions/5410066/what-are-the-default-font-sizes-in-pixels-for-the-html-heading-tags-h1-h2
-        md.h1.fontSize = max(4, round(points * 2))
-        md.h2.fontSize = max(4, round(points * 1.5))
-        md.h3.fontSize = max(4, round(points * 1.3))
-        md.h4.fontSize = max(4, round(points * 1.0))
-        md.h5.fontSize = max(4, round(points * 0.8))
-        md.h6.fontSize = max(4, round(points * 0.7))
-
-        md.setFontColorForAllStyles(with: .textColor)
-
-        md.code.fontName = NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .bold).fontName
-
-        let attributedString = md.attributedString()
-        return attributedString.postprocessedSwiftyMarkdownAttributedString()
+        return iTerm_attributedString(markdown: markdown,
+                                      baseFont: font,
+                                      textColor: .textColor,
+                                      paragraphStyle: paragraphStyle,
+                                      headingScales: [2, 1.5, 1.3, 1, 0.8, 0.7])
     }
 
-    // Ensures that code spans don't wordwrap by inserting zero-width nonbreaking spaces between
-    // every character in a code span. They will character wrap if needed. In the future this method
-    // can do more cool stuff.
-    func postprocessedSwiftyMarkdownAttributedString() -> NSAttributedString {
-        let result = NSMutableAttributedString(attributedString: self)
-        let fullRange = NSRange(location: 0, length: result.length)
-        var rangesToProcess = [NSRange]()
-
-        result.enumerateAttribute(.swiftyMarkdownCharacterStyles, in: fullRange, options: []) { value, range, _ in
-            if let styles = value as? [String],
-               styles.contains(CharacterStyle.code.rawValue) {
-                rangesToProcess.append(range)
-            }
+    static func iTerm_attributedString(markdown: String,
+                                       baseFont: NSFont,
+                                       textColor: NSColor,
+                                       paragraphStyle: NSParagraphStyle = .default,
+                                       headingScales: [CGFloat] = [2, 1.5, 1.3, 1, 0.8, 0.7],
+                                       codeFont: NSFont? = nil) -> NSAttributedString {
+        let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
+        let body = markdownBodyWithoutFrontMatter(markdown)
+        guard let parsed = try? AttributedString(markdown: body, options: options) else {
+            return NSAttributedString(string: body,
+                                      attributes: [.font: baseFont,
+                                                   .foregroundColor: textColor,
+                                                   .paragraphStyle: paragraphStyle])
         }
 
-        // Process ranges in reverse order so earlier replacements don't affect later ones.
-        for range in rangesToProcess.reversed() {
-            let originalSubstring = result.attributedSubstring(from: range)
-            let newSubstring = NSMutableAttributedString()
+        let result = NSMutableAttributedString()
+        var previousBlockIdentity: Int?
+        for run in parsed.runs {
+            let components = run.presentationIntent?.components ?? []
+            let blockIdentity = components.first?.identity
+            if blockIdentity != previousBlockIdentity {
+                appendMarkdownBlockSeparator(to: result,
+                                             presentationIntent: run.presentationIntent,
+                                             baseFont: baseFont,
+                                             textColor: textColor,
+                                             paragraphStyle: paragraphStyle)
+                previousBlockIdentity = blockIdentity
+            }
 
-            for i in 0..<originalSubstring.length {
-                let charRange = NSRange(location: i, length: 1)
-                let char = originalSubstring.attributedSubstring(from: charRange).string
-                let attributes = originalSubstring.attributes(at: i, effectiveRange: nil)
-
-                // Only insert FEFF if not at start of the line.
-                if i > 0 {
-                    let prevCharRange = NSRange(location: i - 1, length: 1)
-                    let prevChar = originalSubstring.attributedSubstring(from: prevCharRange).string
-                    if prevChar != "\n" {
-                        newSubstring.append(NSAttributedString(string: "\u{feff}", attributes: attributes))
-                    }
+            let inlineIntent = run.inlinePresentationIntent ?? []
+            let isCodeBlock = components.contains { component in
+                if case .codeBlock = component.kind {
+                    return true
                 }
-                newSubstring.append(NSAttributedString(string: char, attributes: attributes))
+                return false
             }
-            result.replaceCharacters(in: range, with: newSubstring)
+            let headingLevel = components.compactMap { component -> Int? in
+                if case .header(let level) = component.kind {
+                    return level
+                }
+                return nil
+            }.first
+            let pointSize: CGFloat
+            if let headingLevel,
+               headingScales.indices.contains(headingLevel - 1) {
+                pointSize = max(4, round(baseFont.pointSize * headingScales[headingLevel - 1]))
+            } else {
+                pointSize = baseFont.pointSize
+            }
+
+            let bold = headingLevel != nil || inlineIntent.contains(.stronglyEmphasized)
+            let italic = inlineIntent.contains(.emphasized)
+            let code = isCodeBlock || inlineIntent.contains(.code)
+            var attributes: [NSAttributedString.Key: Any] = [
+                .font: markdownFont(baseFont: baseFont,
+                                    pointSize: pointSize,
+                                    bold: bold,
+                                    italic: italic,
+                                    monospaced: code,
+                                    codeFont: codeFont),
+                .foregroundColor: textColor,
+                .paragraphStyle: paragraphStyle,
+            ]
+            if inlineIntent.contains(.strikethrough) {
+                attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+            }
+            if let link = run.link {
+                attributes[.link] = link
+                attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+            }
+
+            var string = String(parsed.characters[run.range])
+            if inlineIntent.contains(.code) {
+                string = string.unicodeScalars.enumerated().map { index, scalar in
+                    return index == 0 ? String(scalar) : "\u{feff}" + String(scalar)
+                }.joined()
+            }
+            result.append(NSAttributedString(string: string, attributes: attributes))
+        }
+        return result
+    }
+
+    private static func markdownBodyWithoutFrontMatter(_ markdown: String) -> String {
+        guard markdown.hasPrefix("---\n"),
+              let closingRange = markdown.range(of: "\n---\n",
+                                                range: markdown.index(markdown.startIndex,
+                                                                      offsetBy: 3)..<markdown.endIndex) else {
+            return markdown
+        }
+        return String(markdown[closingRange.upperBound...])
+    }
+
+    private static func appendMarkdownBlockSeparator(
+        to result: NSMutableAttributedString,
+        presentationIntent: PresentationIntent?,
+        baseFont: NSFont,
+        textColor: NSColor,
+        paragraphStyle: NSParagraphStyle
+    ) {
+        let components = presentationIntent?.components ?? []
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: baseFont,
+            .foregroundColor: textColor,
+            .paragraphStyle: paragraphStyle,
+        ]
+        if result.length > 0 {
+            result.append(NSAttributedString(string: "\n", attributes: attributes))
         }
 
-        return result
+        var listOrdinal: Int?
+        var unordered = false
+        var blockQuote = false
+        for component in components {
+            switch component.kind {
+            case .listItem(let ordinal):
+                listOrdinal = ordinal
+            case .unorderedList:
+                unordered = true
+            case .blockQuote:
+                blockQuote = true
+            default:
+                break
+            }
+        }
+        if let listOrdinal {
+            let prefix = unordered ? "• " : "\(listOrdinal). "
+            result.append(NSAttributedString(string: prefix, attributes: attributes))
+        } else if blockQuote {
+            result.append(NSAttributedString(string: "› ", attributes: attributes))
+        }
+    }
+
+    private static func markdownFont(baseFont: NSFont,
+                                     pointSize: CGFloat,
+                                     bold: Bool,
+                                     italic: Bool,
+                                     monospaced: Bool,
+                                     codeFont: NSFont?) -> NSFont {
+        let manager = NSFontManager.shared
+        var font: NSFont
+        if monospaced {
+            let base = codeFont ?? NSFont.monospacedSystemFont(ofSize: pointSize, weight: .bold)
+            font = manager.convert(base, toSize: pointSize)
+        } else {
+            font = manager.convert(baseFont, toSize: pointSize)
+        }
+        var traits = NSFontTraitMask()
+        if bold {
+            traits.insert(.boldFontMask)
+        }
+        if italic {
+            traits.insert(.italicFontMask)
+        }
+        if !traits.isEmpty {
+            font = manager.convert(font, toHaveTrait: traits)
+        }
+        return font
     }
 
     // The HTML parser built in to NSAttributedString is unusable because it sets an sRGB color for

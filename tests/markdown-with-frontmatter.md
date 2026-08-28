@@ -8,7 +8,7 @@ tags: portholes, markdown
 # Front Matter + Thematic Breaks
 
 This document opens with YAML front matter delimited by `---`. The
-front matter block above should be consumed by SwiftyMarkdown and
+front matter block above should be consumed by the native renderer and
 **not** rendered as horizontal rules.
 
 After the front matter, the body begins normally. The next `---`

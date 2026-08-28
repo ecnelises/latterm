@@ -8,7 +8,6 @@
 import AppKit
 import Carbon.HIToolbox
 import Foundation
-import SwiftyMarkdown
 
 @objc protocol iTermClippingsViewDelegate: AnyObject {
     func clippingsViewClippings(_ view: iTermClippingsView) -> [PTYSessionClipping]
@@ -705,22 +704,16 @@ private class ClippingsCellView: NSTableCellView {
     fileprivate static func attributedMarkdown(_ markdown: String,
                                                 baseSize: CGFloat,
                                                 color: NSColor) -> NSAttributedString {
-        let md = SwiftyMarkdown(string: markdown)
-        if let fixedPitch = NSFont.userFixedPitchFont(ofSize: baseSize)?.fontName {
-            md.code.fontName = fixedPitch
-        }
-        md.setFontSizeForAllStyles(with: baseSize)
-        md.h1.fontSize = max(4, round(baseSize * 1.5))
-        md.h2.fontSize = max(4, round(baseSize * 1.3))
-        md.h3.fontSize = max(4, round(baseSize * 1.15))
-        md.h4.fontSize = max(4, round(baseSize * 1.0))
-        md.h5.fontSize = max(4, round(baseSize * 0.9))
-        md.h6.fontSize = max(4, round(baseSize * 0.85))
-        md.setFontColorForAllStyles(with: color)
-        return md.attributedString().postprocessedSwiftyMarkdownAttributedString()
+        let baseFont = NSFont.systemFont(ofSize: baseSize)
+        return NSAttributedString.iTerm_attributedString(
+            markdown: markdown,
+            baseFont: baseFont,
+            textColor: color,
+            headingScales: [1.5, 1.3, 1.15, 1, 0.9, 0.85],
+            codeFont: NSFont.userFixedPitchFont(ofSize: baseSize))
     }
 
-    // SwiftyMarkdown parsing is non-trivial and detailHeight() is called once
+    // Markdown parsing is non-trivial and detailHeight() is called once
     // per visible row on every layout pass, so cache the result keyed on the
     // markdown string. The cached NSColor remains dynamic across appearance
     // changes because NSColor is resolved at draw time.

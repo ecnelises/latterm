@@ -113,7 +113,7 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Removed Conductor’s `shouldInjectShellIntegration` state and its redundant modified-environment/modified-command fields; the surviving SSH path now uses the original environment and parsed command directly.
 - Removed the disabled `it2ssh` and `SendConductor` KVP dispatch path, its VT100/screen delegate methods, and the `PTYSession` implementation that still tried to load the already-deleted `conductor.sh`.
 - Removed the input-queue state used only while sending that deleted helper payload, while retaining Conductor hook handling, Framer operation, restoration, and remote-command support.
-- Audited `SwiftyMarkdown` before considering submodule removal and confirmed it remains a live dependency of Clippings, Portholes, and shared attributed-string formatting, so it must stay for now.
+- Audited `SwiftyMarkdown` before considering submodule removal and confirmed it was then a live dependency of Clippings, Portholes, and shared attributed-string formatting; those consumers were later migrated together to Foundation's CommonMark parser.
 
 ### 2026-07-18 Captured Output Removal
 
@@ -232,8 +232,17 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Removed the custom highlighting CSS settings and resources, the checked-in framework, Xcode link/copy/resource references, dependency build recipe, and signing helper reference.
 - Removed `submodules/Highlightr`, reducing the repository from eleven git submodules to ten without removing Portholes.
 
+### 2026-08-29 Foundation Markdown Migration
+
+- Replaced the three live `SwiftyMarkdown` integration points with one app-owned renderer built on Foundation's CommonMark parser.
+- Preserved headings, emphasis, links, code fonts and wrapping, lists, block quotes, front-matter removal, dynamic colors, and consumer-specific heading scales across Portholes, Clippings, and shared help/announcement rendering.
+- Corrected inline-code generation to use CommonMark backtick delimiters long enough to contain literal backticks.
+- Removed the checked-in framework and header, Xcode link/copy/group references, dependency build and cleanup recipes, signing helper, license entry, and `submodules/SwiftyMarkdown`, reducing the repository from ten git submodules to nine.
+
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/MarkdownRenderingTests` passes all 3 native Markdown structure, style, front-matter, code-font, and literal-backtick tests on 2026-08-29.
+- `tools/build.sh` passes on 2026-08-29 with the SwiftyMarkdown framework, project references, build rules, and submodule removed.
 - `tools/run_tests.expect ModernTests/PortholeFoldClearTests` passes all 5 Porthole fold, unfold, and buffer-clear lifecycle tests on 2026-08-29 after replacing Highlightr with app-owned rendering.
 - `tools/build.sh` passes on 2026-08-29 with the Highlightr framework, CSS resources, project references, build recipe, and submodule removed.
 - The two Smart Selection-focused `iTermTextExtractorTest` cases pass on 2026-08-29 after removing regex visualization; the full class still has unrelated user-default-sensitive word-selection expectations.
@@ -298,7 +307,7 @@ The removal scope is real, not hypothetical:
 - Shell-integration installation and injection code is gone, and the former `sources/ShellIntegration/**` persistence model plus its Core Data dependency are now removed. OSC 7/133 parsing and session-local semantic state remain.
 - `sources/PTYSession.m` remains a major coupling point across terminal lifecycle, scripting, terminal control, triggers, and UI.
 - The source tree remains heavily Objective-C weighted: 500 Swift files vs 1,696 Objective-C/C-family headers and implementations among 2,299 files under `sources/` as of 2026-08-22.
-- Ten submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization and syntax-highlighting dependencies are gone; further removals require separate audits of surviving SSH, rendering, parsing, Markdown, Companion, updating, and build-tool paths.
+- Nine submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization, syntax-highlighting, and third-party Markdown dependencies are gone; further removals require separate audits of surviving SSH, rendering, parsing, Companion, updating, and build-tool paths.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 
@@ -414,9 +423,7 @@ Rules:
 - Prefer feature-owned removals: delete the submodule in the same phase as the feature that required it, or immediately after that phase lands cleanly.
 - Start with optional feature submodules before touching infrastructure-heavy ones.
 
-Safe-first targets:
-
-- `submodules/SwiftyMarkdown` once AI/chat and markdown-only surfaces are gone, if no surviving UI still depends on it
+Safe-first targets are exhausted; the remaining dependency removals require individual feature and runtime audits.
 
 High-risk later targets:
 

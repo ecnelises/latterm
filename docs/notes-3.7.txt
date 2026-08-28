@@ -49,6 +49,8 @@ Terminal-first fork changes:
   viewer and its Rust dependency.
 - Simplified Render Selection to app-owned plain
   text, Markdown, and JSON rendering.
+- Replaced the bundled Markdown framework with the
+  system CommonMark parser.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

@@ -25,9 +25,6 @@
 [submodule "submodules/libgit2"]
 	path = submodules/libgit2
 	url = https://github.com/libgit2/libgit2
-[submodule "submodules/SwiftyMarkdown"]
-	path = submodules/SwiftyMarkdown
-	url = https://github.com/gnachman/SwiftyMarkdown
 [submodule "Companion/CompanionCore/Sources/CNoise/vendor"]
 	path = Companion/CompanionCore/Sources/CNoise/vendor
 	url = https://github.com/rweather/noise-c.git

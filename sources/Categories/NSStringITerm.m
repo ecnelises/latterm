@@ -3026,9 +3026,28 @@ static NSDictionary<NSString *, NSNumber *> *iTermKittyDiacriticIndex(void) {
 }
 
 - (NSString *)stringEnclosedInMarkdownInlineCode {
-    // SwiftyMarkdown doesn't support escaped backslashes.
-    NSString *escaped = [self stringByReplacingOccurrencesOfString:@"`" withString:@"\\`"];
-    return [NSString stringWithFormat:@"`%@`", escaped];
+    NSUInteger longestRun = 0;
+    NSUInteger currentRun = 0;
+    for (NSUInteger i = 0; i < self.length; i++) {
+        if ([self characterAtIndex:i] == '`') {
+            currentRun++;
+            longestRun = MAX(longestRun, currentRun);
+        } else {
+            currentRun = 0;
+        }
+    }
+    NSString *delimiter = [@"" stringByPaddingToLength:longestRun + 1
+                                              withString:@"`"
+                                         startingAtIndex:0];
+    NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    BOOL needsPadding = [self hasPrefix:@"`"] ||
+        [self hasSuffix:@"`"] ||
+        (self.length > 0 &&
+         ([whitespace characterIsMember:[self characterAtIndex:0]] ||
+          [whitespace characterIsMember:[self characterAtIndex:self.length - 1]]));
+    NSString *padding = needsPadding ? @" " : @"";
+    return [NSString stringWithFormat:@"%@%@%@%@%@",
+            delimiter, padding, self, padding, delimiter];
 }
 
 - (NSString *)it_stem {
