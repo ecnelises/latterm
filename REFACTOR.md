@@ -225,8 +225,17 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Deleted the WebKit/SVG visualization implementation, its checked-in Rust dylib and header, Xcode link/copy/search-path entries, and dependency build recipes.
 - Removed `submodules/railroad_dsl`, reducing the repository from twelve git submodules to eleven.
 
+### 2026-08-29 Porthole Highlighter Removal
+
+- Replaced the single `Highlightr` consumer with app-owned rendering: Markdown and JSON keep their specialized renderers, while other content uses the active terminal font and colors.
+- Reduced the Porthole language menu to its three truthful rendering modes and map restored legacy source-language selections to plain text.
+- Removed the custom highlighting CSS settings and resources, the checked-in framework, Xcode link/copy/resource references, dependency build recipe, and signing helper reference.
+- Removed `submodules/Highlightr`, reducing the repository from eleven git submodules to ten without removing Portholes.
+
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/PortholeFoldClearTests` passes all 5 Porthole fold, unfold, and buffer-clear lifecycle tests on 2026-08-29 after replacing Highlightr with app-owned rendering.
+- `tools/build.sh` passes on 2026-08-29 with the Highlightr framework, CSS resources, project references, build recipe, and submodule removed.
 - The two Smart Selection-focused `iTermTextExtractorTest` cases pass on 2026-08-29 after removing regex visualization; the full class still has unrelated user-default-sensitive word-selection expectations.
 - `xcrun ibtool` compiles `PreferencePanel.xib` without document errors or warnings on 2026-08-29 after removing the Smart Selection visualization button; pre-existing layout notices remain.
 - `tools/build.sh` passes on 2026-08-29 with the regex visualization sources, dylib, build rules, and `railroad_dsl` submodule removed.
@@ -289,7 +298,7 @@ The removal scope is real, not hypothetical:
 - Shell-integration installation and injection code is gone, and the former `sources/ShellIntegration/**` persistence model plus its Core Data dependency are now removed. OSC 7/133 parsing and session-local semantic state remain.
 - `sources/PTYSession.m` remains a major coupling point across terminal lifecycle, scripting, terminal control, triggers, and UI.
 - The source tree remains heavily Objective-C weighted: 500 Swift files vs 1,696 Objective-C/C-family headers and implementations among 2,299 files under `sources/` as of 2026-08-22.
-- Eleven submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization dependency are gone; further removals require separate audits of surviving SSH, rendering, parsing, Markdown, syntax-highlighting, Companion, updating, and build-tool paths.
+- Ten submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization and syntax-highlighting dependencies are gone; further removals require separate audits of surviving SSH, rendering, parsing, Markdown, Companion, updating, and build-tool paths.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 

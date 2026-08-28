@@ -290,8 +290,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (int)minTabWidth;
 + (BOOL)moveLeftAfterClosingTab;
 + (BOOL)multiserver;
-+ (NSString *)nativeRenderingCSSLight;
-+ (NSString *)nativeRenderingCSSDark;
 + (BOOL)naturalScrollingAffectsHorizontalMouseReporting;
 + (BOOL)navigatePanesInReadingOrder;
 + (BOOL)neverWarnAboutMeta;

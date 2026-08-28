@@ -277,7 +277,7 @@
                         kTipBodyKey: @"The composer supports multiple cursors. It also has the ability to send just one command out of a list, making it easy to walk through a list of commands one-by-one. Click the help button in the composer for details." },
 
             @"0082": @{ kTipTitleKey: @"Render Selection",
-                        kTipBodyKey: @"Transform selected text into a prettified, syntax-highlighted view with the “Render Selection” command, ideal for JSON, Markdown, or source code. This feature includes horizontal scrolling for easy log navigation." },
+                        kTipBodyKey: @"Transform selected text into a readable view with the “Render Selection” command. Markdown and JSON receive specialized formatting, and horizontal scrolling makes log navigation easier." },
 
             @"0087": @{ kTipTitleKey: @"Named Marks",
                         kTipBodyKey: @"Navigate your command history effortlessly with “named marks” by assigning names to lines in the terminal." },

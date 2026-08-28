@@ -47,6 +47,8 @@ Terminal-first fork changes:
 - Fixed tilde-based custom working directories.
 - Removed the optional regular-expression diagram
   viewer and its Rust dependency.
+- Simplified Render Selection to app-owned plain
+  text, Markdown, and JSON rendering.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

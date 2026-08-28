@@ -49,7 +49,7 @@ extension iTermApplicationDelegate {
                 text: "**Advanced Paste** lets you edit text before pasting, remove control characters, convert tabs, base64-encode, and perform regular expression substitutions. It also lets you fine-tune how quickly pasted text is sent."),
             Tip(identifier: "Render Selection Natively",
                 imageName: "RenderNatively",
-                text: "**Render Natively** shows a nicely formatted, syntax-highlighted rendition of a document. For example, Markdown renders beautifully. It also allows for horizontal scrolling, making it a convenient way to view log files."),
+                text: "**Render Natively** shows a readable rendition of a document. Markdown and JSON receive specialized formatting, while other text uses the terminal font and colors. It also allows horizontal scrolling, making it a convenient way to view log files."),
             Tip(identifier: "Paste Special.Warn Before Multi-Line Paste",
                 text: "You’ll be prompted any time you paste text containing a newline. See also **Limit Multi-Line Paste Warning to Shell Prompt**."),
             Tip(identifier: "Paste Special.Limit Multi-Line Paste Warning to Shell Prompt",

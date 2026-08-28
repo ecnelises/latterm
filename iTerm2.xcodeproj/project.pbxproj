@@ -1852,8 +1852,6 @@
 		A62A7B5D2F9896D9007CAA0B /* MinimalPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B5C2F9896D9007CAA0B /* MinimalPasteView.xib */; };
 		A62A7B5E2F9896D9007CAA0B /* MinimalPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B5C2F9896D9007CAA0B /* MinimalPasteView.xib */; };
 		A62A7B5F2F9896D9007CAA0B /* MinimalPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B5C2F9896D9007CAA0B /* MinimalPasteView.xib */; };
-		A62B04A529B428B60077B955 /* Highlightr.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6A3D18A2815EF4D00C0C9E0 /* Highlightr.framework */; };
-		A62B04A629B428D30077B955 /* Highlightr.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6A3D18A2815EF4D00C0C9E0 /* Highlightr.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A62B36572D24C1A900FDF15E /* SetNamedMarkTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62B36562D24C1A600FDF15E /* SetNamedMarkTrigger.swift */; };
 		A62C3B3A1BD40D2400B5629D /* iTermMark.h in Headers */ = {isa = PBXBuildFile; fileRef = A62C3B381BD40D2400B5629D /* iTermMark.h */; };
 		A62C3B421BD40E7C00B5629D /* iTermImageMark.h in Headers */ = {isa = PBXBuildFile; fileRef = A62C3B401BD40E7C00B5629D /* iTermImageMark.h */; };
@@ -2981,9 +2979,7 @@
 		A6A39EBF24B9A96B00A64433 /* iTermUnobtrusiveMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = A6A39EBD24B9A96B00A64433 /* iTermUnobtrusiveMessage.h */; };
 		A6A39EC024B9A96B00A64433 /* iTermUnobtrusiveMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = A6A39EBE24B9A96B00A64433 /* iTermUnobtrusiveMessage.m */; };
 		A6A3CE172E3844CC00710B09 /* TerminalWindowSizeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A3CE162E3844C400710B09 /* TerminalWindowSizeHelper.swift */; };
-		A6A3D18B2815EF4D00C0C9E0 /* Highlightr.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6A3D18A2815EF4D00C0C9E0 /* Highlightr.framework */; };
 		A6A3D18D2815EF6F00C0C9E0 /* TextViewPortholeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A3D18C2815EF6F00C0C9E0 /* TextViewPortholeRenderer.swift */; };
-		A6A3D18E2815F74A00C0C9E0 /* Highlightr.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6A3D18A2815EF4D00C0C9E0 /* Highlightr.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A6A3D190281663EE00C0C9E0 /* extensions.json in Resources */ = {isa = PBXBuildFile; fileRef = A6A3D18F281663EE00C0C9E0 /* extensions.json */; };
 		A6A3D191281663EE00C0C9E0 /* extensions.json in Resources */ = {isa = PBXBuildFile; fileRef = A6A3D18F281663EE00C0C9E0 /* extensions.json */; };
 		A6A3D192281663EE00C0C9E0 /* extensions.json in Resources */ = {isa = PBXBuildFile; fileRef = A6A3D18F281663EE00C0C9E0 /* extensions.json */; };
@@ -4247,12 +4243,6 @@
 		A6EC47AA2D8744140079845B /* KeyEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC47A92D87440E0079845B /* KeyEventRecorder.swift */; };
 		A6EC47CD21ED96F2000E1321 /* iTermLaunchExperienceController.h in Headers */ = {isa = PBXBuildFile; fileRef = A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */; };
 		A6EC47CE21ED96F2000E1321 /* iTermLaunchExperienceController.m in Sources */ = {isa = PBXBuildFile; fileRef = A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */; };
-		A6EC8046281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */ = {isa = PBXBuildFile; fileRef = A6EC8045281B391900493544 /* TextViewPortholeRenderer-dark.css */; };
-		A6EC8047281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */ = {isa = PBXBuildFile; fileRef = A6EC8045281B391900493544 /* TextViewPortholeRenderer-dark.css */; };
-		A6EC8048281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */ = {isa = PBXBuildFile; fileRef = A6EC8045281B391900493544 /* TextViewPortholeRenderer-dark.css */; };
-		A6EC804A281B3AF300493544 /* TextViewPortholeRenderer-light.css in Resources */ = {isa = PBXBuildFile; fileRef = A6EC8049281B3AF200493544 /* TextViewPortholeRenderer-light.css */; };
-		A6EC804B281B3AF300493544 /* TextViewPortholeRenderer-light.css in Resources */ = {isa = PBXBuildFile; fileRef = A6EC8049281B3AF200493544 /* TextViewPortholeRenderer-light.css */; };
-		A6EC804C281B3AF300493544 /* TextViewPortholeRenderer-light.css in Resources */ = {isa = PBXBuildFile; fileRef = A6EC8049281B3AF200493544 /* TextViewPortholeRenderer-light.css */; };
 		A6EC8050281BC67900493544 /* SwiftyMarkdown.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6EC804F281BC67900493544 /* SwiftyMarkdown.framework */; };
 		A6EC8051281BC67900493544 /* SwiftyMarkdown.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6EC804F281BC67900493544 /* SwiftyMarkdown.framework */; };
 		A6EC8052281BC67900493544 /* SwiftyMarkdown.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6EC804F281BC67900493544 /* SwiftyMarkdown.framework */; };
@@ -4916,7 +4906,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A62B04A629B428D30077B955 /* Highlightr.framework in CopyFiles */,
 				A6E180E623D2E182003C4EB1 /* CoreParse.framework in CopyFiles */,
 				A6184F8D1BAB3EFB0088EF3C /* ColorPicker.framework in CopyFiles */,
 				A6661310225CFF7200840E89 /* BetterFontPicker.framework in CopyFiles */,
@@ -4933,7 +4922,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				A6EC8053281C4A6A00493544 /* SwiftyMarkdown.framework in CopyFiles */,
-				A6A3D18E2815F74A00C0C9E0 /* Highlightr.framework in CopyFiles */,
 				530AB89C20AFF23400D2AA08 /* CoreParse.framework in CopyFiles */,
 				A6184F8C1BAB3EF30088EF3C /* ColorPicker.framework in CopyFiles */,
 				A624232619CF70DF00182C08 /* NMSSH.framework in CopyFiles */,
@@ -7535,7 +7523,6 @@
 		A6A39EBD24B9A96B00A64433 /* iTermUnobtrusiveMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermUnobtrusiveMessage.h; sourceTree = "<group>"; };
 		A6A39EBE24B9A96B00A64433 /* iTermUnobtrusiveMessage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermUnobtrusiveMessage.m; sourceTree = "<group>"; };
 		A6A3CE162E3844C400710B09 /* TerminalWindowSizeHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalWindowSizeHelper.swift; sourceTree = "<group>"; };
-		A6A3D18A2815EF4D00C0C9E0 /* Highlightr.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Highlightr.framework; path = ThirdParty/Highlightr.framework; sourceTree = "<group>"; };
 		A6A3D18C2815EF6F00C0C9E0 /* TextViewPortholeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextViewPortholeRenderer.swift; sourceTree = "<group>"; };
 		A6A3D18F281663EE00C0C9E0 /* extensions.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = extensions.json; path = OtherResources/extensions.json; sourceTree = "<group>"; };
 		A6A3D1932816643600C0C9E0 /* FileExtensionDB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExtensionDB.swift; sourceTree = "<group>"; };
@@ -8250,8 +8237,6 @@
 		A6EC47A92D87440E0079845B /* KeyEventRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventRecorder.swift; sourceTree = "<group>"; };
 		A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermLaunchExperienceController.h; sourceTree = "<group>"; };
 		A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermLaunchExperienceController.m; sourceTree = "<group>"; };
-		A6EC8045281B391900493544 /* TextViewPortholeRenderer-dark.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = "TextViewPortholeRenderer-dark.css"; path = "OtherResources/TextViewPortholeRenderer-dark.css"; sourceTree = SOURCE_ROOT; };
-		A6EC8049281B3AF200493544 /* TextViewPortholeRenderer-light.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = "TextViewPortholeRenderer-light.css"; path = "OtherResources/TextViewPortholeRenderer-light.css"; sourceTree = SOURCE_ROOT; };
 		A6EC804F281BC67900493544 /* SwiftyMarkdown.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyMarkdown.framework; path = ThirdParty/SwiftyMarkdown.framework; sourceTree = "<group>"; };
 		A6EC8054281C852200493544 /* NSAttributedString+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+iTerm.swift"; sourceTree = "<group>"; };
 		A6EC8072281F2C2900493544 /* ExternalSearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSearchResult.swift; sourceTree = "<group>"; };
@@ -8653,7 +8638,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BEEFCAFEDEADC0DE00000004 /* iTermSwiftPackages.framework in Frameworks */,
-				A62B04A529B428B60077B955 /* Highlightr.framework in Frameworks */,
 				A67D19502237045C00BD0D4D /* libsixel.a in Frameworks */,
 				A66719691DCE3965000CE608 /* libiTerm2SharedARC.a in Frameworks */,
 				A666130F225CFF7200840E89 /* BetterFontPicker.framework in Frameworks */,
@@ -8696,7 +8680,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A69FEECD2E123B8700AFF7A8 /* iTermSwiftPackages.framework in Frameworks */,
-				A6A3D18B2815EF4D00C0C9E0 /* Highlightr.framework in Frameworks */,
 				A6EC8050281BC67900493544 /* SwiftyMarkdown.framework in Frameworks */,
 				A666130D225CFF6900840E89 /* BetterFontPicker.framework in Frameworks */,
 				A6FB633123DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */,
@@ -9444,7 +9427,6 @@
 				1DD39AD6180B8118004E56D5 /* Cocoa.framework */,
 				A6184F881BAB3ED70088EF3C /* ColorPicker.framework */,
 				530AB89820AFF21200D2AA08 /* CoreParse.framework */,
-				A6A3D18A2815EF4D00C0C9E0 /* Highlightr.framework */,
 				A6588821201708D8006F48DB /* IOKit.framework */,
 				756C32C12597AC9C0047B3A9 /* libaprutil-1.tbd */,
 				A656AE4B1DBBE1CE00CE8448 /* libaprutil-1.tbd */,
@@ -10931,8 +10913,6 @@
 		A62A7A702F98888C007CAA0B /* Portholes */ = {
 			isa = PBXGroup;
 			children = (
-				A6EC8045281B391900493544 /* TextViewPortholeRenderer-dark.css */,
-				A6EC8049281B3AF200493544 /* TextViewPortholeRenderer-light.css */,
 				A6891DC92818605500751F40 /* JSONPortholeRenderer.swift */,
 				A6891DC82818605500751F40 /* MarkdownPortholeRenderer.swift */,
 				A6822747280786A5005DF0B4 /* Porthole.swift */,
@@ -16006,7 +15986,6 @@
 				A67F61A9214395B70093940A /* graphic_rails.png in Resources */,
 				5308BF5D227C02DE004BECAC /* InternetAccessPolicy.plist in Resources */,
 				A686C19A1ADF62F200906FAE /* Zoomed@2x.png in Resources */,
-				A6EC8048281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */,
 				A6F18B4C2AE2F39C006C08EE /* uniE0B6_left-half-circle-thick.pdf in Resources */,
 				A67F6163214395990093940A /* graphic_mysql@2x.png in Resources */,
 				A6E7432E2F98373A001349AE /* clock.png in Resources */,
@@ -16291,7 +16270,6 @@
 				A6B4832C29D73DA10055E24A /* placeholdertext.fill.png in Resources */,
 				1D6ED9D419AEA20D005A7799 /* TabClose_Front_Rollover.png in Resources */,
 				A6F7A72A213CB143004DE961 /* StatusBarIconComposer.png in Resources */,
-				A6EC804C281B3AF300493544 /* TextViewPortholeRenderer-light.css in Resources */,
 				A67F616C214395990093940A /* graphic_micro@2x.png in Resources */,
 				A6EFF23C1D20F6C000806EEF /* EraseDarkBackground@2x.png in Resources */,
 				1DEDF56B19C917FD005B023A /* new-tab.png in Resources */,
@@ -16492,7 +16470,6 @@
 				A62A78DB2F987FA7007CAA0B /* iTermBadgeConfigurationWindowController.xib in Resources */,
 				A6F7A72F213CB143004DE961 /* StatusBarIconLoupe.png in Resources */,
 				A6E7AE8A214394DD00DE9F3B /* graphic_compile.png in Resources */,
-				A6EC804B281B3AF300493544 /* TextViewPortholeRenderer-light.css in Resources */,
 				A6C838AF2CB88BF90062BE68 /* DeprecatedProfileKeyMappings.plist in Resources */,
 				A67F61DC214395D50093940A /* graphic_yo.png in Resources */,
 				A67F6139214395680093940A /* graphic_heroku@2x.png in Resources */,
@@ -16621,7 +16598,6 @@
 				A67F618E214395A70093940A /* graphic_nodejs@2x.png in Resources */,
 				A69A2FA72E5A3B6F00803E66 /* TahoeTabBarShadow.png in Resources */,
 				A67F61E2214395D50093940A /* graphic_zip.png in Resources */,
-				A6EC8047281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */,
 				A6F7A74D213CB143004DE961 /* StatusBarIconComposer@2x.png in Resources */,
 				A6F6AF892F98999200F9F8F3 /* ProfilesWindow.xib in Resources */,
 				A6F6AF682F98989200F9F8F3 /* iTermPasteSpecialWindow.xib in Resources */,
@@ -17154,7 +17130,6 @@
 				A65B72B41B33C07D00F947A7 /* NextTip@2x.png in Resources */,
 				A6F6AF8A2F98999200F9F8F3 /* ProfilesWindow.xib in Resources */,
 				A62A77C42F987ADB007CAA0B /* SplitPanel.xib in Resources */,
-				A6EC8046281B391900493544 /* TextViewPortholeRenderer-dark.css in Resources */,
 				A635F1F02507621A008C3038 /* iTermSnippetsEditingViewController.xib in Resources */,
 				A62A78CA2F987E96007CAA0B /* iTermParameterPanelWindowController.xib in Resources */,
 				A686A11E1C86AA930024C2DE /* DeadForDarkTheme@2x.png in Resources */,
@@ -17274,7 +17249,6 @@
 				A65E6F582547F1D5008A4866 /* WindowCornerFull_Square.png in Resources */,
 				A6CB24A02C68149100005824 /* it2dl in Resources */,
 				A6C1FD4E1FC2A65E006B9A69 /* Licenses.txt in Resources */,
-				A6EC804A281B3AF300493544 /* TextViewPortholeRenderer-light.css in Resources */,
 				A6F7A734213CB143004DE961 /* StatusBarIconLoupe@2x.png in Resources */,
 				A6F6AF812F98995600F9F8F3 /* PasteboardHistory.xib in Resources */,
 				A6C978F424A0194500971AA7 /* WindowCornerFull@2x.png in Resources */,

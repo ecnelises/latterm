@@ -590,8 +590,6 @@ DEFINE_BOOL(hdrCursor, NO, SECTION_DRAWING @"HDR cursor\nExperimental. Half-bake
 DEFINE_FLOAT(metalRedrawPeriod, 0.5, SECTION_DRAWING @"GPU renderer redraws at least this often, in seconds.\nThis is to work around a problem where the GPU renderer encounters a lot of latency when drawing for the first time after a short period of inactivity. Set this to a big number to render it ineffectual.");
 DEFINE_BOOL(animateGraphStatusBarComponents, YES, SECTION_DRAWING @"Animate graph-based status bar components?\nTurn this off to reduce CPU/GPU usage in WindowServer.");
 DEFINE_BOOL(disableTopRightIndicators, NO, SECTION_DRAWING @"Disable indicator icons that appear in the top right of a session?\nThis includes the following indicators: maximized pane, broadcast input, coprocess running, alert on next mark, output suppression, zoom, copy mode, and debug logging.");
-DEFINE_STRING(nativeRenderingCSSLight, @"", SECTION_DRAWING @"Path to CSS file to customize native drawing (for light background colors).");
-DEFINE_STRING(nativeRenderingCSSDark, @"", SECTION_DRAWING @"Path to CSS file to customize native drawing (for dark background colors).");
 DEFINE_BOOL(supportPowerlineExtendedSymbols, YES, SECTION_DRAWING @"Include extended symbols when drawing Powerline natively.");
 DEFINE_BOOL(alwaysUseLineStyleMarks, NO, SECTION_DRAWING @"Always use line-style marks?");
 DEFINE_FLOAT(alphaForDeselectedCommandShade, 0.25, SECTION_DRAWING @"Alpha value for shade that covers areas outside the currently selected command.");
