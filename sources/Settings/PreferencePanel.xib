@@ -77,7 +77,6 @@
                 <outlet property="_regexTextView" destination="235-ob-yuB" id="yUz-EO-VuK"/>
                 <outlet property="_removeButton" destination="5841" id="cLm-dc-Jt6"/>
                 <outlet property="_syntaxHelpButton" destination="GPd-jU-wd3" id="D06-lm-IG5"/>
-                <outlet property="_visualizationButton" destination="D33-2s-Z80" id="Yfx-7f-Kq1"/>
                 <outlet property="contextMenuPrefsController_" destination="6306" id="6317"/>
                 <outlet property="delegate" destination="Qvt-kg-svI" id="mQg-0f-xOZ"/>
                 <outlet property="logDebugInfo_" destination="5961" id="5963"/>
@@ -973,18 +972,6 @@ DQ
                                 <color key="contentTintColor" name="linkColor" catalog="System" colorSpace="catalog"/>
                                 <connections>
                                     <action selector="syntaxHelp:" target="5863" id="ehN-3I-SPW"/>
-                                </connections>
-                            </button>
-                            <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="D33-2s-Z80" customClass="iTermLinkButton">
-                                <rect key="frame" x="176" y="59" width="206" height="19"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="bevel" title="Open Regular Expression Visualizer" bezelStyle="rounded" alignment="right" controlSize="small" imageScaling="proportionallyDown" inset="2" id="suE-7b-47n">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="smallSystem"/>
-                                </buttonCell>
-                                <color key="contentTintColor" name="linkColor" catalog="System" colorSpace="catalog"/>
-                                <connections>
-                                    <action selector="openRegexVisualizer:" target="5863" id="Rkm-8g-guZ"/>
                                 </connections>
                             </button>
                         </subviews>

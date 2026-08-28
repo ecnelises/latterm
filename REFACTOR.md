@@ -219,8 +219,17 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Made the `posix_spawn` working-directory action best effort as a second defense against a directory disappearing immediately before process creation.
 - Audited submodules; session launch recovery uses no dependency changes.
 
+### 2026-08-29 Regex Visualization Removal
+
+- Removed the optional regular-expression railroad-diagram popovers from Trigger and Smart Selection editing while retaining regex matching, editing, playground testing, and syntax help.
+- Deleted the WebKit/SVG visualization implementation, its checked-in Rust dylib and header, Xcode link/copy/search-path entries, and dependency build recipes.
+- Removed `submodules/railroad_dsl`, reducing the repository from twelve git submodules to eleven.
+
 ### Recent Verification
 
+- The two Smart Selection-focused `iTermTextExtractorTest` cases pass on 2026-08-29 after removing regex visualization; the full class still has unrelated user-default-sensitive word-selection expectations.
+- `xcrun ibtool` compiles `PreferencePanel.xib` without document errors or warnings on 2026-08-29 after removing the Smart Selection visualization button; pre-existing layout notices remain.
+- `tools/build.sh` passes on 2026-08-29 with the regex visualization sources, dylib, build rules, and `railroad_dsl` submodule removed.
 - `tools/run_tests.expect ModernTests/iTermSessionRestorationTests` passes all 3 arrangement/profile restoration tests on 2026-08-29 after the unavailable-working-directory recovery.
 - `tools/build.sh` passes on 2026-08-29 after porting the local launch fallback and `posix_spawn` race defense.
 - `tools/run_tests.expect ModernTests/iTermPTYTabRecursiveRestoreSplittersTests` passes all 10 split-tree reconstruction tests on 2026-08-29 after the maximized-pane state repair.
@@ -280,7 +289,7 @@ The removal scope is real, not hypothetical:
 - Shell-integration installation and injection code is gone, and the former `sources/ShellIntegration/**` persistence model plus its Core Data dependency are now removed. OSC 7/133 parsing and session-local semantic state remain.
 - `sources/PTYSession.m` remains a major coupling point across terminal lifecycle, scripting, terminal control, triggers, and UI.
 - The source tree remains heavily Objective-C weighted: 500 Swift files vs 1,696 Objective-C/C-family headers and implementations among 2,299 files under `sources/` as of 2026-08-22.
-- Fourteen submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts are gone while their tracked vendored sources remain in the build; further removals require separate audits of surviving SSH, rendering, parsing, Markdown, syntax-highlighting, Companion, and build-tool paths.
+- Eleven submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization dependency are gone; further removals require separate audits of surviving SSH, rendering, parsing, Markdown, syntax-highlighting, Companion, updating, and build-tool paths.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 

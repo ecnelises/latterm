@@ -45,6 +45,8 @@ Terminal-first fork changes:
 - Restored sessions now fall back to home when
   their saved working directory is unavailable.
 - Fixed tilde-based custom working directories.
+- Removed the optional regular-expression diagram
+  viewer and its Rust dependency.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

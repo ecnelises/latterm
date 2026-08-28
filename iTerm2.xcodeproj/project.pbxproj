@@ -2801,11 +2801,6 @@
 		A68BE8B42DE1430F002DD513 /* PorterStemmer.h in Headers */ = {isa = PBXBuildFile; fileRef = A68BE8AA2DE1430F002DD513 /* PorterStemmer.h */; };
 		A68BE9262DE27DB3002DD513 /* PlaygroundTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68BE9252DE27DA3002DD513 /* PlaygroundTextView.swift */; };
 		A68BE9282DE38802002DD513 /* LinkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68BE9272DE387FE002DD513 /* LinkButton.swift */; };
-		A68BE92A2DE38B41002DD513 /* ICURegexToRailroadConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68BE9292DE38B3E002DD513 /* ICURegexToRailroadConverter.swift */; };
-		A68BE9412DE4135F002DD513 /* SVGViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68BE9402DE4135C002DD513 /* SVGViewController.swift */; };
-		A68BE9432DE41371002DD513 /* SVGSizeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68BE9422DE4136F002DD513 /* SVGSizeEstimator.swift */; };
-		A68BE9502DE5142A002DD513 /* librailroad_dsl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A68BE93E2DE3BA3D002DD513 /* librailroad_dsl.dylib */; };
-		A68BE9512DE51591002DD513 /* librailroad_dsl.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = A68BE93E2DE3BA3D002DD513 /* librailroad_dsl.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A68E332B1DE6AFC6003F1D8E /* iTermTouchBarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = A68E33291DE6AFC6003F1D8E /* iTermTouchBarButton.h */; };
 		A68E33331DE746F5003F1D8E /* Add Mark Touch Bar Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A68E332D1DE746F5003F1D8E /* Add Mark Touch Bar Icon.png */; };
 		A68E33341DE746F5003F1D8E /* Add Mark Touch Bar Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A68E332E1DE746F5003F1D8E /* Add Mark Touch Bar Icon@2x.png */; };
@@ -4684,10 +4679,8 @@
 		B947C485FA069D07B72E94CC /* iTermWorkgroupToolbarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07263500827075018158DEC /* iTermWorkgroupToolbarItem.swift */; };
 		BB4ECCB6C145CDE401FE7EE7 /* CompanionPluginTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16244DB19048FCA0614235A6 /* CompanionPluginTransport.swift */; };
 		BEEFCAFEDEADC0DE00000001 /* iTermSwiftPackages.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A69FEEBA2E123B8700AFF7A8 /* iTermSwiftPackages.framework */; };
-		BEEFCAFEDEADC0DE00000002 /* librailroad_dsl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A68BE93E2DE3BA3D002DD513 /* librailroad_dsl.dylib */; };
 		BEEFCAFEDEADC0DE00000003 /* AppleScriptTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F6B0222F9934CF00F9F8F3 /* AppleScriptTest.m */; };
 		BEEFCAFEDEADC0DE00000004 /* iTermSwiftPackages.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A69FEEBA2E123B8700AFF7A8 /* iTermSwiftPackages.framework */; };
-		BEEFCAFEDEADC0DE00000005 /* librailroad_dsl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A68BE93E2DE3BA3D002DD513 /* librailroad_dsl.dylib */; };
 		BFB10C44BAFFF7241285A0CE /* CodeReviewPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167F170AF620D7443F74609C /* CodeReviewPromptView.swift */; };
 		C170B61E5D91A047173C40BB /* CompanionPixelBufferHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B75EA7ECA05D0BBE98C9EF /* CompanionPixelBufferHash.swift */; };
 		C2C60D63975344F109B2E428 /* iTermRightGutterPanelRegistry.h in Sources */ = {isa = PBXBuildFile; fileRef = 6518C4017AD4275634FA34AA /* iTermRightGutterPanelRegistry.h */; };
@@ -4948,7 +4941,6 @@
 				A666130E225CFF6900840E89 /* BetterFontPicker.framework in CopyFiles */,
 				A69FEECE2E123B8700AFF7A8 /* iTermSwiftPackages.framework in CopyFiles */,
 				A6FB633423DE802900026D52 /* SearchableComboListView.framework in CopyFiles */,
-				A68BE9512DE51591002DD513 /* librailroad_dsl.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7378,10 +7370,6 @@
 		A68BE8B02DE1430F002DD513 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		A68BE9252DE27DA3002DD513 /* PlaygroundTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaygroundTextView.swift; sourceTree = "<group>"; };
 		A68BE9272DE387FE002DD513 /* LinkButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkButton.swift; sourceTree = "<group>"; };
-		A68BE9292DE38B3E002DD513 /* ICURegexToRailroadConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICURegexToRailroadConverter.swift; sourceTree = "<group>"; };
-		A68BE93E2DE3BA3D002DD513 /* librailroad_dsl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = librailroad_dsl.dylib; path = ThirdParty/librailroad_dsl/lib/librailroad_dsl.dylib; sourceTree = "<group>"; };
-		A68BE9402DE4135C002DD513 /* SVGViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGViewController.swift; sourceTree = "<group>"; };
-		A68BE9422DE4136F002DD513 /* SVGSizeEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGSizeEstimator.swift; sourceTree = "<group>"; };
 		A68E33291DE6AFC6003F1D8E /* iTermTouchBarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermTouchBarButton.h; sourceTree = "<group>"; };
 		A68E332A1DE6AFC6003F1D8E /* iTermTouchBarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermTouchBarButton.m; sourceTree = "<group>"; };
 		A68E332D1DE746F5003F1D8E /* Add Mark Touch Bar Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "Add Mark Touch Bar Icon.png"; path = "images/Add Mark Touch Bar Icon.png"; sourceTree = "<group>"; };
@@ -8642,7 +8630,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BEEFCAFEDEADC0DE00000001 /* iTermSwiftPackages.framework in Frameworks */,
-				BEEFCAFEDEADC0DE00000002 /* librailroad_dsl.dylib in Frameworks */,
 				A667196A1DCE396A000CE608 /* libiTerm2SharedARC.a in Frameworks */,
 				A6661311225CFF7A00840E89 /* BetterFontPicker.framework in Frameworks */,
 				A690F7041B424EF8009F76D8 /* OpenDirectory.framework in Frameworks */,
@@ -8666,7 +8653,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BEEFCAFEDEADC0DE00000004 /* iTermSwiftPackages.framework in Frameworks */,
-				BEEFCAFEDEADC0DE00000005 /* librailroad_dsl.dylib in Frameworks */,
 				A62B04A529B428B60077B955 /* Highlightr.framework in Frameworks */,
 				A67D19502237045C00BD0D4D /* libsixel.a in Frameworks */,
 				A66719691DCE3965000CE608 /* libiTerm2SharedARC.a in Frameworks */,
@@ -8725,7 +8711,6 @@
 				1DF0897113DBAF4C00A52AD8 /* Quartz.framework in Frameworks */,
 				A6C763D21B45C5B200E3C992 /* libiTerm2Shared.a in Frameworks */,
 				A667195F1DCE36F8000CE608 /* libiTerm2SharedARC.a in Frameworks */,
-				A68BE9502DE5142A002DD513 /* librailroad_dsl.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8939,7 +8924,6 @@
 				A6CEBF5F1DCE7DF3009F4FD2 /* Proto */,
 				A6B14FFD2F985AD3006C7417 /* PTYSession */,
 				A6B14FF72F985385006C7417 /* QuickLook */,
-				A6CD8B532F984421003EA0C1 /* RegexVisualization */,
 				A6B150062F986585006C7417 /* Replacement */,
 				A62A77992F986D9F007CAA0B /* ScreenChar */,
 				A6872AE12F63229400124637 /* Screenshots */,
@@ -9453,7 +9437,6 @@
 		1DD39AD5180B8118004E56D5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				A68BE93E2DE3BA3D002DD513 /* librailroad_dsl.dylib */,
 				1D94EAC712D641D3008225A9 /* AddressBook.framework */,
 				A60EAE7C23F9CEB3007536CE /* ApplicationServices.framework */,
 				A6661309225CFF5A00840E89 /* BetterFontPicker.framework */,
@@ -13373,16 +13356,6 @@
 				A69D6AE427B649B5006E3991 /* RunLengthEncoder.swift */,
 			);
 			path = Codecs;
-			sourceTree = "<group>";
-		};
-		A6CD8B532F984421003EA0C1 /* RegexVisualization */ = {
-			isa = PBXGroup;
-			children = (
-				A68BE9292DE38B3E002DD513 /* ICURegexToRailroadConverter.swift */,
-				A68BE9422DE4136F002DD513 /* SVGSizeEstimator.swift */,
-				A68BE9402DE4135C002DD513 /* SVGViewController.swift */,
-			);
-			path = RegexVisualization;
 			sourceTree = "<group>";
 		};
 		A6CD8B542F9844A9003EA0C1 /* Hacks */ = {
@@ -18280,7 +18253,6 @@
 				A6A4B2BC2426C02800184EAC /* iTermPresetKeyMappings.m in Sources */,
 				A6BF035D21E179BD0097DA86 /* iTermWeakVariables.m in Sources */,
 				A677EC6D2A785575000D7B5A /* TmuxController.m in Sources */,
-				A68BE9412DE4135F002DD513 /* SVGViewController.swift in Sources */,
 				A6DBC9DA286399C6002911BE /* ContentNavigationShortcut.swift in Sources */,
 				A6B152DD29255ED600628436 /* iTermLocaleGuesser.swift in Sources */,
 				A6110C3B2526FFCF00D18F61 /* iTermModifyOtherKeysMapper1.m in Sources */,
@@ -18454,7 +18426,6 @@
 				A6A4B2AC2426B70C00184EAC /* iTermKeystrokeFormatter.m in Sources */,
 				A63D05C827BDCF4000B4E028 /* TerminalContentSnapshot.swift in Sources */,
 				A630118920E6B4DA008114B7 /* iTermStatusBarComponent.m in Sources */,
-				A68BE9432DE41371002DD513 /* SVGSizeEstimator.swift in Sources */,
 				A6253D6B29F98636007AEDE9 /* SyntaxHighlighter.swift in Sources */,
 				A618FFBE22409DF900B8FD88 /* iTermTheme.m in Sources */,
 				A6DF91B62477B38700FB9F42 /* iTermMissionControlHacks.m in Sources */,
@@ -18750,7 +18721,6 @@
 				A603EA01283EEAE60028B648 /* ObjCExceptions.swift in Sources */,
 				A6BC8ACC21C6EC5000796BF3 /* iTermBoxDrawingBezierCurveFactory.m in Sources */,
 				A6FF3F2E2435BA35003CCB03 /* PasteView.m in Sources */,
-				A68BE92A2DE38B41002DD513 /* ICURegexToRailroadConverter.swift in Sources */,
 				A6A39EBC24B99AC000A64433 /* iTermGraphicsUtilities.m in Sources */,
 				A65B1B5C2D1252E300F5A740 /* iTermShortcutInputView.m in Sources */,
 				A65EC0301F31800300AC0A6B /* iTermUpdateCadenceController.m in Sources */,
@@ -19915,7 +19885,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
@@ -20025,7 +19994,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				LINK_WITH_STANDARD_LIBRARIES = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
@@ -20101,7 +20069,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -20174,7 +20141,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -20263,7 +20229,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -20347,7 +20312,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -20430,7 +20394,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -21254,7 +21217,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;
@@ -21349,7 +21311,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -21459,7 +21420,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -24021,7 +23981,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				LINK_WITH_STANDARD_LIBRARIES = YES;
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
@@ -24122,7 +24081,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/librailroad_dsl/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MARKETING_VERSION = 1.0;

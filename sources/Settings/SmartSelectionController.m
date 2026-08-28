@@ -62,11 +62,8 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
     IBOutlet NSTextField *_noRuleSelected;
     IBOutlet NSButton *_removeButton;
     IBOutlet NSButton *_syntaxHelpButton;
-    IBOutlet NSButton *_visualizationButton;
     IBOutlet NSButton *_actionsButton;
     NSUndoManager *_undoManager;
-    iTermRegexVisualizationViewController *_visualizationViewController;
-    NSPopover *_popover;
 }
 
 @synthesize guid = guid_;
@@ -225,24 +222,6 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
     [tableView_ noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndex:rowIndex]];
     // This must flush user defaults for setUseInterpolatedStrings to work.
     [delegate_ smartSelectionChanged:nil];
-}
-
-- (IBAction)openRegexVisualizer:(NSButton *)button {
-    if (!_popover || !_popover.isShown) {
-        [_popover close];
-        _visualizationViewController = [[iTermRegexVisualizationViewController alloc] initWithRegex:_regexTextView.textStorage.string ?: @"" maxSize:button.window.screen.visibleFrame.size];
-        NSPopover *popover = [[NSPopover alloc] init];
-        popover.contentViewController = _visualizationViewController;
-        popover.behavior = NSPopoverBehaviorApplicationDefined;
-        [popover showRelativeToRect:button.bounds ofView:button preferredEdge:NSRectEdgeMaxX];
-        _popover = popover;
-
-        _visualizationButton.title = @"Close Regular Expression Visualization";
-    } else {
-        [_popover close];
-        _popover = nil;
-        _visualizationButton.title = @"Open Regular Expression Visualization";
-    }
 }
 
 - (IBAction)syntaxHelp:(id)sender {
@@ -440,7 +419,6 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
         _nameTextField.stringValue = rule[kNotesKey] ?: @"";
         [_regexTextView setString:rule[kRegexKey] ?: @""];
         [_precisionButton selectItemAtIndex:[self indexForPrecision:rule[kPrecisionKey]]];
-        [self updateVisualization];
         const NSInteger actionCount = [[NSArray castFrom:rule[kActionsKey]] count];
         if (actionCount == 0) {
             _actionsButton.title = [NSString stringWithFormat:@"Actions…"];
@@ -451,8 +429,6 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
         _nameTextField.stringValue = @"";
         [_regexTextView setString:@""];
         [_precisionButton selectItemAtIndex:0];
-        [_popover close];
-        _popover = nil;
     }
 }
 
@@ -556,12 +532,7 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
 }
 
 - (void)regexDidChange:(NSNotification *)notification {
-    [self updateVisualization];
     [self save];
-}
-
-- (void)updateVisualization {
-    _visualizationViewController.regex = _regexTextView.textStorage.string ?: @"";
 }
 
 - (void)playgroundDidChange:(NSNotification *)notification {

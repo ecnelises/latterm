@@ -42,7 +42,6 @@ static const CGFloat kLabelWidth = 124;
     NSButton *_okButton;
     NSButton *_cancelButton;
     NSButton *_enabledButton;
-    NSButton *_toggleVisualizationButton;
     NSPopUpButton *_matchTypeButton;
     NSView *_performanceGraphContainer;
     NSView *_performanceRow;
@@ -59,8 +58,6 @@ static const CGFloat kLabelWidth = 124;
     CGFloat _paramY;
     NSColor *_defaultTextColor;
     NSColor *_defaultBackgroundColor;
-    iTermRegexVisualizationViewController *_visualizationViewController;
-    NSPopover *_popover;
     iTermEventTriggerParameterView *_eventParamView;
     NSView *_regexRow;
     NSView *_eventParamRow;
@@ -227,7 +224,6 @@ static const CGFloat kLabelWidth = 124;
     // event-parameter view. The flag is stored in eventParams.
     _leaderOnlyRow.hidden = !_currentTrigger.hasLeaderOnlyOption;
     _leaderOnlyButton.state = [trigger.eventParams[iTermExitWorkgroupTrigger.leaderOnlyParamKey] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
-    _visualizationViewController.regex = _regex ?: @"";
     _matchType = trigger.matchType;
 
     // Update match type button with types allowed by this trigger
@@ -310,7 +306,7 @@ static const CGFloat kLabelWidth = 124;
     [stackView addArrangedSubview:matchTypeRow];
 
     // Regular Expression row
-    _regexRow = [self createRowWithLabelText:@"Regular Expression:" hasVisualizationButton:YES];
+    _regexRow = [self createRowWithLabelText:@"Regular Expression:"];
     [stackView addArrangedSubview:_regexRow];
 
     // Event parameter row (hidden by default)
@@ -319,11 +315,11 @@ static const CGFloat kLabelWidth = 124;
     [stackView addArrangedSubview:_eventParamRow];
     
     // Name row
-    NSView *nameRow = [self createRowWithLabelText:@"Name:" hasVisualizationButton:NO];
+    NSView *nameRow = [self createRowWithLabelText:@"Name:"];
     [stackView addArrangedSubview:nameRow];
 
     // Job row
-    NSView *jobRow = [self createRowWithLabelText:@"Job:" hasVisualizationButton:NO];
+    NSView *jobRow = [self createRowWithLabelText:@"Job:"];
     [stackView addArrangedSubview:jobRow];
 
     // Buttons row
@@ -539,11 +535,10 @@ static const CGFloat kLabelWidth = 124;
                                                           constant:-20]];
 }
 
-- (NSView *)createRowWithLabelText:(NSString *)labelText hasVisualizationButton:(BOOL)hasVisualizationButton {
+- (NSView *)createRowWithLabelText:(NSString *)labelText {
     NSView *row = [[NSView alloc] init];
     row.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    // Create label
+
     NSTextField *label = [[NSTextField alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.stringValue = labelText;
@@ -554,15 +549,14 @@ static const CGFloat kLabelWidth = 124;
     label.lineBreakMode = NSLineBreakByClipping;
     label.usesSingleLineMode = YES;
     [row addSubview:label];
-    
-    // Create text field
+
     NSTextField *textField = [[NSTextField alloc] init];
     textField.translatesAutoresizingMaskIntoConstraints = NO;
     textField.bordered = YES;
     textField.editable = YES;
     textField.delegate = self;
     [row addSubview:textField];
-    
+
     if ([labelText isEqualToString:@"Regular Expression:"]) {
         _regexTextField = textField;
     } else if ([labelText isEqualToString:@"Name:"]) {
@@ -571,171 +565,18 @@ static const CGFloat kLabelWidth = 124;
         _jobTextField = textField;
         _jobTextField.placeholderString = @"Trigger enabled only for this job (e.g., emacs)";
     }
-    
-    // Add visualization button if needed
-    if (hasVisualizationButton) {
-        _toggleVisualizationButton = [[NSButton alloc] init];
-        _toggleVisualizationButton.translatesAutoresizingMaskIntoConstraints = NO;
-        _toggleVisualizationButton.bezelStyle = NSBezelStyleRounded;
-        _toggleVisualizationButton.bordered = YES;
-        _toggleVisualizationButton.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchart)
-                                                  accessibilityDescription:@"Show visualization"
-                                                         fallbackImageName:@"flowchart"
-                                                                  forClass:[self class]];
-        _toggleVisualizationButton.target = self;
-        _toggleVisualizationButton.action = @selector(toggleVisualization:);
-        [row addSubview:_toggleVisualizationButton];
-        
-        // Constraints for row with visualization button
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                       attribute:NSLayoutAttributeLeading
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeLeading
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                       attribute:NSLayoutAttributeWidth
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:kLabelWidth]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                       attribute:NSLayoutAttributeCenterY
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeCenterY
-                                                      multiplier:1.0
-                                                        constant:0]];
-        
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeLeading
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:label
-                                                       attribute:NSLayoutAttributeTrailing
-                                                      multiplier:1.0
-                                                        constant:6]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeCenterY
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeCenterY
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeHeight
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:21]];
-        
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:_toggleVisualizationButton
-                                                       attribute:NSLayoutAttributeLeading
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:textField
-                                                       attribute:NSLayoutAttributeTrailing
-                                                      multiplier:1.0
-                                                        constant:6]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:_toggleVisualizationButton
-                                                       attribute:NSLayoutAttributeTrailing
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeTrailing
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:_toggleVisualizationButton
-                                                       attribute:NSLayoutAttributeCenterY
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeCenterY
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:_toggleVisualizationButton
-                                                       attribute:NSLayoutAttributeWidth
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:28]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:_toggleVisualizationButton
-                                                       attribute:NSLayoutAttributeHeight
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:28]];
-        
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:row
-                                                       attribute:NSLayoutAttributeHeight
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:28]];
-    } else {
-        // Constraints for row without visualization button
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                       attribute:NSLayoutAttributeLeading
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeLeading
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                       attribute:NSLayoutAttributeWidth
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:kLabelWidth]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:label
-                                                       attribute:NSLayoutAttributeCenterY
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeCenterY
-                                                      multiplier:1.0
-                                                        constant:0]];
-        
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeLeading
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:label
-                                                       attribute:NSLayoutAttributeTrailing
-                                                      multiplier:1.0
-                                                        constant:6]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeTrailing
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeTrailing
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeCenterY
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:row
-                                                       attribute:NSLayoutAttributeCenterY
-                                                      multiplier:1.0
-                                                        constant:0]];
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:textField
-                                                       attribute:NSLayoutAttributeHeight
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:21]];
-        
-        [row addConstraint:[NSLayoutConstraint constraintWithItem:row
-                                                       attribute:NSLayoutAttributeHeight
-                                                       relatedBy:NSLayoutRelationEqual
-                                                          toItem:nil
-                                                       attribute:NSLayoutAttributeNotAnAttribute
-                                                      multiplier:1.0
-                                                        constant:21]];
-    }
-    
+
+    [NSLayoutConstraint activateConstraints:@[
+        [label.leadingAnchor constraintEqualToAnchor:row.leadingAnchor],
+        [label.widthAnchor constraintEqualToConstant:kLabelWidth],
+        [label.centerYAnchor constraintEqualToAnchor:row.centerYAnchor],
+        [textField.leadingAnchor constraintEqualToAnchor:label.trailingAnchor constant:6],
+        [textField.trailingAnchor constraintEqualToAnchor:row.trailingAnchor],
+        [textField.centerYAnchor constraintEqualToAnchor:row.centerYAnchor],
+        [textField.heightAnchor constraintEqualToConstant:21],
+        [row.heightAnchor constraintEqualToConstant:21],
+    ]];
+
     return row;
 }
 
@@ -1282,31 +1123,6 @@ static const CGFloat kLabelWidth = 124;
     }];
 }
 
-- (IBAction)toggleVisualization:(NSButton *)button {
-    if (!_popover || !_popover.isShown) {
-        [_popover close];
-        _visualizationViewController = [[iTermRegexVisualizationViewController alloc] initWithRegex:_regexTextField.stringValue ?: @""
-                                                                                            maxSize:button.window.screen.visibleFrame.size];
-        NSPopover *popover = [[NSPopover alloc] init];
-        popover.contentViewController = _visualizationViewController;
-        popover.behavior = NSPopoverBehaviorApplicationDefined;
-        [popover showRelativeToRect:button.bounds ofView:button preferredEdge:NSRectEdgeMaxX];
-        _popover = popover;
-
-        button.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchartFill)
-                             accessibilityDescription:@"Hide visualization"
-                                    fallbackImageName:@"flowchart.fill"
-                                             forClass:[self class]];
-    } else {
-        [_popover close];
-        _popover = nil;
-        button.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchart)
-              accessibilityDescription:@"Show visualization"
-                     fallbackImageName:@"flowchart"
-                              forClass:[self class]];
-    }
-}
-
 - (IBAction)instantDidChange:(id)sender {
     if (_didChange) {
         _didChange();
@@ -1643,13 +1459,6 @@ static const CGFloat kLabelWidth = 124;
 }
 
 - (void)willHide {
-    [_popover close];
-    _popover = nil;
-    _visualizationViewController = nil;
-    _toggleVisualizationButton.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFlowchart)
-                                             accessibilityDescription:@"Show visualization"
-                                                    fallbackImageName:@"flowchart"
-                                                             forClass:[self class]];
 }
 
 #pragma mark - iTermTriggerParameterController
@@ -1694,7 +1503,6 @@ static const CGFloat kLabelWidth = 124;
 
     if (textField == _regexTextField) {
         _regex = [[textField stringValue] copy];
-        _visualizationViewController.regex = _regex ?: @"";
     } else if (textField != _nameTextField && textField != _jobTextField) {
         if ([textField.identifier isEqual:kStatusTextComboBoxIdentifier]) {
             param = [_currentTrigger paramByReplacingComboBoxValue:textField.stringValue

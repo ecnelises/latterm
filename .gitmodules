@@ -31,9 +31,6 @@
 [submodule "submodules/Highlightr"]
 	path = submodules/Highlightr
 	url = https://github.com/gnachman/Highlightr
-[submodule "submodules/railroad_dsl"]
-	path = submodules/railroad_dsl
-	url = https://github.com/gnachman/railroad_dsl
 [submodule "Companion/CompanionCore/Sources/CNoise/vendor"]
 	path = Companion/CompanionCore/Sources/CNoise/vendor
 	url = https://github.com/rweather/noise-c.git
