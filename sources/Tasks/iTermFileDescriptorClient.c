@@ -10,6 +10,7 @@
 #include <string.h>
 #include <syslog.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -95,6 +96,27 @@ int iTermFileDescriptorClientConnect(const char *path) {
     int flags;
 
     FDLog(LOG_DEBUG, "Trying to connect to %s", path);
+
+    // The mono-server rendezvous lives in a world-writable, sticky shared directory with a
+    // predictable name. This is only an early reject; getpeereid() below is the authoritative,
+    // race-free check on the established connection.
+    struct stat sb;
+    if (lstat(path, &sb) != 0) {
+        FDLog(LOG_NOTICE, "lstat(%s) failed: %s\n", path, strerror(errno));
+        return -1;
+    }
+    if (!S_ISSOCK(sb.st_mode)) {
+        FDLog(LOG_NOTICE, "Refusing to connect: %s is not a socket (mode %o)\n", path, sb.st_mode);
+        errno = ENOTSOCK;
+        return -1;
+    }
+    if (sb.st_uid != geteuid()) {
+        FDLog(LOG_NOTICE, "Refusing to connect: %s is owned by uid %d, not %d\n",
+              path, (int)sb.st_uid, (int)geteuid());
+        errno = EPERM;
+        return -1;
+    }
+
     do {
         FDLog(LOG_DEBUG, "Calling socket()");
         socketFd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -130,6 +152,20 @@ int iTermFileDescriptorClientConnect(const char *path) {
             }
             FDLog(LOG_DEBUG, "Trying again because connect returned EINTR.");
         } else {
+            uid_t euid = 0;
+            gid_t egid = 0;
+            if (getpeereid(socketFd, &euid, &egid) != 0) {
+                FDLog(LOG_NOTICE, "Refusing to connect: getpeereid failed: %s\n", strerror(errno));
+                close(socketFd);
+                return -1;
+            }
+            if (euid != geteuid()) {
+                FDLog(LOG_NOTICE, "Refusing to connect: peer euid %d != %d\n",
+                      (int)euid, (int)geteuid());
+                close(socketFd);
+                errno = EPERM;
+                return -1;
+            }
             // Make socket block again.
             interrupted = 0;
             FDLog(LOG_DEBUG, "Connected. Calling fcntl() 3");
@@ -183,4 +219,3 @@ iTermFileDescriptorServerConnection iTermFileDescriptorClientRead(int socketFd, 
 
     return result;
 }
-

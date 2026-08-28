@@ -367,7 +367,7 @@
         { '!', 0, 'p', VT100CSI_DECSTR, -1, -1, -1, -1 },
         { 0, '$', 'p', VT100CSI_DECRQM_ANSI, 0, -1, -1, -1 },
         { '?', '$', 'p', VT100CSI_DECRQM_DEC, 0, -1, -1, -1 },
-        // "p not supported (Set conformance level (DECSCL))
+        { 0, '"', 'p', VT100CSI_DECSCL, 0, 1, -1, -1 },
         // q not supported (Load LEDs (DECLL))
         { 0, ' ', 'q', VT100CSI_DECSCUSR, 0, -1, -1, -1 },
         // "q not supported (Select character protection attribute (DECSCA))
@@ -453,7 +453,6 @@
         "1;1;1;1;1T",
         "?1i",
         ">0p",
-        "61;0\"p",
         "q",
         "?1s",
         ">1;60t",
@@ -511,6 +510,82 @@
 - (void)testParameterOverflow {
     VT100Token *token = [self tokenForDataWithFormat:@"%c[9999999999m", VT100CC_ESC];
     XCTAssert(token->type == VT100_UNKNOWNCHAR);
+}
+
+- (void)testMaximumNumberOfParameters {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(token.csi->p[15] == 16);
+}
+
+- (void)testParametersPastTheMaximumAreDiscarded {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(token.csi->p[15] == 16);
+}
+
+- (void)testSubparametersOfADiscardedParameterDoNotAttachToTheLastOneKept {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;4;3:5m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(token.csi->p[15] == 4);
+    XCTAssert(iTermParserGetNumberOfCSISubparameters(token.csi, 15) == 0);
+}
+
+- (void)testSubparametersOfTheSixteenthParameter {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;38:2:255:0:0m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(token.csi->p[15] == 38);
+
+    int subs[VT100CSISUBPARAM_MAX];
+    const int count = iTermParserGetAllCSISubparametersForParameter(token.csi, 15, subs);
+    XCTAssert(count == 4);
+    XCTAssert(subs[0] == 2);
+    XCTAssert(subs[1] == 255);
+    XCTAssert(subs[2] == 0);
+    XCTAssert(subs[3] == 0);
+}
+
+- (void)testSubparametersOfABlankSixteenthParameterAreKept {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;;:5m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(iTermParserGetNumberOfCSISubparameters(token.csi, 15) == 1);
+    XCTAssert(iTermParserGetCSISubparameter(token.csi, 15, 0) == 5);
+}
+
+- (void)testGetCSISubparameterByIndex {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[4:1:2:3m", VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(iTermParserGetCSISubparameter(token.csi, 0, 0) == 1);
+    XCTAssert(iTermParserGetCSISubparameter(token.csi, 0, 1) == 2);
+    XCTAssert(iTermParserGetCSISubparameter(token.csi, 0, 2) == 3);
+    XCTAssert(iTermParserGetCSISubparameter(token.csi, 0, 3) == -1);
+}
+
+- (void)testSubparameterAfterAFullParameterListBelongsToTheLastParameter {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;:5m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(iTermParserGetNumberOfCSISubparameters(token.csi, 15) == 1);
+    XCTAssert(iTermParserGetCSISubparameter(token.csi, 15, 0) == 5);
+}
+
+- (void)testSubparameterAfterADiscardedParameterIsDiscarded {
+    VT100Token *token = [self tokenForDataWithFormat:@"%c[1;2;3;4;5;6;7;8;9;10;11;12;13;14;15;16;17;:5m",
+                         VT100CC_ESC];
+    XCTAssert(token->type == VT100CSI_SGR);
+    XCTAssert(token.csi->count == 16);
+    XCTAssert(iTermParserGetNumberOfCSISubparameters(token.csi, 15) == 0);
 }
 
 @end

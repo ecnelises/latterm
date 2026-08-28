@@ -7,17 +7,6 @@
 
 import Cocoa
 
-@objc(iTermTerminalFirstFeatures)
-class TerminalFirstFeatures: NSObject {
-    @objc static func terminalFirstEnabled() -> Bool {
-        return true
-    }
-
-    @objc static func shellIntegrationFeaturesEnabled() -> Bool {
-        return !terminalFirstEnabled()
-    }
-}
-
 @objc(iTermMainMenuMangler)
 class MainMenuMangler: NSObject {
     @objc static let instance = MainMenuMangler()
@@ -339,39 +328,6 @@ class MainMenuMangler: NSObject {
         } else {
             removeIcons(in: mainMenu)
         }
-    }
-
-    @objc func checkIcons() {
-        checkIcons(map: iconMap, in: NSApp.mainMenu!)
-    }
-
-    private func checkIcons(map iconMap: [String: String], in menu: NSMenu) {
-        let keys = Set(iconMap.keys)
-        let identifiers = allIdentifiers(in: NSApp.mainMenu!)
-        if !keys.isSubset(of: identifiers) {
-            NSFuckingLog("%@", "Some keys have wrong identifiers: \(keys.subtracting(identifiers))")
-            it_fatalError()
-        }
-        let bad = identifiers.subtracting(keys).filter { !$0.hasPrefix("_NS") }.subtracting(Set(["bogus", "sendSnippet:"]))
-        if !bad.isEmpty {
-            NSFuckingLog("%@", "These identifiers lack icons: \(bad)")
-        }
-    }
-
-    private func allIdentifiers(in menu: NSMenu) -> Set<String> {
-        var result = Set<String>()
-        for item in menu.items {
-            if item.isSeparatorItem {
-                continue
-            }
-            if !item.hasSubmenu, let identifier = item.identifier?.rawValue {
-                result.insert(identifier)
-            }
-            if item.hasSubmenu, let submenu = item.submenu {
-                result.formUnion(allIdentifiers(in: submenu))
-            }
-        }
-        return result
     }
 
     private func setIcons(map iconMap: [String: String], in menu: NSMenu) {

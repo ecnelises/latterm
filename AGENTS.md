@@ -13,6 +13,36 @@
 5. Read `REFACTOR.md` before any large feature-removal, modernization, or Swift-migration task. Treat it as the staged roadmap for the terminal-first fork and as a local planning document unless the user explicitly asks for it to be committed.
 6. As features are removed, audit their git submodule dependencies and delete submodules that are no longer needed. The long-term target is zero submodules, but never remove one before all code/project/runtime references are gone.
 
+## Upstream Review Cursor
+
+The root `UPSTREAM` file contains one full commit hash from the official
+`gnachman/iTerm2` repository. It is a reviewed-through cursor, not a claim that
+Latterm contains every upstream commit and not necessarily a Git merge base.
+
+When reviewing upstream changes:
+
+1. Read the current hash before fetching or comparing anything.
+2. Use an `upstream` remote pointing to `https://github.com/gnachman/iTerm2.git`.
+3. Fetch with `git fetch --no-recurse-submodules upstream master --tags`. Never
+   let an upstream review restore submodules already removed by this fork.
+4. Review both `UPSTREAM..upstream/master` and the latest official stable/test
+   release tags. Release tags may be cut from a release branch rather than be
+   ancestors of `master`, so compare their contents instead of assuming a
+   linear tag history.
+5. Classify the whole range before changing the cursor:
+   - Port terminal-core security, correctness, compatibility, and measured
+     performance fixes that still apply.
+   - Skip browser, AI/model, shell-integration, and other removed product
+     surfaces rather than recreating their dependencies.
+   - Adapt overlapping fixes manually when the fork has structurally diverged.
+   - Record worthwhile deferred candidates in `REFACTOR.md` so advancing the
+     cursor does not make them disappear from the roadmap.
+6. Apply selected changes as focused patches, audit submodule implications,
+   and run proportionate tests plus a Development build.
+7. Update `UPSTREAM` to the full reviewed upstream commit only after the entire
+   intervening range has been classified and all selected changes pass
+   verification. If the review is incomplete, do not advance it.
+
 ## Architecture
 
 **iTerm2** uses hybrid Objective-C/Swift: core system in Objective-C, modern features in Swift.

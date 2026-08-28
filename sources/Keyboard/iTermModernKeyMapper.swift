@@ -196,6 +196,8 @@ fileprivate struct KeyEventInfo: CustomDebugStringConvertible, Codable {
                 57444
             case kVK_RightCommand:
                 57450
+            case kVK_CapsLock:
+                57358
             default:
                 0
             }
@@ -1860,4 +1862,3 @@ fileprivate struct UniversalModifierFlags: Codable, CustomDebugStringConvertible
                                             unicodeKeyCode: unicodeKeyCode)
     }
 }
-

@@ -32,6 +32,15 @@ Terminal-first fork changes:
   identifier and Developer ID team.
 - Fixed Tahoe tabs becoming shorter in native
   fullscreen.
+- Authenticated restored-session socket peers.
+- Fixed CSI and SGR parameter-limit handling.
+- Fixed dark-mode DSR request handling.
+- Fixed Kitty Caps Lock key reporting.
+- Fixed the Python prompt-state wire value.
+- Fixed Metal smooth-blink cursor compositing.
+- Bounded temporary memory per terminal token.
+- Fixed a terminal-window lifecycle leak.
+- Fixed unsafe logging format strings.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

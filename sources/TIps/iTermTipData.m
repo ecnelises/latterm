@@ -13,10 +13,6 @@
 @implementation iTermTipData
 
 + (BOOL)it_shouldHideTipWithIdentifier:(NSString *)identifier details:(NSDictionary *)details {
-    if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
-        return NO;
-    }
-
     static NSSet<NSString *> *blockedIdentifiers;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -378,9 +374,6 @@
 
 // IMPORTANT: When updating this, also update it2tip
             };
-  if (![iTermTerminalFirstFeatures terminalFirstEnabled]) {
-      return tips;
-  }
   NSMutableDictionary *filteredTips = [NSMutableDictionary dictionary];
   [tips enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, NSDictionary *details, BOOL *stop) {
       if (![self it_shouldHideTipWithIdentifier:identifier details:details]) {

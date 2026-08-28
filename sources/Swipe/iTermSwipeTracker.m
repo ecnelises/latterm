@@ -98,7 +98,7 @@ NSString *const iTermSwipeHandlerCancelSwipe = @"iTermSwipeHandlerCancelSwipe";
             } else {
                 if ([NSDate it_timeSinceBoot] - lastEvent > 5) {
                     [self abort];
-                    SetPinnedDebugLogMessage(@"SwipeTracker", [log componentsJoinedByString:@"\n"]);
+                    SetPinnedDebugLogMessage(@"SwipeTracker", @"%@", [log componentsJoinedByString:@"\n"]);
                     break;
                 }
             }
@@ -212,4 +212,3 @@ NSString *const iTermSwipeHandlerCancelSwipe = @"iTermSwipeHandlerCancelSwipe";
 }
 
 @end
-

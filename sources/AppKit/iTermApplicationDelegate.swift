@@ -184,9 +184,7 @@ extension iTermApplicationDelegate {
             "Marks and Annotations.Set Mark",
             "Auto Composer",
         ]
-        let visibleTips = TerminalFirstFeatures.terminalFirstEnabled()
-            ? tips.filter { !unsupportedTipIdentifiers.contains($0.identifier) }
-            : tips
+        let visibleTips = tips.filter { !unsupportedTipIdentifiers.contains($0.identifier) }
         var index = [String: NSMenuItem]()
         func makeIndex(menu: NSMenu) {
             for item in menu.items {

@@ -183,6 +183,9 @@ static BOOL ParseCSIParameters(iTermParserContext *context,
     //        this sequence should be mark as unrecognized.
     BOOL isSub = NO;
     BOOL readNumericParameter = NO;
+    // Whether the most recently opened parameter was actually stored. Subparameters belong to
+    // that parameter, so discard them when their parameter did not fit.
+    BOOL lastParameterStored = NO;
     unsigned char c;
     while (iTermParserTryPeek(context, &c) && c >= 0x30 && c <= 0x3f) {
         switch (c) {
@@ -208,7 +211,7 @@ static BOOL ParseCSIParameters(iTermParserContext *context,
                     }
                 }
 
-                if (isSub && param->count > 0) {
+                if (isSub && param->count > 0 && lastParameterStored) {
                     // This implementation is not really well aligned with the spec. In ECMA-48
                     // section 5.4, the format of a CSI code is described. The parameter string,
                     // which follows CSI, is a semicolon-delimited list of parameter substrings
@@ -226,6 +229,9 @@ static BOOL ParseCSIParameters(iTermParserContext *context,
                     param->p[param->count] = n;
                     // increment the parameter count
                     param->count++;
+                    lastParameterStored = YES;
+                } else if (!isSub) {
+                    lastParameterStored = NO;
                 }
 
                 // set the numeric parameter flag
@@ -234,10 +240,15 @@ static BOOL ParseCSIParameters(iTermParserContext *context,
                 break;
             }
 
-            case ';':
-                // If we got an implied (blank) parameter, increment the parameter count again
-                if (param->count < VT100CSIPARAM_MAX && readNumericParameter == NO) {
-                    param->count++;
+            case ';': {
+                if (readNumericParameter == NO) {
+                    // An implied blank parameter can take subparameters only when it fit.
+                    if (param->count < VT100CSIPARAM_MAX) {
+                        param->count++;
+                        lastParameterStored = YES;
+                    } else {
+                        lastParameterStored = NO;
+                    }
                 }
                 // reset the parameter flag
                 readNumericParameter = NO;
@@ -246,6 +257,7 @@ static BOOL ParseCSIParameters(iTermParserContext *context,
                     return NO;
                 }
                 break;
+            }
 
             case ':':
                 // 2013/1/10 H. Saito

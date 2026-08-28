@@ -133,7 +133,9 @@ class SGRTrigger: Trigger {
                 }
                 var csi = CSIParam()
                 for subs in subsList {
-                    iTermParserAddCSIParameter(&csi, subs.first ?? -1)
+                    guard iTermParserAddCSIParameter(&csi, subs.first ?? -1) else {
+                        continue
+                    }
                     for sub in subs.dropFirst() {
                         iTermParserAddCSISubparameter(&csi, csi.count - 1, sub)
                     }

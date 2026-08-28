@@ -645,27 +645,31 @@ private class TokenExecutorImpl {
                 DLog("continuing to next token")
             }
             if let token = group.peek {
-                executeHighPriorityTasks()
-                commit = true
-                var consume = true
-                if execute(token: token,
-                           priority: priority,
-                           delegate: delegate) {
-                    if gDebugLogging.boolValue {
-                        DLog("quit early")
+                // Token execution can create many autoreleased temporaries. Drain them per token
+                // so a large repaint batch cannot retain several gigabytes until the queue drains.
+                autoreleasepool {
+                    executeHighPriorityTasks()
+                    commit = true
+                    var consume = true
+                    if execute(token: token,
+                               priority: priority,
+                               delegate: delegate) {
+                        if gDebugLogging.boolValue {
+                            DLog("quit early")
+                        }
+                        quitVectorEarly = true
+                        consume = true
+                    } else {
+                        consume = commit
                     }
-                    quitVectorEarly = true
-                    consume = true
-                } else {
-                    consume = commit
-                }
-                if consume {
-                    vectorHasNext = group.consume()
-                } else {
-                    vectorHasNext = false
-                }
-                if gDebugLogging.boolValue {
-                    DLog("commit=\(commit) consume=\(consume) remaining=\(group.arrays.map(\.numberRemaining))")
+                    if consume {
+                        vectorHasNext = group.consume()
+                    } else {
+                        vectorHasNext = false
+                    }
+                    if gDebugLogging.boolValue {
+                        DLog("commit=\(commit) consume=\(consume) remaining=\(group.arrays.map(\.numberRemaining))")
+                    }
                 }
             }
             if isBackgroundSession && !Self.activeSessionsWithTokens.value.isEmpty {
@@ -874,4 +878,3 @@ class PeriodicScheduler: NSObject {
         }
     }
 }
-

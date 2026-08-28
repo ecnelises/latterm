@@ -405,6 +405,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation iTermUnderlineCursorRenderer
 
++ (iTermMetalBlending *)blending {
+    return [iTermMetalBlending compositeSourceOver];
+}
+
 - (void)initializeTransientState:(iTermCursorRendererTransientState *)tState {
     [super initializeTransientState:tState];
 }
@@ -448,6 +452,10 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation iTermBarCursorRenderer
+
++ (iTermMetalBlending *)blending {
+    return [iTermMetalBlending compositeSourceOver];
+}
 
 - (void)initializeTransientState:(iTermCursorRendererTransientState *)tState {
     [super initializeTransientState:tState];
@@ -517,6 +525,10 @@ static id<MTLBuffer> iTermNewVertexBufferWithBlockCursorQuad(iTermCursorRenderer
 
 
 @implementation iTermBlockCursorRenderer
+
++ (iTermMetalBlending *)blending {
+    return [iTermMetalBlending compositeSourceOver];
+}
 
 - (void)initializeTransientState:(iTermCursorRendererTransientState *)tState {
     [super initializeTransientState:tState];

@@ -518,14 +518,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     [[iTermBuriedSessions sharedInstance] setMenus:[NSArray arrayWithObjects:_buriedSessions, _statusIconBuriedSessions, nil]];
     _triggers.submenu.delegate = self;
     _namedMarksMenuItem.submenu.delegate = self;
-    // Set menu item icons for macOS 26+
-#if DEBUG
-    if (NSClassFromString(@"XCTestCase") == nil &&
-        ![iTermTerminalFirstFeatures terminalFirstEnabled]) {
-        // Not running in a test
-        [[iTermMainMenuMangler instance] checkIcons];
-    }
-#endif
     if (@available(macOS 26.0, *)) {
         [[iTermMainMenuMangler instance] setIcons];
     }

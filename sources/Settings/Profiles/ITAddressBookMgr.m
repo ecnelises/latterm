@@ -871,29 +871,7 @@ iTermPercentage iTermPercentageFromProfile(Profile *profile, iTermWindowType win
         NSString *command = bookmark[KEY_COMMAND_LINE];
         if ([[command stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] ] length] > 0) {
             if (ssh) {
-                NSDictionary *dict = bookmark[KEY_SSH_CONFIG];
-                iTermSSHConfiguration *config = [[iTermSSHConfiguration alloc] initWithDictionary:dict];
-                if (![iTermTerminalFirstFeatures shellIntegrationFeaturesEnabled] || !config.sshIntegration) {
-                    return [NSString stringWithFormat:@"ssh %@", command];
-                }
-                NSString *wrappedCommand = [NSString stringWithFormat:@"'%@' %@",
-                                            iTermPathToSSH(),
-                                            command];
-                // Run it2ssh through the user's login shell so dotfiles
-                // (.zshrc/.bashrc/etc.) run first and ssh sees the user's exported
-                // environment, e.g. a custom SSH_AUTH_SOCK pointing at an agent that
-                // holds their keys. ShellLauncher exec's the shell with
-                // argv[0] = "-<basename>" so login behavior is triggered uniformly
-                // across bash, zsh, fish, tcsh, and xonsh — tcsh in particular rejects
-                // -l combined with -c on the command line. it2ssh and the ssh binary
-                // it invokes are both referenced by absolute path, so a dotfile that
-                // rewrites $PATH can't stop them from launching.
-                NSString *shellLauncher = [[NSBundle bundleForClass:self.class] pathForAuxiliaryExecutable:@"ShellLauncher"];
-                command = [NSString stringWithFormat:@"/usr/bin/login -fqpl %@ %@ --launch_shell - -i -c %@",
-                           [NSUserName() stringWithBackslashEscapedShellCharactersIncludingNewlines:YES],
-                           [shellLauncher stringWithBackslashEscapedShellCharactersIncludingNewlines:YES],
-                           [wrappedCommand stringWithBackslashEscapedShellCharactersIncludingNewlines:YES]];
-                RLog(@"ssh login-shell wrapped command=%@, wrappedCommand=%@", RLogRedact(command, @(command.length)), RLogRedact(wrappedCommand, @(wrappedCommand.length)));
+                return [NSString stringWithFormat:@"ssh %@", command];
             } else if (custom && [bookmark[KEY_RUN_COMMAND_IN_LOGIN_SHELL] boolValue]) {
                 // Wrap the user's command in their login shell so dotfiles (.zshrc/.bashrc/etc.)
                 // run first and the command sees the user's $PATH and exported environment.

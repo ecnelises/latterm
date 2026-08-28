@@ -156,8 +156,56 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Removed the dead browser-only text-view font configuration and Metal unavailability reason.
 - Audited submodules and confirmed this compatibility removal did not make any dependency removable.
 
+### 2026-08-22 Browser Profile And Web Preferences Removal
+
+- Removed the browser profile enum case, default-profile selection, icons, launch behavior, menu handling, bulk-copy category, and terminal/browser filtering from the surviving profile model and profile UI.
+- Deleted the Web profile settings controller and structurally removed its tab, controls, outlets, and project references from `PreferencePanel.xib` and the Xcode project.
+- Preserved fail-soft upgrades for saved browser profiles: static profiles are converted to login-shell terminal profiles and their browser-only serialized keys are discarded, while browser dynamic profiles continue to be ignored.
+- Removed browser-only font zoom, initial-URL, window-size, context-menu, paste-special, workgroup-detail, and main-menu compatibility paths that were kept alive by the obsolete profile type.
+- Collapsed trigger editing and evaluation onto the terminal-only model, removed the browser match types and content-regex serialization, and deleted unreferenced browser global-search and script-history compatibility objects.
+- Audited the remaining submodules and confirmed this profile/settings slice used only app-owned model and AppKit code, so it did not make another submodule safe to remove.
+
+### 2026-08-22 Persistent Shell History Removal
+
+- Defined the surviving semantic-terminal boundary: retain OSC 133 prompt/command marks, OSC 7 and working-directory state, command/output selection, folding, navigation, restoration, and screen/file completion.
+- Removed the cross-session Core Data command-history and recent-directory database, generated managed objects, model, controller/additions layer, and the now-unused `CoreData.framework` project dependency.
+- Deleted the Command History and Recent Directories toolbelt panels and popups, automatic command-history completion, large-composer history suggestions, menu/API identifiers, help/tip copy, and persistence-only delegate callbacks.
+- Retained the bounded per-session command list used by Open Quickly and session restoration; it no longer feeds or writes a global history database.
+- Updated directory-tracker tests to assert the retained state behavior and repaired stale terminal-font tests that still called browser-only constructors.
+- Audited all 17 remaining submodules and confirmed this slice used only app-owned code plus the system Core Data framework, so no submodule became removable.
+
+### 2026-08-23 Redundant libsixel Artifact Cleanup
+
+- Kept the universal `ThirdParty/libsixel/lib/libsixel.a` and public header used by the sandboxed SIXEL decoder and terminal capability reporting.
+- Removed checked-in architecture staging trees, install tools, pkg-config metadata, shell completions, man pages, libtool metadata, and the redundant per-architecture archive copied beside the universal library.
+- Ignored the x86 staging prefix so a future dependency rebuild does not reintroduce generated install outputs into version control.
+- Retained the `libsixel` submodule because SIXEL parsing and image decoding remain terminal-core features; restored its checkout to the security-fixed revision recorded by the parent repository.
+
+### 2026-08-28 Terminal-First Feature Gate Removal
+
+- Removed the temporary `TerminalFirstFeatures` switch now that this fork permanently ships the terminal-first product surface.
+- Collapsed Tip of the Day and menu-tip filtering onto their terminal-first behavior instead of retaining unreachable upstream-product branches.
+- Removed the disabled debug menu-icon audit and the unreachable `it2ssh` login-shell wrapper; SSH profiles continue to launch directly with the system `ssh` command.
+- Confirmed that no source or project references remain for the deleted feature gate or bundled `it2ssh` path.
+
+### 2026-08-29 Upstream Review Through 206cb5df9
+
+- Reviewed all 357 official iTerm2 commits from `57535cd90fa8d16405d664adea831651d503610d` (`v20260731-nightly`) through `206cb5df9f58d55e68a119f93d2173d48f47d9a6` (`v20260828-nightly`), using `v3.7.0beta9`, `v3.7.0beta10`, and `v3.7.0beta11` as release boundaries.
+- Ported the terminal-first-compatible security check that authenticates the peer before accepting a restored mono-server socket (`1260814ac`).
+- Ported CSI/SGR parameter-boundary fixes and their regression tests (`2729db2a2` plus follow-ups through `d8d7e3979`), dark-mode DSR request handling (`c0f79a64f`), Kitty Caps Lock reporting (`597c42574`), and the Python `PromptState.FINISHED` wire value (`3063f7e46`).
+- Corrected the stale CSI parser test inventory so DECSCL, which has been supported since 2024, is tested as supported instead of making the parser suite fail before reaching the new boundary cases.
+- Ported the frame-canonicalizer window-leak fix (`6a281f3f9`), per-token autorelease pools for bounded terminal repaint memory (`6bdd9953f`), Metal smooth-blink cursor compositing (`368a48dfe`), and format-string safety fixes (`f436dec38`).
+- Deliberately skipped AI/model/chat, browser, shell-integration, Companion, Workgroups, Tab Groups, Kitty drag-and-drop, and uv Python migration changes because they conflict with the terminal-first scope or require separate product decisions.
+- Deferred larger but relevant candidates to focused follow-up slices: missing-working-directory restoration (`45e0ed47c` and `5f0c03c0f`), tmux focus/geometry fixes (`918fc2762`, `6bf0b1426`, `2f4e6740f`, `f8bb3771f`), maximized-pane teardown (`31ea32275`), URL detection (`0da24d685`, `071dd60aa`), Hangul composition (`1b6b3ccb6`), Advanced Paste (`5164130b2`), and terminal/window rendering performance (`14c75a3c6`, `46d7e066e`, `6947f5902`, `89b533af0`, `a9e55316e`).
+- Audited dependency changes in the range and did not restore any removed submodule or accept upstream's regenerated binary dependency artifacts.
+
 ### Recent Verification
 
+- `tools/build.sh` passes on 2026-08-29 after the selected upstream security, terminal parsing, rendering, memory, lifecycle, and logging fixes were ported.
+- `VT100CSIParserTest` passes all 38 tests on 2026-08-29, including the eight new CSI/SGR parameter-boundary regressions. The test bundle was executed with `test-without-building` against a separately built `Latterm.app` because the existing `iTerm2Tests.app` scheme host still has unrelated undefined `IT2ChannelDisconnect` and `IT2Runner` symbols.
+- `tools/build.sh` passes on 2026-08-28 after removing the terminal-first feature gate and its unreachable branches.
+- `make zip UNIVERSAL=1` passes on 2026-08-23 and produces an unsigned universal Deployment package at `Build/Deployment/Latterm-3_7_20260823.zip`; both the app executable and SIXEL sandbox worker contain arm64 and x86_64 slices, and `unzip -t` reports no errors.
+- Development builds of the `iTerm2` and `ModernTests` schemes pass with `-jobs 2` on 2026-08-23, using derived data at `/tmp/iTerm2-dd-libsixel-clean` after redundant libsixel artifact cleanup.
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase2 build` passes on 2026-04-15 after the phase2 browser-session cleanup.
 - `xcodebuild -quiet -project iTerm2.xcodeproj -scheme iTerm2 -configuration Development -destination 'platform=macOS' -skipPackagePluginValidation CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ARCHS='arm64' ONLY_ACTIVE_ARCH=YES -derivedDataPath /tmp/iTerm2-derived-phase3 build` passes on 2026-04-16 after the phase3 AI-removal build-recovery cleanup.
 - `xcodebuild -list -project iTerm2.xcodeproj` passes on 2026-05-18 after the Claude/browser-plugin cleanup and shell-integration resource pruning.
@@ -181,6 +229,12 @@ This file is a local planning document. Do not assume it belongs in a release co
 - `tools/build.sh` passes on 2026-08-21 after the user-facing branding and bug-report link updates.
 - `tools/build.sh` passes on 2026-08-21 after removing browser-session compatibility and duplicate password-manager paths.
 - The `ModernTests` scheme build passes on 2026-08-21 with derived data at `/tmp/iTerm2-dd-browser-shell` after the same cleanup.
+- Development builds of the `iTerm2` and `ModernTests` schemes pass with Xcode task concurrency limited to two jobs on 2026-08-22, using derived data at `/tmp/iTerm2-dd-profile-prune` after browser profile and Web preferences removal.
+- `ibtool` compiles `PreferencePanel.xib`, `BulkCopyProfilePreferences.xib`, and `MainMenu.xib` without document errors or warnings on 2026-08-22; the first two retain only their pre-existing layout notices.
+- Development builds of the `iTerm2` and `ModernTests` schemes pass with `-jobs 2` on 2026-08-22, using derived data at `/tmp/iTerm2-dd-shell-history-prune` after persistent shell-history removal.
+- Selected ModernTests pass under the scheme's ASan test variant on 2026-08-22: all 46 `iTermSessionDirectoryTrackerTests` and all 6 `PromptMarkBaselineTests` succeed.
+- `ibtool` compiles `MainMenu.xib` without document errors, warnings, or notices and `PreferencePanel.xib` without document errors or warnings after the history UI removal; the preference panel retains its pre-existing layout notices.
+- Development builds of the `iTerm2` and `ModernTests` schemes pass with `-jobs 2` on 2026-08-22, using derived data at `/tmp/iTerm2-dd-dependency-prune` after redundant `fmdb`, `BTree`, and `MultiCursor` submodules plus stale SwiftyMarkdown package references were removed.
 
 ## Refactor Direction
 
@@ -189,19 +243,18 @@ The target product is a terminal-first app:
 - Terminal emulator, sessions, tabs, panes, rendering, profiles, and basic preferences stay.
 - Browser sessions are removed.
 - AI chat, AI agents, and model integrations are removed.
-- Shell integration, its installers, and shell-integration-only UX are removed.
+- Shell injection, installers, persistence, and shell-integration-only UX are removed; semantic terminal metadata such as OSC 7 and OSC 133 remains part of the terminal core.
 - Old compatibility constraints should be relaxed so the surviving code can use a more modern macOS baseline and Swift-first patterns.
 
 ## Current Repository Observations
 
 The removal scope is real, not hypothetical:
 
-- `sources/Browser/**` contains roughly 197 files.
-- AI/chat-related sources account for roughly 34 files under `sources/`, plus the separate `iTermAI/` project.
-- Shell integration and closely related sources/resources account for roughly 33 files.
-- `sources/PTYSession.m` is a major coupling point across terminal, browser, scripting, shell integration, triggers, and UI.
-- The source tree is still heavily Objective-C weighted: about 567 Swift files vs about 1711 Objective-C headers/implementations in `sources/`.
-- There are multiple optional-feature submodules. `submodules/iTerm2-shell-integration` has been removed; the next safe candidates are browser/AI-adjacent submodules after their remaining runtime references are gone.
+- The browser and AI source trees and their standalone projects are gone, and the surviving profile model no longer represents browser sessions.
+- Shell-integration installation and injection code is gone, and the former `sources/ShellIntegration/**` persistence model plus its Core Data dependency are now removed. OSC 7/133 parsing and session-local semantic state remain.
+- `sources/PTYSession.m` remains a major coupling point across terminal lifecycle, scripting, terminal control, triggers, and UI.
+- The source tree remains heavily Objective-C weighted: 500 Swift files vs 1,696 Objective-C/C-family headers and implementations among 2,299 files under `sources/` as of 2026-08-22.
+- Fourteen submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts are gone while their tracked vendored sources remain in the build; further removals require separate audits of surviving SSH, rendering, parsing, Markdown, syntax-highlighting, Companion, and build-tool paths.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 
@@ -283,6 +336,12 @@ Likely follow-on cleanup:
 - Trigger descriptions and warnings that depend on shell integration
 - Profile or preferences UI that installs, updates, or advertises shell integration
 
+Retained boundary:
+
+- Keep OSC 133 prompt/command marks and return codes because command/output selection, folding, mark navigation, triggers, and restoration consume them directly.
+- Keep OSC 7, working-directory polling, session-local directories/hosts, and filename/path completion.
+- Keep the bounded session-local command list used by Open Quickly, but do not restore a global persistence database or history UI.
+
 ### Review Later, Not First
 
 These may also be good candidates for removal or heavy simplification, but they should be evaluated after the three big deletions above:
@@ -320,8 +379,6 @@ High-risk later targets:
 - `submodules/NMSSH`, `submodules/libssh2`, `submodules/openssl`
 - `submodules/libsixel`
 - `submodules/libgit2`
-- `submodules/fmdb`
-- `submodules/BTree`
 - `submodules/CoreParse`
 
 ## Recommended Phases
