@@ -196,18 +196,26 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Corrected the stale CSI parser test inventory so DECSCL, which has been supported since 2024, is tested as supported instead of making the parser suite fail before reaching the new boundary cases.
 - Ported the frame-canonicalizer window-leak fix (`6a281f3f9`), per-token autorelease pools for bounded terminal repaint memory (`6bdd9953f`), Metal smooth-blink cursor compositing (`368a48dfe`), and format-string safety fixes (`f436dec38`).
 - Deliberately skipped AI/model/chat, browser, shell-integration, Companion, Workgroups, Tab Groups, Kitty drag-and-drop, and uv Python migration changes because they conflict with the terminal-first scope or require separate product decisions.
-- Deferred larger but relevant candidates to focused follow-up slices: missing-working-directory restoration (`45e0ed47c` and `5f0c03c0f`), tmux focus/geometry fixes (`918fc2762`, `6bf0b1426`, `2f4e6740f`, `f8bb3771f`), maximized-pane teardown (`31ea32275`), URL detection (`0da24d685`, `071dd60aa`), Hangul composition (`1b6b3ccb6`), Advanced Paste (`5164130b2`), and terminal/window rendering performance (`14c75a3c6`, `46d7e066e`, `6947f5902`, `89b533af0`, `a9e55316e`).
+- Deferred larger but relevant candidates to focused follow-up slices: missing-working-directory restoration (`45e0ed47c` and `5f0c03c0f`), tmux focus/geometry fixes (`918fc2762`, `6bf0b1426`, `2f4e6740f`, `f8bb3771f`), URL detection (`0da24d685`, `071dd60aa`), Hangul composition (`1b6b3ccb6`), Advanced Paste (`5164130b2`), and terminal/window rendering performance (`14c75a3c6`, `46d7e066e`, `6947f5902`, `89b533af0`, `a9e55316e`).
 - Audited dependency changes in the range and did not restore any removed submodule or accept upstream's regenerated binary dependency artifacts.
 
 ### 2026-08-29 XCTest Host Alignment
 
 - Aligned the shared `iTerm2Tests` scheme with its existing `Latterm.app` `TEST_HOST`: build, launch, and profile actions now select the real `iTerm2`/`Latterm.app` target instead of the obsolete `iTerm2Tests.app` runner target.
 - Disabled Xcode's Development debug-dylib layout for `Latterm.app` so hosted XCTest bundles can link the stable `Contents/MacOS/Latterm` executable path without a prebuild workaround.
-- Confirmed the legacy `iTerm2Tests.app` target is no longer needed by the shared XCTest scheme. Deleting that target and its dedicated runner sources remains a separate project-file cleanup after verifying no external workflow invokes it directly.
+- Confirmed the legacy `iTerm2Tests.app` target is no longer needed by the shared XCTest scheme, but retained it because it remains the custom reflection-based runner for AppleScript tests that cannot resolve their test-app path under XCTest.
 - Audited submodules; this scheme/build-setting-only slice changes no dependency ownership.
+
+### 2026-08-29 Maximized Pane State Repair
+
+- Ported upstream issue 12992's coupled-state repair (`31ea32275`) so synthetic-session swaps, session removal, tab-content replacement, and tmux layout rebuilds preserve the maximized tab invariant.
+- Replaced raw teardown assertions with crash-reporting assertions and a recovery path that rebuilds the split tree from the saved arrangement when the root subview count is already corrupt.
+- Audited submodules; this terminal view state-management fix uses no dependency changes.
 
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/iTermPTYTabRecursiveRestoreSplittersTests` passes all 10 split-tree reconstruction tests on 2026-08-29 after the maximized-pane state repair.
+- `tools/build.sh` passes on 2026-08-29 after porting the maximized-pane teardown recovery.
 - A direct `xcodebuild test -project iTerm2.xcodeproj -scheme iTerm2Tests -only-testing:iTerm2XCTests/VT100CSIParserTest` passes all 38 selected tests on 2026-08-29 without a separate app build or `test-without-building` workaround.
 - `tools/build.sh` passes on 2026-08-29 after aligning the XCTest scheme and disabling the Development debug-dylib layout.
 - `tools/build.sh` passes on 2026-08-29 after the selected upstream security, terminal parsing, rendering, memory, lifecycle, and logging fixes were ported.

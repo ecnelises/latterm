@@ -41,6 +41,7 @@ Terminal-first fork changes:
 - Bounded temporary memory per terminal token.
 - Fixed a terminal-window lifecycle leak.
 - Fixed unsafe logging format strings.
+- Fixed maximized split-pane teardown crashes.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
