@@ -51,6 +51,8 @@ Terminal-first fork changes:
   text, Markdown, and JSON rendering.
 - Replaced the bundled Markdown framework with the
   system CommonMark parser.
+- Isolated automatic updates behind an app-owned
+  service while retaining existing behavior.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

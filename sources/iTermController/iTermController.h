@@ -165,8 +165,7 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
 - (PseudoTerminal *)terminalWithTab:(PTYTab *)tab;
 - (PseudoTerminal *)terminalWithSession:(PTYSession *)session;
 
-// Set Software Update (Sparkle) user defaults keys to reflect settings in
-// iTerm2's user defaults.
+// Set software-update defaults to reflect the app's preferences.
 - (void)refreshSoftwareUpdateUserDefaults;
 
 - (void)addRestorableSession:(iTermRestorableSession *)session;
@@ -311,4 +310,3 @@ typedef NS_OPTIONS(NSUInteger, iTermSingleUseWindowOptions) {
 - (NSArray<NSString *> *)currentSnippetsFilter;
 
 @end
-

@@ -12,6 +12,7 @@
 #import "iTermPreviousState.h"
 #import "iTermProfilePreferences.h"
 #import "iTermShortcutInputView.h"
+#import "iTermSoftwareUpdateService.h"
 #import "iTermSystemVersion.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"
@@ -25,8 +26,6 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <ApplicationServices/ApplicationServices.h>
-
-@import Sparkle;
 
 NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
 
@@ -517,9 +516,8 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
         DLog(@"The key window's controller does not auto-hide the hotkey window: %@", keyWindow);
         return NO;
     }
-    if (keyWindowController != nil &&
-        [[[NSBundle bundleForClass:keyWindowController.class] bundlePath] isEqualToString:[[NSBundle bundleForClass:[SUUpdater class]] bundlePath]]) {
-        DLog(@"The key window's controller appears to belong to Sparkle (it is %@), so don't auto-hide.", keyWindowController);
+    if ([iTermSoftwareUpdateService.sharedInstance isUpdaterOwnedWindowController:keyWindowController]) {
+        DLog(@"The key window's controller belongs to the application updater (it is %@), so don't auto-hide.", keyWindowController);
         return NO;
     }
 
@@ -687,4 +685,3 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
 }
 
 @end
-

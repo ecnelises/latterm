@@ -119,6 +119,7 @@
 #import "iTermServiceProvider.h"
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
+#import "iTermSoftwareUpdateService.h"
 #import "iTermSubpixelModelBuilder.h"
 #import "iTermSystemVersion.h"
 #import "iTermTipController.h"
@@ -136,8 +137,6 @@
 #include <libproc.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-@import Sparkle;
 
 static NSString *kUseBackgroundPatternIndicatorKey = @"Use background pattern indicator";
 NSString *kUseBackgroundPatternIndicatorChangedNotification = @"kUseBackgroundPatternIndicatorChangedNotification";
@@ -266,7 +265,6 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     IBOutlet NSMenuItem *showFullScreenTabs;
     IBOutlet NSMenuItem *useTransparency;
     IBOutlet NSMenuItem *maximizePane;
-    IBOutlet SUUpdater * suUpdater;
     IBOutlet NSMenuItem *_showTipOfTheDay;  // Here because we must remove it for older OS versions.
     BOOL quittingBecauseLastWindowClosed_;
 
@@ -298,8 +296,6 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     // If the advanced pref to turn off app nap is enabled, then we hold a reference to this
     // NSProcessInfo-provided object to make the system think we're doing something important.
     id<NSObject> _appNapStoppingActivity;
-
-    BOOL _sparkleRestarting;  // Is Sparkle about to restart the app?
 
     BOOL _orphansAdopted;  // Have orphan servers been adopted?
 
@@ -1087,7 +1083,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
             [reason addReason:[iTermPromptOnCloseReason closingMultipleSessionsPreferenceEnabled]];
         }
         if ([iTermAdvancedSettingsModel runJobsInServers] &&
-            self.sparkleRestarting &&
+            iTermSoftwareUpdateService.sharedInstance.restarting &&
             [iTermAdvancedSettingsModel restoreWindowContents] &&
             [[iTermController sharedInstance] willRestoreWindowsAtNextLaunch]) {
             // Nothing will be lost so just restart without asking.
@@ -1452,8 +1448,8 @@ void TurnOnDebugLoggingAutomatically(void) {
     if (restoreWorkspace) {
         DLog(@"Set NSWindowRestoresWorkspaceAtLaunch=YES");
         // Based on https://chromium.googlesource.com/chromium/src/+/refs/heads/main/chrome/browser/chrome_browser_main_mac.mm#128:
-        // Windows don't go back to their original workspaces, except on restart. When Sparkle
-        // upgrades, treat it like a system restart.
+        // Windows don't go back to their original workspaces, except on restart. When the app
+        // updater upgrades, treat it like a system restart.
         [[iTermUserDefaults userDefaults] registerDefaults:@{ @"NSWindowRestoresWorkspaceAtLaunch": @YES }];
     }
 
@@ -1699,9 +1695,9 @@ void TurnOnDebugLoggingAutomatically(void) {
                                                                name:NSWorkspaceSessionDidResignActiveNotification
                                                              object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(sparkleWillRestartApp:)
-                                                 name:SUUpdaterWillRestartNotification
-                                               object:nil];
+                                             selector:@selector(softwareUpdateWillRestartApp:)
+                                                 name:iTermSoftwareUpdateWillRestartNotification
+                                               object:iTermSoftwareUpdateService.sharedInstance];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(processTypeDidChange:)
@@ -1858,10 +1854,9 @@ static iTermKeyEventReplayer *gReplayer;
     _workspaceSessionActive = NO;
 }
 
-- (void)sparkleWillRestartApp:(NSNotification *)notification {
+- (void)softwareUpdateWillRestartApp:(NSNotification *)notification {
     [NSApp invalidateRestorableState];
     [[NSApp windows] makeObjectsPerformSelector:@selector(invalidateRestorableState)];
-    _sparkleRestarting = YES;
     iTermRestorableStateController.forceSaveState = YES;
 }
 
@@ -2260,7 +2255,7 @@ static iTermKeyEventReplayer *gReplayer;
                                silenceable:kiTermWarningTypeSilenceableForOneMonth
                                     window:nil];
         if (selection == kiTermWarningSelection1) {
-            [[SUUpdater sharedUpdater] checkForUpdates:nil];
+            [iTermSoftwareUpdateService.sharedInstance checkForUpdates:nil];
         }
     }
 }
@@ -2395,9 +2390,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (BOOL)version:(NSString *)version newerThan:(NSString *)otherVersion {
-    id<SUVersionComparison> comparator = [SUStandardVersionComparator defaultComparator];
-    NSInteger result = [comparator compareVersion:version toVersion:otherVersion];
-    return result == NSOrderedDescending;
+    return [iTermSoftwareUpdateService.sharedInstance isVersion:version newerThan:otherVersion];
 }
 
 - (IBAction)copyPerformanceStats:(id)sender {
@@ -2408,7 +2401,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (IBAction)checkForUpdatesFromMenu:(id)sender {
-    [suUpdater checkForUpdates:(sender)];
+    [iTermSoftwareUpdateService.sharedInstance checkForUpdates:sender];
 }
 
 // Depth-first search for the menu item wired to a given action, so a

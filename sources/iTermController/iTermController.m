@@ -52,7 +52,6 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplication.h"
 #import "iTermApplication.h"
-#import "iTermApplicationDelegate.h"
 #import "iTermBuriedSessions.h"
 #import "iTermFullScreenWindowManager.h"
 #import "iTermHotKeyController.h"
@@ -67,6 +66,7 @@
 #import "iTermSavePanel.h"
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
+#import "iTermSoftwareUpdateService.h"
 #import "iTermSetCurrentTerminalHelper.h"
 #import "iTermSystemVersion.h"
 #import "iTermUserDefaults.h"
@@ -74,8 +74,6 @@
 #import "iTermWebSocketCookieJar.h"
 
 #include <objc/runtime.h>
-
-@import Sparkle;
 
 NSString *const iTermSnippetsTagsDidChange = @"iTermSnippetsTagsDidChange";
 
@@ -178,9 +176,9 @@ static iTermController *gSharedInstance;
     const BOOL sessionsWillRestore = ([iTermAdvancedSettingsModel runJobsInServers] &&
                                       [iTermAdvancedSettingsModel restoreWindowContents] &&
                                       self.willRestoreWindowsAtNextLaunch);
-    iTermApplicationDelegate *itad = [iTermApplication.sharedApplication delegate];
     return (sessionsWillRestore &&
-            (itad.sparkleRestarting || ![iTermAdvancedSettingsModel killJobsInServersOnQuit]));
+            (iTermSoftwareUpdateService.sharedInstance.restarting ||
+             ![iTermAdvancedSettingsModel killJobsInServersOnQuit]));
 }
 
 - (void)dealloc {
@@ -205,7 +203,7 @@ static iTermController *gSharedInstance;
     if (self.shouldLeaveSessionsRunningOnQuit) {
         // We don't want to kill running jobs. This can be for one of two reasons:
         //
-        // 1. Sparkle is restarting the app. Because jobs are run in servers and window
+        // 1. The application updater is restarting the app. Because jobs are run in servers and window
         //    restoration is on, we don't want to close term windows because that will
         //    send SIGHUP to the job processes. Normally this path is taken during
         //    a user-initiated quit, so we want the jobs killed, but not in this case.
@@ -1201,9 +1199,9 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
     if (iTermUserDefaults.haveBeenWarnedAboutTabDockSetting) {
         return;
     }
-    id<SUVersionComparison> comparator = [SUStandardVersionComparator defaultComparator];
     const BOOL haveUsedOlderVersion = [[iTermPreferences allAppVersionsUsedOnThisMachine].allObjects anyWithBlock:^BOOL(NSString *version) {
-        return [comparator compareVersion:firstVersionRespectingSetting toVersion:version] == NSOrderedDescending;
+        return [iTermSoftwareUpdateService.sharedInstance isVersion:firstVersionRespectingSetting
+                                                           newerThan:version];
     }];
     if (!haveUsedOlderVersion) {
         return;
@@ -1349,14 +1347,8 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
     NSURL *url = [NSURL URLWithString:appCast];
     NSNumber *shard = @([iTermController shard]);
     url = [url URLByAppendingQueryParameter:[NSString stringWithFormat:@"shard=%@", shard]];
-    [[iTermUserDefaults userDefaults] setObject:url.absoluteString forKey:@"SUFeedURL"];
-    // Allow Sparkle to update from a zip file containing an "iTerm" directory,
-    // even though our bundle name is now "iTerm2". I had to add this feature
-    // to my fork of Sparkle so I could change the app's name without breaking
-    // auto-update. https://github.com/gnachman/Sparkle, commit
-    // bd6a8df6e63b843f1f8aff79f40bd70907761a99.
-    [[iTermUserDefaults userDefaults] setObject:@"iTerm"
-                                              forKey:@"SUFeedAlternateAppNameKey"];
+    // Preserve the existing archive layout, whose application directory is named "iTerm".
+    [iTermSoftwareUpdateService.sharedInstance configureFeedURL:url alternateAppName:@"iTerm"];
 }
 
 - (BOOL)selectionRespectsSoftBoundaries {

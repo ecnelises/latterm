@@ -4243,6 +4243,8 @@
 		A6EC47AA2D8744140079845B /* KeyEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC47A92D87440E0079845B /* KeyEventRecorder.swift */; };
 		A6EC47CD21ED96F2000E1321 /* iTermLaunchExperienceController.h in Headers */ = {isa = PBXBuildFile; fileRef = A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */; };
 		A6EC47CE21ED96F2000E1321 /* iTermLaunchExperienceController.m in Sources */ = {isa = PBXBuildFile; fileRef = A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */; };
+		A6F0A0012F9ABCDE00123456 /* iTermSoftwareUpdateService.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F0A0032F9ABCDE00123456 /* iTermSoftwareUpdateService.h */; };
+		A6F0A0022F9ABCDE00123456 /* iTermSoftwareUpdateService.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F0A0042F9ABCDE00123456 /* iTermSoftwareUpdateService.m */; };
 		A6EC8055281C852200493544 /* NSAttributedString+iTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC8054281C852200493544 /* NSAttributedString+iTerm.swift */; };
 		A6EC8073281F2C2900493544 /* ExternalSearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC8072281F2C2900493544 /* ExternalSearchResult.swift */; };
 		A6EC8074281F368700493544 /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 1DC393C417B59B08000EE0F2 /* SearchResult.m */; };
@@ -8221,6 +8223,8 @@
 		A6EC47A92D87440E0079845B /* KeyEventRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventRecorder.swift; sourceTree = "<group>"; };
 		A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermLaunchExperienceController.h; sourceTree = "<group>"; };
 		A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermLaunchExperienceController.m; sourceTree = "<group>"; };
+		A6F0A0032F9ABCDE00123456 /* iTermSoftwareUpdateService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSoftwareUpdateService.h; sourceTree = "<group>"; };
+		A6F0A0042F9ABCDE00123456 /* iTermSoftwareUpdateService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSoftwareUpdateService.m; sourceTree = "<group>"; };
 		A6EC8054281C852200493544 /* NSAttributedString+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+iTerm.swift"; sourceTree = "<group>"; };
 		A6EC8072281F2C2900493544 /* ExternalSearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSearchResult.swift; sourceTree = "<group>"; };
 		A6EC80802828E9F600493544 /* Conductor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conductor.swift; sourceTree = "<group>"; };
@@ -12153,6 +12157,8 @@
 				A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */,
 				A69833EF2F6B6CA500156A99 /* iTermLocalNetworkPermissionPrompter.swift */,
 				A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */,
+				A6F0A0032F9ABCDE00123456 /* iTermSoftwareUpdateService.h */,
+				A6F0A0042F9ABCDE00123456 /* iTermSoftwareUpdateService.m */,
 				A6F3DA8924540A20001D50C9 /* iTermUntitledWindowStateMachine.h */,
 				A6F3DA8A24540A20001D50C9 /* iTermUntitledWindowStateMachine.m */,
 			);
@@ -14946,6 +14952,7 @@
 				A667192D1DCE36C3000CE608 /* iTermBadgeLabel.h in Headers */,
 				A667192E1DCE36C3000CE608 /* PSMLightHighContrastTabStyle.h in Headers */,
 				A6EC47CD21ED96F2000E1321 /* iTermLaunchExperienceController.h in Headers */,
+				A6F0A0012F9ABCDE00123456 /* iTermSoftwareUpdateService.h in Headers */,
 				A6EC937424E78A5100EEADEF /* iTermEditSnippetWindowController.h in Headers */,
 				53BCAAFA22668A1E00949829 /* iTermCachingFileManager.h in Headers */,
 				537C4FD8227BE18B00B292E2 /* iTermSecureKeyboardEntryController.h in Headers */,
@@ -18588,6 +18595,7 @@
 				A6FF4AEF246BBFDB00410BA2 /* iTermTmuxWindowCache.m in Sources */,
 				A61F457322FA8BD400E2054A /* iTermSetStatusBarComponentUnreadCountBuiltInFunction.m in Sources */,
 				A6EC47CE21ED96F2000E1321 /* iTermLaunchExperienceController.m in Sources */,
+				A6F0A0022F9ABCDE00123456 /* iTermSoftwareUpdateService.m in Sources */,
 				A6F7F8072763F47B005E433E /* VT100ScreenState.m in Sources */,
 				A6AFD68924496EF1007D0660 /* iTermMultiServerMessageBuilder.m in Sources */,
 				A69D559C232A0CF3002E0F99 /* iTermSessionLauncher.m in Sources */,

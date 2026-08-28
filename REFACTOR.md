@@ -245,8 +245,16 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Removed the uninitialized relay deployment gitlink and its obsolete helper while retaining all app-owned Companion protocol, transport, pairing, push-relay, and client code.
 - Reduced the repository from nine git submodules to eight without changing the deployed relay contract or client feature surface.
 
+### 2026-08-29 Application Update Boundary
+
+- Added an app-owned software-update service and driver seam so launch, restart preservation, menu actions, update-window filtering, and feed configuration no longer depend directly on Sparkle APIs.
+- Replaced the XIB-instantiated `SUUpdater` object with lazy service ownership while retaining automatic checks, manual checks, restart notification handling, version comparison, feed selection, and the legacy archive app-name override.
+- Confined application-update Sparkle APIs to one adapter implementation. The Sparkle submodule remains until its three unrelated version-comparison consumers are migrated and the updater dependency source can be replaced without losing signed appcast updates.
+
 ### Recent Verification
 
+- `tools/run_tests.expect ModernTests/iTermSoftwareUpdateServiceTests` passes both forwarding and restart-state tests on 2026-08-29.
+- `tools/build.sh` passes on 2026-08-29 after isolating application updates behind the app-owned service.
 - `tools/build.sh` passes on 2026-08-29 after removing the uninitialized relay-operations gitlink and its only local helper.
 - `tools/run_tests.expect ModernTests/MarkdownRenderingTests` passes all 3 native Markdown structure, style, front-matter, code-font, and literal-backtick tests on 2026-08-29.
 - `tools/build.sh` passes on 2026-08-29 with the SwiftyMarkdown framework, project references, build rules, and submodule removed.
