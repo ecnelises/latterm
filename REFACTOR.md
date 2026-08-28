@@ -239,8 +239,15 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Corrected inline-code generation to use CommonMark backtick delimiters long enough to contain literal backticks.
 - Removed the checked-in framework and header, Xcode link/copy/group references, dependency build and cleanup recipes, signing helper, license entry, and `submodules/SwiftyMarkdown`, reducing the repository from ten git submodules to nine.
 
+### 2026-08-29 Relay Operations Checkout Removal
+
+- Confirmed `submodules/iterm2-companion-relay` was not an application, Companion project, package, build, or runtime input; its only repository reference was a two-line Cloudflare log-tail helper.
+- Removed the uninitialized relay deployment gitlink and its obsolete helper while retaining all app-owned Companion protocol, transport, pairing, push-relay, and client code.
+- Reduced the repository from nine git submodules to eight without changing the deployed relay contract or client feature surface.
+
 ### Recent Verification
 
+- `tools/build.sh` passes on 2026-08-29 after removing the uninitialized relay-operations gitlink and its only local helper.
 - `tools/run_tests.expect ModernTests/MarkdownRenderingTests` passes all 3 native Markdown structure, style, front-matter, code-font, and literal-backtick tests on 2026-08-29.
 - `tools/build.sh` passes on 2026-08-29 with the SwiftyMarkdown framework, project references, build rules, and submodule removed.
 - `tools/run_tests.expect ModernTests/PortholeFoldClearTests` passes all 5 Porthole fold, unfold, and buffer-clear lifecycle tests on 2026-08-29 after replacing Highlightr with app-owned rendering.
@@ -307,7 +314,7 @@ The removal scope is real, not hypothetical:
 - Shell-integration installation and injection code is gone, and the former `sources/ShellIntegration/**` persistence model plus its Core Data dependency are now removed. OSC 7/133 parsing and session-local semantic state remain.
 - `sources/PTYSession.m` remains a major coupling point across terminal lifecycle, scripting, terminal control, triggers, and UI.
 - The source tree remains heavily Objective-C weighted: 500 Swift files vs 1,696 Objective-C/C-family headers and implementations among 2,299 files under `sources/` as of 2026-08-22.
-- Nine submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization, syntax-highlighting, and third-party Markdown dependencies are gone; further removals require separate audits of surviving SSH, rendering, parsing, Companion, updating, and build-tool paths.
+- Eight submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization, syntax-highlighting, third-party Markdown, and relay-operations dependencies are gone; further removals require separate audits of surviving SSH, rendering, parsing, Companion, updating, and build-tool paths.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 
