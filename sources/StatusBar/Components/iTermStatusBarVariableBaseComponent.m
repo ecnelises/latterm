@@ -208,10 +208,6 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
     return [super initWithPath:@"username" configuration:configuration scope:scope];
 }
 
-+ (ProfileType)compatibleProfileTypes {
-    return ProfileTypeTerminal;
-}
-
 - (nullable NSImage *)statusBarComponentIcon {
     return [NSImage it_cacheableImageNamed:@"StatusBarIconUser" forClass:[self class]];
 }
@@ -263,10 +259,6 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
     } else {
         return value;
     }
-}
-
-+ (ProfileType)compatibleProfileTypes {
-    return ProfileTypeTerminal;
 }
 
 - (nullable NSImage *)statusBarComponentIcon {

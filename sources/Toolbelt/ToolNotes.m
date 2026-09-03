@@ -428,10 +428,6 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
     [super dealloc];
 }
 
-+ (ProfileType)supportedProfileTypes {
-    return ProfileTypeAll;
-}
-
 - (NSString *)filename {
     // Reference the sync allowlist's constant rather than a bare literal so this on-disk name and the
     // synced allowlist can never drift apart silently (a rename is a single edit that moves both).

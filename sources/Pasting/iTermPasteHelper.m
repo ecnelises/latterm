@@ -169,7 +169,6 @@ const NSInteger iTermQuickPasteBytesPerCallDefaultValue = 768;
                                            isAtShellPrompt:![_delegate pasteHelperShouldWaitForPrompt]
                                         forceEscapeSymbols:NO
                                                      shell:[[_delegate pasteHelperScope] shell]
-                                               profileType:ProfileTypeTerminal
                                                 completion:^(PasteEvent *event) {
                                                     event.suppressMultilinePasteWarning = YES;
                                                     [self tryToPasteEvent:event];
@@ -812,7 +811,6 @@ const NSInteger iTermQuickPasteBytesPerCallDefaultValue = 768;
                                            isAtShellPrompt:![_delegate pasteHelperShouldWaitForPrompt]
                                         forceEscapeSymbols:!!(flags & kPTYSessionPasteEscapingSpecialCharacters)
                                                      shell:[[_delegate pasteHelperScope] shell]
-                                               profileType:ProfileTypeTerminal
                                                 completion:^(PasteEvent *event) {
                                                     event.suppressMultilinePasteWarning = YES;
                                                     [self tryToPasteEvent:event];

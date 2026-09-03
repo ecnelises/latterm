@@ -188,10 +188,6 @@ class ToolStatus: NSView {
                        object: nil)
     }
 
-    required init!(frame: NSRect, url: URL!, identifier: String!) {
-        it_fatalError()
-    }
-
     required init?(coder: NSCoder) {
         it_fatalError("init(coder:) has not been implemented")
     }
@@ -200,14 +196,6 @@ class ToolStatus: NSView {
 extension ToolStatus: ToolbeltTool {
     func minimumHeight() -> CGFloat {
         return 36.0
-    }
-
-    static func isDynamic() -> Bool {
-        return false
-    }
-
-    static var supportedProfileTypes: ProfileType {
-        .terminal
     }
 
     @objc func shutdown() {

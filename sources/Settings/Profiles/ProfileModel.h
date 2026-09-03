@@ -26,11 +26,6 @@
 
 #import "iTermProfile.h"
 
-typedef NS_OPTIONS(NSUInteger, ProfileType) {
-    ProfileTypeTerminal = 1,
-    ProfileTypeAll = ProfileTypeTerminal
-};
-
 @protocol iTermProfileModelMenuController;
 
 // Notification posted when a stored profile changes.
@@ -91,9 +86,6 @@ extern NSString *const iTermProfileDidChange;
 - (int)numberOfBookmarksWithFilter:(NSString*)filter;
 - (NSArray*)bookmarkIndicesMatchingFilter:(NSString*)filter;
 - (NSArray*)bookmarkIndicesMatchingFilter:(NSString*)filter orGuid:(NSString *)lockedGuid;
-- (NSArray<Profile *> *)profileIndicesMatchingFilter:(NSString *)filter
-                                              orGuid:(NSString *)lockedGuid
-                                              ofType:(ProfileType)profileTypes;
 - (int)indexOfProfileWithGuid:(NSString*)guid;
 - (int)indexOfProfileWithGuid:(NSString*)guid withFilter:(NSString*)filter;
 - (Profile*)profileAtIndex:(int)index;
@@ -155,6 +147,5 @@ extern NSString *const iTermProfileDidChange;
 @end
 
 @interface NSDictionary(ProfileModel)
-@property(nonatomic, readonly) ProfileType profileType;
 + (BOOL)isLegacyBrowserCustomCommand:(id)customCommand;
 @end

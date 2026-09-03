@@ -23,7 +23,6 @@
 }
 
 - (void)awakeFromNib {
-    _actionsViewController.profileType = ProfileTypeAll;
     [_actionsViewController defineControlsInContainer:self containerView:_actionsView];
     [_snippetsViewController defineControlsInContainer:self containerView:_snippetsView];
 }

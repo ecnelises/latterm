@@ -587,7 +587,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     [super reloadProfile];
     [self populateBookmarkUrlSchemesFromProfile:[self.delegate profilePreferencesCurrentProfile]];
     NSString *originalGUID = [self.delegate profilePreferencesCurrentProfile][KEY_ORIGINAL_GUID];
-    _profiles.profileTypes = ProfileTypeTerminal;
     if (originalGUID) {
         [_profiles selectRowByGuid:originalGUID];
     }

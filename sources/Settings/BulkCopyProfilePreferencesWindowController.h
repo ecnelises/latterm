@@ -7,7 +7,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "ProfileModel.h"
 
 // These match labels in the profiles tab view. I guess it should be identifiers but I would probably forget to set them.
 extern NSString *const iTermBulkCopyIdentifierColors;
@@ -37,7 +36,6 @@ extern NSString *const iTermBulkCopyIdentifierAdvanced;
 - (instancetype)initWithWindowNibName:(NSNibName)windowNibName owner:(id)owner NS_UNAVAILABLE;
 - (instancetype)initWithWindowNibPath:(NSString *)windowNibPath owner:(id)owner NS_UNAVAILABLE;
 
-- (instancetype)initWithIdentifiers:(NSArray<NSString *> *)identifiers
-                       profileTypes:(ProfileType)profileTypes;
+- (instancetype)initWithIdentifiers:(NSArray<NSString *> *)identifiers;
 
 @end

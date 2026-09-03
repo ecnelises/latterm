@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "iTermStatusBarSetupElement.h"
-#import "ProfileModel.h"
 
 @class iTermStatusBarLayout;
 @class iTermStatusBarAdvancedConfiguration;
@@ -23,8 +22,6 @@
 // Drops from this view are accepted
 @property (nonatomic, weak) NSCollectionView *sourceCollectionView;
 @property (nonatomic) BOOL darkBackground;
-@property (nonatomic) ProfileType profileType;
-
 - (void)setLayout:(iTermStatusBarLayout *)layout;
 - (NSDictionary *)layoutDictionary;
 

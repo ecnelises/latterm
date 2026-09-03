@@ -94,13 +94,6 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
     return vettedTools;
 }
 
-+ (NSArray<NSString *> *)availableConfiguredToolsForProfileType:(ProfileType)profileType {
-    return [[self configuredTools] filteredArrayUsingBlock:^BOOL(NSString *name) {
-        Class<ToolbeltTool> c = gRegisteredTools[name];
-        return ([c supportedProfileTypes] & profileType) != 0;
-    }];
-}
-
 + (void)populateMenu:(NSMenu *)menu {
     if (menu.itemArray.count > 0) {
         for (NSInteger i = menu.itemArray.count - 1; i >= 0; i--) {
@@ -121,7 +114,6 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
         NSMenuItem *i = [[NSMenuItem alloc] initWithTitle:theName
                                                    action:@selector(toggleToolbeltTool:)
                                             keyEquivalent:@""];
-        i.tag = (ProfileType)[gRegisteredTools[theName] supportedProfileTypes];
         [i setState:[[iTermToolbeltView configuredTools] containsObject:theName] ? NSControlStateValueOn : NSControlStateValueOff];
         i.identifier = [@"Toolbelt." stringByAppendingString:theName];
         [menu addItem:i];
@@ -145,16 +137,8 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
                                                       userInfo:nil];
 }
 
-+ (int)numberOfVisibleToolsForProfileType:(ProfileType)profileType {
-    NSArray *tools = [iTermToolbeltView availableConfiguredToolsForProfileType:profileType];
-    if (!tools) {
-        tools = [iTermToolbeltView defaultTools];
-    }
-    return [tools count];
-}
-
-+ (BOOL)shouldShowTool:(NSString *)name profileType:(ProfileType)profileType {
-    return [[iTermToolbeltView availableConfiguredToolsForProfileType:profileType] indexOfObject:name] != NSNotFound;
++ (int)numberOfVisibleTools {
+    return (int)[[iTermToolbeltView configuredTools] count];
 }
 
 #pragma mark - Private class methods
@@ -194,12 +178,7 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
         self.layer = [[CALayer alloc] init];
         self.layer.delegate = self;
         self.layer.backgroundColor = [[self backgroundColor] CGColor];
-        const ProfileType profileType = [delegate toolbeltProfileType];
-        NSArray *items = [iTermToolbeltView availableConfiguredToolsForProfileType:profileType];
-        if (!items) {
-            items = [iTermToolbeltView defaultTools];
-            [[iTermUserDefaults userDefaults] setObject:items forKey:kToolbeltPrefKey];
-        }
+        NSArray *items = [iTermToolbeltView configuredTools];
 
         _splitter = [[iTermToolbeltSplitView alloc] initWithFrame:NSMakeRect(0,
                                                                              0,
@@ -222,9 +201,7 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
         _tools = [[NSMutableDictionary alloc] init];
 
         for (NSString *theName in items) {
-            if ([iTermToolbeltView shouldShowTool:theName profileType:profileType]) {
-                [self addToolWithName:theName];
-            }
+            [self addToolWithName:theName];
         }
         _dragHandle = [[iTermDragHandleView alloc] initWithFrame:NSMakeRect(0, 0, 3, frame.size.height)];
         _dragHandle.delegate = self;
@@ -455,7 +432,7 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
     iTermToolWrapper *wrapper = [[iTermToolWrapper alloc] initWithFrame:NSMakeRect(0,
                                                                           0,
                                                                           self.frame.size.width,
-                                                                          self.frame.size.height / MAX(1, [iTermToolbeltView numberOfVisibleToolsForProfileType:self.profileType] - 1))];
+                                                                          self.frame.size.height / MAX(1, [iTermToolbeltView numberOfVisibleTools] - 1))];
     wrapper.name = toolName;
     wrapper.delegate = self;
     Class c = [gRegisteredTools objectForKey:toolName];
@@ -475,20 +452,18 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
     [[self jobsView] updateJobs];
     [[self snippetsView] currentSessionDidChange];
     [[self namedMarksView] setNamedMarks:[self.delegate toolbeltNamedMarks]];
-    [self updateForProfileType];
+    [self updateConfiguredTools];
 }
 
-- (void)updateForProfileType {
-    const ProfileType profileType = self.profileType;
-
+- (void)updateConfiguredTools {
+    NSArray<NSString *> *configuredTools = [iTermToolbeltView configuredTools];
     NSArray<NSString *> *keysToRemove = [_tools.allKeys filteredArrayUsingBlock:^BOOL(NSString *key) {
-        iTermToolWrapper *wrapper = _tools[key];
-        return (([[wrapper.tool class] supportedProfileTypes] & profileType) == 0);
+        return ![configuredTools containsObject:key];
     }];
     for (NSString *key in keysToRemove) {
         [self removeToolWithName:key];
     }
-    [[iTermToolbeltView availableConfiguredToolsForProfileType:profileType] enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL * _Nonnull stop) {
+    [configuredTools enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL * _Nonnull stop) {
         if (_tools[key] == nil) {
             [self addToolWithName:key index:idx];
         }
@@ -668,15 +643,8 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
 }
 #pragma mark - PTYSplitViewDelegate
 
-- (ProfileType)profileType {
-    if (!self.delegate) {
-        return ProfileTypeTerminal;
-    }
-    return [self.delegate toolbeltProfileType];
-}
-
 - (NSDictionary *)proportions {
-    NSArray<NSString *> *names = [iTermToolbeltView availableConfiguredToolsForProfileType:self.profileType];
+    NSArray<NSString *> *names = [iTermToolbeltView configuredTools];
     NSArray<NSNumber *> *heights = [names mapWithBlock:^id(NSString *name) {
         return @(_tools[name].frame.size.height);
     }];
@@ -704,7 +672,7 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
         return;
     }
 
-    NSArray<NSString *> *names = [iTermToolbeltView availableConfiguredToolsForProfileType:self.profileType];
+    NSArray<NSString *> *names = [iTermToolbeltView configuredTools];
     NSArray<NSNumber *> *currentHeights = [names mapWithBlock:^id(NSString *name) {
         return @(_tools[name].frame.size.height);
     }];

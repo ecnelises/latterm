@@ -93,7 +93,6 @@
 
     // Object to paste not representable as a string and is pre-base64 encoded.
     BOOL _base64only;
-    ProfileType _profileType;
 }
 
 - (instancetype)initWithChunkSize:(NSInteger)chunkSize
@@ -103,8 +102,7 @@
                   isAtShellPrompt:(BOOL)isAtShellPrompt
                forceEscapeSymbols:(BOOL)forceEscapeSymbols
                             shell:(NSString *)shell
-                   encoding:(NSStringEncoding)encoding
-                      profileType:(ProfileType)profileType {
+                         encoding:(NSStringEncoding)encoding {
     self = [super initWithWindowNibName:@"iTermPasteSpecialWindow"];
     if (self) {
         _shell = [shell lastPathComponent];
@@ -113,7 +111,6 @@
         _canWaitForPrompt = canWaitForPrompt;
         _isAtShellPrompt = isAtShellPrompt;
         _forceEscapeSymbols = forceEscapeSymbols;
-        _profileType = profileType;
         NSMutableArray *values = [NSMutableArray array];
         NSMutableArray *labels = [NSMutableArray array];
 
@@ -159,7 +156,7 @@
 
 - (void)awakeFromNib {
     const CGFloat heightBefore = _pasteSpecialViewController.view.frame.size.height;
-    _pasteSpecialViewController.profileType = _profileType;
+    [_pasteSpecialViewController applyTerminalLayout];
     const CGFloat heightAfter = _pasteSpecialViewController.view.frame.size.height;
     const CGFloat shrinkage = heightBefore - heightAfter;
 
@@ -428,7 +425,6 @@
             isAtShellPrompt:(BOOL)isAtShellPrompt
          forceEscapeSymbols:(BOOL)forceEscapeSymbols
                       shell:(NSString *)shell
-                profileType:(ProfileType)profileType
                  completion:(iTermPasteSpecialCompletionBlock)completion {
     iTermPasteSpecialWindowController *controller =
         [[iTermPasteSpecialWindowController alloc] initWithChunkSize:chunkSize
@@ -438,8 +434,7 @@
                                                      isAtShellPrompt:isAtShellPrompt
                                                   forceEscapeSymbols:forceEscapeSymbols
                                                                shell:shell
-                                                            encoding:encoding
-                                                         profileType:profileType];
+                                                            encoding:encoding];
     NSWindow *window = [controller window];
     [presentingWindow beginSheet:window completionHandler:^(NSModalResponse returnCode) {
         // Fires a run-loop turn later, after iTermRunModalForWindowAbortingIfParentCloses

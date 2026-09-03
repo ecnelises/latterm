@@ -83,11 +83,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithLayoutDictionary:(NSDictionary *)layoutDictionary
                                    darkBackground:(BOOL)darkBackground
-                                     allowRainbow:(BOOL)allowRainbow
-                                      profileType:(ProfileType)profileType {
+                                     allowRainbow:(BOOL)allowRainbow {
     self = [super initWithNibName:@"iTermStatusBarSetupViewController" bundle:[NSBundle bundleForClass:self.class]];
     if (self) {
-        _profileType = profileType;
         _layout = [[iTermStatusBarLayout alloc] initWithDictionary:layoutDictionary
                                                              scope:nil];
         _darkBackground = darkBackground;
@@ -133,9 +131,6 @@ NS_ASSUME_NONNULL_BEGIN
                                  [iTermStatusBarSwiftyStringComponent class],
                                  [iTermStatusBarFunctionCallComponent class],
                                  ];
-    classes = [classes filteredArrayUsingBlock:^BOOL(Class c) {
-        return ((ProfileType)[c compatibleProfileTypes] & _profileType) != 0;
-    }];
     _elements = [classes mapWithBlock:^id(Class theClass) {
         iTermStatusBarBuiltInComponentFactory *factory =
             [[iTermStatusBarBuiltInComponentFactory alloc] initWithClass:theClass];
@@ -146,7 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)awakeFromNib {
-    _destinationViewController.profileType = _profileType;
     _destinationViewController.defaultBackgroundColor = self.defaultBackgroundColor;
     _destinationViewController.defaultTextColor = self.defaultTextColor;
     _destinationViewController.sourceCollectionView = _collectionView;

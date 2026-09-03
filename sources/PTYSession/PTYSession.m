@@ -19912,10 +19912,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self backgroundColorDidChangeJigglingIfNeeded:NO];
 }
 
-- (BOOL)textViewProfileTypeIsTerminal {
-    return YES;
-}
-
 - (void)textViewSaveArchive:(iTermSavePanelItem *)location {
     PseudoTerminal *term = [PseudoTerminal castFrom:self.delegate.realParentWindow];
     if (term) {

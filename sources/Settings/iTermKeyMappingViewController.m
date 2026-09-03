@@ -295,8 +295,7 @@ static NSString *const INTERCHANGE_TOUCH_BAR_ITEMS = @"Touch Bar Items";
     iTermEditKeyActionWindowController *editActionWindowController;
     editActionWindowController =
     [[iTermEditKeyActionWindowController alloc] initWithContext:iTermVariablesSuggestionContextSession | iTermVariablesSuggestionContextApp
-                                                           mode:iTermEditKeyActionWindowControllerModeTouchBarItem
-                                                    profileType:[self.delegate keyMappingProfileType:self]];
+                                                           mode:iTermEditKeyActionWindowControllerModeTouchBarItem];
     editActionWindowController.isNewMapping = YES;
     editActionWindowController.touchBarItemID = [iTermTouchBarIDPrefix stringByAppendingString:[NSString uuid]];
     [editActionWindowController setAction:KEY_ACTION_IGNORE parameter:@"" applyMode:iTermActionApplyModeCurrentSession];
@@ -308,8 +307,7 @@ static NSString *const INTERCHANGE_TOUCH_BAR_ITEMS = @"Touch Bar Items";
     iTermEditKeyActionWindowController *editActionWindowController;
     editActionWindowController =
     [[iTermEditKeyActionWindowController alloc] initWithContext:iTermVariablesSuggestionContextSession | iTermVariablesSuggestionContextApp
-                                                           mode:iTermEditKeyActionWindowControllerModeKeyboardShortcut
-                                                    profileType:[self.delegate keyMappingProfileType:self]];
+                                                           mode:iTermEditKeyActionWindowControllerModeKeyboardShortcut];
     editActionWindowController.isNewMapping = YES;
     [editActionWindowController setAction:KEY_ACTION_IGNORE parameter:@"" applyMode:iTermActionApplyModeCurrentSession];
     editActionWindowController.escaping = iTermSendTextEscapingCommon;
@@ -373,8 +371,7 @@ static NSString *const INTERCHANGE_TOUCH_BAR_ITEMS = @"Touch Bar Items";
     }
     _editActionWindowController =
     [[iTermEditKeyActionWindowController alloc] initWithContext:iTermVariablesSuggestionContextSession | iTermVariablesSuggestionContextApp
-                                                           mode:selectedItem.hasSecond ? iTermEditKeyActionWindowControllerModeTouchBarItem : iTermEditKeyActionWindowControllerModeKeyboardShortcut
-                                                    profileType:[self.delegate keyMappingProfileType:self]];
+                                                           mode:selectedItem.hasSecond ? iTermEditKeyActionWindowControllerModeTouchBarItem : iTermEditKeyActionWindowControllerModeKeyboardShortcut];
     __block NSDictionary *binding;
     [selectedItem whenFirst:
      ^(iTermKeystroke * _Nonnull keystroke) {

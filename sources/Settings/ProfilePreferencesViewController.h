@@ -69,6 +69,5 @@ andEditComponentWithIdentifier:(NSString *)identifier
 - (BOOL)hasViewController:(iTermProfilePreferencesBaseViewController *)viewController;
 - (id<iTermSearchableViewController>)viewControllerWithOwnerIdentifier:(NSString *)ownerIdentifier;
 - (void)didLayoutSubviewsForEditCurrentSessionMode;
-- (void)switchProfilesIfNeededToRevealDocument:(iTermPreferencesSearchDocument *)document;
 
 @end

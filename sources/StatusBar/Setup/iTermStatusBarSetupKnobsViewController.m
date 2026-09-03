@@ -21,8 +21,7 @@ static const CGFloat iTermStatusBarSetupPopoverMargin = 5;
 
 @end
 
-static NSViewController<iTermStatusBarKnobViewController> *iTermNewViewControllerForKnob(iTermStatusBarComponentKnob *knob,
-                                                                                         ProfileType profileType) {
+static NSViewController<iTermStatusBarKnobViewController> *iTermNewViewControllerForKnob(iTermStatusBarComponentKnob *knob) {
     switch (knob.type) {
         case iTermStatusBarComponentKnobTypeCheckbox:
             return [[iTermStatusBarKnobCheckboxViewController alloc] init];
@@ -37,7 +36,7 @@ static NSViewController<iTermStatusBarKnobViewController> *iTermNewViewControlle
             return [[iTermStatusBarKnobColorViewController alloc] init];
 
         case iTermStatusBarComponentKnobTypeAction:
-            return [[iTermStatusBarKnobActionViewController alloc] initWithProfileType:profileType];
+            return [[iTermStatusBarKnobActionViewController alloc] init];
 
         case iTermStatusBarComponentKnobTypeInvocation:
             return [[iTermStatusBarKnobTextViewController alloc] initWithInvocationSuggester];
@@ -57,8 +56,7 @@ static NSViewController<iTermStatusBarKnobViewController> *iTermNewViewControlle
     id<iTermStatusBarComponent> _component;
 }
 
-- (instancetype)initWithComponent:(id<iTermStatusBarComponent>)component
-                      profileType:(ProfileType)profileType {
+- (instancetype)initWithComponent:(id<iTermStatusBarComponent>)component {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _component = component;
@@ -70,7 +68,7 @@ static NSViewController<iTermStatusBarKnobViewController> *iTermNewViewControlle
         _size.height = iTermStatusBarSetupPopoverMargin * 2;
         __block CGFloat maxControlWidth = 0;
         _viewControllers = [_knobs mapWithBlock:^id(iTermStatusBarComponentKnob *knob) {
-            NSViewController<iTermStatusBarKnobViewController> *vc = iTermNewViewControllerForKnob(knob, profileType);
+            NSViewController<iTermStatusBarKnobViewController> *vc = iTermNewViewControllerForKnob(knob);
             [self addChildViewController:vc];
             if (knob.helpURL) {
                 [vc setHelpURL:knob.helpURL];

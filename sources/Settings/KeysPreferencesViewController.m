@@ -724,10 +724,6 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
     return [iTermTouchbarMappings globalTouchBarMap];
 }
 
-- (ProfileType)keyMappingProfileType:(iTermKeyMappingViewController *)viewController {
-    return ProfileTypeAll;
-}
-
 - (BOOL)keyMapping:(iTermKeyMappingViewController *)viewController shouldImportKeystrokes:(NSSet<iTermKeystroke *> *)keystrokesThatWillChange {
     NSSet<iTermKeystroke *> *keystrokesInGlobalMapping = [iTermKeyMappings keystrokesInGlobalMapping];
     if (![keystrokesInGlobalMapping isSubsetOfSet:keystrokesThatWillChange]) {

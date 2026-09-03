@@ -312,8 +312,7 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 }
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
-    (void)[_generalViewController setVisibilityForTerminalEnclosures:YES
-                                                hiddenModeEnclosures:YES
+    (void)[_generalViewController setVisibilityForHiddenModeEnclosures:YES
                                             sharedProfilesEnclosures:YES
                                                          tabViewItem:_generalTab];
     [_generalViewController.internalState removeAllObjects];
@@ -539,18 +538,13 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 }
 
-- (ProfileType)profileType {
-    return ProfileTypeTerminal;
-}
-
 - (void)updateEnclosureVisibilityForProfile:(Profile *)profile {
     const BOOL profileIsShared = [[ProfileModel sharedInstance] bookmarkWithGuid:profile[KEY_GUID]] != nil;
     NSInteger i = 0;
     for (NSArray *tuple in [self tabViewControllerTuples]) {
         NSTabViewItem *tabViewItem = tuple[0];
         iTermProfilePreferencesBaseViewController *vc = tuple[1];
-        const BOOL wantTab = [vc setVisibilityForTerminalEnclosures:YES
-                                               hiddenModeEnclosures:NO
+        const BOOL wantTab = [vc setVisibilityForHiddenModeEnclosures:NO
                                            sharedProfilesEnclosures:profileIsShared
                                                         tabViewItem:tabViewItem];
         const BOOL haveTab = [_tabView.tabViewItems containsObject:tabViewItem];
@@ -796,8 +790,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 {
     Profile *profile = [self selectedProfile];
     _bulkCopyController =
-    [[BulkCopyProfilePreferencesWindowController alloc] initWithIdentifiers:[self visibleTabLabels]
-                                                               profileTypes:self.profileType];
+    [[BulkCopyProfilePreferencesWindowController alloc] initWithIdentifiers:[self visibleTabLabels]];
     _bulkCopyController.sourceGuid = profile[KEY_GUID];
 
     _bulkCopyController.keysForColors = [_colorsViewController keysForBulkCopy];
@@ -1260,18 +1253,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
             [self.tabView selectTabViewItem:item];
             return;
         }
-    }
-}
-
-- (void)switchToProfileOfType:(ProfileType)profileType {
-    if (profileType & ProfileTypeTerminal) {
-        [self selectDefaultProfile];
-    }
-}
-
-- (void)switchProfilesIfNeededToRevealDocument:(iTermPreferencesSearchDocument *)document {
-    if ((document.profileTypes & _generalViewController.profileType) == 0) {
-        [self switchToProfileOfType:document.profileTypes];
     }
 }
 

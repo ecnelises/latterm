@@ -272,10 +272,6 @@
 - (void)willReloadProfile {
 }
 
-- (ProfileType)profileType {
-    return ProfileTypeTerminal;
-}
-
 - (void)reloadProfile {
     for (NSControl *control in self.keyMap) {
         PreferenceInfo *info = [self infoForControl:control];

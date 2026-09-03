@@ -972,8 +972,7 @@ typedef enum {
             [editArgumentButton_ setHidden:NO];
             _menuItemPopupView.hidden = YES;
             [editArgumentLabel_ setStringValue:@"Profile:"];
-            [editArgumentButton_ populateWithProfilesSelectingGuid:currentArg
-                                                      profileTypes:ProfileTypeAll];
+            [editArgumentButton_ populateWithProfilesSelectingGuid:currentArg];
             _pasteSpecialViewContainer.hidden = YES;
             break;
 
@@ -1216,7 +1215,7 @@ typedef enum {
 
 - (void)configurePasteSpecialWithArgument:(NSString *)parameterValue {
     _pasteSpecialViewController = [[iTermPasteSpecialViewController alloc] init];
-    [_pasteSpecialViewController view];
+    [_pasteSpecialViewController applyTerminalLayout];
 
     // Set a few defaults; otherwise everything is reasonable.
     _pasteSpecialViewController.numberOfSpacesPerTab = [iTermPreferences intForKey:kPreferenceKeyPasteSpecialSpacesPerTab];

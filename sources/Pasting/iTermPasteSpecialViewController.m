@@ -55,6 +55,7 @@ static NSString *const kSubstitution = @"Substitution";
 @end
 
 @implementation iTermPasteSpecialViewController {
+    BOOL _didApplyTerminalLayout;
     IBOutlet NSTextField *_spacesPerTab;
     IBOutlet NSButton *_escapeShellCharsWithBackslash;
     IBOutlet NSButton *_removeControlCodes;
@@ -95,11 +96,13 @@ static NSString *const kSubstitution = @"Substitution";
     _icuRegexHelpLabel = nil;
 }
 
-- (void)setProfileType:(ProfileType)profileType {
-    _profileType = profileType;
+- (void)applyTerminalLayout {
+    if (_didApplyTerminalLayout) {
+        return;
+    }
+    _didApplyTerminalLayout = YES;
     NSSize shrinkage;
-    (void)[self.view setVisibilityForTerminalEnclosures:!!(profileType & ProfileTypeTerminal)
-                                   hiddenModeEnclosures:NO
+    (void)[self.view setVisibilityForHiddenModeEnclosures:NO
                                sharedProfilesEnclosures:false
                                            stateStorage:[NSMutableDictionary dictionary]
                                               shrinkage:&shrinkage];

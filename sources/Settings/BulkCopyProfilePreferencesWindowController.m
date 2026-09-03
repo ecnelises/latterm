@@ -47,14 +47,11 @@ NSString *const iTermBulkCopyIdentifierAdvanced = @"Advanced";
     IBOutlet ProfileListView *_copyTo;
     IBOutlet NSButton *_copyButton;
     NSArray<NSString *> *_identifiersToKeep;
-    ProfileType _profileTypes;
 }
 
-- (instancetype)initWithIdentifiers:(NSArray<NSString *> *)identifiers
-                       profileTypes:(ProfileType)profileTypes {
+- (instancetype)initWithIdentifiers:(NSArray<NSString *> *)identifiers {
     self = [super initWithWindowNibName:@"BulkCopyProfilePreferences"];
     if (self) {
-        _profileTypes = profileTypes;
         _identifiersToKeep = [identifiers copy];
     }
     return self;
@@ -65,7 +62,6 @@ NSString *const iTermBulkCopyIdentifierAdvanced = @"Advanced";
 }
 
 - (void)awakeFromNib {
-    _copyTo.profileTypes = _profileTypes;
     NSDictionary *map = @{
         iTermBulkCopyIdentifierColors: _copyColors,
         iTermBulkCopyIdentifierText: _copyText,

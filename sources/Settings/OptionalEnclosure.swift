@@ -10,14 +10,9 @@
 class ModalEnclosure: NSView {
     var shiftsViewsBeneath: Bool = true
     var neighborToGrowRight: NSView?
-
-    @objc
-    var visibleForProfileTypes: ProfileType {
-        return [.all]
-    }
 }
 
-// Visible if the profile being edited is in terminal mode
+// Groups controls that are always visible in this terminal-only fork.
 @objc(iTermTerminalModeEnclosure)
 @IBDesignable
 class TerminalModeEnclosure: ModalEnclosure {
@@ -39,67 +34,32 @@ class TerminalModeEnclosure: ModalEnclosure {
             super.neighborToGrowRight = newValue
         }
     }
-
-    @objc
-    override var visibleForProfileTypes: ProfileType {
-        return [.terminal]
-    }
 }
 
 // Always hidden. Retained for preference rows unavailable in this fork.
 @objc(iTermHiddenModeEnclosure)
 @IBDesignable
 class HiddenModeEnclosure: ModalEnclosure {
-    @objc
-    override var visibleForProfileTypes: ProfileType {
-        return []
-    }
 }
 
 // Visible if editing a shared profile, not a divorced sessions instance profile.
 @objc(iTermSharedProfileEnclosure)
 @IBDesignable
 class SharedProfileEnclosure: ModalEnclosure {
-    @objc
-    override var visibleForProfileTypes: ProfileType {
-        return [.all]
-    }
 }
 
-extension NSView {
-    @objc
-    var enclosingModalEnclosure: ModalEnclosure? {
-        var current = self
-        while true {
-            if let enclosure = current as? ModalEnclosure {
-                return enclosure
-            }
-            if let parent = current.superview {
-                current = parent
-            } else {
-                return nil
-            }
-        }
-    }
-}
-
-fileprivate let terminalModeKey = "terminal mode"
-fileprivate let hiddenModeKey = "hidden mode"
-fileprivate let sharedProfilesModeKey = "shared profiles mode"
 fileprivate let key = "frames"
 
 @objc
 extension NSView {
     // Returns whether the tab view item can remain because it has visible subviews.
-    @objc(setVisibilityForTerminalEnclosures:hiddenModeEnclosures:sharedProfilesEnclosures:stateStorage:shrinkage:)
-    func setVisibility(forTerminalEnclosures terminal: Bool,
-                       hiddenModeEnclosures hidden: Bool,
+    @objc(setVisibilityForHiddenModeEnclosures:sharedProfilesEnclosures:stateStorage:shrinkage:)
+    func setVisibility(forHiddenModeEnclosures hidden: Bool,
                        sharedProfilesEnclosures sharedProfiles: Bool,
                        stateStorage: NSMutableDictionary,
                        shrinkage: UnsafeMutablePointer<NSSize>?) -> Bool {
         let tabViewItemView = self
-        let configuration = SavedFrames.Configuration(terminal: terminal,
-                                                      hidden: hidden,
+        let configuration = SavedFrames.Configuration(hidden: hidden,
                                                       sharedProfiles: sharedProfiles)
         if savedFrames(stateStorage: stateStorage)?.configuration == configuration {
             // Nothing has changed
@@ -116,11 +76,7 @@ extension NSView {
             case .left(let subview):
                 if let enclosure = subview as? TerminalModeEnclosure {
                     enclosures.append(subview as! ModalEnclosure)
-                    if terminal {
-                        reveal.append(enclosure)
-                    } else {
-                        remove.append(enclosure)
-                    }
+                    reveal.append(enclosure)
                     return false
                 }
                 if let enclosure = subview as? HiddenModeEnclosure {
@@ -170,7 +126,6 @@ extension NSView {
 
     private class SavedFrames: NSObject {
         struct Configuration: Equatable {
-            var terminal = false
             var hidden = false
             var sharedProfiles = false
         }

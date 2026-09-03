@@ -660,11 +660,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         return iTermController.sharedInstance.currentTerminal != nil && [self pidForReplay] != 0;
 #endif
     } else if (menuItem.action == @selector(toggleToolbeltTool:)) {
-        ProfileType profileType = [[[[[iTermController sharedInstance] currentTerminal] currentSession] profile] profileType];
-        if (profileType == 0) {
-            return NO;
-        }
-        return !!(menuItem.tag & profileType);
+        return [iTermController sharedInstance].currentTerminal != nil;
     } else if (menuItem.action == @selector(newSessionAlternate:)) {
         menuItem.title = [self alternateNewSessionShouldOpenAtEnd] ? @"New Tab At End" : @"New Tab Next to Current Tab";
         return YES;

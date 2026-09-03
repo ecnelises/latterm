@@ -502,13 +502,6 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
                     searchable:NO];
 }
 
-- (ProfileType)profileTypesForView:(NSView *)view {
-    if ([self isKindOfClass:[iTermProfilePreferencesBaseViewController class]]) {
-        return view.enclosingModalEnclosure.visibleForProfileTypes;
-    }
-    return ProfileTypeAll;
-}
-
 - (void)addViewToSearchIndex:(NSView *)view
                  displayName:(NSString *)displayName
                      phrases:(NSArray<NSString *> *)phrases
@@ -517,8 +510,7 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
     if (displayName) {
         iTermPreferencesSearchDocument *doc = [iTermPreferencesSearchDocument documentWithDisplayName:displayName
                                                                                            identifier:nonnilKey
-                                                                                       keywordPhrases:phrases
-                                                                                         profileTypes:[self profileTypesForView:view]];
+                                                                                       keywordPhrases:phrases];
         doc.ownerIdentifier = self.documentOwnerIdentifier;
         [_docs addObject:doc];
     } else {

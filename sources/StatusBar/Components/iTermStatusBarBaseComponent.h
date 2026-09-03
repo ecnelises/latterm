@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import "iTermStatusBarComponent.h"
 #import "iTermStatusBarLayout.h"
-#import "ProfileModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +26,6 @@ extern const double iTermStatusBarBaseComponentDefaultPriority;
 @property (nonatomic, readonly) NSColor *statusBarBackgroundColor;
 @property (nonatomic, readonly, nullable) NSColor *defaultTextColor;
 @property (nonatomic, readonly) iTermStatusBarAdvancedConfiguration *advancedConfiguration;
-@property (nonatomic, readonly, class) ProfileType compatibleProfileTypes;
 
 + (NSString *)statusBarComponentIdentifier;
 

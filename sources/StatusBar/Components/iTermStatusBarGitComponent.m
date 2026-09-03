@@ -89,10 +89,6 @@ static const NSTimeInterval iTermStatusBarGitComponentDefaultCadence = 2;
     return self;
 }
 
-+ (ProfileType)compatibleProfileTypes {
-    return ProfileTypeTerminal;
-}
-
 - (void)setDelegate:(id<iTermStatusBarComponentDelegate> _Nullable)delegate {
     [super setDelegate:delegate];
     [self statusBarComponentUpdate];

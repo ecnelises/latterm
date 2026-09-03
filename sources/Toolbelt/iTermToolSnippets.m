@@ -198,10 +198,6 @@ static NSButton *iTermToolSnippetsNewButton(NSString *imageName, NSString *title
     return self;
 }
 
-+ (ProfileType)supportedProfileTypes {
-    return ProfileTypeAll;
-}
-
 - (void)buildTree {
     _tree = [self makeTree];
 }

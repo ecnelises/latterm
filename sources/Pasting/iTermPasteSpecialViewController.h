@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import "PasteEvent.h"
-#import "ProfileModel.h"
 
 extern NSString *const kPasteSpecialViewControllerUnicodePunctuationRegularExpression;
 extern NSString *const kPasteSpecialViewControllerUnicodeDashesRegularExpression;
@@ -54,8 +53,7 @@ extern NSString *const kPasteSpecialViewControllerUnicodeSingleQuotesRegularExpr
 
 @property(nonatomic, readonly) NSString *stringEncodedSettings;
 @property(nonatomic, readonly) iTermPasteFlags flags;
-@property(nonatomic) ProfileType profileType;
-
+- (void)applyTerminalLayout;
 + (NSString *)descriptionForCodedSettings:(NSString *)jsonString;
 + (PasteEvent *)pasteEventForConfig:(NSString *)jsonConfig string:(NSString *)string;
 

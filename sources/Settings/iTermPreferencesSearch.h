@@ -6,8 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ProfileModel.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface iTermPreferencesSearchDocument : NSObject<NSCopying>
@@ -18,12 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSNumber *docid;
 @property (nonatomic, strong) NSString *ownerIdentifier;
 @property (nonatomic) double queryIndependentScore;
-@property (nonatomic, readonly) ProfileType profileTypes;
-
 + (instancetype)documentWithDisplayName:(NSString *)displayName
                              identifier:(NSString *)identifier
-                         keywordPhrases:(NSArray<NSString *> *)keywordPhrases
-                           profileTypes:(ProfileType)profileTypes;
+                         keywordPhrases:(NSArray<NSString *> *)keywordPhrases;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -31,8 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface iTermPreferencesSearchEngine : NSObject
 - (void)addDocumentToIndex:(iTermPreferencesSearchDocument *)document;
-- (NSArray<iTermPreferencesSearchDocument *> *)documentsMatchingQuery:(NSString *)query
-                                                  allowedProfileTypes:(ProfileType)profileType;
+- (NSArray<iTermPreferencesSearchDocument *> *)documentsMatchingQuery:(NSString *)query;
 - (nullable iTermPreferencesSearchDocument *)documentWithKey:(NSString *)key;
 @end
 

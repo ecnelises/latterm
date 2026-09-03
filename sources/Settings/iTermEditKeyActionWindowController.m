@@ -345,11 +345,9 @@ const CGFloat sideMarginWidth = 40;
 }
 
 - (instancetype)initWithContext:(iTermVariablesSuggestionContext)context
-                           mode:(iTermEditKeyActionWindowControllerMode)mode
-                    profileType:(ProfileType)profileType {
+                           mode:(iTermEditKeyActionWindowControllerMode)mode {
     self = [super initWithWindowNibName:@"iTermEditKeyActionWindowController" owner:self];
     if (self) {
-        _profileType = profileType;
         _suggestContext = context;
         _mode = mode;
     }
@@ -377,11 +375,10 @@ const CGFloat sideMarginWidth = 40;
         ] arrayByRemovingNulls]];
     }
 
-    const BOOL hideTerminalOnlyItems = (_profileType & ProfileTypeTerminal) == 0;
     groups = [groups arrayByAddingObjectsFromArray:[@[
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Miscellaneous" items:[@[
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Run Coprocess" tag:KEY_ACTION_RUN_COPROCESS],
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Start Instant Replay" tag:KEY_ACTION_IR_BACKWARD],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Run Coprocess" tag:KEY_ACTION_RUN_COPROCESS],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Start Instant Replay" tag:KEY_ACTION_IR_BACKWARD],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Undo" tag:KEY_ACTION_UNDO],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send tmux Command" tag:KEY_ACTION_SEND_TMUX_COMMAND],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Alert on Next Mark" tag:KEY_ACTION_ALERT_ON_NEXT_MARK],
@@ -400,7 +397,7 @@ const CGFloat sideMarginWidth = 40;
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Profile" items:[@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Change Profile" tag:KEY_ACTION_SET_PROFILE],
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Load Color Preset" tag:KEY_ACTION_LOAD_COLOR_PRESET],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Load Color Preset" tag:KEY_ACTION_LOAD_COLOR_PRESET],
         ] arrayByRemovingNulls]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Tabs" items:@[
@@ -454,9 +451,9 @@ const CGFloat sideMarginWidth = 40;
         ]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Send Keystrokes" items:[@[
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send ^H Backspace" tag:KEY_ACTION_SEND_C_H_BACKSPACE],
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send ^? Backspace" tag:KEY_ACTION_SEND_C_QM_BACKSPACE],
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Escape Sequence" tag:KEY_ACTION_ESCAPE_SEQUENCE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send ^H Backspace" tag:KEY_ACTION_SEND_C_H_BACKSPACE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send ^? Backspace" tag:KEY_ACTION_SEND_C_QM_BACKSPACE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Escape Sequence" tag:KEY_ACTION_ESCAPE_SEQUENCE],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Hex Code" tag:KEY_ACTION_HEX_CODE],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Text" tag:KEY_ACTION_TEXT],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Text with “vim” Special Chars" tag:KEY_ACTION_VIM_TEXT],
@@ -466,7 +463,7 @@ const CGFloat sideMarginWidth = 40;
         ] arrayByRemovingNulls]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Search" items:[@[
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Regular Expression…" tag:KEY_ACTION_FIND_REGEX],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Regular Expression…" tag:KEY_ACTION_FIND_REGEX],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Again Down" tag:KEY_FIND_AGAIN_DOWN],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Again Up" tag:KEY_FIND_AGAIN_UP],
         ] arrayByRemovingNulls]],
@@ -483,7 +480,7 @@ const CGFloat sideMarginWidth = 40;
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Toggles" items:[@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Fullscreen" tag:KEY_ACTION_TOGGLE_FULLSCREEN],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Pin Hotkey Window" tag:KEY_ACTION_TOGGLE_HOTKEY_WINDOW_PINNING],
-            hideTerminalOnlyItems ? [NSNull null] : [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Mouse Reporting" tag:KEY_ACTION_TOGGLE_MOUSE_REPORTING],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Mouse Reporting" tag:KEY_ACTION_TOGGLE_MOUSE_REPORTING],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Setting" tag:KEY_ACTION_TOGGLE_SETTING],
         ] arrayByRemovingNulls]],
 
@@ -593,15 +590,13 @@ const CGFloat sideMarginWidth = 40;
 
     if (_pasteSpecialViewController == nil) {
         _pasteSpecialViewController = [[iTermPasteSpecialViewController alloc] init];
-        _pasteSpecialViewController.profileType = _profileType;
-        [_pasteSpecialViewController view];
+        [_pasteSpecialViewController applyTerminalLayout];
     }
 
     [self updateViewsAnimated:NO secondary:secondary];
 
     if (!_profilePopup.isHidden) {
-        [_profilePopup populateWithProfilesSelectingGuid:parameterValue ?: @""
-                                            profileTypes:_profileType];
+        [_profilePopup populateWithProfilesSelectingGuid:parameterValue ?: @""];
     }
     if (!_colorPresetsPopup.isHidden) {
         [_colorPresetsPopup loadColorPresetsSelecting:parameterValue ?: @""];
@@ -752,8 +747,7 @@ const CGFloat sideMarginWidth = 40;
     [_parameterLabel setHidden:config.parameterLabelHidden];
     [_profilePopup setHidden:config.profilePopupHidden];
     if (!config.profilePopupHidden) {
-        [_profilePopup populateWithProfilesSelectingGuid:config.parameterValue ?: @""
-                                            profileTypes:_profileType];
+        [_profilePopup populateWithProfilesSelectingGuid:config.parameterValue ?: @""];
     }
     [_selectionMovementUnit setHidden:config.selectionMovementUnitHidden];
     [_profileLabel setHidden:config.profileLabelHidden];
@@ -1069,8 +1063,7 @@ const CGFloat sideMarginWidth = 40;
     }
     if (view == _comboView || view == _secondaryComboView) {
         NSString *guid = [[_profilePopup selectedItem] representedObject];
-        [_profilePopup populateWithProfilesSelectingGuid:guid
-                                            profileTypes:_profileType];
+        [_profilePopup populateWithProfilesSelectingGuid:guid];
         [_colorPresetsPopup loadColorPresetsSelecting:_colorPresetsPopup.selectedItem.representedObject];
         [_snippetsPopup populateWithSnippetsSelectingActionKey:_snippetsPopup.selectedItem.representedObject];
         [_menuToSelectPopup reloadData];

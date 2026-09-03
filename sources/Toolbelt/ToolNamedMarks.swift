@@ -83,20 +83,8 @@ class ToolNamedMarks: NSView, ToolbeltTool, NSTableViewDelegate, NSTableViewData
         updateEnabled()
     }
 
-    static func isDynamic() -> Bool {
-        return false
-    }
-    
-    required init!(frame: NSRect, url: URL!, identifier: String!) {
-        it_fatalError()
-    }
-
     required init?(coder: NSCoder) {
         it_fatalError("init(coder:) has not been implemented")
-    }
-
-    static var supportedProfileTypes: ProfileType {
-        .all
     }
 
     @objc func shutdown() {

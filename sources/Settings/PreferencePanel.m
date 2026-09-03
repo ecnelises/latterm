@@ -1299,16 +1299,9 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 }
 
-- (ProfileType)currentProfileType {
-    NSString *guid = [self currentProfileGuid];
-    Profile *profile = [_profileModel bookmarkWithGuid:guid] ?: [_profileModel defaultProfile];
-    return profile.profileType ?: ProfileTypeAll;
-}
-
 - (NSArray<iTermPreferencesSearchDocument *> *)searchResults {
     [self buildSearchEngineIfNeeded];
-    return [gSearchEngine documentsMatchingQuery:self.searchField.stringValue
-                             allowedProfileTypes:self.currentProfileType];
+    return [gSearchEngine documentsMatchingQuery:self.searchField.stringValue];
 }
 
 - (void)controlTextDidEndEditing:(NSNotification *)obj {
@@ -1409,9 +1402,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
      [self showScrimIfNeeded];
     // Revealing can cause a first responder change which removes the scrim, so note that we shouldn't do that.
     _revealingControl = YES;
-    if ([viewController isKindOfClass:[iTermProfilePreferencesBaseViewController class]]) {
-        [_profilesViewController switchProfilesIfNeededToRevealDocument:document];
-    }
     _scrim.cutoutView = [viewController searchableViewControllerRevealItemForDocument:document
                                                                              forQuery:self.searchField.stringValue
                                                                         willChangeTab:&waitForInnerTabToSwitch];

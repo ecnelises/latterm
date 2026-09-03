@@ -358,20 +358,11 @@ static NSInteger gLessLoggingCount;
 }
 
 - (NSArray*)bookmarkIndicesMatchingFilter:(NSString*)filter orGuid:(NSString *)lockedGuid {
-    return [self profileIndicesMatchingFilter:filter orGuid:lockedGuid ofType:ProfileTypeAll];
-}
-
-- (NSArray<Profile *> *)profileIndicesMatchingFilter:(NSString *)filter
-                                              orGuid:(NSString *)lockedGuid
-                                              ofType:(ProfileType)profileTypes {
     NSMutableArray* result = [NSMutableArray arrayWithCapacity:[bookmarks_ count]];
     NSArray* tokens = [self.class parseFilter:filter];
     int count = [bookmarks_ count];
     for (int i = 0; i < count; ++i) {
         Profile *profile = [self profileAtIndex:i];
-        if ((profile.profileType & profileTypes) == 0) {
-            continue;
-        }
         if ([self.class doesProfile:profile matchFilter:tokens] ||
             [bookmarks_[i][KEY_GUID] isEqualToString:lockedGuid]) {
             [result addObject:@(i)];
@@ -1123,10 +1114,6 @@ static NSInteger gLessLoggingCount;
 @end
 
 @implementation NSDictionary(ProfileModel)
-
-- (ProfileType)profileType {
-    return ProfileTypeTerminal;
-}
 
 + (BOOL)isLegacyBrowserCustomCommand:(id)customCommand {
     return [customCommand isEqual:@"Browser"];

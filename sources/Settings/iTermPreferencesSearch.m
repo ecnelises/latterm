@@ -17,18 +17,15 @@
 
 + (instancetype)documentWithDisplayName:(NSString *)displayName
                              identifier:(NSString *)identifier
-                         keywordPhrases:(NSArray<NSString *> *)keywordPhrases
-                           profileTypes:(ProfileType)profileTypes {
+                         keywordPhrases:(NSArray<NSString *> *)keywordPhrases {
     return [[iTermPreferencesSearchDocument alloc] initWithDisplayName:displayName
                                                             identifier:identifier
-                                                        keywordPhrases:keywordPhrases
-                                                          profileTypes:profileTypes];
+                                                        keywordPhrases:keywordPhrases];
 }
 
 - (instancetype)initWithDisplayName:(NSString *)displayName
                          identifier:(NSString *)identifier
-                     keywordPhrases:(NSArray<NSString *> *)keywordPhrases
-                       profileTypes:(ProfileType)profileTypes {
+                     keywordPhrases:(NSArray<NSString *> *)keywordPhrases {
     self = [super init];
     if (self) {
         static NSUInteger nextDocId;
@@ -36,7 +33,6 @@
         _displayName = [displayName copy];
         _identifier = [identifier copy];
         _keywordPhrases = [keywordPhrases copy];
-        _profileTypes = profileTypes;
     }
     return self;
 }
@@ -275,8 +271,7 @@
     return nil;
 }
 
-- (NSArray<iTermPreferencesSearchDocument *> *)documentsMatchingQuery:(NSString *)query
-                                                  allowedProfileTypes:(ProfileType)allowedProfileTypes {
+- (NSArray<iTermPreferencesSearchDocument *> *)documentsMatchingQuery:(NSString *)query {
     NSString *trimmedQuery = [query stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     iTermTuple<NSArray<NSString *> *, NSString *> *tuple = [trimmedQuery queryBySplittingLiteralPhrases];
     NSArray<NSString *> *rawTokens = [trimmedQuery it_normalizedTokens];
@@ -297,12 +292,6 @@
     NSSet<NSNumber *> *docIDs = [self intersectCursorDocIDs:cursors];
     if (tuple.firstObject.count) {
         docIDs = [self documentsWithLiteralPhrases:tuple.firstObject fromDocIDs:docIDs];
-    }
-    if (allowedProfileTypes != ProfileTypeAll) {
-        docIDs = [docIDs filteredSetUsingBlock:^BOOL(NSNumber *docID) {
-            iTermPreferencesSearchDocument *doc = self->_docs[docID];
-            return (doc.profileTypes & allowedProfileTypes) != 0;
-        }];
     }
     return [self documentsSortedByDisplayNameWithDocIDs:docIDs];
 }

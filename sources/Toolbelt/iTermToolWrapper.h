@@ -9,7 +9,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "iTermKeyBindingAction.h"
-#import "ProfileModel.h"
 
 @class iTermAction;
 @protocol iTermMark;
@@ -47,7 +46,6 @@
 - (NSArray<NSString *> *)toolbeltSnippetTags;
 - (void)toolbeltMakeCurrentSessionFirstResponder;
 - (NSArray<id<iTermGenericNamedMarkReading>> *)toolbeltNamedMarks;
-- (ProfileType)toolbeltProfileType;
 - (BOOL)toolbeltWindowContainsSessionWithGUID:(NSString *)guid;
 - (iTermSessionNoteModel *)toolbeltCurrentSessionNoteModel;
 - (iTermSessionNoteModel *)toolbeltEnsureCurrentSessionNoteModel;
@@ -65,14 +63,11 @@
 @end
 
 @protocol ToolbeltTool <NSObject>
-@property(class, nonatomic, readonly) ProfileType supportedProfileTypes;
 - (CGFloat)minimumHeight;
 
 @optional
-+ (BOOL)isDynamic;
 - (NSDictionary *)restorableState;
 - (void)restoreFromState:(NSDictionary *)state;
-- (instancetype)initWithFrame:(NSRect)frame URL:(NSURL *)url identifier:(NSString *)identifier;
 - (void)relayout;
 - (void)shutdown;
 - (void)windowBackgroundColorDidChange;

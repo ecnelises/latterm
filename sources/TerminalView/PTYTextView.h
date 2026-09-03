@@ -369,7 +369,6 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (void)textViewRevealChannelWithUID:(NSString *)uid;
 - (BOOL)textViewAlternateMouseScroll:(out BOOL *)verticalOnly;
 - (void)textViewMarginColorDidChange;
-- (BOOL)textViewProfileTypeIsTerminal;
 - (BOOL)textViewCanUseSSHIntegrationFor:(SCPPath *)path;
 - (BOOL)textViewPerformTextReplacement;
 - (void)textViewSaveArchive:(iTermSavePanelItem *)location;

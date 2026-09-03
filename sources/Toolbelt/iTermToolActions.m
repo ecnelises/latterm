@@ -114,10 +114,6 @@ static NSButton *iTermToolActionsNewButton(NSString *imageName, NSString *title,
     return self;
 }
 
-+ (ProfileType)supportedProfileTypes {
-    return ProfileTypeAll;
-}
-
 #pragma mark - ToolbeltTool
 
 - (void)shutdown {
@@ -267,8 +263,7 @@ static NSButton *iTermToolActionsNewButton(NSString *imageName, NSString *title,
 - (iTermEditKeyActionWindowController *)newEditKeyActionWindowControllerForAction:(iTermAction *)action {
     iTermEditKeyActionWindowController *windowController =
     [[iTermEditKeyActionWindowController alloc] initWithContext:iTermVariablesSuggestionContextSession
-                                                           mode:iTermEditKeyActionWindowControllerModeUnbound
-                                                    profileType:ProfileTypeAll];
+                                                           mode:iTermEditKeyActionWindowControllerModeUnbound];
     if (action) {
         windowController.label = action.title;
         windowController.isNewMapping = NO;

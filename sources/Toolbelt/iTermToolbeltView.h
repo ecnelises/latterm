@@ -31,17 +31,12 @@ extern NSString *const kToolbeltShouldHide;
 // Returns an array of tool keys.
 + (NSArray *)allTools;
 
-// Returns an array of tool keys for tools to show ignoring profile type.
+// Returns an array of configured tool keys that still exist.
 + (NSArray *)configuredTools;
-
-// An array of tool keys that we can actually use.
-+ (NSArray<NSString *> *)availableConfiguredToolsForProfileType:(ProfileType)profileType;
 
 + (void)populateMenu:(NSMenu *)menu;
 + (void)toggleShouldShowTool:(NSString *)theName;
-+ (int)numberOfVisibleToolsForProfileType:(ProfileType)profileType;
-+ (BOOL)shouldShowTool:(NSString *)name
-           profileType:(ProfileType)profileType;
++ (int)numberOfVisibleTools;
 
 - (instancetype)initWithFrame:(NSRect)frame delegate:(id<iTermToolbeltViewDelegate>)delegate;
 

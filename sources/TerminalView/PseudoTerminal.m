@@ -11690,7 +11690,7 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         return _contentView.shouldShowToolbelt;
     } else if ([item action] == @selector(toggleToolbeltVisibility:)) {
         [item setState:_contentView.shouldShowToolbelt ? NSControlStateValueOn : NSControlStateValueOff];
-        return [[iTermToolbeltView availableConfiguredToolsForProfileType:self.currentSession.profile.profileType] count] > 0;
+        return [iTermToolbeltView numberOfVisibleTools] > 0;
     } else if ([item action] == @selector(toggleNotifyOnStatusChange:)) {
         const BOOL armed = [[iTermNotifyOnStatusChangeController instance] isWindowArmedForGuid:self.terminalGuid];
         [item setState:armed ? NSControlStateValueOn : NSControlStateValueOff];
@@ -13279,10 +13279,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 - (void)toolbeltMakeCurrentSessionFirstResponder {
     [[self window] makeFirstResponder:[[self currentSession] mainResponder]];
     [[self currentTab] recheckBlur];
-}
-
-- (ProfileType)toolbeltProfileType {
-    return self.currentSession.profile.profileType;
 }
 
 - (BOOL)toolbeltWindowContainsSessionWithGUID:(NSString *)guid {

@@ -111,10 +111,6 @@ const double iTermStatusBarBaseComponentDefaultPriority = 5;
             NSStringFromClass([self class]), self, @(self.statusBarComponentPriority)];
 }
 
-+ (ProfileType)compatibleProfileTypes {
-    return ProfileTypeAll;
-}
-
 - (void)statusBarComponentUpdateColors {
 }
 

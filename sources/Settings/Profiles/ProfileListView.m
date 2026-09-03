@@ -98,13 +98,8 @@ const CGFloat kDefaultTagsWidth = 80;
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect model:(ProfileModel *)dataSource font:(NSFont *)font {
-    return [self initWithFrame:frameRect model:dataSource font:font profileTypes:ProfileTypeAll];
-}
-
-- (instancetype)initWithFrame:(NSRect)frameRect model:(ProfileModel*)dataSource font:(NSFont *)font profileTypes:(ProfileType)profileTypes {
     self = [super initWithFrame:frameRect];
     if (self) {
-        _profileTypes = profileTypes;
         _savedHeights = [[NSMutableDictionary alloc] init];
         margin_ = kInterWidgetMargin;
         [self setUnderlyingDatasource:dataSource];
@@ -441,7 +436,7 @@ const CGFloat kDefaultTagsWidth = 80;
 
 - (void)setUnderlyingDatasource:(ProfileModel*)dataSource {
     [dataSource_ autorelease];
-    dataSource_ = [[ProfileModelWrapper alloc] initWithModel:dataSource profileTypes:_profileTypes];
+    dataSource_ = [[ProfileModelWrapper alloc] initWithModel:dataSource];
 }
 
 - (ProfileModelWrapper*)dataSource
@@ -986,12 +981,6 @@ const CGFloat kDefaultTagsWidth = 80;
     if ([self.delegate respondsToSelector:@selector(profileTableFilterDidChange:)]) {
         [self.delegate profileTableFilterDidChange:self];
     }
-}
-
-- (void)setProfileTypes:(ProfileType)profileTypes {
-    _profileTypes = profileTypes;
-    dataSource_.profileTypes = profileTypes;
-    [self reloadData];
 }
 
 - (void)multiColumns

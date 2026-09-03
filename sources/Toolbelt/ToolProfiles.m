@@ -105,10 +105,6 @@ static NSString *const iTermToolProfilesProfileListViewState = @"iTermToolProfil
     [_openButton unbind:@"enabled"];
 }
 
-+ (ProfileType)supportedProfileTypes {
-    return ProfileTypeAll;
-}
-
 - (void)refreshTerminal:(NSNotification *)notification {
     [listView_ reloadData];
 }

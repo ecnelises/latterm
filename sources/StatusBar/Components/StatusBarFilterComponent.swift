@@ -56,10 +56,6 @@ class StatusBarFilterComponent: iTermStatusBarBaseComponent, iTermFilterViewCont
                      forKey: Keys.searchFieldText.rawValue)
     }
 
-    override static var compatibleProfileTypes: ProfileType {
-        .terminal
-    }
-
     @IBAction @objc(closeButton:) func closeButton(_ sender: Any) {
         delegate?.statusBarRemoveTemporaryComponent(self)
     }
