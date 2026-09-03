@@ -13836,7 +13836,7 @@
 				A6E9AA832F19699B00A04BAE /* NSSetFunctional.m */,
 			);
 			name = CoreParse;
-			path = ../submodules/CoreParse/CoreParse;
+			path = CoreParse/CoreParse;
 			sourceTree = "<group>";
 		};
 		A6EA071B24EA440600DD6E17 /* NSURL-IDN */ = {

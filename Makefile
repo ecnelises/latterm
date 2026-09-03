@@ -402,8 +402,7 @@ libssh2: force openssl
 
 CoreParse: force
 	rm -rf ThirdParty/CoreParse.framework
-	cd submodules/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=../../ThirdParty VALID_ARCHS="arm64" $(SIGNING_FLAGS) $(ARCH_FLAGS)
-	cp "submodules/CoreParse//CoreParse/Tokenisation/Token Recognisers/CPRegexpRecogniser.h" ThirdParty/CoreParse.framework/Versions/A/Headers/CPRegexpRecogniser.h
+	cd ThirdParty/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=.. MACOSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) VALID_ARCHS="arm64" $(SIGNING_FLAGS) $(ARCH_FLAGS)
 
 NMSSH: force libssh2
 	echo Begin building NMSSH
@@ -517,7 +516,7 @@ SearchableComboListView: force
 	cd SearchableComboListView && $(MAKE)
 
 cleandeps: force
-	cd submodules/CoreParse/ && git clean -f -d .
+	rm -rf ThirdParty/CoreParse/build
 	cd submodules/NMSSH && git restore .
 	cd submodules/libsixel && git clean -f -d .
 	cd submodules/libssh2 && git clean -f -d .

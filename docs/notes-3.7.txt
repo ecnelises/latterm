@@ -55,6 +55,7 @@ Terminal-first fork changes:
   service while retaining existing behavior.
 - Moved Python/runtime version comparisons to an
   app-owned utility.
+- Removed a redundant CoreParse source checkout.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
