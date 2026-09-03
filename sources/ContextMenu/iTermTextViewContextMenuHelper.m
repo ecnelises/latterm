@@ -333,13 +333,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
         id<VT100ScreenMarkReading> commandMark = [item representedObject];
         return [self.delegate contextMenu:self hasOutputForCommandMark:commandMark];
     }
-    if ([item action] == @selector(openURLInVerticalSplitPane:) ||
-        [item action] == @selector(openURLInHorizontalSplitPane:)) {
-        // These explicitly split the current window, so disable them when its
-        // layout is locked (parallel to the greyed-out Split Pane menu items).
-        iTermSelection *selection = [self.delegate contextMenuSelection:self];
-        return selection.hasSelection && ![self.delegate contextMenuWindowIsLayoutLocked:self];
-    }
     if ([item action] == @selector(sendSelection:) ||
         [item action] == @selector(addNote:) ||
         [item action] == @selector(mail:) ||
@@ -546,11 +539,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
     add(scpTitle, @selector(downloadWithSCP:));
     if (shortSelectedText) {
         add(@"Open Selection as URL", @selector(browse:));
-        if ([[NSWorkspace sharedWorkspace] it_urlIsConditionallyLocallyOpenable:[NSURL URLWithString:shortSelectedText]]) {
-            add(@"Open URL in Vertical Split Pane", @selector(openURLInVerticalSplitPane:));
-            add(@"Open URL in Horizontal Split Pane", @selector(openURLInHorizontalSplitPane:));
-            [theMenu addItem:[NSMenuItem separatorItem]];
-        }
     }
     if (shortSelectedText && [self.delegate contextMenu:self canQuickLookURL:[NSURL URLWithUserSuppliedString:shortSelectedText]]) {
         add(@"Quick Look Link", @selector(quickLook:));
@@ -1160,20 +1148,7 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
 
 - (void)browse:(id)sender {
     [_urlActionHelper findUrlInString:[self.delegate contextMenuSelectedText:self capped:0]
-                  andOpenInBackground:NO
-                                style:iTermOpenStyleTab];
-}
-
-- (void)openURLInVerticalSplitPane:(id)sender {
-    [_urlActionHelper findUrlInString:[self.delegate contextMenuSelectedText:self capped:0]
-                  andOpenInBackground:NO
-                                style:iTermOpenStyleVerticalSplit];
-}
-
-- (void)openURLInHorizontalSplitPane:(id)sender {
-    [_urlActionHelper findUrlInString:[self.delegate contextMenuSelectedText:self capped:0]
-                  andOpenInBackground:NO
-                                style:iTermOpenStyleHorizontalSplit];
+                  andOpenInBackground:NO];
 }
 
 - (void)quickLook:(id)sender {
@@ -1192,8 +1167,7 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
                                              inString:[iTermAdvancedSettingsModel searchCommand]
                                             withValue:[self.delegate contextMenuSelectedText:self capped:0]];
     [_urlActionHelper findUrlInString:url.absoluteString
-                  andOpenInBackground:NO
-                                style:iTermOpenStyleTab];
+                  andOpenInBackground:NO];
 }
 
 - (void)addTrigger:(id)sender {
@@ -1430,4 +1404,3 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
 }
 
 @end
-

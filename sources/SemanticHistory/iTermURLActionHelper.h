@@ -7,7 +7,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "iTermOpenStyle.h"
 #import "ProfileModel.h"
 #import "VT100GridTypes.h"
 
@@ -58,8 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (CGFloat)urlActionHelperLineHeight:(iTermURLActionHelper *)helper;
 - (void)urlActionHelper:(iTermURLActionHelper *)helper
 launchProfileInCurrentTerminal:(Profile *)profile
-                withURL:(NSURL *)url
-                  style:(iTermOpenStyle)style;
+                withURL:(NSURL *)url;
 - (iTermVariableScope *)urlActionHelperScope:(iTermURLActionHelper *)helper;
 - (id<iTermObject>)urlActionHelperOwner:(iTermURLActionHelper *)helper;
 - (NSString * _Nullable)urlActionHelperShell:(iTermURLActionHelper *)helper;
@@ -97,10 +95,9 @@ launchProfileInCurrentTerminal:(Profile *)profile
 
 - (void)openTargetWithEvent:(NSEvent *)event
                inBackground:(BOOL)openInBackground
-                      style:(iTermOpenStyle)style
    smartSelectionActionsOnly:(BOOL)smartSelectionActionsOnly;
 
-- (void)findUrlInString:(NSString *)aURLString andOpenInBackground:(BOOL)background style:(iTermOpenStyle)style;
+- (void)findUrlInString:(NSString *)aURLString andOpenInBackground:(BOOL)background;
 
 - (void)downloadFileAtSecureCopyPath:(SCPPath *)scpPath
                          displayName:(NSString *)name
@@ -120,7 +117,6 @@ launchProfileInCurrentTerminal:(Profile *)profile
 - (void)openSemanticHistoryPath:(NSString *)path
                   orRawFilename:(NSString *)rawFileName
                        fragment:(NSString * _Nullable)fragment
-                         target:(NSString * _Nullable)target
                workingDirectory:(NSString *)workingDirectory
                      lineNumber:(NSString *)lineNumber
                    columnNumber:(NSString *)columnNumber

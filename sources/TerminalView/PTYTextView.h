@@ -119,8 +119,7 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (void)startDownloadOverSCP:(SCPPath *)path;
 - (void)uploadFiles:(NSArray *)localFilenames toPath:(SCPPath *)destinationPath;
 - (void)launchProfileInCurrentTerminal:(Profile *)profile
-                               withURL:(NSString *)url
-                                 style:(iTermOpenStyle)style;
+                               withURL:(NSString *)url;
 - (void)selectPaneLeftInCurrentTerminal;
 - (void)selectPaneRightInCurrentTerminal;
 - (void)selectPaneAboveInCurrentTerminal;
@@ -758,7 +757,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries;
 - (void)openSemanticHistoryPath:(NSString *)path
                   orRawFilename:(NSString *)rawFileName
                        fragment:(NSString *)fragment
-                         target:(NSString *)target
                workingDirectory:(NSString *)workingDirectory
                      lineNumber:(NSString *)lineNumber
                    columnNumber:(NSString *)columnNumber

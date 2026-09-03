@@ -1885,10 +1885,6 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
                               completion:completion];
 }
 
-- (BOOL)openURL:(NSURL *)url target:(NSString *)target openStyle:(iTermOpenStyle)openStyle select:(BOOL)select {
-    return [[NSWorkspace sharedWorkspace] openURL:url];
-}
-
 - (void)openSingleUseWindowWithCommand:(NSString *)rawCommand
                              arguments:(NSArray<NSString *> *)arguments
                                 inject:(NSData *)injection

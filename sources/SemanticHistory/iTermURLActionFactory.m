@@ -409,7 +409,6 @@ static NSMutableArray<iTermURLActionFactory *> *sFactories;
         // file: URLs with a fragment go through semantic history and therefore need a workingDirectory.
         action.workingDirectory = self.workingDirectory;
         action.osc8 = YES;
-        action.target = target;
         action.logicalRange = [extractor rangeOfCoordinatesAround:self.coord
                                                   maximumDistance:1000
                                                       passingTest:^BOOL(screen_char_t *c,
@@ -865,4 +864,3 @@ static NSMutableArray<iTermURLActionFactory *> *sFactories;
 }
 
 @end
-

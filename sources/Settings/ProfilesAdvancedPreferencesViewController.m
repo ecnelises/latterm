@@ -269,10 +269,7 @@
 }
 
 - (IBAction)help:(id)sender {
-    [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/automatic-profile-switching.html"]
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.view.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/automatic-profile-switching.html"]];
 }
 
 - (void)removeBoundHostOnRow:(NSInteger)rowIndex {

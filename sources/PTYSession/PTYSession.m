@@ -3396,12 +3396,11 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)launchProfileInCurrentTerminal:(Profile *)profile
-                               withURL:(NSString *)url
-                                 style:(iTermOpenStyle)style {
+                               withURL:(NSString *)url {
     PseudoTerminal *term = [[iTermController sharedInstance] currentTerminal];
     [iTermSessionLauncher launchBookmark:profile
                               inTerminal:term
-                                   style:style
+                                   style:iTermOpenStyleTab
                                  withURL:url
                         hotkeyWindowType:iTermHotkeyWindowTypeNone
                                  makeKey:NO
@@ -4940,7 +4939,6 @@ ITERM_WEAKLY_REFERENCEABLE
         [_textview openSemanticHistoryPath:cleanedup
                              orRawFilename:rawFilename
                                   fragment:nil
-                                    target:nil
                           workingDirectory:workingDirectory
                                 lineNumber:lineNumber
                               columnNumber:columnNumber
@@ -4982,10 +4980,7 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)openURL:(NSURL *)url {
-    [[NSWorkspace sharedWorkspace] it_openURL:url
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.view.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:url];
 }
 
 - (void)setBell:(BOOL)flag {

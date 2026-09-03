@@ -468,10 +468,7 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
         case kiTermWarningSelection1:
             return NO;
         case kiTermWarningSelection2:
-            [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/python-api-auth.html"]
-                                               target:nil
-                                                style:iTermOpenStyleTab
-                                               window:window];
+            [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/python-api-auth.html"]];
             return NO;
         default:
             assert(NO);
@@ -1578,10 +1575,7 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
             return NO;
         case kiTermWarningSelection2:
             *reason = @"Denied by user";
-            [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/python-api-security-model"]
-                                               target:nil
-                                                style:iTermOpenStyleTab
-                                               window:nil];
+            [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/python-api-security-model"]];
             return NO;
         case kiTermWarningSelection3:
             if ([iTermWarning showWarningWithTitle:@"New sessions will contain an environment variable that allows scripts to run without confirmation. Are you sure you want to enable this?"

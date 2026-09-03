@@ -64,10 +64,7 @@
     if ([URL isEqual:[NSURL URLWithString:@"about:blank"]]) {
         URL = self.backupURL;
     }
-    [[NSWorkspace sharedWorkspace] it_openURL:URL
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.view.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:URL];
 }
 
 - (NSString *)browserName {

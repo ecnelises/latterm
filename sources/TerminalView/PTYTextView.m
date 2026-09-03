@@ -4702,7 +4702,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 - (void)openSemanticHistoryPath:(NSString *)path
                   orRawFilename:(NSString *)rawFileName
                        fragment:(NSString *)fragment
-                         target:(NSString *)target
                workingDirectory:(NSString *)workingDirectory
                      lineNumber:(NSString *)lineNumber
                    columnNumber:(NSString *)columnNumber
@@ -4712,7 +4711,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     [_urlActionHelper openSemanticHistoryPath:path
                                 orRawFilename:rawFileName
                                      fragment:fragment
-                                       target:target
                              workingDirectory:workingDirectory
                                    lineNumber:lineNumber
                                  columnNumber:columnNumber
@@ -7635,62 +7633,6 @@ static NSString *iTermStringFromRange(NSRange range) {
 }
 
 - (void)mouseHandler:(PTYMouseHandler *)sender handleCommandShiftClickAtCoord:(VT100GridCoord)coord {
-    if ([iTermPreferences boolForKey:kPreferenceKeyCmdClickOpensURLs] &&
-        [self isInUnderlinedRangeAtCoord:coord]) {
-        const long long offset = self.dataSource.totalScrollbackOverflow;
-        const VT100GridAbsCoord absCoord = VT100GridAbsCoordFromCoord(coord, offset);
-        const VT100GridAbsWindowedRange absRange = [self selectionAbsRangeForSmartSelectionAt:absCoord];;
-        if (VT100GridAbsCoordRangeLength(absRange.coordRange, self.dataSource.width) > 0) {
-            iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_dataSource];
-            BOOL valid;
-            VT100GridWindowedRange relativeRange = VT100GridWindowedRangeFromAbsWindowedRangeSafe(absRange, offset, &valid);
-            if (valid) {
-                NSString *string = [extractor contentInRange:relativeRange
-                                           attributeProvider:nil
-                                                  nullPolicy:kiTermTextExtractorNullPolicyFromLastToEnd
-                                                         pad:NO
-                                          includeLastNewline:NO
-                                      trimTrailingWhitespace:YES
-                                                cappedAtSize:-1
-                                                truncateTail:YES
-                                           continuationChars:nil
-                                                      coords:nil
-                                           deduplicateDECDHL:NO];
-                NSURL *url = [NSURL URLWithString:string];
-                if (string.stringIsUrlLike &&
-                    url != nil &&
-                    [[NSWorkspace sharedWorkspace] it_urlIsLocallyOpenableWithUpsell:url]) {
-                    const NSSize size = self.enclosingScrollView.frame.size;
-                    [[NSWorkspace sharedWorkspace] it_openURL:url
-                                                       target:nil
-                                                configuration:[NSWorkspaceOpenConfiguration configuration]
-                                                        style:size.width > size.height ? iTermOpenStyleVerticalSplit : iTermOpenStyleHorizontalSplit
-                                                       upsell:YES
-                                                       window:self.window];
-                    return;
-                }
-            }
-        }
-    }
-
-    // Handle OSC 8 URL shift-clicks.
-    if (coord.x >= 0 && coord.y >= 0) {
-        iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_dataSource];
-        NSString *urlId = nil;
-        NSString *target = nil;
-        NSURL *url = [extractor urlOfHypertextLinkAt:coord urlId:&urlId target:&target];
-        if (url && [[NSWorkspace sharedWorkspace] it_urlIsLocallyOpenableWithUpsell:url]) {
-            const NSSize size = self.enclosingScrollView.frame.size;
-            [[NSWorkspace sharedWorkspace] it_openURL:url
-                                               target:target
-                                        configuration:[NSWorkspaceOpenConfiguration configuration]
-                                                style:size.width > size.height ? iTermOpenStyleVerticalSplit : iTermOpenStyleHorizontalSplit
-                                               upsell:YES
-                                               window:self.window];
-            return;
-        }
-    }
-
     id<VT100ScreenMarkReading> mark = [_delegate textViewMarkForCommandAt:coord];
     if (!mark) {
         return;
@@ -7778,11 +7720,9 @@ static NSString *iTermStringFromRange(NSRange range) {
 
 - (void)mouseHandlerOpenTargetWithEvent:(NSEvent *)event
                            inBackground:(BOOL)inBackground
-                                  style:(iTermOpenStyle)style
                smartSelectionActionsOnly:(BOOL)smartSelectionActionsOnly {
     [_urlActionHelper openTargetWithEvent:event
                              inBackground:inBackground
-                                    style:style
                  smartSelectionActionsOnly:smartSelectionActionsOnly];
 }
 
@@ -8237,11 +8177,11 @@ dragSemanticHistoryWithEvent:(NSEvent *)event
 }
 
 - (void)openTargetWithEvent:(NSEvent *)event {
-    [_urlActionHelper openTargetWithEvent:event inBackground:NO style:iTermOpenStyleTab smartSelectionActionsOnly:NO];
+    [_urlActionHelper openTargetWithEvent:event inBackground:NO smartSelectionActionsOnly:NO];
 }
 
 - (void)openTargetInBackgroundWithEvent:(NSEvent *)event {
-    [_urlActionHelper openTargetWithEvent:event inBackground:YES style:iTermOpenStyleTab smartSelectionActionsOnly:NO];
+    [_urlActionHelper openTargetWithEvent:event inBackground:YES smartSelectionActionsOnly:NO];
 }
 
 - (void)smartSelectAndMaybeCopyWithEvent:(NSEvent *)event

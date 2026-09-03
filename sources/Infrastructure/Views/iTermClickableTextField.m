@@ -52,10 +52,7 @@
 }
 
 - (void)openURL:(NSURL *)url {
-    [[NSWorkspace sharedWorkspace] it_openURL:url
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:url];
 }
 
 @end

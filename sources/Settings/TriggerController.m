@@ -1189,10 +1189,7 @@ NSString *const kStatusTextComboBoxIdentifier = @"kStatusTextComboBoxIdentifier"
 }
 
 - (IBAction)help:(id)sender {
-    [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://www.iterm2.com/triggers.html"]
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://www.iterm2.com/triggers.html"]];
 }
 
 - (void)colorWellDidChange:(CPKColorWell *)colorWell {

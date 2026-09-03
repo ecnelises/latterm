@@ -268,10 +268,7 @@ static BOOL sInstallingScript;
 
     if (reveal) {
         DLog(@"Reveal in finder");
-        [[NSWorkspace sharedWorkspace] it_openURL:[NSURL fileURLWithPath:tempDir]
-                                           target:nil
-                                            style:iTermOpenStyleTab
-                                           window:nil];
+        [[NSWorkspace sharedWorkspace] it_openURL:[NSURL fileURLWithPath:tempDir]];
         completion(nil, NO, nil);
         return;
     }

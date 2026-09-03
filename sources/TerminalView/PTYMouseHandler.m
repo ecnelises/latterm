@@ -516,7 +516,6 @@ static double EuclideanDistance(NSPoint p1, NSPoint p2) {
             // may not do anything if the pointer isn't over a clickable string.
             [self.mouseDelegate mouseHandlerOpenTargetWithEvent:event
                                                    inBackground:NO
-                                                          style:iTermOpenStyleTab
                                        smartSelectionActionsOnly:willTrySmartSelectionAction];
             result |= iTermClickSideEffectsOpenTarget;
         }
@@ -582,7 +581,6 @@ static double EuclideanDistance(NSPoint p1, NSPoint p2) {
         if (willFollowLink || willTrySmartSelectionAction) {
             [self.mouseDelegate mouseHandlerOpenTargetWithEvent:event
                                                    inBackground:altPressed
-                                                          style:iTermOpenStyleTab
                                        smartSelectionActionsOnly:willTrySmartSelectionAction];
             result |= iTermClickSideEffectsOpenTarget;
         }

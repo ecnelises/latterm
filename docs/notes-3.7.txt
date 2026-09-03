@@ -76,6 +76,8 @@ Terminal-first fork changes:
   status bar components.
 - Removed obsolete profile-type and dynamic
   Toolbelt compatibility plumbing.
+- Removed obsolete in-app browser URL routing
+  and split-pane compatibility paths.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

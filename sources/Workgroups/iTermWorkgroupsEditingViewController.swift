@@ -230,10 +230,7 @@ class iTermWorkgroupsEditingViewController: NSViewController {
 
     @objc private func helpClicked(_ sender: Any?) {
         guard let url = URL(string: Self.helpURL) else { return }
-        NSWorkspace.shared.it_open(url,
-                                   target: nil,
-                                   style: .tab,
-                                   window: view.window)
+        NSWorkspace.shared.it_open(url)
     }
 
     @objc private func segmentClicked(_ sender: NSSegmentedControl) {

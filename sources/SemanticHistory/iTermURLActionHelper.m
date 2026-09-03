@@ -131,7 +131,6 @@
 
 - (void)openTargetWithEvent:(NSEvent *)event
                inBackground:(BOOL)openInBackground
-                      style:(iTermOpenStyle)style
    smartSelectionActionsOnly:(BOOL)smartSelectionActionsOnly {
     // Command click in place.
     const VT100GridCoord coord = [self.delegate urlActionHelper:self coordForEvent:event allowRightMarginOverflow:NO];
@@ -147,7 +146,6 @@
                             [weakSelf finishOpeningTargetWithEvent:event
                                                              coord:coord
                                                       inBackground:openInBackground
-                                                             style:style
                                                             action:action
                                                         generation:generation
                                             smartSelectionActionsOnly:smartSelectionActionsOnly];
@@ -155,8 +153,7 @@
 }
 
 - (void)findUrlInString:(NSString *)aURLString
-    andOpenInBackground:(BOOL)background
-                  style:(iTermOpenStyle)style {
+    andOpenInBackground:(BOOL)background {
     DLog(@"findUrlInString:%@", aURLString);
     NSRange range = [aURLString rangeOfURLInString];
     if (range.location == NSNotFound) {
@@ -169,7 +166,7 @@
         return;
     }
     NSURL *url = [NSURL URLWithUserSuppliedString:trimmedURLString];
-    [self openURL:url target:nil inBackground:background workingDirectory:nil style:style];
+    [self openURL:url inBackground:background workingDirectory:nil];
 }
 
 - (void)downloadFileAtSecureCopyPath:(SCPPath *)scpPath
@@ -238,8 +235,7 @@
 - (void)openSemanticHistoryPath:(NSString *)path
                   orRawFilename:(NSString *)rawFileName
                        fragment:(NSString *)fragment
-                         target:(NSString *)target
-               workingDirectory:(NSString *)workingDirectory
+              workingDirectory:(NSString *)workingDirectory
                      lineNumber:(NSString *)lineNumber
                    columnNumber:(NSString *)columnNumber
                          prefix:(NSString *)prefix
@@ -254,7 +250,6 @@
     [self.semanticHistoryController openPath:path
                                orRawFilename:rawFileName
                                     fragment:fragment
-                                      target:target
                                substitutions:subs
                                        scope:[self.delegate urlActionHelperScope:self]
                                   lineNumber:lineNumber
@@ -276,10 +271,8 @@
 // If iTerm2 is the handler for the scheme, then the profile is launched directly.
 // Otherwise it's passed to the OS to launch.
 - (void)openURL:(NSURL *)url
-         target:(NSString *)target
    inBackground:(BOOL)background
-workingDirectory:(NSString *)workingDirectory
-          style:(iTermOpenStyle)style {
+workingDirectory:(NSString *)workingDirectory {
     // The URL can embed credentials in its userinfo (user:password@host); redact it
     // for the ring while leaving the opt-in debug log complete.
     RLog(@"openURL:%@ inBackground:%@", RLogRedact(url, url.it_redactedDescription), @(background));
@@ -288,8 +281,7 @@ workingDirectory:(NSString *)workingDirectory
     if (profile) {
         [self.delegate urlActionHelper:self
         launchProfileInCurrentTerminal:profile
-                               withURL:url
-                                 style:style];
+                               withURL:url];
         return;
     }
     if ([url.scheme isEqualToString:@"file"] && url.fragment) {
@@ -305,7 +297,6 @@ workingDirectory:(NSString *)workingDirectory
         [self.semanticHistoryController openPath:url.path
                                    orRawFilename:url.path
                                         fragment:url.fragment
-                                          target:target
                                    substitutions:subs
                                            scope:[self.delegate urlActionHelperScope:self]
                                       lineNumber:lineNumber
@@ -329,15 +320,9 @@ workingDirectory:(NSString *)workingDirectory
         NSWorkspaceOpenConfiguration *config = [NSWorkspaceOpenConfiguration configuration];
         config.activates = NO;
         [[NSWorkspace sharedWorkspace] it_openURL:url
-                                           target:target
-                                    configuration:config
-                                            style:style
-                                           window:self.delegate.urlActionHelperWindow];
+                                    configuration:config];
     } else {
-        [[NSWorkspace sharedWorkspace] it_openURL:url
-                                           target:target
-                                            style:style
-                                           window:self.delegate.urlActionHelperWindow];
+        [[NSWorkspace sharedWorkspace] it_openURL:url];
     }
 }
 
@@ -384,7 +369,6 @@ workingDirectory:(NSString *)workingDirectory
 - (void)finishOpeningTargetWithEvent:(NSEvent *)event
                                coord:(VT100GridCoord)coord
                         inBackground:(BOOL)openInBackground
-                               style:(iTermOpenStyle)style
                               action:(URLAction *)action
                           generation:(NSInteger)generation
                 smartSelectionActionsOnly:(BOOL)smartSelectionActionsOnly {
@@ -426,7 +410,6 @@ workingDirectory:(NSString *)workingDirectory
                 [self openSemanticHistoryPath:action.fullPath
                                 orRawFilename:action.rawFilename
                                      fragment:nil
-                                       target:nil
                              workingDirectory:action.workingDirectory
                                    lineNumber:action.lineNumber
                                  columnNumber:action.columnNumber
@@ -435,8 +418,7 @@ workingDirectory:(NSString *)workingDirectory
                                    completion:^(BOOL ok) {
                                        if (!ok) {
                                            [weakSelf findUrlInString:action.string
-                                                 andOpenInBackground:openInBackground
-                                           style:style];
+                                                 andOpenInBackground:openInBackground];
                                        }
                                    }];
                 break;
@@ -459,10 +441,8 @@ workingDirectory:(NSString *)workingDirectory
                                         locationInView:action.visualRange.coordRange];
                 } else {
                     [self openURL:url
-                           target:action.target
                      inBackground:openInBackground
-                 workingDirectory:action.workingDirectory
-                            style:style];
+                 workingDirectory:action.workingDirectory];
                 }
                 break;
             }

@@ -1510,11 +1510,9 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
 
 - (void)urlActionHelper:(iTermURLActionHelper *)helper
 launchProfileInCurrentTerminal:(Profile *)profile
-                withURL:(NSURL *)url
-                  style:(iTermOpenStyle)style {
+                withURL:(NSURL *)url {
     [self.delegate launchProfileInCurrentTerminal:profile
-                                          withURL:url.absoluteString
-                                            style:style];
+                                          withURL:url.absoluteString];
 }
 
 - (iTermVariableScope *)urlActionHelperScope:(iTermURLActionHelper *)helper {
@@ -2035,10 +2033,7 @@ withRelativeCoordRange:(VT100GridAbsCoordRange)range
 
 - (void)contextMenu:(iTermTextViewContextMenuHelper *)contextMenu
             openURL:(NSURL *)url {
-    [[NSWorkspace sharedWorkspace] it_openURL:url
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:url];
 }
 
 - (NSView *)contextMenuViewForMenu:(iTermTextViewContextMenuHelper *)contextMenu {

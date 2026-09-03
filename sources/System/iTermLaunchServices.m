@@ -192,12 +192,11 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
 - (void)openFile:(NSString *)fullPath
           window:(NSWindow *)window
       completion:(void (^)(BOOL ok))completion {
-    [self openFile:fullPath fragment:nil target:nil window:window completion:completion];
+    [self openFile:fullPath fragment:nil window:window completion:completion];
 }
 
 - (void)openFile:(NSString *)fullPath
         fragment:(NSString *)fragment
-          target:(NSString *)target
           window:(NSWindow *)window
       completion:(void (^)(BOOL ok))completion {
     RLog(@"openFile: %@ with fragment %@", fullPath, fragment);
@@ -213,11 +212,7 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
         shouldOfferToPickAppOnError = YES;
     }
     [[NSWorkspace sharedWorkspace] it_asyncOpenURL:url
-                                            target:target
                                      configuration:[NSWorkspaceOpenConfiguration configuration]
-                                             style:iTermOpenStyleTab
-                                            upsell:YES
-                                            window:window
                                         completion:^(NSRunningApplication *app, NSError *error) {
         if (error &&
             shouldOfferToPickAppOnError &&

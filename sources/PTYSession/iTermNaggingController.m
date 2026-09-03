@@ -297,10 +297,7 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
         if (selection == 0) {
             // Why?
             NSURL *whyUrl = [NSURL URLWithString:@"https://iterm2.com/why_no_content.html"];
-            [[NSWorkspace sharedWorkspace] it_openURL:whyUrl
-                                               target:nil
-                                                style:iTermOpenStyleTab
-                                               window:self.delegate.naggingControllerWindow];
+            [[NSWorkspace sharedWorkspace] it_openURL:whyUrl];
         }
     }];
 }
@@ -377,10 +374,7 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
 
 - (void)showTmuxSupplementaryPlaneBugHelpPage {
     NSURL *whyUrl = [NSURL URLWithString:@"https://iterm2.com//tmux22bug.html"];
-    [[NSWorkspace sharedWorkspace] it_openURL:whyUrl
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.delegate.naggingControllerWindow];
+    [[NSWorkspace sharedWorkspace] it_openURL:whyUrl];
 }
 
 - (void)tryingToSendArrowKeysWithScrollWheel:(BOOL)isTrying {
@@ -548,10 +542,7 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
                 break;
 
             case 3: // Help
-                [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/paste_bracketing"]
-                                                   target:nil
-                                                    style:iTermOpenStyleTab
-                                                   window:self.delegate.naggingControllerWindow];
+                [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/paste_bracketing"]];
                 break;
         }
     }];
@@ -718,10 +709,7 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
             }
 
             case 4: // Help
-                [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/slow_triggers"]
-                                                   target:nil
-                                                    style:iTermOpenStyleTab
-                                                   window:self.delegate.naggingControllerWindow];
+                [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/slow_triggers"]];
                 break;
         }
     }];
@@ -916,10 +904,7 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
     }
     if ([iTermSecureUserDefaults openURLWithHost:url.host]) {
         DLog(@"Always allow %@", url.host);
-        [[NSWorkspace sharedWorkspace] it_openURL:url
-                                           target:nil
-                                            style:iTermOpenStyleTab
-                                           window:self.delegate.naggingControllerWindow];
+        [[NSWorkspace sharedWorkspace] it_openURL:url];
         return;
     }
 
@@ -937,18 +922,12 @@ static NSString *const iTermNaggingControllerRestoreIconAndWindowNameChoiceAlway
                 break;
 
             case 0: // Allow
-                [[NSWorkspace sharedWorkspace] it_openURL:url
-                                                   target:nil
-                                                    style:iTermOpenStyleTab
-                                                   window:self.delegate.naggingControllerWindow];
+                [[NSWorkspace sharedWorkspace] it_openURL:url];
                 break;
 
             case 1:  // Allow for this host
                 [iTermSecureUserDefaults setOpenURLWithHost:url.host allowed:YES];
-                [[NSWorkspace sharedWorkspace] it_openURL:url
-                                                   target:nil
-                                                    style:iTermOpenStyleTab
-                                                   window:self.delegate.naggingControllerWindow];
+                [[NSWorkspace sharedWorkspace] it_openURL:url];
                 break;
 
             case 2:  // Never allow

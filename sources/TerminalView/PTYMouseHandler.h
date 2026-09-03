@@ -8,7 +8,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "iTermClickSideEffects.h"
-#import "iTermOpenStyle.h"
 #import "iTermSwipeHandler.h"
 #import "PointerController.h"
 #import "VT100GridTypes.h"
@@ -50,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
                                     verticalOnly:(out BOOL *)verticalOnly;
 - (void)mouseHandlerOpenTargetWithEvent:(NSEvent *)event
                            inBackground:(BOOL)inBackground
-                                  style:(iTermOpenStyle)style
                smartSelectionActionsOnly:(BOOL)smartSelectionActionsOnly;
 - (BOOL)mouseHandlerIsScrolledToBottom:(PTYMouseHandler *)handler;
 - (VT100GridCoord)mouseHandlerCoordForPointInWindow:(NSPoint)point;

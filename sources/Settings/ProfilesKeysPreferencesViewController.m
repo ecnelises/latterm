@@ -385,10 +385,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
 
 - (IBAction)csiuHelp:(id)sender {
     NSURL *url = [NSURL URLWithString:@"https://iterm2.com/documentation-csiu.html"];
-    [[NSWorkspace sharedWorkspace] it_openURL:url
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.view.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:url];
 }
 
 - (IBAction)openHotKeyPanel:(id)sender {

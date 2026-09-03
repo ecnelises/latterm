@@ -64,10 +64,7 @@
 }
 
 - (void)help:(id)sender {
-    [[NSWorkspace sharedWorkspace] it_openURL:_helpURL
-                                       target:nil
-                                        style:iTermOpenStyleTab
-                                       window:self.view.window];
+    [[NSWorkspace sharedWorkspace] it_openURL:_helpURL];
 }
 
 - (void)setValue:(NSString *)value {

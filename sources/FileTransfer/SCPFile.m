@@ -432,10 +432,7 @@ static NSError *SCPFileError(NSString *description) {
                                        cancelLabel:@"Help"
                                             window:nil];
             if (selection == kiTermWarningSelection1) {
-                [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/troubleshoot-hostname"]
-                                                   target:nil
-                                                    style:iTermOpenStyleTab
-                                                   window:nil];
+                [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/troubleshoot-hostname"]];
             }
         }];
         return;
