@@ -58,6 +58,8 @@ Terminal-first fork changes:
 - Removed a redundant CoreParse source checkout.
 - Replaced bundled libgit2 with the system Git
   command for repository status.
+- Removed obsolete AI publishing, diagnostics,
+  and Claude integration development artifacts.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
