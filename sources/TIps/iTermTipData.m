@@ -12,56 +12,6 @@
 
 @implementation iTermTipData
 
-+ (BOOL)it_shouldHideTipWithIdentifier:(NSString *)identifier details:(NSDictionary *)details {
-    static NSSet<NSString *> *blockedIdentifiers;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        blockedIdentifiers = [NSSet setWithArray:@[
-            @"0000",
-            @"0003",
-            @"0008",
-            @"0010",
-            @"0012",
-            @"0039",
-            @"0040",
-            @"0053",
-            @"0079",
-            @"0084",
-            @"0094",
-            @"0104",
-            @"0105",
-            @"0122",
-            @"0123",
-        ]];
-    });
-    if ([blockedIdentifiers containsObject:identifier]) {
-        return YES;
-    }
-
-    NSString *title = details[kTipTitleKey] ?: @"";
-    NSString *body = details[kTipBodyKey] ?: @"";
-    NSString *url = details[kTipUrlKey] ?: @"";
-    NSArray<NSString *> *needles = @[
-        @"Shell Integration",
-        @"shell integration",
-        @"Claude Code",
-        @"Web Browser",
-        @"browser sessions",
-        @"browser session",
-        @"documentation-web",
-        @"SSH Integration",
-        @"ssh Integration",
-        @"SSH File Browser",
-        @"shell_integration.html",
-    ];
-    for (NSString *needle in needles) {
-        if ([title containsString:needle] || [body containsString:needle] || [url containsString:needle]) {
-            return YES;
-        }
-    }
-    return NO;
-}
-
 + (NSDictionary *)allTips {
   // The keys in this dictionary are saved in user defaults and should not be changed or
   // recycled, or users will see the same tip more than once.
@@ -89,9 +39,6 @@
             @"0011" : @{ kTipTitleKey: @"Dynamic Profiles",
                          kTipBodyKey: @"Dynamic Profiles let you store your profiles as one or more JSON files. It’s great for batch creating and editing profiles.",
                          kTipUrlKey: @"https://iterm2.com/dynamic-profiles.html" },
-
-            @"0012" : @{ kTipTitleKey: @"Advanced Paste",
-                         kTipBodyKey: @"“Edit > Paste Special > Advanced Paste” lets you preview and edit text before you paste. You get to tweak options, like how to handle control codes, or even to base-64 encode before pasting." },
 
             @"0013" : @{ kTipTitleKey: @"Zoom",
                          kTipBodyKey: @"Ever wanted to focus on a block of lines without distraction, or limit Find to a single command’s output? Select the lines and choose “View > Zoom In on Selection.” The session’s contents will be temporarily replaced with the selection. Press “esc” to unzoom." },
@@ -191,9 +138,6 @@
             @"0052": @{ kTipTitleKey: @"Tabs",
                         kTipBodyKey: @"Normally, new tabs appear at the end of the tab bar. There’s a setting in “Settings > Advanced” to place them next to your current tab." },
 
-            @"0053": @{ kTipTitleKey: @"Base Conversion",
-                        kTipBodyKey: @"Right-click on a number and the context menu shows it converted to hex or decimal as appropriate." },
-
             @"0054": @{ kTipTitleKey: @"Saved Searches",
                         kTipBodyKey: @"In “Settings > Keys” you can assign a keystroke to a search for a regular expression with the “Find Regular Expression…” action." },
 
@@ -270,9 +214,6 @@
             @"0078": @{ kTipTitleKey: @"Drag Window by Tab",
                         kTipBodyKey: @"Hold ⌥ while dragging a tab to move the window. This is useful in the Compact and Minimal themes, which have a very small area for dragging the window." },
 
-            @"0079": @{ kTipTitleKey: @"Composer",
-                        kTipBodyKey: @"Press ⇧⌘. to open the Composer. It gives you a scratchpad to edit a command before sending it to the shell." },
-            
             @"0081": @{ kTipTitleKey: @"Composer Power Features",
                         kTipBodyKey: @"The composer supports multiple cursors. It also has the ability to send just one command out of a list, making it easy to walk through a list of commands one-by-one. Click the help button in the composer for details." },
 
@@ -299,9 +240,6 @@
 
             @"0093": @{ kTipTitleKey: @"Multi-Session Bindings",
                         kTipBodyKey: @"Apply key bindings uniformly across multiple sessions for consistent control in different tabs or windows." },
-
-            @"0094": @{ kTipTitleKey: @"Inject Trigger",
-                        kTipBodyKey: @"Simulate terminal input as if it were output from a running app with the “Inject” trigger." },
 
             @"0095": @{ kTipTitleKey: @"Trigger Status Bar",
                         kTipBodyKey: @"Easily manage your triggers using the new Triggers status bar component." },
@@ -374,13 +312,7 @@
 
 // IMPORTANT: When updating this, also update it2tip
             };
-  NSMutableDictionary *filteredTips = [NSMutableDictionary dictionary];
-  [tips enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, NSDictionary *details, BOOL *stop) {
-      if (![self it_shouldHideTipWithIdentifier:identifier details:details]) {
-          filteredTips[identifier] = details;
-      }
-  }];
-  return filteredTips;
+  return tips;
 }
 
 @end

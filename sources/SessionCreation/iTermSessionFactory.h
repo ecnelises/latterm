@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class PTYSession;
 @class Profile;
 @class PseudoTerminal;
-@class WKWebViewConfiguration;
 
 @interface iTermSessionAttachOrLaunchRequest: NSObject
 @property (nonatomic, strong) PTYSession *session;

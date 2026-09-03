@@ -33,7 +33,6 @@
 @class iTermTerminalWindowSizeHelper;
 @class PseudoTerminalState;
 @class TmuxController;
-@class WKWebViewConfiguration;
 
 // Posted when a new window controller is created. It's not ready to use at this point, though.
 extern NSString *const kTerminalWindowControllerWasCreatedNotification;

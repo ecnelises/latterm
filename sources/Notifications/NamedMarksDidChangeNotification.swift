@@ -9,7 +9,7 @@ import Foundation
 
 @objc(iTermNamedMarksDidChangeNotification)
 class NamedMarksDidChangeNotification: iTermBaseNotification {
-    // If nil, reload all in browser sessions
+    // If nil, refresh named marks in every window.
     @objc var sessionGuid: String?
 
     @objc init(sessionGuid: String?) {
