@@ -68,6 +68,8 @@ Terminal-first fork changes:
   compatibility code.
 - Removed the disabled inline-chat menu and its
   no-op session state.
+- Removed obsolete crash-analysis tools, a
+  vendored parser, and orphaned source files.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
