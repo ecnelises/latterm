@@ -62,6 +62,8 @@ Terminal-first fork changes:
   and Claude integration development artifacts.
 - Removed obsolete AI workgroup provenance and
   member-snapshot plumbing.
+- Removed a stale shell-integration live-test
+  harness for scripts no longer bundled.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,
