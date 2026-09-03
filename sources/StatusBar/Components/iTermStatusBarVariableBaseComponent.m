@@ -156,7 +156,7 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
 }
 
 - (NSString *)statusBarComponentDetailedDescription {
-    return @"Current host name. Requires shell integration.";
+    return @"Current host name. Requires terminal-reported host metadata.";
 }
 
 - (id)statusBarComponentExemplarWithBackgroundColor:(NSColor *)backgroundColor
@@ -217,7 +217,7 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
 }
 
 - (NSString *)statusBarComponentDetailedDescription {
-    return @"Current user name. Requires shell integration.";
+    return @"Current user name. Requires terminal-reported user metadata.";
 }
 
 - (id)statusBarComponentExemplarWithBackgroundColor:(NSColor *)backgroundColor
@@ -279,7 +279,7 @@ static NSString *const iTermStatusBarHostnameComponentAbbreviateLocalhost = @"ab
 }
 
 - (NSString *)statusBarComponentDetailedDescription {
-    return @"Current directory. Best with shell integration.";
+    return @"Current directory. Uses terminal-reported working-directory metadata when available.";
 }
 
 - (id)statusBarComponentExemplarWithBackgroundColor:(NSColor *)backgroundColor

@@ -107,7 +107,7 @@ typedef enum iTerm2SaveOptions iTerm2SaveOptions;
 
 - (NSString *) id;  // The unique identifier of the session.
 @property BOOL isProcessing;  // The session has received output recently.
-@property BOOL isAtShellPrompt;  // The terminal is at the shell prompt. Requires shell integration.
+@property BOOL isAtShellPrompt;  // The terminal is at the shell prompt. Requires prompt metadata.
 @property NSInteger columns;
 @property NSInteger rows;
 @property (copy, readonly) NSString *tty;
@@ -144,4 +144,3 @@ typedef enum iTerm2SaveOptions iTerm2SaveOptions;
 
 
 @end
-

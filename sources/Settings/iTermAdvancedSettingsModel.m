@@ -489,13 +489,13 @@ DEFINE_INT(maximumBytesToProvideToServices, 100000, SECTION_GENERAL @"Maximum nu
 DEFINE_INT(maximumBytesToProvideToPythonAPI, 100, SECTION_GENERAL @"Maximum number of bytes of selection to provide to Python API.\nA large value here can cause performance issues when you have a big selection.");
 DEFINE_BOOL(useOpenDirectory, YES, SECTION_GENERAL @"Use Open Directory to determine the user shell");
 DEFINE_SETTABLE_BOOL(disableDECRQCRA, NoSyncDisableDECRQCRA, YES, SECTION_GENERAL @"Disable DECRQCRA?\nThis control sequence allows an app running in the terminal to read its contents.");
-DEFINE_BOOL(disablePotentiallyInsecureEscapeSequences, NO, SECTION_GENERAL @"Disable potentially insecure escape sequences.\nSome features of Latterm expand the surface area for security issues. Consider turning this on when viewing untrusted content. The following custom escape sequences will be disabled: RemoteHost, StealFocus, CurrentDir, SetProfile, CopyToClipboard, EndCopy, File, SetBackgroundImageFile, OSC 6’s proxy icon-changing feature. The following DEC sequences are disabled: DECRQCRA. The following xterm extensions are disabled: Window Title Reporting, Icon Title Reporting. This will break displaying inline images, file download, some shell integration features, and other features.");
+DEFINE_BOOL(disablePotentiallyInsecureEscapeSequences, NO, SECTION_GENERAL @"Disable potentially insecure escape sequences.\nSome features of Latterm expand the surface area for security issues. Consider turning this on when viewing untrusted content. The following custom escape sequences will be disabled: RemoteHost, StealFocus, CurrentDir, SetProfile, CopyToClipboard, EndCopy, File, SetBackgroundImageFile, OSC 6’s proxy icon-changing feature. The following DEC sequences are disabled: DECRQCRA. The following xterm extensions are disabled: Window Title Reporting, Icon Title Reporting. This will break displaying inline images, file download, some terminal metadata features, and other features.");
 DEFINE_BOOL(performDictionaryLookupOnQuickLook, YES, SECTION_GENERAL @"Perform dictionary lookups on force press.\nIf this is NO, force press will still preview the Semantic History action; only dictionary lookups can be disabled.");
 DEFINE_STRING(webUserAgent, @"Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15", SECTION_GENERAL @"User agent for web views. Leave empty to use system default.");
 
 DEFINE_BOOL(jiggleTTYSizeOnClearBuffer, NO, SECTION_GENERAL @"Redraw the screen after the Clear Buffer menu item is selected.\nWhen enabled, the TTY size is briefly changed after clearing the buffer to cause the shell or current app to redraw.");
 DEFINE_BOOL(saveScrollBufferWhenClearing, YES, SECTION_GENERAL @"Save scroll buffer when clearing screen.\nWhen enabled, saves the current screen into scroll back buffer instead of clearing it.");
-DEFINE_BOOL(saveScrollbackWhenCursorMovesAbovePrompt, YES, SECTION_GENERAL @"Save the screen to scrollback when an app moves the cursor above the prompt.\nSome full-screen programs that don’t use the alternate screen buffer repaint by moving the cursor to the top of the screen and overwriting whatever was already there, destroying content you can still see. When enabled, Latterm first scrolls the visible screen into history so that content isn’t lost. Requires shell integration.");
+DEFINE_BOOL(saveScrollbackWhenCursorMovesAbovePrompt, YES, SECTION_GENERAL @"Save the screen to scrollback when an app moves the cursor above the prompt.\nSome full-screen programs that don’t use the alternate screen buffer repaint by moving the cursor to the top of the screen and overwriting whatever was already there, destroying content you can still see. When enabled, Latterm first scrolls the visible screen into history so that content isn’t lost. Requires prompt metadata.");
 DEFINE_BOOL(indicateBellsInDockBadgeLabel, YES, SECTION_GENERAL @"Indicate the number of bells rung while the app is inactive in the dock icon’s badge label");
 DEFINE_STRING(downloadsDirectory, @"", SECTION_GENERAL @"Downloads folder.\nIf set, downloaded files go to this location instead of the user’s $HOME/Downloads folder.");
 DEFINE_BOOL(noSyncSuppressDownloadConfirmation, NO, SECTION_GENERAL @"Suppress confirmation of terminal-initiated downloads?");
@@ -610,7 +610,7 @@ DEFINE_STRING(URLCharacterSetExclusions, @"¬", SECTION_SEMANTIC_HISTORY @"Chara
 DEFINE_STRING(filenameCharacterSet, @"$@", SECTION_SEMANTIC_HISTORY @"Non-alphanumeric characters considered part of a filename. Note that URL characters (a separate advanced setting) are also allowed.\nLetters and numbers are always considered part of the URL. These non-alphanumeric characters are used in addition for the purposes of figuring out where a file begins and ends. You must restart Latterm for changes to this setting to take effect.");
 DEFINE_INT(maxSemanticHistoryPrefixOrSuffix, 2000, SECTION_SEMANTIC_HISTORY @"Maximum number of bytes of text before and after click location to take into account.\nThis also limits the size of the \\3 and \\4 substitutions.");
 DEFINE_STRING(pathsToIgnore, @"", SECTION_SEMANTIC_HISTORY @"Paths to ignore for Semantic History.\nSeparate paths with a comma. Any file under one of these paths will not be openable with Semantic History. It is wise to add network file systems to this list, since they can be very slow.");
-DEFINE_BOOL(showYellowMarkForJobStoppedBySignal, YES, SECTION_SEMANTIC_HISTORY @"Use a yellow for a Shell Integration prompt mark when the job is stopped by a signal.");
+DEFINE_BOOL(showYellowMarkForJobStoppedBySignal, YES, SECTION_SEMANTIC_HISTORY @"Use yellow for a prompt mark when the job is stopped by a signal.");
 DEFINE_BOOL(conservativeURLGuessing, NO, SECTION_SEMANTIC_HISTORY @"URLs must contain a scheme?\nEnable this to reduce the number of false positives that semantic history thinks are a URL");
 DEFINE_BOOL(requireSlashInURLGuess, YES, SECTION_SEMANTIC_HISTORY @"Only consider a two+ part domain-name to be a URL if it also contains a slash.\nThis setting is used when guessing if a string is a URL for semantic history. When enabled, `example.com` would not be considered a URL but `example.com/` would be.")
 DEFINE_STRING(trailingPunctuationMarks, @"!?…)].\"';:,", SECTION_SEMANTIC_HISTORY @"Characters to ignore at the end of a URL");
@@ -744,7 +744,7 @@ DEFINE_BOOL(noSyncNeverRemindPrefsChangesLostForFile, NO, SECTION_WARNINGS @"Sup
 DEFINE_BOOL(noSyncSuppressAnnyoingBellOffer, NO, SECTION_WARNINGS @"Suppress offer to silence bell when it rings too much.");
 
 DEFINE_BOOL(suppressMultilinePasteWarningWhenPastingOneLineWithTerminalNewline, NO, SECTION_WARNINGS @"Suppress warning about multi-line paste when pasting a single line ending with a newline.\nThis suppresses all multi-line paste warnings when a single line is being pasted.");
-DEFINE_BOOL(suppressMultilinePasteWarningWhenNotAtShellPrompt, NO, SECTION_WARNINGS @"Suppress warning about multi-line paste when not at prompt.\nRequires Shell Integration to be installed.");
+DEFINE_BOOL(suppressMultilinePasteWarningWhenNotAtShellPrompt, NO, SECTION_WARNINGS @"Suppress warning about multi-line paste when not at prompt.\nRequires prompt metadata.");
 DEFINE_BOOL(noSyncSuppressBroadcastInputWarning, NO, SECTION_WARNINGS @"Suppress warning about broadcasting input.");
 DEFINE_BOOL(closingTmuxWindowKillsTmuxWindows, NO, SECTION_WARNINGS @"Suppress kill/hide dialog when closing a tmux window.");
 DEFINE_BOOL(closingTmuxTabKillsTmuxWindows, NO, SECTION_WARNINGS @"Suppress kill/hide dialog when closing a tmux tab.");
@@ -753,7 +753,7 @@ DEFINE_BOOL(aboutToPasteTabsWithCancel, NO, SECTION_WARNINGS @"Suppress warning 
 DEFINE_FLOAT(shortLivedSessionDuration, 3, SECTION_WARNINGS @"Warn about short-lived sessions that live less than this many seconds.");
 
 DEFINE_SETTABLE_BOOL(noSyncDoNotWarnBeforeMultilinePaste, NoSyncDoNotWarnBeforeMultilinePaste, NO, SECTION_WARNINGS @"Suppress warning about multi-line pastes (or a single line ending in a newline).\nThis applies whether you are at the shell prompt or not, provided two or more lines are being pasted.");
-DEFINE_SETTABLE_BOOL(noSyncDoNotWarnBeforePastingOneLineEndingInNewlineAtShellPrompt, NoSyncDoNotWarnBeforePastingOneLineEndingInNewlineAtShellPrompt, NO, SECTION_WARNINGS @"Suppress warning about pasting a single line ending in a newline when at the shell prompt.\nThis requires Shell Integration to be installed.");
+DEFINE_SETTABLE_BOOL(noSyncDoNotWarnBeforePastingOneLineEndingInNewlineAtShellPrompt, NoSyncDoNotWarnBeforePastingOneLineEndingInNewlineAtShellPrompt, NO, SECTION_WARNINGS @"Suppress warning about pasting a single line ending in a newline when at the shell prompt.\nThis requires prompt metadata.");
 
 DEFINE_BOOL(noSyncReplaceProfileWarning, NO, SECTION_WARNINGS @"Suppress warning about copying a session's settings over a Profile");
 DEFINE_OPTIONAL_BOOL(noSyncTurnOffFocusReportingOnHostChange, nil, SECTION_WARNINGS @"Always turn off focus reporting when host changes?");
@@ -795,7 +795,7 @@ DEFINE_BOOL(pastingClearsSelection, YES, SECTION_PASTEBOARD @"Pasting text will 
 DEFINE_SETTABLE_BOOL(promptForPasteWhenNotAtPrompt, PromptForPasteWhenNotAtPrompt, NO, SECTION_PASTEBOARD @"Warn before pasting when not at shell prompt?");
 DEFINE_BOOL(excludeBackgroundColorsFromCopiedStyle, NO, SECTION_PASTEBOARD @"Exclude all background colors when text is copied with color and font style?\nThis includes both the default background color and non-default background colors.");
 DEFINE_BOOL(includePasteHistoryInAdvancedPaste, YES, SECTION_PASTEBOARD @"Include paste history in the advanced paste menu.");
-DEFINE_BOOL(advancedPasteWaitsForPromptByDefault, YES, SECTION_PASTEBOARD @"Should Advanced Paste automatically enable “Wait for shell prompt before pasting each line” by default when shell integration is detected?")
+DEFINE_BOOL(advancedPasteWaitsForPromptByDefault, YES, SECTION_PASTEBOARD @"Should Advanced Paste automatically enable “Wait for shell prompt before pasting each line” by default when prompt metadata is available?")
 DEFINE_INT(alwaysWarnBeforePastingOverSize, -1, SECTION_PASTEBOARD @"When pasting more than this many characters, require confirmation.\nSet to -1 to disable warning.\nCharacters are counted in UTF-16.");
 DEFINE_BOOL(saveToPasteHistoryWhenSecureInputEnabled, NO, SECTION_PASTEBOARD @"Save to paste history when secure keyboard input is enabled?");
 
@@ -845,7 +845,7 @@ DEFINE_BOOL(extendBackgroundColorIntoMargins, YES, SECTION_EXPERIMENTAL @"Extend
 DEFINE_BOOL(supportREPCode, YES, SECTION_EXPERIMENTAL @"Enable support for REP (Repeat previous character) escape sequence?");
 DEFINE_BOOL(proportionalScrollWheelReporting, YES, SECTION_EXPERIMENTAL @"Report multiple mouse scroll events when scrolling quickly?");
 DEFINE_BOOL(useModernScrollWheelAccumulator, YES, SECTION_EXPERIMENTAL @"Use modern scroll wheel accumulator.\nThis should support wheel mice better and feel more natural.");
-DEFINE_BOOL(resetSGROnPrompt, YES, SECTION_EXPERIMENTAL @"Reset colors at shell prompt?\nUses shell integration to detect a shell prompt and, if enabled, resets colors to their defaults.");
+DEFINE_BOOL(resetSGROnPrompt, YES, SECTION_EXPERIMENTAL @"Reset colors at shell prompt?\nUses prompt metadata to detect a shell prompt and, if enabled, resets colors to their defaults.");
 DEFINE_BOOL(retinaInlineImages, YES, SECTION_EXPERIMENTAL @"Show inline images at Retina resolution.");
 DEFINE_BOOL(throttleMetalConcurrentFrames, YES, SECTION_EXPERIMENTAL @"Reduce number of frames in flight when GPU can't produce drawables quickly.");
 DEFINE_BOOL(metalSynchronizedDrawing, NO, SECTION_EXPERIMENTAL @"Use synchronized Metal drawable presentation?\nDefers drawable acquisition until rendering completes, presents synchronously with Core Animation, and acquires drawables on the private render queue. May improve frame rates.");

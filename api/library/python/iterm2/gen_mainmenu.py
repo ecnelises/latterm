@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import pathlib
 import string
 import xml.etree.ElementTree as ET
 
@@ -15,12 +16,9 @@ def search_container(path, container, f):
         if menu is not None:
             search_container(this_path, menu.find("items"), f)
         else:
-            try:
-                identifier = item.attrib["identifier"]
+            identifier = item.attrib.get("identifier")
+            if identifier is not None:
                 f(this_path, identifier)
-            except:
-                print("Bogus item: {}".format(item.attrib), file=sys.stderr)
-                raise
 
 
 class RemoveNonAlphanumeric:
@@ -75,7 +73,8 @@ def gen_menu_items_impl(items):
     return "\n".join(result)
 
 def items():
-    tree = ET.parse("../../../../Interfaces/MainMenu.xib")
+    root = pathlib.Path(__file__).resolve().parents[4]
+    tree = ET.parse(root / "sources/MainMenu/MainMenu.xib")
     items = tree.getroot().find("objects").find("menu").find("items")
     return items
 
@@ -175,4 +174,4 @@ class MainMenu:
             response.menu_item_response.checked,
             response.menu_item_response.enabled)
 
-""" + gen_menu_items())
+""" + gen_menu_items(), end="")

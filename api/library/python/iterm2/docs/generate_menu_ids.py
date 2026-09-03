@@ -16,12 +16,9 @@ def search_container(path, container, f):
             search_container(this_path, menu.find("items"), f)
         else:
             name = " > ".join(this_path)
-            try:
-                identifier = item.attrib["identifier"]
+            identifier = item.attrib.get("identifier")
+            if identifier is not None:
                 f(".".join(this_path), name, identifier)
-            except:
-                print("Bogus item: {}".format(item.attrib), file=sys.stderr)
-                raise
 
 
 
@@ -53,7 +50,7 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
-""")
+""", end="")
 
 def make_rst(items, idname):
     """
@@ -79,7 +76,7 @@ def make_rst(items, idname):
 
     divider = "{} {}".format("=" * longest_name, "=" * longest_identifier)
     print(divider)
-    fmt = "%-{}s %-{}s".format(longest_name, longest_identifier)
+    fmt = "%-{}s %s".format(longest_name)
     print(fmt % ("Menu Item", idname))
     print(divider)
 

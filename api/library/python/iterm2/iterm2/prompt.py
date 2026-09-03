@@ -21,9 +21,9 @@ class PromptState(enum.Enum):
 class Prompt:
     """Describes a command prompt.
 
-    Shell Integration must be installed for this to work properly.  Do not
-    construct this object yourself. Use :func:`~async_get_last_prompt` to get
-    an instance.
+    Prompt and command metadata must be available for this to work properly.
+    Do not construct this object yourself. Use :func:`~async_get_last_prompt`
+    to get an instance.
     """
     def __init__(self, proto):
         self.__proto = proto
@@ -192,8 +192,7 @@ class PromptMonitor:
     """
     An asyncio context manager to watch for changes to the prompt.
 
-    This requires shell integration or prompt-detecting triggers to be
-    installed for prompt detection.
+    This requires OSC 133 prompt metadata or prompt-detecting triggers.
 
     Note: Older versions of the runtime do not support modes other than PROMPT.
     Attempting to use a mode other than PROMPT when connected to a too-old

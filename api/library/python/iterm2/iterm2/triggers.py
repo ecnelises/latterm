@@ -1077,7 +1077,7 @@ class EventTrigger:
 class PromptDetectedEventTrigger(EventTrigger):
     """Trigger that fires when a shell prompt is detected.
 
-    Requires shell integration.
+    Requires prompt metadata, such as OSC 133.
     """
     def __init__(
             self,
@@ -1110,7 +1110,7 @@ class ExitCodeFilter(enum.Enum):
 class CommandFinishedEventTrigger(EventTrigger):
     """Trigger that fires when a command finishes.
 
-    Can filter by exit code. Requires shell integration.
+    Can filter by exit code. Requires command lifecycle metadata.
 
     :param action_name: The action to perform (e.g., "AlertTrigger").
     :param param: The parameter for the action.
@@ -1180,7 +1180,8 @@ class CommandFinishedEventTrigger(EventTrigger):
 class DirectoryChangedEventTrigger(EventTrigger):
     """Trigger that fires when the working directory changes.
 
-    Can optionally filter by a regex pattern. Requires shell integration.
+    Can optionally filter by a regex pattern. Requires terminal-reported
+    working-directory metadata.
 
     :param action_name: The action to perform.
     :param param: The parameter for the action.
@@ -1231,7 +1232,8 @@ class DirectoryChangedEventTrigger(EventTrigger):
 class HostChangedEventTrigger(EventTrigger):
     """Trigger that fires when the remote host changes.
 
-    Can optionally filter by a regex pattern. Requires shell integration.
+    Can optionally filter by a regex pattern. Requires terminal-reported host
+    metadata.
 
     :param action_name: The action to perform.
     :param param: The parameter for the action.
@@ -1282,7 +1284,8 @@ class HostChangedEventTrigger(EventTrigger):
 class UserChangedEventTrigger(EventTrigger):
     """Trigger that fires when the current user changes.
 
-    Can optionally filter by a regex pattern. Requires shell integration.
+    Can optionally filter by a regex pattern. Requires terminal-reported user
+    metadata.
 
     :param action_name: The action to perform.
     :param param: The parameter for the action.
@@ -1472,7 +1475,7 @@ class BellReceivedEventTrigger(EventTrigger):
 class LongRunningCommandEventTrigger(EventTrigger):
     """Trigger that fires when a command runs longer than a threshold.
 
-    Requires shell integration.
+    Requires command lifecycle metadata.
 
     :param action_name: The action to perform.
     :param param: The parameter for the action.

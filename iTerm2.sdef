@@ -563,7 +563,7 @@
         <cocoa key="isProcessing" />
       </property>
       <property name="is at shell prompt" code="Iaps" type="boolean"
-          description="The terminal is at the shell prompt. Requires shell integration.">
+          description="The terminal is at the shell prompt. Requires prompt metadata.">
         <cocoa key="isAtShellPrompt" />
       </property>
       <property name="columns" code="Cols" type="integer">

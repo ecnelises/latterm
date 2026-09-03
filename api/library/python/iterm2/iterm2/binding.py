@@ -291,7 +291,7 @@ class MoveSelectionUnit(enum.Enum):
     CHAR = 0  #: One cell, or two if a double-width character is present.
     WORD = 1  #: Jump over alphanumerics.
     LINE = 2
-    MARK = 3  #: Marks can be set manually or (more often) by shell integration.
+    MARK = 3  #: Marks can be set manually or automatically from prompt metadata.
     BIG_WORD = 4  #: Like WORD but includes punctuation characters.
 
     def _encode(self) -> int:

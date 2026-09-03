@@ -4464,7 +4464,7 @@ CA
                         <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fQi-F4-Sfd">
                             <rect key="frame" x="34" y="129" width="113" height="16"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Shell Integration:" id="ujU-dw-TmB">
+                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Terminal Metadata:" id="ujU-dw-TmB">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -4783,7 +4783,7 @@ CA
                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qz5-Ow-iQt" customClass="iTermSettingsCheckbox">
                             <rect key="frame" x="156" y="128" width="383" height="18"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <string key="toolTip">If Shell Integration is enabled, this prevents command prompts from starting in the middle of a line when the previous command did not end with a newline.</string>
+                            <string key="toolTip">When prompt metadata is available, this prevents command prompts from starting in the middle of a line when the previous command did not end with a newline.</string>
                             <buttonCell key="cell" type="check" title="Insert newline before start of command prompt if needed" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="bRB-N5-KFZ">
                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                 <font key="font" metaFont="system"/>
@@ -6175,7 +6175,7 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                         <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vOf-y1-Eeu">
                             <rect key="frame" x="482" y="39" width="284" height="14"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Shell Integration must be installed to use this feature." id="1bp-B6-W52">
+                            <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="This feature requires terminal-reported host metadata." id="1bp-B6-W52">
                                 <font key="font" metaFont="menu" size="11"/>
                                 <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -6943,7 +6943,7 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Pt-rH-WYj">
                                                 <rect key="frame" x="162" y="43" width="378" height="18"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <string key="toolTip">When this is enabled, you can click on a command or its output to restrict Find and Filter to its output. The selected command gets highlighted and other commands get dimmed. This requires shell integration to be installed.</string>
+                                                <string key="toolTip">When this is enabled, you can click on a command or its output to restrict Find and Filter to its output. The selected command gets highlighted and other commands get dimmed. This requires prompt and command metadata.</string>
                                                 <buttonCell key="cell" type="check" title="Clicking on a command selects it to restrict Find and Filter" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="U7X-fp-NxP">
                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                     <font key="font" metaFont="system"/>
@@ -6955,7 +6955,6 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZlO-15-adn">
                                                 <rect key="frame" x="162" y="19" width="383" height="18"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <string key="toolTip">When this is enabled, you can click on a command or its output to restrict Find and Filter to its output. The selected command gets highlighted and other commands get dimmed. This requires shell integration to be installed.</string>
                                                 <buttonCell key="cell" type="check" title="When pasting a dropped filename, wrap it in double quotes" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="ydH-wX-BJI">
                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                     <font key="font" metaFont="system"/>
@@ -9265,7 +9264,7 @@ instead of the system keyboard.</string>
                                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6407">
                                                 <rect key="frame" x="158" y="180" width="160" height="18"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <string key="toolTip">If enabled, option-click sends arrow keys to move the cursor's position. If Shell Integration is installed then it does not take effect at the command line.</string>
+                                                <string key="toolTip">If enabled, option-click sends arrow keys to move the cursor’s position. When prompt metadata identifies the command line, it does not take effect there.</string>
                                                 <buttonCell key="cell" type="check" title="⌥-Click moves cursor" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="6408">
                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                     <font key="font" metaFont="system"/>

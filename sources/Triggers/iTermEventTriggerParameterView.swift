@@ -761,9 +761,9 @@ class EventTriggerMatchTypeHelper: NSObject {
     @objc static func helpText(for matchType: iTermTriggerMatchType) -> String {
         switch matchType {
         case .eventPromptDetected:
-            return "Fires when shell integration detects a new prompt."
+            return "Fires when terminal metadata reports a new prompt."
         case .eventCommandFinished:
-            return "Fires when a command exits. Requires shell integration."
+            return "Fires when a command exits. Requires command lifecycle metadata."
         case .eventDirectoryChanged:
             return "Fires when the working directory changes."
         case .eventHostChanged:

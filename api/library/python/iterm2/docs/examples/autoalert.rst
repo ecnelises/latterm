@@ -9,7 +9,7 @@ This script shows a notification when a job in any session runs for over thirty 
 
 It demonstrates creating a task for every session, monitoring for changes of the currently running command, posting notifications, and some basic asyncio usage.
 
-This script requires that shell integration be installed in order to detect prompts and running commands.
+This script requires OSC 133 prompt and command lifecycle metadata.
 
 .. code-block:: python
 
@@ -66,4 +66,3 @@ This script requires that shell integration be installed in order to detect prom
     iterm2.run_forever(main)
 
 :Download:`Download<autoalert.its>`
-

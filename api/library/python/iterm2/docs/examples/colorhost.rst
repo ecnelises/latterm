@@ -5,7 +5,7 @@
 Per-Host Colors
 ===============
 
-This script sets the color of a session based on the current hostname. For it to work, iTerm2 must know the current hostname. You can do that either by installing Shell Integration or by defining triggers that detect the hostname. More information on that is available here: https://www.iterm2.com/documentation-shell-integration.html
+This script sets the color of a session based on the current hostname. For it to work, Latterm must receive terminal-reported host metadata, or you must define triggers that detect the hostname.
 
 Edit the `colormap` variable to specify the hostname to color preset mapping you prefer.
 

@@ -78,6 +78,8 @@ Terminal-first fork changes:
   Toolbelt compatibility plumbing.
 - Removed obsolete in-app browser URL routing
   and split-pane compatibility paths.
+- Removed stale shell-integration installation
+  guidance from UI and scripting docs.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

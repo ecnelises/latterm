@@ -590,7 +590,7 @@ schema = [
 
     ("place_prompt_at_first_column",
      "bool",
-     "whether the prompt should always begin at the first column (requires shell integration)",
+     "whether the prompt should always begin at the first column when prompt metadata is available",
      None,
      "Place Prompt at First Column"),
 

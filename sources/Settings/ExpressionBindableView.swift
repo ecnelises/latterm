@@ -139,15 +139,16 @@ extension ExpressionBindableView {
             Typically this feature is used by binding a setting to a user-defined variable.
             
             ### Example
-            The easiest way to set a user-defined variable is to install shell integration and then define a `iterm2_print_user_vars` function. Here's an example using bash:
+            A shell can set a user-defined variable with the `SetUserVar` control sequence. Here’s an example using bash:
             
             ```
-            iterm2_print_user_vars() {
-              iterm2_set_user_var \(exampleUserVar) $(echo $\(exampleEnvironmentVar))
+            latterm_set_user_var() {
+              printf '\\033]1337;SetUserVar=%s=%s\\a' "$1" "$(printf %s "$2" | base64)"
             }
+            latterm_set_user_var \(exampleUserVar) "$\(exampleEnvironmentVar)"
             ```
             
-            This runs each time the shell prompt is printed. The example sets a user-defined variable to the value of the environment variable `\(exampleEnvironmentVar)`.
+            This sends the variable directly to the terminal. Call it from your shell’s prompt hook to refresh the value each time the prompt is printed. The example sets a user-defined variable to the value of the environment variable `\(exampleEnvironmentVar)`.
             
             The appropriate expression to bind this example would be `user.\(exampleUserVar)`. All user-defined variables go in the `user` scope.
             

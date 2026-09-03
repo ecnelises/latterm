@@ -5,21 +5,27 @@
 George's Title Algorithm
 =========================
 
-This code combines user-defined variables from Shell Integration with a custom session title function. It demonstrates :func:`iterm2.registration.TitleProviderRPC`. The end result is a snazzy title that includes your git branch:
+This code combines terminal-reported user variables with a custom session title function. It demonstrates :func:`iterm2.registration.TitleProviderRPC`. The end result is a snazzy title that includes your git branch:
 
 .. image:: georgesalgo.png
   :height: 32px
   :width: 375px
 
 |
-First, you need to install Shell Integration. Add this to your .bashrc:
+First, add helpers that emit `SetUserVar` control sequences to your .bashrc:
 
 .. code-block:: bash
 
-    function iterm2_print_user_vars() {
-      iterm2_set_user_var gitBranch $((git branch 2> /dev/null) | grep \* | cut -c3-)
-      iterm2_set_user_var home $(echo -n "$HOME")
+    latterm_set_user_var() {
+      printf '\033]1337;SetUserVar=%s=%s\a' "$1" "$(printf %s "$2" | base64)"
     }
+
+    latterm_print_user_vars() {
+      latterm_set_user_var gitBranch "$(git branch --show-current 2> /dev/null)"
+      latterm_set_user_var home "$HOME"
+    }
+
+    PROMPT_COMMAND="latterm_print_user_vars${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
 Next, install this script in `~/Library/Application Support/iTerm2/Scripts/AutoLaunch`:
 
@@ -114,4 +120,3 @@ Next, install this script in `~/Library/Application Support/iTerm2/Scripts/AutoL
 Then either restart iTerm2 or launch the script from **Scripts > AutoLaunch > georges_title**.
 
 Finally, select *George's Title Algorithm* in **Prefs > Profiles > General > Title**.
-

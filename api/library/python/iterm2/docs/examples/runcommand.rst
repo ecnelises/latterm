@@ -34,7 +34,7 @@ This script runs a command and prints its output to stdout.
 	return result
 
     async def run_command(connection, my_session, command):
-	"""Run a command and return its output. Requires shell integration."""
+	"""Run a command and return its output. Requires OSC 133 metadata."""
 	# Atomically get the last prompt, send a command, and begin watching for the end of the command.
 	async with iterm2.Transaction(connection):
 	    prompt = await iterm2.async_get_last_prompt(connection, my_session.session_id)

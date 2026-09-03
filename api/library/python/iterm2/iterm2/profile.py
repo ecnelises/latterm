@@ -1713,8 +1713,8 @@ class LocalWriteOnlyProfile:
 
     def set_place_prompt_at_first_column(self, value: bool):
         """
-        Sets whether the prompt should always begin at the first column
-        (requires shell integration)
+        Sets whether the prompt should always begin at the first column when
+        prompt metadata is available
 
         :param value: A bool
         """
@@ -1939,10 +1939,9 @@ class LocalWriteOnlyProfile:
 
     def set_background_image_location(self, value: str):
         """
-        Sets or clears the path to a background image.
+        Sets the path to the background image.
 
-        The value is a string with the path to the image file,
-        or an empty string to clear the setting.
+        The value is a Path.
 
         :param value: A str
         """
@@ -3765,8 +3764,8 @@ class WriteOnlyProfile:
 
     async def async_set_place_prompt_at_first_column(self, value: bool):
         """
-        Sets whether the prompt should always begin at the first column
-        (requires shell integration)
+        Sets whether the prompt should always begin at the first column when
+        prompt metadata is available
 
         :param value: A bool
         """
@@ -3969,12 +3968,9 @@ class WriteOnlyProfile:
 
     async def async_set_background_image_location(self, value: str):
         """
-        Sets or clears the path to a background image.
+        Sets the path to the background image.
 
-        The value is a string with the path to the image file,
-        or an empty string to clear the setting.
-        
-        :param value: A str
+        The value is a Path.
         """
         return await self._async_simple_set("Background Image Location", value)
 
@@ -6014,8 +6010,8 @@ class Profile(WriteOnlyProfile):
     @property
     def place_prompt_at_first_column(self) -> bool:
         """
-        Returns whether the prompt should always begin at the first column
-        (requires shell integration)
+        Returns whether the prompt should always begin at the first column when
+        prompt metadata is available
 
         :returns: A bool
         """
@@ -6265,6 +6261,8 @@ class Profile(WriteOnlyProfile):
     def background_image_location(self) -> str:
         """
         Returns the path to the background image.
+
+        The value is a Path.
 
         :returns: A str
         """

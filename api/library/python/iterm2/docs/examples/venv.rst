@@ -5,15 +5,19 @@
 Show Python Virtual Environment
 ===============================
 
-This custom status bar component shows the current Python virtual environment. In order to expose the necessary info to iTerm2 you need to add this to your `.bashrc`:
+This custom status bar component shows the current Python virtual environment. To expose the necessary information to Latterm, add this to your `.bashrc`:
 
 .. code-block:: bash
 
-    iterm2_print_user_vars()
-    {
-        iterm2_set_user_var python_venv $VIRTUAL_ENV
+    latterm_set_user_var() {
+        printf '\033]1337;SetUserVar=%s=%s\a' "$1" "$(printf %s "$2" | base64)"
     }
 
+    latterm_print_user_vars() {
+        latterm_set_user_var python_venv "$VIRTUAL_ENV"
+    }
+
+    PROMPT_COMMAND="latterm_print_user_vars${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 
 You can then add it to your status bar in **Prefs > Profiles > Session > Configure Status Bar**.
 
@@ -56,4 +60,3 @@ You can then add it to your status bar in **Prefs > Profiles > Session > Configu
 
 
 :Download:`Download<venv.its>`
-
