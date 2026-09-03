@@ -2327,14 +2327,6 @@ ITERM_WEAKLY_REFERENCEABLE
     session.clippingsVisible = !session.clippingsVisible;
 }
 
-- (IBAction)toggleShowInlineChat:(id)sender {
-    PTYSession *session = [self currentSession];
-    if (!session) {
-        return;
-    }
-    [session toggleInlineChat];
-}
-
 - (IBAction)toggleSelectionRespectsSoftBoundaries:(id)sender {
     iTermController *controller = [iTermController sharedInstance];
     controller.selectionRespectsSoftBoundaries = !controller.selectionRespectsSoftBoundaries;
@@ -11774,11 +11766,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         PTYSession *session = [self currentSession];
         [item setState:(session != nil && session.clippingsVisible) ? NSControlStateValueOn : NSControlStateValueOff];
         return session != nil;
-    } else if ([item action] == @selector(toggleShowInlineChat:)) {
-        PTYSession *session = [self currentSession];
-        const BOOL hasInlineChat = (session != nil && session.inlineChatID != nil);
-        [item setState:(hasInlineChat && session.inlineChatVisible) ? NSControlStateValueOn : NSControlStateValueOff];
-        return hasInlineChat;
     } else if ([item action] == @selector(toggleSelectionRespectsSoftBoundaries:)) {
         [item setState:[[iTermController sharedInstance] selectionRespectsSoftBoundaries] ? NSControlStateValueOn : NSControlStateValueOff];
         result = YES;

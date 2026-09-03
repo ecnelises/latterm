@@ -66,6 +66,8 @@ Terminal-first fork changes:
   harness for scripts no longer bundled.
 - Removed obsolete browser and AI tip-filter
   compatibility code.
+- Removed the disabled inline-chat menu and its
+  no-op session state.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

@@ -126,14 +126,6 @@ class PTYSessionSwiftState: NSObject {
     // before the sheet finishes.
     var activeAddClippingPanel: AddClippingPanel?
 
-    // ID of the chat hosted in this session's right-gutter panel, or nil if
-    // none. A session owns at most one inline chat at a time.
-    var inlineChatID: String?
-
-    // Whether the inline chat panel is currently shown. The panel only
-    // contributes to the right-extra width budget when this is true and
-    // inlineChatID is non-nil.
-    var inlineChatVisibilityFlag = true
 }
 
 // MARK: - Annotations and Mark URLs
@@ -1378,46 +1370,4 @@ extension PTYSession {
 
     @objc static let clippingsDidChangeNotification =
         Notification.Name("iTermClippingsDidChange")
-
-    // The chat ID currently bound to this session's inline-chat right-gutter
-    // panel, or nil if none. Setting this value re-runs the layout cascade
-    // because the right-extra budget depends on whether an inline chat is
-    // installed.
-    @objc var inlineChatID: String? {
-        get { swiftState.inlineChatID }
-        set {
-            swiftState.inlineChatID = newValue
-            inlineChatDidChange()
-        }
-    }
-
-    // Whether the inline chat panel should be shown. Honored only when an
-    // inlineChatID is set; with no chat to show, visibility has no effect.
-    @objc var inlineChatVisible: Bool {
-        get { swiftState.inlineChatVisibilityFlag }
-        set {
-            swiftState.inlineChatVisibilityFlag = newValue
-            inlineChatDidChange()
-        }
-    }
-
-    @objc func inlineChatDidChange() {
-        NotificationCenter.default.post(name: PTYSession.inlineChatDidChangeNotification,
-                                        object: self)
-        if view?.actualRightExtra != desiredRightExtra() {
-            delegate?.realParentWindow()?.rightExtraDidChange()
-        }
-    }
-
-    @objc static let inlineChatDidChangeNotification =
-        Notification.Name("iTermInlineChatDidChange")
-
-    // Inline chat is unavailable in the terminal-first fork. Keep the
-    // selector as a compatibility no-op while menu and responder cleanup
-    // continues.
-    @objc(toggleInlineChat)
-    func toggleInlineChat() {
-        inlineChatID = nil
-        inlineChatVisible = false
-    }
 }
