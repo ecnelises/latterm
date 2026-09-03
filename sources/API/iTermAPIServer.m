@@ -1154,19 +1154,6 @@ NSString *const iTermAPIServerConnectionClosed = @"iTermAPIServerConnectionClose
     }];
 }
 
-- (void)handleStatusBarComponentRequest:(ITMClientOriginatedMessage *)request connection:(id<iTermAPIServerConnection>)webSocketConnection {
-    ITMServerOriginatedMessage *response = [self newResponseForRequest:request];
-
-    __block BOOL handled = NO;
-    __weak __typeof(self) weakSelf = self;
-    [_delegate apiServerStatusBarComponentRequest:request.statusBarComponentRequest handler:^(ITMStatusBarComponentResponse *theResponse) {
-        assert(!handled);
-        handled = YES;
-        response.statusBarComponentResponse = theResponse;
-        [weakSelf finishHandlingRequestWithResponse:response onConnection:webSocketConnection];
-    }];
-}
-
 - (void)handleSetBroadcastDomainsRequest:(ITMClientOriginatedMessage *)request connection:(id<iTermAPIServerConnection>)webSocketConnection {
     ITMServerOriginatedMessage *response = [self newResponseForRequest:request];
 
@@ -1344,10 +1331,6 @@ NSString *const iTermAPIServerConnectionClosed = @"iTermAPIServerConnectionClose
 
         case ITMClientOriginatedMessage_Submessage_OneOfCase_SelectionRequest:
             [self handleSelectionRequest:request connection:webSocketConnection];
-            break;
-
-        case ITMClientOriginatedMessage_Submessage_OneOfCase_StatusBarComponentRequest:
-            [self handleStatusBarComponentRequest:request connection:webSocketConnection];
             break;
 
         case ITMClientOriginatedMessage_Submessage_OneOfCase_SetBroadcastDomainsRequest:

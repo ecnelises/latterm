@@ -157,8 +157,6 @@ forInvocation:(NSString *)invocation
 - (nullable NSColor *)statusBarTextColor;
 - (nullable NSColor *)statusBarBackgroundColor;
 
-- (void)statusBarComponentOpenPopoverWithHTML:(NSString *)html ofSize:(NSSize)size;
-
 - (void)statusBarComponentDidMoveToWindow;
 
 - (BOOL)statusBarComponentHandlesClicks;

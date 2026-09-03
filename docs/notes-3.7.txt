@@ -72,6 +72,8 @@ Terminal-first fork changes:
   vendored parser, and orphaned source files.
 - Removed Python-registered web tools from the
   Toolbelt and API.
+- Removed script-provided HTML popovers from
+  status bar components.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

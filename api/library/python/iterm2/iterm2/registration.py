@@ -94,7 +94,6 @@ def RPC(func):  # pylint: disable=invalid-name
         * Example ":ref:`blending_example`"
         * Example ":ref:`close_to_the_right_example`"
         * Example ":ref:`cls_example`"
-        * Example ":ref:`jsonpretty_example`"
         * Example ":ref:`movetab_example`"
 
     That's complicated, but an example will make it clearer:
@@ -289,7 +288,6 @@ def StatusBarRPC(func):  # pylint: disable=invalid-name
 
     .. seealso::
         * Example ":ref:`escindicator_example`"
-        * Example ":ref:`jsonpretty_example`"
         * Example ":ref:`mousemode_example`"
         * Example ":ref:`statusbar_example`"
 
@@ -313,19 +311,9 @@ def StatusBarRPC(func):  # pylint: disable=invalid-name
               # is useful for debugging scripts.
               return session_id
 
-          @iterm2.RPC
-          async def my_status_bar_click_handler(session_id):
-              # When you click the status bar it opens a popover with the
-              # message "Hello World"
-              await component.async_open_popover(
-                      session_id,
-                      "Hello world",
-                      iterm2.Size(200, 200))
-
           await component.async_register(
                   connection,
-                  session_id_status_bar_coro,
-                  onclick=my_status_bar_click_handler)
+                  session_id_status_bar_coro)
     """
     async def async_register(connection, component, timeout=None):
         signature = inspect.signature(func)

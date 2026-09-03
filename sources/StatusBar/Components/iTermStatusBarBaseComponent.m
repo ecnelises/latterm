@@ -8,15 +8,10 @@
 #import "iTermStatusBarBaseComponent.h"
 
 #import "DebugLogging.h"
-#import "iTermAPIHelper.h"
-#import "iTermPreferences.h"
 #import "iTermStatusBarLayout.h"
 #import "iTermStatusBarSetupKnobsViewController.h"
-#import "iTermWebViewWrapperViewController.h"
 #import "NSDictionary+iTerm.h"
 #import "NSObject+iTerm.h"
-
-#import <WebKit/WebKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -82,9 +77,6 @@ const double iTermStatusBarBaseComponentDefaultPriority = 5;
     return [_class statusBarComponentDefaultKnobs];
 }
 
-@end
-
-@interface iTermStatusBarBaseComponent()<iTermWebViewDelegate, NSPopoverDelegate>
 @end
 
 @implementation iTermStatusBarBaseComponent
@@ -360,34 +352,6 @@ const double iTermStatusBarBaseComponentDefaultPriority = 5;
 - (void)statusBarTerminalBackgroundColorDidChange {
 }
 
-- (void)statusBarComponentOpenPopoverWithHTML:(NSString *)html ofSize:(NSSize)size {
-    WKWebView *webView = [[iTermWebViewFactory sharedInstance] webViewWithDelegate:self];
-    if (!webView) {
-        return;
-    }
-    [webView loadHTMLString:html baseURL:nil];
-    NSPopover *popover = [[NSPopover alloc] init];
-    NSViewController *viewController = [[iTermWebViewWrapperViewController alloc] initWithWebView:webView
-                                                                                        backupURL:nil];
-    popover.contentViewController = viewController;
-    popover.contentSize = size;
-    NSView *view = self.statusBarComponentView;
-    popover.behavior = NSPopoverBehaviorSemitransient;
-    popover.delegate = self;
-    NSRectEdge preferredEdge = NSRectEdgeMinY;
-    switch ([iTermPreferences unsignedIntegerForKey:kPreferenceKeyStatusBarPosition]) {
-        case iTermStatusBarPositionTop:
-            preferredEdge = NSRectEdgeMaxY;
-            break;
-        case iTermStatusBarPositionBottom:
-            preferredEdge = NSRectEdgeMinY;
-            break;
-    }
-    [popover showRelativeToRect:view.bounds
-                         ofView:view
-                  preferredEdge:preferredEdge];
-}
-
 - (BOOL)statusBarComponentHandlesClicks {
     return NO;
 }
@@ -417,38 +381,6 @@ const double iTermStatusBarBaseComponentDefaultPriority = 5;
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:_configuration forKey:@"configuration"];
-}
-
-#pragma mark - NSPopoverDelegate
-
-- (void)popoverDidClose:(NSNotification *)notification {
-    NSPopover *popover = notification.object;
-    iTermWebViewWrapperViewController *viewController = (iTermWebViewWrapperViewController *)popover.contentViewController;
-    [viewController terminateWebView];
-
-}
-
-#pragma mark - iTermWebViewDelegate
-
-- (void)itermWebViewScriptInvocation:(NSString *)invocation didFailWithError:(NSError *)error {
-    [[iTermAPIHelper sharedInstance] logToConnectionHostingFunctionWithSignature:invocation
-                                                                          string:error.localizedDescription];
-}
-
-- (iTermVariableScope *)itermWebViewScriptScopeForUserContentController:(WKUserContentController *)userContentController {
-    return self.scope;
-}
-
-- (void)itermWebViewJavascriptError:(NSString *)errorText {
-    XLog(@"Unhandled javascript error: %@", errorText);
-}
-
-- (void)itermWebViewWillExecuteJavascript:(NSString *)javascript {
-    XLog(@"Unexpected javascript execution: %@", javascript);
-}
-
-- (BOOL)itermWebViewShouldAllowInvocation {
-    return YES;
 }
 
 @end

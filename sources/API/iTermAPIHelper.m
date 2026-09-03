@@ -3946,46 +3946,6 @@ static BOOL iTermCheckSplitTreesIsomorphic(ITMSplitTreeNode *node1, ITMSplitTree
     completion(response);
 }
 
-- (void)apiServerStatusBarComponentRequest:(ITMStatusBarComponentRequest *)request
-                                   handler:(void (^)(ITMStatusBarComponentResponse *))completion {
-    switch (request.requestOneOfCase) {
-        case ITMStatusBarComponentRequest_Request_OneOfCase_OpenPopover:
-            [self handleOpenStatusBarPopoverRequest:request.openPopover
-                                         identifier:request.identifier
-                                         completion:completion];
-            return;
-        case ITMStatusBarComponentRequest_Request_OneOfCase_GPBUnsetOneOfCase:
-            break;
-    }
-    ITMStatusBarComponentResponse *response = [[ITMStatusBarComponentResponse alloc] init];
-    response.status = ITMStatusBarComponentResponse_Status_RequestMalformed;
-    completion(response);
-}
-
-- (void)handleOpenStatusBarPopoverRequest:(ITMStatusBarComponentRequest_OpenPopover *)request
-                               identifier:(NSString *)identifier
-                               completion:(void (^)(ITMStatusBarComponentResponse *))completion {
-    ITMStatusBarComponentResponse *response = [[ITMStatusBarComponentResponse alloc] init];
-    PTYSession *session = [self sessionForAPIIdentifier:request.sessionId includeBuriedSessions:YES];
-    if (!session) {
-        response.status = ITMStatusBarComponentResponse_Status_SessionNotFound;
-        completion(response);
-        return;
-    }
-
-    id<iTermStatusBarComponent> component = [session.statusBarViewController componentWithIdentifier:identifier];
-    if (!component) {
-        response.status = ITMStatusBarComponentResponse_Status_InvalidIdentifier;
-        completion(response);
-        return;
-    }
-    [component statusBarComponentOpenPopoverWithHTML:request.html ofSize:NSMakeSize(request.size.width, request.size.height)];
-
-    response.status = ITMStatusBarComponentResponse_Status_Ok;
-    completion(response);
-    return;
-}
-
 - (void)apiServerSetBroadcastDomainsRequest:(ITMSetBroadcastDomainsRequest *)request handler:(void (^)(ITMSetBroadcastDomainsResponse *))completion {
     ITMSetBroadcastDomainsResponse *response = [self handleSetBroadcastDomains:request];
     completion(response);

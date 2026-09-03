@@ -172,9 +172,6 @@ GPBObjCClassDeclaration(ITMSplitPaneRequest);
 GPBObjCClassDeclaration(ITMSplitPaneResponse);
 GPBObjCClassDeclaration(ITMSplitTreeNode);
 GPBObjCClassDeclaration(ITMSplitTreeNode_SplitTreeLink);
-GPBObjCClassDeclaration(ITMStatusBarComponentRequest);
-GPBObjCClassDeclaration(ITMStatusBarComponentRequest_OpenPopover);
-GPBObjCClassDeclaration(ITMStatusBarComponentResponse);
 GPBObjCClassDeclaration(ITMSubSelection);
 GPBObjCClassDeclaration(ITMTerminateSessionNotification);
 GPBObjCClassDeclaration(ITMTmuxRequest);
@@ -559,7 +556,6 @@ BOOL ITMImagePlaceholderType_IsValidValue(int32_t value__) {
 @dynamic preferencesRequest;
 @dynamic colorPresetRequest;
 @dynamic selectionRequest;
-@dynamic statusBarComponentRequest;
 @dynamic setBroadcastDomainsRequest;
 @dynamic closeRequest;
 @dynamic invokeFunctionRequest;
@@ -596,7 +592,6 @@ typedef struct ITMClientOriginatedMessage__storage_ {
   ITMPreferencesRequest *preferencesRequest;
   ITMColorPresetRequest *colorPresetRequest;
   ITMSelectionRequest *selectionRequest;
-  ITMStatusBarComponentRequest *statusBarComponentRequest;
   ITMSetBroadcastDomainsRequest *setBroadcastDomainsRequest;
   ITMCloseRequest *closeRequest;
   ITMInvokeFunctionRequest *invokeFunctionRequest;
@@ -873,15 +868,6 @@ typedef struct ITMClientOriginatedMessage__storage_ {
         .dataType = GPBDataTypeMessage,
       },
       {
-        .name = "statusBarComponentRequest",
-        .dataTypeSpecific.clazz = GPBObjCClass(ITMStatusBarComponentRequest),
-        .number = ITMClientOriginatedMessage_FieldNumber_StatusBarComponentRequest,
-        .hasIndex = -1,
-        .offset = (uint32_t)offsetof(ITMClientOriginatedMessage__storage_, statusBarComponentRequest),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeMessage,
-      },
-      {
         .name = "setBroadcastDomainsRequest",
         .dataTypeSpecific.clazz = GPBObjCClass(ITMSetBroadcastDomainsRequest),
         .number = ITMClientOriginatedMessage_FieldNumber_SetBroadcastDomainsRequest,
@@ -991,7 +977,6 @@ void ITMClientOriginatedMessage_ClearSubmessageOneOfCase(ITMClientOriginatedMess
 @dynamic preferencesResponse;
 @dynamic colorPresetResponse;
 @dynamic selectionResponse;
-@dynamic statusBarComponentResponse;
 @dynamic setBroadcastDomainsResponse;
 @dynamic closeResponse;
 @dynamic invokeFunctionResponse;
@@ -1030,7 +1015,6 @@ typedef struct ITMServerOriginatedMessage__storage_ {
   ITMPreferencesResponse *preferencesResponse;
   ITMColorPresetResponse *colorPresetResponse;
   ITMSelectionResponse *selectionResponse;
-  ITMStatusBarComponentResponse *statusBarComponentResponse;
   ITMSetBroadcastDomainsResponse *setBroadcastDomainsResponse;
   ITMCloseResponse *closeResponse;
   ITMInvokeFunctionResponse *invokeFunctionResponse;
@@ -1313,15 +1297,6 @@ typedef struct ITMServerOriginatedMessage__storage_ {
         .number = ITMServerOriginatedMessage_FieldNumber_SelectionResponse,
         .hasIndex = -1,
         .offset = (uint32_t)offsetof(ITMServerOriginatedMessage__storage_, selectionResponse),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeMessage,
-      },
-      {
-        .name = "statusBarComponentResponse",
-        .dataTypeSpecific.clazz = GPBObjCClass(ITMStatusBarComponentResponse),
-        .number = ITMServerOriginatedMessage_FieldNumber_StatusBarComponentResponse,
-        .hasIndex = -1,
-        .offset = (uint32_t)offsetof(ITMServerOriginatedMessage__storage_, statusBarComponentResponse),
         .flags = GPBFieldOptional,
         .dataType = GPBDataTypeMessage,
       },
@@ -2402,227 +2377,6 @@ BOOL ITMSetBroadcastDomainsResponse_Status_IsValidValue(int32_t value__) {
     case ITMSetBroadcastDomainsResponse_Status_SessionNotFound:
     case ITMSetBroadcastDomainsResponse_Status_BroadcastDomainsNotDisjoint:
     case ITMSetBroadcastDomainsResponse_Status_SessionsNotInSameWindow:
-      return YES;
-    default:
-      return NO;
-  }
-}
-
-#pragma mark - ITMStatusBarComponentRequest
-
-@implementation ITMStatusBarComponentRequest
-
-@dynamic requestOneOfCase;
-@dynamic openPopover;
-@dynamic hasIdentifier, identifier;
-
-typedef struct ITMStatusBarComponentRequest__storage_ {
-  uint32_t _has_storage_[2];
-  ITMStatusBarComponentRequest_OpenPopover *openPopover;
-  NSString *identifier;
-} ITMStatusBarComponentRequest__storage_;
-
-// This method is threadsafe because it is initially called
-// in +initialize for each subclass.
-+ (GPBDescriptor *)descriptor {
-  static GPBDescriptor *descriptor = nil;
-  if (!descriptor) {
-    static GPBMessageFieldDescription fields[] = {
-      {
-        .name = "openPopover",
-        .dataTypeSpecific.clazz = GPBObjCClass(ITMStatusBarComponentRequest_OpenPopover),
-        .number = ITMStatusBarComponentRequest_FieldNumber_OpenPopover,
-        .hasIndex = -1,
-        .offset = (uint32_t)offsetof(ITMStatusBarComponentRequest__storage_, openPopover),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeMessage,
-      },
-      {
-        .name = "identifier",
-        .dataTypeSpecific.clazz = Nil,
-        .number = ITMStatusBarComponentRequest_FieldNumber_Identifier,
-        .hasIndex = 0,
-        .offset = (uint32_t)offsetof(ITMStatusBarComponentRequest__storage_, identifier),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeString,
-      },
-    };
-    GPBDescriptor *localDescriptor =
-        [GPBDescriptor allocDescriptorForClass:[ITMStatusBarComponentRequest class]
-                                     rootClass:[ITMApiRoot class]
-                                          file:ITMApiRoot_FileDescriptor()
-                                        fields:fields
-                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
-                                   storageSize:sizeof(ITMStatusBarComponentRequest__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
-    static const char *oneofs[] = {
-      "request",
-    };
-    [localDescriptor setupOneofs:oneofs
-                           count:(uint32_t)(sizeof(oneofs) / sizeof(char*))
-                   firstHasIndex:-1];
-    #if defined(DEBUG) && DEBUG
-      NSAssert(descriptor == nil, @"Startup recursed!");
-    #endif  // DEBUG
-    descriptor = localDescriptor;
-  }
-  return descriptor;
-}
-
-@end
-
-void ITMStatusBarComponentRequest_ClearRequestOneOfCase(ITMStatusBarComponentRequest *message) {
-  GPBDescriptor *descriptor = [ITMStatusBarComponentRequest descriptor];
-  GPBOneofDescriptor *oneof = [descriptor.oneofs objectAtIndex:0];
-  GPBClearOneof(message, oneof);
-}
-#pragma mark - ITMStatusBarComponentRequest_OpenPopover
-
-@implementation ITMStatusBarComponentRequest_OpenPopover
-
-@dynamic hasSessionId, sessionId;
-@dynamic hasHtml, html;
-@dynamic hasSize, size;
-
-typedef struct ITMStatusBarComponentRequest_OpenPopover__storage_ {
-  uint32_t _has_storage_[1];
-  NSString *sessionId;
-  NSString *html;
-  ITMSize *size;
-} ITMStatusBarComponentRequest_OpenPopover__storage_;
-
-// This method is threadsafe because it is initially called
-// in +initialize for each subclass.
-+ (GPBDescriptor *)descriptor {
-  static GPBDescriptor *descriptor = nil;
-  if (!descriptor) {
-    static GPBMessageFieldDescription fields[] = {
-      {
-        .name = "sessionId",
-        .dataTypeSpecific.clazz = Nil,
-        .number = ITMStatusBarComponentRequest_OpenPopover_FieldNumber_SessionId,
-        .hasIndex = 0,
-        .offset = (uint32_t)offsetof(ITMStatusBarComponentRequest_OpenPopover__storage_, sessionId),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeString,
-      },
-      {
-        .name = "html",
-        .dataTypeSpecific.clazz = Nil,
-        .number = ITMStatusBarComponentRequest_OpenPopover_FieldNumber_Html,
-        .hasIndex = 1,
-        .offset = (uint32_t)offsetof(ITMStatusBarComponentRequest_OpenPopover__storage_, html),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeString,
-      },
-      {
-        .name = "size",
-        .dataTypeSpecific.clazz = GPBObjCClass(ITMSize),
-        .number = ITMStatusBarComponentRequest_OpenPopover_FieldNumber_Size,
-        .hasIndex = 2,
-        .offset = (uint32_t)offsetof(ITMStatusBarComponentRequest_OpenPopover__storage_, size),
-        .flags = GPBFieldOptional,
-        .dataType = GPBDataTypeMessage,
-      },
-    };
-    GPBDescriptor *localDescriptor =
-        [GPBDescriptor allocDescriptorForClass:[ITMStatusBarComponentRequest_OpenPopover class]
-                                     rootClass:[ITMApiRoot class]
-                                          file:ITMApiRoot_FileDescriptor()
-                                        fields:fields
-                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
-                                   storageSize:sizeof(ITMStatusBarComponentRequest_OpenPopover__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
-    [localDescriptor setupContainingMessageClass:GPBObjCClass(ITMStatusBarComponentRequest)];
-    #if defined(DEBUG) && DEBUG
-      NSAssert(descriptor == nil, @"Startup recursed!");
-    #endif  // DEBUG
-    descriptor = localDescriptor;
-  }
-  return descriptor;
-}
-
-@end
-
-#pragma mark - ITMStatusBarComponentResponse
-
-@implementation ITMStatusBarComponentResponse
-
-@dynamic hasStatus, status;
-
-typedef struct ITMStatusBarComponentResponse__storage_ {
-  uint32_t _has_storage_[1];
-  ITMStatusBarComponentResponse_Status status;
-} ITMStatusBarComponentResponse__storage_;
-
-// This method is threadsafe because it is initially called
-// in +initialize for each subclass.
-+ (GPBDescriptor *)descriptor {
-  static GPBDescriptor *descriptor = nil;
-  if (!descriptor) {
-    static GPBMessageFieldDescription fields[] = {
-      {
-        .name = "status",
-        .dataTypeSpecific.enumDescFunc = ITMStatusBarComponentResponse_Status_EnumDescriptor,
-        .number = ITMStatusBarComponentResponse_FieldNumber_Status,
-        .hasIndex = 0,
-        .offset = (uint32_t)offsetof(ITMStatusBarComponentResponse__storage_, status),
-        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldHasEnumDescriptor),
-        .dataType = GPBDataTypeEnum,
-      },
-    };
-    GPBDescriptor *localDescriptor =
-        [GPBDescriptor allocDescriptorForClass:[ITMStatusBarComponentResponse class]
-                                     rootClass:[ITMApiRoot class]
-                                          file:ITMApiRoot_FileDescriptor()
-                                        fields:fields
-                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
-                                   storageSize:sizeof(ITMStatusBarComponentResponse__storage_)
-                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
-    #if defined(DEBUG) && DEBUG
-      NSAssert(descriptor == nil, @"Startup recursed!");
-    #endif  // DEBUG
-    descriptor = localDescriptor;
-  }
-  return descriptor;
-}
-
-@end
-
-#pragma mark - Enum ITMStatusBarComponentResponse_Status
-
-GPBEnumDescriptor *ITMStatusBarComponentResponse_Status_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
-  if (!descriptor) {
-    static const char *valueNames =
-        "Ok\000SessionNotFound\000RequestMalformed\000Inva"
-        "lidIdentifier\000";
-    static const int32_t values[] = {
-        ITMStatusBarComponentResponse_Status_Ok,
-        ITMStatusBarComponentResponse_Status_SessionNotFound,
-        ITMStatusBarComponentResponse_Status_RequestMalformed,
-        ITMStatusBarComponentResponse_Status_InvalidIdentifier,
-    };
-    GPBEnumDescriptor *worker =
-        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(ITMStatusBarComponentResponse_Status)
-                                       valueNames:valueNames
-                                           values:values
-                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))
-                                     enumVerifier:ITMStatusBarComponentResponse_Status_IsValidValue];
-    GPBEnumDescriptor *expected = nil;
-    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
-      [worker release];
-    }
-  }
-  return descriptor;
-}
-
-BOOL ITMStatusBarComponentResponse_Status_IsValidValue(int32_t value__) {
-  switch (value__) {
-    case ITMStatusBarComponentResponse_Status_Ok:
-    case ITMStatusBarComponentResponse_Status_SessionNotFound:
-    case ITMStatusBarComponentResponse_Status_RequestMalformed:
-    case ITMStatusBarComponentResponse_Status_InvalidIdentifier:
       return YES;
     default:
       return NO;

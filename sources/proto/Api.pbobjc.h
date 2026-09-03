@@ -172,9 +172,6 @@ CF_EXTERN_C_BEGIN
 @class ITMSplitPaneResponse;
 @class ITMSplitTreeNode;
 @class ITMSplitTreeNode_SplitTreeLink;
-@class ITMStatusBarComponentRequest;
-@class ITMStatusBarComponentRequest_OpenPopover;
-@class ITMStatusBarComponentResponse;
 @class ITMSubSelection;
 @class ITMTerminateSessionNotification;
 @class ITMTmuxRequest;
@@ -384,23 +381,6 @@ GPBEnumDescriptor *ITMSetBroadcastDomainsResponse_Status_EnumDescriptor(void);
  * the time this source was generated.
  **/
 BOOL ITMSetBroadcastDomainsResponse_Status_IsValidValue(int32_t value);
-
-#pragma mark - Enum ITMStatusBarComponentResponse_Status
-
-typedef GPB_ENUM(ITMStatusBarComponentResponse_Status) {
-  ITMStatusBarComponentResponse_Status_Ok = 0,
-  ITMStatusBarComponentResponse_Status_SessionNotFound = 1,
-  ITMStatusBarComponentResponse_Status_RequestMalformed = 2,
-  ITMStatusBarComponentResponse_Status_InvalidIdentifier = 3,
-};
-
-GPBEnumDescriptor *ITMStatusBarComponentResponse_Status_EnumDescriptor(void);
-
-/**
- * Checks to see if the given value is defined by the enum or was not known at
- * the time this source was generated.
- **/
-BOOL ITMStatusBarComponentResponse_Status_IsValidValue(int32_t value);
 
 #pragma mark - Enum ITMSelectionResponse_Status
 
@@ -1094,7 +1074,6 @@ typedef GPB_ENUM(ITMClientOriginatedMessage_FieldNumber) {
   ITMClientOriginatedMessage_FieldNumber_PreferencesRequest = 126,
   ITMClientOriginatedMessage_FieldNumber_ColorPresetRequest = 127,
   ITMClientOriginatedMessage_FieldNumber_SelectionRequest = 128,
-  ITMClientOriginatedMessage_FieldNumber_StatusBarComponentRequest = 129,
   ITMClientOriginatedMessage_FieldNumber_SetBroadcastDomainsRequest = 130,
   ITMClientOriginatedMessage_FieldNumber_CloseRequest = 131,
   ITMClientOriginatedMessage_FieldNumber_InvokeFunctionRequest = 132,
@@ -1132,7 +1111,6 @@ typedef GPB_ENUM(ITMClientOriginatedMessage_Submessage_OneOfCase) {
   ITMClientOriginatedMessage_Submessage_OneOfCase_PreferencesRequest = 126,
   ITMClientOriginatedMessage_Submessage_OneOfCase_ColorPresetRequest = 127,
   ITMClientOriginatedMessage_Submessage_OneOfCase_SelectionRequest = 128,
-  ITMClientOriginatedMessage_Submessage_OneOfCase_StatusBarComponentRequest = 129,
   ITMClientOriginatedMessage_Submessage_OneOfCase_SetBroadcastDomainsRequest = 130,
   ITMClientOriginatedMessage_Submessage_OneOfCase_CloseRequest = 131,
   ITMClientOriginatedMessage_Submessage_OneOfCase_InvokeFunctionRequest = 132,
@@ -1207,8 +1185,6 @@ GPB_FINAL @interface ITMClientOriginatedMessage : GPBMessage
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMSelectionRequest *selectionRequest;
 
-@property(nonatomic, readwrite, strong, null_resettable) ITMStatusBarComponentRequest *statusBarComponentRequest;
-
 @property(nonatomic, readwrite, strong, null_resettable) ITMSetBroadcastDomainsRequest *setBroadcastDomainsRequest;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMCloseRequest *closeRequest;
@@ -1259,7 +1235,6 @@ typedef GPB_ENUM(ITMServerOriginatedMessage_FieldNumber) {
   ITMServerOriginatedMessage_FieldNumber_PreferencesResponse = 126,
   ITMServerOriginatedMessage_FieldNumber_ColorPresetResponse = 127,
   ITMServerOriginatedMessage_FieldNumber_SelectionResponse = 128,
-  ITMServerOriginatedMessage_FieldNumber_StatusBarComponentResponse = 129,
   ITMServerOriginatedMessage_FieldNumber_SetBroadcastDomainsResponse = 130,
   ITMServerOriginatedMessage_FieldNumber_CloseResponse = 131,
   ITMServerOriginatedMessage_FieldNumber_InvokeFunctionResponse = 132,
@@ -1299,7 +1274,6 @@ typedef GPB_ENUM(ITMServerOriginatedMessage_Submessage_OneOfCase) {
   ITMServerOriginatedMessage_Submessage_OneOfCase_PreferencesResponse = 126,
   ITMServerOriginatedMessage_Submessage_OneOfCase_ColorPresetResponse = 127,
   ITMServerOriginatedMessage_Submessage_OneOfCase_SelectionResponse = 128,
-  ITMServerOriginatedMessage_Submessage_OneOfCase_StatusBarComponentResponse = 129,
   ITMServerOriginatedMessage_Submessage_OneOfCase_SetBroadcastDomainsResponse = 130,
   ITMServerOriginatedMessage_Submessage_OneOfCase_CloseResponse = 131,
   ITMServerOriginatedMessage_Submessage_OneOfCase_InvokeFunctionResponse = 132,
@@ -1378,8 +1352,6 @@ GPB_FINAL @interface ITMServerOriginatedMessage : GPBMessage
 @property(nonatomic, readwrite, strong, null_resettable) ITMColorPresetResponse *colorPresetResponse;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMSelectionResponse *selectionResponse;
-
-@property(nonatomic, readwrite, strong, null_resettable) ITMStatusBarComponentResponse *statusBarComponentResponse;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMSetBroadcastDomainsResponse *setBroadcastDomainsResponse;
 
@@ -1701,75 +1673,6 @@ typedef GPB_ENUM(ITMSetBroadcastDomainsResponse_FieldNumber) {
 GPB_FINAL @interface ITMSetBroadcastDomainsResponse : GPBMessage
 
 @property(nonatomic, readwrite) ITMSetBroadcastDomainsResponse_Status status;
-
-@property(nonatomic, readwrite) BOOL hasStatus;
-@end
-
-#pragma mark - ITMStatusBarComponentRequest
-
-typedef GPB_ENUM(ITMStatusBarComponentRequest_FieldNumber) {
-  ITMStatusBarComponentRequest_FieldNumber_OpenPopover = 1,
-  ITMStatusBarComponentRequest_FieldNumber_Identifier = 2,
-};
-
-typedef GPB_ENUM(ITMStatusBarComponentRequest_Request_OneOfCase) {
-  ITMStatusBarComponentRequest_Request_OneOfCase_GPBUnsetOneOfCase = 0,
-  ITMStatusBarComponentRequest_Request_OneOfCase_OpenPopover = 1,
-};
-
-GPB_FINAL @interface ITMStatusBarComponentRequest : GPBMessage
-
-@property(nonatomic, readonly) ITMStatusBarComponentRequest_Request_OneOfCase requestOneOfCase;
-
-@property(nonatomic, readwrite, strong, null_resettable) ITMStatusBarComponentRequest_OpenPopover *openPopover;
-
-/** ID of statusbar component */
-@property(nonatomic, readwrite, copy, null_resettable) NSString *identifier;
-/** Test to see if @c identifier has been set. */
-@property(nonatomic, readwrite) BOOL hasIdentifier;
-
-@end
-
-/**
- * Clears whatever value was set for the oneof 'request'.
- **/
-void ITMStatusBarComponentRequest_ClearRequestOneOfCase(ITMStatusBarComponentRequest *message);
-
-#pragma mark - ITMStatusBarComponentRequest_OpenPopover
-
-typedef GPB_ENUM(ITMStatusBarComponentRequest_OpenPopover_FieldNumber) {
-  ITMStatusBarComponentRequest_OpenPopover_FieldNumber_SessionId = 1,
-  ITMStatusBarComponentRequest_OpenPopover_FieldNumber_Html = 2,
-  ITMStatusBarComponentRequest_OpenPopover_FieldNumber_Size = 3,
-};
-
-GPB_FINAL @interface ITMStatusBarComponentRequest_OpenPopover : GPBMessage
-
-@property(nonatomic, readwrite, copy, null_resettable) NSString *sessionId;
-/** Test to see if @c sessionId has been set. */
-@property(nonatomic, readwrite) BOOL hasSessionId;
-
-/** HTML to show in a popover that opens from the component. */
-@property(nonatomic, readwrite, copy, null_resettable) NSString *html;
-/** Test to see if @c html has been set. */
-@property(nonatomic, readwrite) BOOL hasHtml;
-
-/** Size in points of the content area of the popover. */
-@property(nonatomic, readwrite, strong, null_resettable) ITMSize *size;
-/** Test to see if @c size has been set. */
-@property(nonatomic, readwrite) BOOL hasSize;
-
-@end
-
-#pragma mark - ITMStatusBarComponentResponse
-
-typedef GPB_ENUM(ITMStatusBarComponentResponse_FieldNumber) {
-  ITMStatusBarComponentResponse_FieldNumber_Status = 1,
-};
-
-GPB_FINAL @interface ITMStatusBarComponentResponse : GPBMessage
-
-@property(nonatomic, readwrite) ITMStatusBarComponentResponse_Status status;
 
 @property(nonatomic, readwrite) BOOL hasStatus;
 @end

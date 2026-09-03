@@ -3298,9 +3298,6 @@
 		A6C300582471162A002BC672 /* iTermFileDescriptorServerShared.c in Sources */ = {isa = PBXBuildFile; fileRef = A64FCD57238DE785001D8199 /* iTermFileDescriptorServerShared.c */; };
 		A6C3005F247117A9002BC672 /* iTermLocatedString.h in Headers */ = {isa = PBXBuildFile; fileRef = A6C3005D247117A9002BC672 /* iTermLocatedString.h */; };
 		A6C30060247117A9002BC672 /* iTermLocatedString.m in Sources */ = {isa = PBXBuildFile; fileRef = A6C3005E247117A9002BC672 /* iTermLocatedString.m */; };
-		A6C4352121D1C64800346910 /* iterm2Invoke.js in Resources */ = {isa = PBXBuildFile; fileRef = A6C4352021D1C64800346910 /* iterm2Invoke.js */; };
-		A6C4352221D1C64800346910 /* iterm2Invoke.js in Resources */ = {isa = PBXBuildFile; fileRef = A6C4352021D1C64800346910 /* iterm2Invoke.js */; };
-		A6C4352321D1C64800346910 /* iterm2Invoke.js in Resources */ = {isa = PBXBuildFile; fileRef = A6C4352021D1C64800346910 /* iterm2Invoke.js */; };
 		A6C4352421D1C98900346910 /* iTermWebViewWrapperViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D72A4D41BE9707A0042174A /* iTermWebViewWrapperViewController.m */; };
 		A6C537BE1938374600A08C18 /* iTermTabBarControlView.h in Headers */ = {isa = PBXBuildFile; fileRef = A6C537BC1938374600A08C18 /* iTermTabBarControlView.h */; };
 		A6C537C31939507100A08C18 /* iTermRestorableSession.h in Headers */ = {isa = PBXBuildFile; fileRef = A6C537C11939507100A08C18 /* iTermRestorableSession.h */; };
@@ -7735,7 +7732,6 @@
 		A6C267092F0EEE45009C9954 /* Comparable+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Comparable+iTerm.swift"; sourceTree = "<group>"; };
 		A6C3005D247117A9002BC672 /* iTermLocatedString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermLocatedString.h; sourceTree = "<group>"; };
 		A6C3005E247117A9002BC672 /* iTermLocatedString.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermLocatedString.m; sourceTree = "<group>"; };
-		A6C4352021D1C64800346910 /* iterm2Invoke.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = iterm2Invoke.js; path = OtherResources/iterm2Invoke.js; sourceTree = "<group>"; };
 		A6C537BC1938374600A08C18 /* iTermTabBarControlView.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = iTermTabBarControlView.h; sourceTree = "<group>"; tabWidth = 4; };
 		A6C537BD1938374600A08C18 /* iTermTabBarControlView.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = iTermTabBarControlView.m; sourceTree = "<group>"; tabWidth = 4; };
 		A6C537C11939507100A08C18 /* iTermRestorableSession.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = iTermRestorableSession.h; sourceTree = "<group>"; tabWidth = 4; };
@@ -9075,7 +9071,6 @@
 				A6FE8D14209541BC00B5C648 /* rsa_pub.pem */,
 				A60C0350208964FA00FE2F1F /* it2_api_wrapper.sh */,
 				53BBA0F7214236AC0074D061 /* iterm2_git_poll.sh */,
-				A6C4352021D1C64800346910 /* iterm2Invoke.js */,
 				53B93DE021F25E79001EC59C /* iterm2_git_wrapper.sh */,
 				5376CB3B220D2E4300FE7476 /* git.sb */,
 				A6EEAED2283072CA0039E850 /* framer.py */,
@@ -16020,7 +16015,6 @@
 				A6E7AE91214394DD00DE9F3B /* graphic_composer.png in Resources */,
 				A67D0D5B1A2EE12A003A8B35 /* iTerm.strings in Resources */,
 				A6DC98A628A82608009D21C0 /* Window.png in Resources */,
-				A6C4352321D1C64800346910 /* iterm2Invoke.js in Resources */,
 				1D6ED99D19AEA20D005A7799 /* dead.png in Resources */,
 				A6F6AF702F9898B500F9F8F3 /* iTermTipCardViewController.xib in Resources */,
 				A6F6AF712F9898B500F9F8F3 /* iTermTipWindowController.xib in Resources */,
@@ -16692,7 +16686,6 @@
 				A665C1FE2440461500F623F0 /* WindowCorner.png in Resources */,
 				A66F52C52106F6F100571168 /* gitdown.png in Resources */,
 				A6643F122CA62190004B757B /* coderabbitai.png in Resources */,
-				A6C4352221D1C64800346910 /* iterm2Invoke.js in Resources */,
 				A67D0D5A1A2EE12A003A8B35 /* iTerm.strings in Resources */,
 				A6976AEF2F47EFD3002875A1 /* SerpApi.png in Resources */,
 				53BBA0F9214236AC0074D061 /* iterm2_git_poll.sh in Resources */,
@@ -17006,7 +16999,6 @@
 				A6038320294D062A00FE11C2 /* iTermCopyModeKeyBindings.dict in Resources */,
 				53C5650921B8CDF5002B3167 /* PowerlineSolidRightArrow.pdf in Resources */,
 				A6E737192F96D931001349AE /* LIMSIQ.png in Resources */,
-				A6C4352121D1C64800346910 /* iterm2Invoke.js in Resources */,
 				A66E805227545CBC003ABDF9 /* SecureKeyboardEntry.png in Resources */,
 				1D94EAB112D64022008225A9 /* UKCrashReporter.strings in Resources */,
 				A6E7AE83214394DD00DE9F3B /* graphic_code@2x.png in Resources */,

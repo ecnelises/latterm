@@ -141,7 +141,6 @@ class StatusBarComponent:
 
     .. seealso::
         * Example ":ref:`escindicator_example`"
-        * Example ":ref:`jsonpretty_example`"
         * Example ":ref:`mousemode_example`"
         * Example ":ref:`statusbar_example`"
     """
@@ -213,24 +212,6 @@ class StatusBarComponent:
         proto.format = self.__format.value
         if self.__update_cadence is not None:
             proto.update_cadence = self.__update_cadence
-
-    async def async_open_popover(
-            self, session_id: str, html: str, size: iterm2.util.Size):
-        """Open a popover with a webview.
-
-        :param session_id: The session identifier.
-        :param html: A string containing HTML to show.
-        :param size: The desired size of the popover, a
-            :class:`~iterm2.util.Size`.
-
-        .. seealso:: Example ":ref:`jsonpretty_example`"
-        """
-        await iterm2.rpc.async_open_status_bar_component_popover(
-            self.__connection,
-            self.__identifier,
-            session_id,
-            html,
-            size)
 
     async def async_set_unread_count(
             self, session_id: typing.Optional[str], count: int):
@@ -308,19 +289,9 @@ class StatusBarComponent:
                   # which is useful for debugging scripts.
                   return session_id
 
-              @iterm2.RPC
-              async def my_status_bar_click_handler(session_id):
-                  # When you click the status bar it opens a popover with the
-                  # message "Hello World"
-                  await component.async_open_popover(
-                          session_id,
-                          "Hello world",
-                          iterm2.Size(200, 200))
-
               await component.async_register(
                       connection,
-                      session_id_status_bar_coro,
-                      onclick = my_status_bar_click_handler)
+                      session_id_status_bar_coro)
         """
         self.__connection = connection
         await coro.async_register(connection, self, timeout)

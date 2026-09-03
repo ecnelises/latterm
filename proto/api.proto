@@ -13,7 +13,7 @@ package iterm2;
 // of messages sent over WebSocket from client to iTerm2.
 message ClientOriginatedMessage {
   optional int64 id = 1;
-  reserved 104;
+  reserved 104, 129;
 
   oneof submessage {
     GetBufferRequest get_buffer_request = 100;
@@ -44,7 +44,6 @@ message ClientOriginatedMessage {
     PreferencesRequest preferences_request = 126;
     ColorPresetRequest color_preset_request = 127;
     SelectionRequest selection_request = 128;
-    StatusBarComponentRequest status_bar_component_request = 129;
     SetBroadcastDomainsRequest set_broadcast_domains_request = 130;
     CloseRequest close_request = 131;
     InvokeFunctionRequest invoke_function_request = 132;
@@ -57,7 +56,7 @@ message ClientOriginatedMessage {
 // of messages sent over WebSocket from iTerm2 to client.
 message ServerOriginatedMessage {
   optional int64 id = 1;
-  reserved 104;
+  reserved 104, 129;
 
   // Responses to ClientOriginatedMessages of the corresponding type
   oneof submessage {
@@ -91,7 +90,6 @@ message ServerOriginatedMessage {
     PreferencesResponse preferences_response = 126;
     ColorPresetResponse color_preset_response = 127;
     SelectionResponse selection_response = 128;
-    StatusBarComponentResponse status_bar_component_response = 129;
     SetBroadcastDomainsResponse set_broadcast_domains_response = 130;
     CloseResponse close_response = 131;
     InvokeFunctionResponse invoke_function_response = 132;
@@ -196,28 +194,6 @@ message SetBroadcastDomainsResponse {
     SESSION_NOT_FOUND = 1;
     BROADCAST_DOMAINS_NOT_DISJOINT = 2;
     SESSIONS_NOT_IN_SAME_WINDOW = 3;
-  }
-  optional Status status = 1;
-}
-
-message StatusBarComponentRequest {
-  message OpenPopover {
-    optional string session_id = 1;
-    optional string html = 2;  // HTML to show in a popover that opens from the component.
-    optional Size size = 3;  // Size in points of the content area of the popover.
-  }
-  oneof request {
-    OpenPopover open_popover = 1;
-  }
-  optional string identifier = 2;  // ID of statusbar component
-}
-
-message StatusBarComponentResponse {
-  enum Status {
-    OK = 0;
-    SESSION_NOT_FOUND = 1;
-    REQUEST_MALFORMED = 2;
-    INVALID_IDENTIFIER = 3;
   }
   optional Status status = 1;
 }

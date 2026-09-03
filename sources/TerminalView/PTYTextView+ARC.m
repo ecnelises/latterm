@@ -941,7 +941,7 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
 }
 
 - (void)showWebkitPopoverAtPoint:(NSPoint)pointInWindow url:(NSURL *)url {
-    WKWebView *webView = [[iTermWebViewFactory sharedInstance] webViewWithDelegate:nil];
+    WKWebView *webView = [[iTermWebViewFactory sharedInstance] webView];
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
     [webView loadRequest:request];
     NSPopover *popover = [[NSPopover alloc] init];

@@ -758,20 +758,6 @@ async def async_set_selection(connection, session_id, selection):
     return await _async_call(connection, request)
 
 
-async def async_open_status_bar_component_popover(
-        connection, identifier, session_id, html, size):
-    """
-    Send a request to open a popover.
-    """
-    request = _alloc_request()
-    request.status_bar_component_request.SetInParent()
-    request.status_bar_component_request.identifier = identifier
-    request.status_bar_component_request.open_popover.session_id = session_id
-    request.status_bar_component_request.open_popover.html = html
-    request.status_bar_component_request.open_popover.size.CopyFrom(size.proto)
-    return await _async_call(connection, request)
-
-
 async def async_set_broadcast_domains(connection, list_of_list_of_session_ids):
     """
     Send a request to set the current broadcast domains.
