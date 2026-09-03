@@ -881,7 +881,6 @@
 		53AA764B237E35A50094D75A /* OpenQuicklyActionIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 53AA7645237E35A40094D75A /* OpenQuicklyActionIcon.png */; };
 		53AFFC8E1DD2A04100E6CEC6 /* iTermLSOF.m in Sources */ = {isa = PBXBuildFile; fileRef = 53AFFC8B1DD2A03800E6CEC6 /* iTermLSOF.m */; };
 		53AFFC8F1DD2A04600E6CEC6 /* iTermLSOF.h in Headers */ = {isa = PBXBuildFile; fileRef = 53AFFC8A1DD2A03800E6CEC6 /* iTermLSOF.h */; };
-		53AFFC921DD38F1500E6CEC6 /* ToolWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = 53AFFC901DD38F1500E6CEC6 /* ToolWebView.h */; };
 		53B93DE121F25E79001EC59C /* iterm2_git_wrapper.sh in Resources */ = {isa = PBXBuildFile; fileRef = 53B93DE021F25E79001EC59C /* iterm2_git_wrapper.sh */; };
 		53B93DE221F25E79001EC59C /* iterm2_git_wrapper.sh in Resources */ = {isa = PBXBuildFile; fileRef = 53B93DE021F25E79001EC59C /* iterm2_git_wrapper.sh */; };
 		53B93DE321F25E79001EC59C /* iterm2_git_wrapper.sh in Resources */ = {isa = PBXBuildFile; fileRef = 53B93DE021F25E79001EC59C /* iterm2_git_wrapper.sh */; };
@@ -2849,7 +2848,6 @@
 		A6971F3520D8D3CB0075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6971F3220D8D3C30075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib */; };
 		A6971F3620D8D3CB0075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6971F3220D8D3C30075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib */; };
 		A6971F3720D8D3CE0075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6971F3220D8D3C30075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib */; };
-		A6971F3820DA295A0075CFD4 /* ToolWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 53AFFC911DD38F1500E6CEC6 /* ToolWebView.m */; };
 		A6976AEE2F47EFD3002875A1 /* SerpApi.png in Resources */ = {isa = PBXBuildFile; fileRef = A6976AED2F47EFD3002875A1 /* SerpApi.png */; };
 		A6976AEF2F47EFD3002875A1 /* SerpApi.png in Resources */ = {isa = PBXBuildFile; fileRef = A6976AED2F47EFD3002875A1 /* SerpApi.png */; };
 		A6976AF02F47EFD3002875A1 /* SerpApi.png in Resources */ = {isa = PBXBuildFile; fileRef = A6976AED2F47EFD3002875A1 /* SerpApi.png */; };
@@ -5612,7 +5610,6 @@
 		530AB88620AE85DF00D2AA08 /* app.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = app.py; sourceTree = "<group>"; };
 		530AB88720AE85DF00D2AA08 /* notifications.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = notifications.py; sourceTree = "<group>"; };
 		530AB88820AE85DF00D2AA08 /* tab.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = tab.py; sourceTree = "<group>"; };
-		530AB88920AE85DF00D2AA08 /* tool.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = tool.py; sourceTree = "<group>"; };
 		530AB88E20AE85DF00D2AA08 /* README.rst */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.rst; sourceTree = "<group>"; };
 		530AB89420AFDF5000D2AA08 /* iTermScriptFunctionCall.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermScriptFunctionCall.h; sourceTree = "<group>"; };
 		530AB89520AFDF5000D2AA08 /* iTermScriptFunctionCall.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermScriptFunctionCall.m; sourceTree = "<group>"; };
@@ -5747,8 +5744,6 @@
 		53AA7645237E35A40094D75A /* OpenQuicklyActionIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = OpenQuicklyActionIcon.png; path = images/icons/OpenQuicklyActionIcon.png; sourceTree = "<group>"; };
 		53AFFC8A1DD2A03800E6CEC6 /* iTermLSOF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermLSOF.h; sourceTree = "<group>"; };
 		53AFFC8B1DD2A03800E6CEC6 /* iTermLSOF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermLSOF.m; sourceTree = "<group>"; };
-		53AFFC901DD38F1500E6CEC6 /* ToolWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ToolWebView.h; sourceTree = "<group>"; };
-		53AFFC911DD38F1500E6CEC6 /* ToolWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ToolWebView.m; sourceTree = "<group>"; };
 		53B93DE021F25E79001EC59C /* iterm2_git_wrapper.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; name = iterm2_git_wrapper.sh; path = sources/iterm2_git_wrapper.sh; sourceTree = "<group>"; };
 		53B93DFA21F640B0001EC59C /* iTermBadgeConfigurationWindowController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermBadgeConfigurationWindowController.h; sourceTree = "<group>"; };
 		53B93DFB21F640B0001EC59C /* iTermBadgeConfigurationWindowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermBadgeConfigurationWindowController.m; sourceTree = "<group>"; };
@@ -9649,7 +9644,6 @@
 				A68A4C8B2128ED1300424F8A /* statusbar.py */,
 				530AB88820AE85DF00D2AA08 /* tab.py */,
 				A68A4C892128ED1200424F8A /* tmux.py */,
-				530AB88920AE85DF00D2AA08 /* tool.py */,
 				530AB86F20AE85DF00D2AA08 /* transaction.py */,
 				A62B364B2D24884700FDF15E /* triggers.py */,
 				530AB86E20AE85DF00D2AA08 /* util.py */,
@@ -11287,7 +11281,6 @@
 				1D67AAA714284BF300D5DA4E /* ToolNotes.h */,
 				1DE8DDAB1415648600F83147 /* ToolPasteHistory.h */,
 				1DE8DC8B1415546000F83147 /* ToolProfiles.h */,
-				53AFFC901DD38F1500E6CEC6 /* ToolWebView.h */,
 				A618FFC02243E91900B8FD88 /* iTermToolActions.m */,
 				A667F38E1B49FC2E00705186 /* iTermToolbeltSplitView.m */,
 				1DE8DC881415513A00F83147 /* iTermToolbeltView.m */,
@@ -11297,7 +11290,6 @@
 				1D67AAA814284BF300D5DA4E /* ToolNotes.m */,
 				1DE8DDAC1415648600F83147 /* ToolPasteHistory.m */,
 				1DE8DC8C1415546000F83147 /* ToolProfiles.m */,
-				53AFFC911DD38F1500E6CEC6 /* ToolWebView.m */,
 				A6E702DE2F8327F2001349AE /* iTermSwiftyStringTextField.swift */,
 				7AB44D00ABCD3E5DC090E2D2 /* StatusPrioritySettings.swift */,
 				A6354B952A1B269A002836A3 /* ToolNamedMarks.swift */,
@@ -15331,7 +15323,6 @@
 				1DDC09431B4DB9A600B1A910 /* iTermClearView.h in Headers */,
 				A6C1207A1E39C3A4004021BB /* iTermBuriedSessions.h in Headers */,
 				A667F38F1B49FC2E00705186 /* iTermToolbeltSplitView.h in Headers */,
-				53AFFC921DD38F1500E6CEC6 /* ToolWebView.h in Headers */,
 				A6CEC1301DCE8146009F4FD2 /* GPBWireFormat.h in Headers */,
 				A6CEC11E1DCE8146009F4FD2 /* GPBDictionary_PackagePrivate.h in Headers */,
 				A6CEC1161DCE8146009F4FD2 /* GPBArray.h in Headers */,
@@ -18108,7 +18099,6 @@
 				A67875DB21D80363005AB938 /* iTermKeyboardHandler.m in Sources */,
 				A6A802E6226B8C8400BC70DC /* PTYTask.m in Sources */,
 				A6BF035121E176C30097DA86 /* iTermVariableScope.m in Sources */,
-				A6971F3820DA295A0075CFD4 /* ToolWebView.m in Sources */,
 				A605A1D52EB17D840072ED7E /* iTermSetting.swift in Sources */,
 				A619DC3E2CD55F83004B8996 /* PTYFontInfo.m in Sources */,
 				A6EC937D24E856F100EEADEF /* iTermAnnouncementView.m in Sources */,

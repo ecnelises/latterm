@@ -316,34 +316,6 @@ async def async_end_transaction(connection):
     return await _async_call(connection, request)
 
 
-async def async_register_web_view_tool(connection,
-                                       display_name,
-                                       identifier,
-                                       reveal_if_already_registered,
-                                       url):
-    """
-    Registers a toolbelt tool showing a webview.
-
-    connection: A connected iterm2.Connection.
-    display_name: The name of the tool. User-visible.
-    identifier: A unique ID that prevents duplicate registration.
-    reveal_if_already_registered: Bool. If true, shows the tool on a duplicate
-        registration attempt.
-    url: The URL to show in the webview.
-
-    Returns: iterm2.api_pb2.ServerOriginatedMessage
-    """
-    request = _alloc_request()
-    request.register_tool_request.name = display_name
-    request.register_tool_request.identifier = identifier
-    request.register_tool_request.reveal_if_already_registered = (
-        reveal_if_already_registered)
-    request.register_tool_request.tool_type = (
-        iterm2.api_pb2.RegisterToolRequest.ToolType.Value("WEB_VIEW_TOOL"))
-    request.register_tool_request.URL = url
-    return await _async_call(connection, request)
-
-
 async def async_set_profile_property(
         connection, session_id, key, value, guids=None):
     """

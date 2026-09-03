@@ -143,13 +143,6 @@ Here are a collection of working scripts for you to crib from. While they are ca
 
 ----
 
-**Custom Toolbelt Tools**
-
-:doc:`targeted_input` — Demonstrates custom toolbelt tool, broadcast domains, and sending input.
-
-
-----
-
 **Custom Context Menu Items**
 
 :doc:`sumselection` - Demonstrates a custom context menu item that calculates the sum of selected numbers.

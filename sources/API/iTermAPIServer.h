@@ -33,8 +33,6 @@ extern NSString *const iTermAPIServerConnectionClosed;
                 connectionKey:(NSString *)connectionKey
                       handler:(void (^)(ITMNotificationResponse *))handler;
 - (void)apiServerDidCloseConnectionWithKey:(NSString *)connectionKey;
-- (void)apiServerRegisterTool:(ITMRegisterToolRequest *)request
-                      handler:(void (^)(ITMRegisterToolResponse *))handler;
 - (void)apiServerSetProfileProperty:(ITMSetProfilePropertyRequest *)request
                             handler:(void (^)(ITMSetProfilePropertyResponse *))handler;
 - (void)apiServerGetProfileProperty:(ITMGetProfilePropertyRequest *)request

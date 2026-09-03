@@ -70,6 +70,8 @@ Terminal-first fork changes:
   no-op session state.
 - Removed obsolete crash-analysis tools, a
   vendored parser, and orphaned source files.
+- Removed Python-registered web tools from the
+  Toolbelt and API.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

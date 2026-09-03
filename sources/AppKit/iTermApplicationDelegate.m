@@ -1704,11 +1704,6 @@ void TurnOnDebugLoggingAutomatically(void) {
                                              selector:@selector(processTypeDidChange:)
                                                  name:iTermProcessTypeDidChangeNotification
                                                object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(dynamicToolsDidChange:)
-                                                 name:kDynamicToolsDidChange
-                                               object:nil];
-
     if ([iTermAdvancedSettingsModel runJobsInServers] &&
         !self.isAppleScriptTestApp) {
         DLog(@"Set post-retoration completion block from appDidFinishLaunching");
@@ -1876,10 +1871,6 @@ static iTermKeyEventReplayer *gReplayer;
         _orphansAdopted = YES;
         [[iTermOrphanServerAdopter sharedInstance] openWindowWithOrphansWithCompletion:nil];
     }
-}
-
-- (void)dynamicToolsDidChange:(NSNotification *)notification {
-    [iTermToolbeltView populateMenu:toolbeltMenu];
 }
 
 - (void)processTypeDidChange:(NSNotification *)notification {

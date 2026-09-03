@@ -804,20 +804,6 @@ NSString *const iTermAPIServerConnectionClosed = @"iTermAPIServerConnectionClose
                              }];
 }
 
-- (void)handleRegisterToolRequest:(ITMClientOriginatedMessage *)request connection:(id<iTermAPIServerConnection>)webSocketConnection {
-    ITMServerOriginatedMessage *response = [self newResponseForRequest:request];
-
-    __block BOOL handled = NO;
-    __weak __typeof(self) weakSelf = self;
-    [_delegate apiServerRegisterTool:request.registerToolRequest
-                             handler:^(ITMRegisterToolResponse *registerToolResponse) {
-                                 assert(!handled);
-                                 handled = YES;
-                                 response.registerToolResponse = registerToolResponse;
-                                 [weakSelf finishHandlingRequestWithResponse:response onConnection:webSocketConnection];
-                             }];
-}
-
 - (void)handleSetProfilePropertyRequest:(ITMClientOriginatedMessage *)request connection:(id<iTermAPIServerConnection>)webSocketConnection {
     ITMServerOriginatedMessage *response = [self newResponseForRequest:request];
 
@@ -1258,10 +1244,6 @@ NSString *const iTermAPIServerConnectionClosed = @"iTermAPIServerConnectionClose
 
         case ITMClientOriginatedMessage_Submessage_OneOfCase_NotificationRequest:
             [self handleNotificationRequest:request connection:webSocketConnection];
-            break;
-
-        case ITMClientOriginatedMessage_Submessage_OneOfCase_RegisterToolRequest:
-            [self handleRegisterToolRequest:request connection:webSocketConnection];
             break;
 
         case ITMClientOriginatedMessage_Submessage_OneOfCase_SetProfilePropertyRequest:

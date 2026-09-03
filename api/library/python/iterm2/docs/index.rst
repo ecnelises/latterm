@@ -44,7 +44,6 @@ Visit the :ref:`examples <examples-index>` for a collection of working examples.
    statusbar
    tab
    tmux
-   tool
    transaction
    util
    variables

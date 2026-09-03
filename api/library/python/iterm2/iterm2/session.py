@@ -448,7 +448,6 @@ class Session:
 
         .. seealso::
             * Example ":ref:`broadcast_example`"
-            * Example ":ref:`targeted_input_example`"
         """
         await iterm2.rpc.async_send_text(
             self.connection, self.__session_id, text, suppress_broadcast)

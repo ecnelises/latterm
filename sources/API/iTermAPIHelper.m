@@ -2204,35 +2204,6 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
     [self removeAllSubscriptionsForConnectionKey:connectionKey];
 }
 
-- (void)apiServerRegisterTool:(ITMRegisterToolRequest *)request
-                      handler:(void (^)(ITMRegisterToolResponse *))handler {
-    ITMRegisterToolResponse *response = [[ITMRegisterToolResponse alloc] init];
-    if (!request.hasName || !request.hasIdentifier || !request.hasURL) {
-        response.status = ITMRegisterToolResponse_Status_RequestMalformed;
-        handler(response);
-        return;
-    }
-    NSURL *url = [NSURL URLWithString:request.URL];
-    if (!url || !url.host) {
-        response.status = ITMRegisterToolResponse_Status_RequestMalformed;
-        handler(response);
-        return;
-    }
-
-    if ([[iTermToolbeltView builtInToolNames] containsObject:request.name]) {
-        response.status = ITMRegisterToolResponse_Status_PermissionDenied;
-        handler(response);
-        return;
-    }
-
-    [iTermToolbeltView registerDynamicToolWithIdentifier:request.identifier
-                                                    name:request.name
-                                                     URL:request.URL
-                               revealIfAlreadyRegistered:request.revealIfAlreadyRegistered];
-    response.status = ITMRegisterToolResponse_Status_Ok;
-    handler(response);
-}
-
 - (void)apiServerSetProfileProperty:(ITMSetProfilePropertyRequest *)request
                             handler:(void (^)(ITMSetProfilePropertyResponse *))handler {
     ITMSetProfilePropertyResponse *response = [[ITMSetProfilePropertyResponse alloc] init];

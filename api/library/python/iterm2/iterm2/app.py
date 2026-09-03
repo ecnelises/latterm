@@ -496,7 +496,6 @@ class App(
         """Returns the current broadcast domains.
 
         .. seealso::
-            * Example ":ref:`targeted_input_example`"
             * Example ":ref:`enable_broadcasting_example`"
         """
         return self.__broadcast_domains

@@ -132,8 +132,6 @@ CF_EXTERN_C_BEGIN
 @class ITMRPCRegistrationRequest_StatusBarComponentAttributes_Icon;
 @class ITMRPCRegistrationRequest_StatusBarComponentAttributes_Knob;
 @class ITMRange;
-@class ITMRegisterToolRequest;
-@class ITMRegisterToolResponse;
 @class ITMReorderTabsRequest;
 @class ITMReorderTabsRequest_Assignment;
 @class ITMReorderTabsResponse;
@@ -704,20 +702,6 @@ GPBEnumDescriptor *ITMSetPropertyResponse_Status_EnumDescriptor(void);
  **/
 BOOL ITMSetPropertyResponse_Status_IsValidValue(int32_t value);
 
-#pragma mark - Enum ITMRegisterToolRequest_ToolType
-
-typedef GPB_ENUM(ITMRegisterToolRequest_ToolType) {
-  ITMRegisterToolRequest_ToolType_WebViewTool = 1,
-};
-
-GPBEnumDescriptor *ITMRegisterToolRequest_ToolType_EnumDescriptor(void);
-
-/**
- * Checks to see if the given value is defined by the enum or was not known at
- * the time this source was generated.
- **/
-BOOL ITMRegisterToolRequest_ToolType_IsValidValue(int32_t value);
-
 #pragma mark - Enum ITMRPCRegistrationRequest_Role
 
 typedef GPB_ENUM(ITMRPCRegistrationRequest_Role) {
@@ -766,22 +750,6 @@ GPBEnumDescriptor *ITMRPCRegistrationRequest_StatusBarComponentAttributes_Knob_T
  * the time this source was generated.
  **/
 BOOL ITMRPCRegistrationRequest_StatusBarComponentAttributes_Knob_Type_IsValidValue(int32_t value);
-
-#pragma mark - Enum ITMRegisterToolResponse_Status
-
-typedef GPB_ENUM(ITMRegisterToolResponse_Status) {
-  ITMRegisterToolResponse_Status_Ok = 0,
-  ITMRegisterToolResponse_Status_RequestMalformed = 1,
-  ITMRegisterToolResponse_Status_PermissionDenied = 2,
-};
-
-GPBEnumDescriptor *ITMRegisterToolResponse_Status_EnumDescriptor(void);
-
-/**
- * Checks to see if the given value is defined by the enum or was not known at
- * the time this source was generated.
- **/
-BOOL ITMRegisterToolResponse_Status_IsValidValue(int32_t value);
 
 #pragma mark - Enum ITMNotificationResponse_Status
 
@@ -1102,7 +1070,6 @@ typedef GPB_ENUM(ITMClientOriginatedMessage_FieldNumber) {
   ITMClientOriginatedMessage_FieldNumber_GetPromptRequest = 101,
   ITMClientOriginatedMessage_FieldNumber_TransactionRequest = 102,
   ITMClientOriginatedMessage_FieldNumber_NotificationRequest = 103,
-  ITMClientOriginatedMessage_FieldNumber_RegisterToolRequest = 104,
   ITMClientOriginatedMessage_FieldNumber_SetProfilePropertyRequest = 105,
   ITMClientOriginatedMessage_FieldNumber_ListSessionsRequest = 106,
   ITMClientOriginatedMessage_FieldNumber_SendTextRequest = 107,
@@ -1141,7 +1108,6 @@ typedef GPB_ENUM(ITMClientOriginatedMessage_Submessage_OneOfCase) {
   ITMClientOriginatedMessage_Submessage_OneOfCase_GetPromptRequest = 101,
   ITMClientOriginatedMessage_Submessage_OneOfCase_TransactionRequest = 102,
   ITMClientOriginatedMessage_Submessage_OneOfCase_NotificationRequest = 103,
-  ITMClientOriginatedMessage_Submessage_OneOfCase_RegisterToolRequest = 104,
   ITMClientOriginatedMessage_Submessage_OneOfCase_SetProfilePropertyRequest = 105,
   ITMClientOriginatedMessage_Submessage_OneOfCase_ListSessionsRequest = 106,
   ITMClientOriginatedMessage_Submessage_OneOfCase_SendTextRequest = 107,
@@ -1192,8 +1158,6 @@ GPB_FINAL @interface ITMClientOriginatedMessage : GPBMessage
 @property(nonatomic, readwrite, strong, null_resettable) ITMTransactionRequest *transactionRequest;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMNotificationRequest *notificationRequest;
-
-@property(nonatomic, readwrite, strong, null_resettable) ITMRegisterToolRequest *registerToolRequest;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMSetProfilePropertyRequest *setProfilePropertyRequest;
 
@@ -1271,7 +1235,6 @@ typedef GPB_ENUM(ITMServerOriginatedMessage_FieldNumber) {
   ITMServerOriginatedMessage_FieldNumber_GetPromptResponse = 101,
   ITMServerOriginatedMessage_FieldNumber_TransactionResponse = 102,
   ITMServerOriginatedMessage_FieldNumber_NotificationResponse = 103,
-  ITMServerOriginatedMessage_FieldNumber_RegisterToolResponse = 104,
   ITMServerOriginatedMessage_FieldNumber_SetProfilePropertyResponse = 105,
   ITMServerOriginatedMessage_FieldNumber_ListSessionsResponse = 106,
   ITMServerOriginatedMessage_FieldNumber_SendTextResponse = 107,
@@ -1312,7 +1275,6 @@ typedef GPB_ENUM(ITMServerOriginatedMessage_Submessage_OneOfCase) {
   ITMServerOriginatedMessage_Submessage_OneOfCase_GetPromptResponse = 101,
   ITMServerOriginatedMessage_Submessage_OneOfCase_TransactionResponse = 102,
   ITMServerOriginatedMessage_Submessage_OneOfCase_NotificationResponse = 103,
-  ITMServerOriginatedMessage_Submessage_OneOfCase_RegisterToolResponse = 104,
   ITMServerOriginatedMessage_Submessage_OneOfCase_SetProfilePropertyResponse = 105,
   ITMServerOriginatedMessage_Submessage_OneOfCase_ListSessionsResponse = 106,
   ITMServerOriginatedMessage_Submessage_OneOfCase_SendTextResponse = 107,
@@ -1368,8 +1330,6 @@ GPB_FINAL @interface ITMServerOriginatedMessage : GPBMessage
 @property(nonatomic, readwrite, strong, null_resettable) ITMTransactionResponse *transactionResponse;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMNotificationResponse *notificationResponse;
-
-@property(nonatomic, readwrite, strong, null_resettable) ITMRegisterToolResponse *registerToolResponse;
 
 @property(nonatomic, readwrite, strong, null_resettable) ITMSetProfilePropertyResponse *setProfilePropertyResponse;
 
@@ -3282,52 +3242,6 @@ GPB_FINAL @interface ITMSetPropertyResponse : GPBMessage
 @property(nonatomic, readwrite) BOOL hasStatus;
 @end
 
-#pragma mark - ITMRegisterToolRequest
-
-typedef GPB_ENUM(ITMRegisterToolRequest_FieldNumber) {
-  ITMRegisterToolRequest_FieldNumber_Name = 1,
-  ITMRegisterToolRequest_FieldNumber_Identifier = 2,
-  ITMRegisterToolRequest_FieldNumber_ToolType = 3,
-  ITMRegisterToolRequest_FieldNumber_URL = 4,
-  ITMRegisterToolRequest_FieldNumber_RevealIfAlreadyRegistered = 5,
-};
-
-/**
- * Registers a toolbelt tool that displays a webview with a URL of your choice.
- **/
-GPB_FINAL @interface ITMRegisterToolRequest : GPBMessage
-
-/** This name is displayed to the user. */
-@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
-/** Test to see if @c name has been set. */
-@property(nonatomic, readwrite) BOOL hasName;
-
-/**
- * The tool's identifier should be unique. Prefix it with your app bundle. For example:
- * com.example.mytool
- **/
-@property(nonatomic, readwrite, copy, null_resettable) NSString *identifier;
-/** Test to see if @c identifier has been set. */
-@property(nonatomic, readwrite) BOOL hasIdentifier;
-
-/**
- * The first time a tool is registered iTerm2 automatically adds it to the
- * set of visible tools. To show it on subsequent re-registrations, set this
- * to true. If the toolbelt itself is hidden, it will not be opened.
- **/
-@property(nonatomic, readwrite) BOOL revealIfAlreadyRegistered;
-
-@property(nonatomic, readwrite) BOOL hasRevealIfAlreadyRegistered;
-@property(nonatomic, readwrite) ITMRegisterToolRequest_ToolType toolType;
-
-@property(nonatomic, readwrite) BOOL hasToolType;
-/** For web view tools: The URL loaded at startup */
-@property(nonatomic, readwrite, copy, null_resettable) NSString *URL;
-/** Test to see if @c URL has been set. */
-@property(nonatomic, readwrite) BOOL hasURL;
-
-@end
-
 #pragma mark - ITMRPCRegistrationRequest
 
 typedef GPB_ENUM(ITMRPCRegistrationRequest_FieldNumber) {
@@ -3570,19 +3484,6 @@ GPB_FINAL @interface ITMRPCRegistrationRequest_ContextMenuAttributes : GPBMessag
 /** Test to see if @c uniqueIdentifier has been set. */
 @property(nonatomic, readwrite) BOOL hasUniqueIdentifier;
 
-@end
-
-#pragma mark - ITMRegisterToolResponse
-
-typedef GPB_ENUM(ITMRegisterToolResponse_FieldNumber) {
-  ITMRegisterToolResponse_FieldNumber_Status = 1,
-};
-
-GPB_FINAL @interface ITMRegisterToolResponse : GPBMessage
-
-@property(nonatomic, readwrite) ITMRegisterToolResponse_Status status;
-
-@property(nonatomic, readwrite) BOOL hasStatus;
 @end
 
 #pragma mark - ITMKeystrokePattern
