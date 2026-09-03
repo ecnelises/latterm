@@ -447,11 +447,6 @@ paranoid-it2cli: force
 cc-status: force
 	cd cc-status/ && ./build.sh
 
-libgit2: force
-	mkdir -p submodules/libgit2/build
-	PATH=/usr/local/bin:${PATH} cd submodules/libgit2/build && ${CMAKE} -DBUILD_CLAR=OFF -DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES="$(CMAKE_ARCHS)" -DCMAKE_OSX_DEPLOYMENT_TARGET="$(DEPLOYMENT_TARGET)" -DCMAKE_INSTALL_PREFIX=../../../ThirdParty/libgit2 -DUSE_SSH=OFF -DUSE_ICONV=OFF ..
-	PATH=/usr/local/bin:${PATH} cd submodules/libgit2/build && ${CMAKE} --build . --target install --parallel "$$(sysctl -n hw.ncpu)"
-
 paranoid-cc-status: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) cc-status
 
@@ -472,9 +467,6 @@ paranoid-BetterFontPicker: force
 paranoid-BetterFontPicker-Dev: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" BetterFontPicker-Dev
 
-paranoid-libgit2: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libgit2
-
 paranoid-libsixel: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libsixel
 
@@ -488,7 +480,7 @@ paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force libsixel CoreParse NMSSH bindeps libgit2 pwmadapters
+deps: force libsixel CoreParse NMSSH bindeps pwmadapters
 
 # Regenerate NSCharacterSet+iTerm.m and iTermCharacterSets.m from latest Unicode data.
 # Run this when a new Unicode version is released.

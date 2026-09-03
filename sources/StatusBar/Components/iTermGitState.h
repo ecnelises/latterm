@@ -43,9 +43,8 @@ typedef NS_ENUM(NSInteger, iTermGitRepoState) {
 // Per-column change kind matching the letters used by `git status
 // --porcelain`. iTermGitFileChangeKindNone means no change in that
 // column; ignored entries are excluded entirely by the poller so the
-// `!` code is intentionally absent. Copies (C) aren't surfaced —
-// libgit2's status_list flags don't separate copy from rename in the
-// index column, and we'd produce false positives if we tried.
+// `!` code is intentionally absent. Copies (C) are presented as renames
+// because both move a tracked path to a new display path.
 typedef NS_ENUM(NSInteger, iTermGitFileChangeKind) {
     iTermGitFileChangeKindNone        = 0,
     iTermGitFileChangeKindModified,   // M

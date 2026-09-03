@@ -48,11 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
                         withReply:(void (^)(NSArray<NSString *> * _Nullable))reply;
 
 // `gitBase` selects the ref the file-status comparison runs against.
-// Pass nil (or "HEAD") for the legacy `git status`-style output —
-// the cheap libgit2 status_list pass that compares working tree to
-// HEAD/index. Any other value (a branch, tag, or revision spec like
-// "origin/master^^^") triggers the diff-against-base path: libgit2
-// resolves the spec, diffs its tree against working-tree-with-index,
+// Pass nil (or "HEAD") for `git status`-style output that compares
+// the working tree to HEAD/index. Any other value (a branch, tag, or
+// revision spec like "origin/master^^^") triggers the diff-against-base
+// path: Git resolves the spec, diffs its tree against the working tree,
 // and emits one fileStatuses entry per delta. Counts (dirty/adds/
 // deletes) keep their HEAD-relative meaning regardless of gitBase.
 - (void)requestGitStateForPath:(NSString *)path

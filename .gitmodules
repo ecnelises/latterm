@@ -14,9 +14,6 @@
 	path = submodules/libssh2
 	url = https://github.com/libssh2/libssh2
 	ignore = dirty
-[submodule "submodules/libgit2"]
-	path = submodules/libgit2
-	url = https://github.com/libgit2/libgit2
 [submodule "Companion/CompanionCore/Sources/CNoise/vendor"]
 	path = Companion/CompanionCore/Sources/CNoise/vendor
 	url = https://github.com/rweather/noise-c.git

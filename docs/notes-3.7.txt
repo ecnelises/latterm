@@ -56,6 +56,8 @@ Terminal-first fork changes:
 - Moved Python/runtime version comparisons to an
   app-owned utility.
 - Removed a redundant CoreParse source checkout.
+- Replaced bundled libgit2 with the system Git
+  command for repository status.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

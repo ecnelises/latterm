@@ -31,19 +31,6 @@
 #warning DO NOT SUBMIT - DEBUG SETTING ENABLED
 #endif
 
-@interface iTermGitRecentBranch: NSObject
-@property (nonatomic, strong) NSDate *date;
-@property (nonatomic, copy) NSString *branch;
-@end
-
-@implementation iTermGitRecentBranch
-
-- (NSComparisonResult)compare:(iTermGitRecentBranch *)other {
-    return [self.date compare:other.date];
-}
-
-@end
-
 @implementation pidinfo {
     dispatch_queue_t _queue;
     int _numWedged;
@@ -697,41 +684,10 @@ static const char *GetPathToSelf(void) {
 
 - (NSArray<NSString *> *)recentBranchesAt:(NSString *)path count:(NSInteger)maxCount {
     iTermGitClient *client = [[iTermGitClient alloc] initWithRepoPath:path];
-    if (!client) {
+    if (!client.valid) {
         return nil;
     }
-    // git for-each-ref --count=maxCount --sort=-commiterdate refs/heads/ --format=%(refname:short)
-    NSMutableArray<iTermGitRecentBranch *> *recentBranches = [NSMutableArray array];
-    NSMutableSet<NSString *> *shortNames = [NSMutableSet set];
-    [client forEachReference:^(git_reference * _Nonnull ref, BOOL * _Nonnull stop) {
-        NSString *fullName = [client fullNameForReference:ref];
-        if (![iTermGitClient name:fullName matchesPattern:@"refs/heads"]) {
-            NSLog(@"%@ does not match pattern", fullName);
-            return;
-        }
-        NSString *shortName = [client shortNameForReference:ref];
-        if (!shortName) {
-            return;
-        }
-        if ([shortNames containsObject:shortName]) {
-            return;
-        }
-        [shortNames addObject:shortName];
-        iTermGitRecentBranch *rb = [[iTermGitRecentBranch alloc] init];
-        rb.date = [client commiterDateAt:ref];
-        NSLog(@"MATCHED: %@ %@", shortName, rb.date);
-        rb.branch = shortName;
-        [recentBranches addObject:rb];
-    }];
-    [recentBranches sortUsingSelector:@selector(compare:)];
-    NSMutableArray<NSString *> *results = [NSMutableArray array];
-    for (iTermGitRecentBranch *rb in recentBranches.reverseObjectEnumerator) {
-        [results addObject:rb.branch];
-        if (results.count == maxCount) {
-            break;
-        }
-    }
-    return results;
+    return [client recentBranchesWithLimit:maxCount];
 }
 
 void iTermMutatePathFindersDict(void (^NS_NOESCAPE block)(NSMutableDictionary<NSNumber *, iTermPathFinder *> *dict)) {
@@ -901,4 +857,3 @@ void iTermMutatePathFindersDict(void (^NS_NOESCAPE block)(NSMutableDictionary<NS
 }
 
 @end
-

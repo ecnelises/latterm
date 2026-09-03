@@ -2,11 +2,11 @@
 //  iTermGitClientTests.m
 //  ModernTests
 //
-//  XCTest coverage for iTermGitClient's status-list pass. Each test
+//  XCTest coverage for iTermGitClient's Git porcelain parser. Each test
 //  builds a real git repo in a temp dir using /usr/bin/git (so the
 //  fixture state is what the canonical tool produces), then asks
 //  iTermGitState +gitStateForRepoAtPath:includeDiffStats: to read
-//  it back through libgit2 and asserts on the resulting per-file
+//  it back through the status client and asserts on the resulting per-file
 //  kinds and counts.
 //
 
@@ -164,6 +164,73 @@
     XCTAssertEqual(state.fileStatuses.count, 0u);
 }
 
+- (void)testNestedPathFindsRepository {
+    [self seedInitialCommit];
+    NSString *nested = [self.repoDir stringByAppendingPathComponent:@"nested/directory"];
+    NSError *error = nil;
+    [[NSFileManager defaultManager] createDirectoryAtPath:nested
+                              withIntermediateDirectories:YES
+                                               attributes:nil
+                                                    error:&error];
+    XCTAssertNil(error);
+    [self writeFile:@"seed.txt" contents:@"v2\n"];
+
+    iTermGitState *state =
+        [iTermGitState gitStateForRepoAtPath:nested includeDiffStats:YES];
+    XCTAssertNotNil(state);
+    XCTAssertTrue(state.dirty);
+    XCTAssertNotNil([self find:state.fileStatuses path:@"seed.txt"]);
+}
+
+- (void)testRecentBranchesUsesLocalHeadsAndLimit {
+    [self seedInitialCommit];
+    NSString *current = [[self runGit:@[ @"branch", @"--show-current" ]]
+        stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    [self runGit:@[ @"branch", @"feature/recent-branch" ]];
+
+    iTermGitClient *client = [[iTermGitClient alloc] initWithRepoPath:self.repoDir];
+    NSArray<NSString *> *branches = [client recentBranchesWithLimit:10];
+    XCTAssertTrue(client.valid);
+    XCTAssertTrue([branches containsObject:current]);
+    XCTAssertTrue([branches containsObject:@"feature/recent-branch"]);
+    XCTAssertEqual([client recentBranchesWithLimit:1].count, 1u);
+    XCTAssertEqual([client recentBranchesWithLimit:0].count, 0u);
+}
+
+- (void)testCustomBaseOverridesFileStatusesOnly {
+    [self seedInitialCommit];
+    NSString *base = [[self runGit:@[ @"rev-parse", @"HEAD" ]]
+        stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    [self writeFile:@"seed.txt" contents:@"v2\n"];
+    [self runGit:@[ @"add", @"seed.txt" ]];
+    [self runGit:@[ @"commit", @"-q", @"-m", @"second" ]];
+
+    iTermGitState *state = [iTermGitState gitStateForRepoAtPath:self.repoDir
+                                                       gitBase:base
+                                              includeDiffStats:YES];
+    XCTAssertNotNil(state);
+    XCTAssertFalse(state.dirty);
+    iTermGitFileStatus *status = [self find:state.fileStatuses path:@"seed.txt"];
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.workdirStatus, iTermGitFileChangeKindModified);
+}
+
+- (void)testMergeMarkerReportsRepositoryState {
+    [self seedInitialCommit];
+    NSString *head = [[self runGit:@[ @"rev-parse", @"HEAD" ]]
+        stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    NSString *mergeHead = [self.repoDir stringByAppendingPathComponent:@".git/MERGE_HEAD"];
+    NSError *error = nil;
+    [[head stringByAppendingString:@"\n"] writeToFile:mergeHead
+                                            atomically:YES
+                                              encoding:NSUTF8StringEncoding
+                                                 error:&error];
+    XCTAssertNil(error);
+
+    iTermGitState *state = [self readState];
+    XCTAssertEqual(state.repoState, iTermGitRepoStateMerge);
+}
+
 - (void)testUntrackedFile {
     // Untracked files still feed the `adds` count (the status bar
     // shows it) but are intentionally absent from fileStatuses: the
@@ -181,11 +248,11 @@
 }
 
 - (void)testRecurseUntrackedDirsCountsPerFile {
-    // The count walk uses RECURSE_UNTRACKED_DIRS so a directory of N
-    // untracked files contributes N to `adds`, matching
-    // `git status --porcelain` rather than the legacy directory-rollup
-    // behavior. fileStatuses excludes untracked entries, so it stays
-    // empty here even though `adds` is 3.
+    // The porcelain status pass asks Git to enumerate all untracked
+    // files, so a directory of N files contributes N to `adds` rather
+    // than using the legacy directory-rollup behavior. fileStatuses
+    // excludes untracked entries, so it stays empty here even though
+    // `adds` is 3.
     [self seedInitialCommit];
     [self writeFile:@"newdir/a.txt" contents:@"1"];
     [self writeFile:@"newdir/b.txt" contents:@"2"];
@@ -262,8 +329,8 @@
     iTermGitState *state = [self readState];
     // `git rm` removes from both index and workdir, so deletes
     // (workdir) should also fire — but the file isn't tracked as
-    // unstaged-deleted because the index already deleted it. libgit2
-    // surfaces this as INDEX_DELETED only (no WT_DELETED), matching
+    // unstaged-deleted because the index already deleted it. Porcelain
+    // surfaces this in the index column only, matching
     // `git status` which lists the file under "Changes to be
     // committed" only.
     XCTAssertEqual(state.deletes, 0);
@@ -274,7 +341,7 @@
 }
 
 - (void)testNonAsciiPathRoundTrips {
-    // The populator guards against non-UTF-8 paths from libgit2 by
+    // The populator guards against non-UTF-8 paths from Git by
     // skipping the entry. Constructing genuinely invalid UTF-8
     // filenames on APFS is hard, so this test exercises the success
     // branch of the same code path with multibyte UTF-8 — confirms
@@ -369,7 +436,7 @@
 - (void)testModifiedFileLineCounts {
     // 1 line in HEAD, 3 lines in workdir → 1 deleted + 3 inserted is
     // what `git diff` reports (the line is rewritten, not appended,
-    // because libgit2 patch stats track per-hunk add/del like
+    // because Git's numstat output tracks per-hunk add/del like
     // `git diff --numstat` does, not `--shortstat -w`).
     [self seedInitialCommit];
     [self writeFile:@"seed.txt" contents:@"v1\nv2\nv3\n"];
@@ -381,7 +448,7 @@
     // the original line removed and three new lines added (v1
     // is identical but git's line-by-line diff still shows it as
     // -v1 +v1 +v2 +v3 in the typical case). We don't pin to exact
-    // counts because behavior depends on libgit2's diff algorithm,
+    // counts because behavior depends on Git's diff algorithm,
     // but we *can* assert at least one inserted line and 0 deletes
     // for this lengthening edit.
     XCTAssertGreaterThan(state.linesInserted, 0);
@@ -414,7 +481,7 @@
     XCTAssertGreaterThanOrEqual(state.linesInserted, 2);
 }
 
-#pragma mark - Ahead/behind (getCountsFromRef:)
+#pragma mark - Ahead/behind
 
 // Helper: stand up a bare "remote" repo, push the current branch into
 // it, and configure self.repoDir to track origin/<branch>. After this
@@ -427,8 +494,8 @@
                             stringByAppendingString:@".remote.git"]];
     [self runGit:@[@"init", @"-q", @"--bare", bare] inDir:parent];
     [self runGit:@[@"remote", @"add", @"origin", bare]];
-    // -u sets the upstream tracking branch so getCountsFromRef can
-    // resolve "ref's upstream" via libgit2's branch_upstream API.
+    // -u sets the upstream tracking branch so the status client can
+    // resolve the branch's upstream.
     NSString *branch = [[self runGit:@[@"rev-parse",
                                        @"--abbrev-ref",
                                        @"HEAD"]]
@@ -515,9 +582,8 @@
 }
 
 - (void)testNoUpstreamYieldsEmptyAheadBehind {
-    // No remote configured, so getCountsFromRef returns NO and
-    // gitStateForRepoAtPath: falls into the else branch that sets
-    // both fields to "" rather than @"0" or nil.
+    // No remote configured, so the upstream rev-list fails and the
+    // state uses "" rather than @"0" or nil for both fields.
     [self seedInitialCommit];
     iTermGitState *state = [self readState];
     XCTAssertEqualObjects(state.ahead, @"");
@@ -530,7 +596,7 @@
 // (populateHeadFileStatusesOnState:): untracked files are excluded
 // from the per-file list (the workgroup diff menu filters them out
 // anyway), but they still feed the `adds` count. Excluding them at the
-// libgit2 level keeps rename detection from hashing every untracked
+// status-command level keeps rename detection from hashing every untracked
 // file, which previously made the workgroup diff poll exceed the git
 // timeout in a checkout full of untracked files (it would hang on
 // "Diff session is waiting for changes").
@@ -557,10 +623,10 @@
 
 - (void)testManyUntrackedWithSingleTrackedModification {
     // Direct regression guard for the workgroup diff hang: a working
-    // copy with many untracked files (including nested dirs, the
-    // RECURSE_UNTRACKED_DIRS case) plus one tracked change. The diff
-    // list must contain only the tracked file, no matter how many
-    // untracked files are sitting around.
+    // copy with many untracked files (including nested directories)
+    // plus one tracked change. The diff list must contain only the
+    // tracked file, no matter how many untracked files are sitting
+    // around.
     [self seedInitialCommit];
     [self writeFile:@"seed.txt" contents:@"v2\n"];
     const int untrackedCount = 40;
@@ -592,11 +658,10 @@
 #pragma mark - Rename detection in fileStatuses
 
 - (void)testStagedRenameDetected {
-    // Rename detection (RENAMES_HEAD_TO_INDEX) is preserved by the
-    // untracked-free pass because it pairs the head-side delete with
-    // the index-side add, both tracked. `git mv` records a staged
-    // rename with identical content, so libgit2's similarity scan
-    // collapses it to a single renamed entry.
+    // Rename detection is preserved by the untracked-free porcelain
+    // pass because it pairs the head-side delete with the index-side
+    // add, both tracked. `git mv` records a staged rename with identical
+    // content, so Git's similarity scan collapses it to one entry.
     [self seedInitialCommit];
     [self runGit:@[@"mv", @"seed.txt", @"renamed.txt"]];
     iTermGitState *state = [self readState];
