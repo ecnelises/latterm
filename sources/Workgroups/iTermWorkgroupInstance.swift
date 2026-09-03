@@ -31,13 +31,6 @@ final class iTermWorkgroupInstance: NSObject {
 
     @objc weak var mainSession: PTYSession?
 
-    // How this instance came to exist, e.g. "A trigger in session
-    // <guid> entered this workgroup". Set once by the controller right
-    // after entry/adoption and surfaced to orchestrator agents in the
-    // <workgroups> snapshot, so a chat that sees an unfamiliar
-    // workgroup appear can tell what created it instead of guessing.
-    @objc var provenance: String?
-
     // Config snapshot at entry time.
     let workgroup: iTermWorkgroup
 
@@ -363,20 +356,6 @@ final class iTermWorkgroupInstance: NSObject {
         return owningPort.activatePeer(byShortcutDigit: digit)
     }
 
-    // Walk every session in the workgroup config and pair each with its
-    // live PTYSession (when one exists). Returns triples sufficient for
-    // the cockpit orchestrator to describe the workgroup to the LLM:
-    //   - roleID:      the workgroup-config UUID for this session slot
-    //   - displayName: the human-readable role name
-    //   - session:     the live PTYSession (peer, nested peer, or
-    //                  non-peer host); nil if the session hasn't been
-    //                  realized yet or has already terminated
-    struct ResolvedMember {
-        let roleID: String
-        let displayName: String
-        let session: PTYSession?
-    }
-
     // Leaf non-peer (split/tab) children paired with their config UUID,
     // in spawn order. Excludes nested-peer-port hosts (those have a
     // non-nil peerPort and encode themselves as their own peer-group
@@ -388,15 +367,6 @@ final class iTermWorkgroupInstance: NSObject {
             guard let entry = nonPeerEntriesByConfigID[id] else { return nil }
             guard entry.session.peerPort == nil else { return nil }
             return (id, entry.session)
-        }
-    }
-
-    func resolvedMembers() -> [ResolvedMember] {
-        return workgroup.sessions.map { config in
-            ResolvedMember(
-                roleID: config.uniqueIdentifier,
-                displayName: config.displayName,
-                session: liveSession(forConfigID: config.uniqueIdentifier))
         }
     }
 

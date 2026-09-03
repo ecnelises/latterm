@@ -23232,8 +23232,7 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
             return;
         }
         [iTermWorkgroupController.instance enterWithWorkgroupUniqueIdentifier:identifier
-                                                                           on:strongSelf
-                                                                    mechanism:iTermWorkgroupEntryMechanismTrigger];
+                                                                           on:strongSelf];
     });
 }
 

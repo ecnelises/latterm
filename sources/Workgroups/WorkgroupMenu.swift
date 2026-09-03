@@ -102,8 +102,7 @@ final class WorkgroupMenu: NSObject, NSMenuDelegate {
             return
         }
         iTermWorkgroupController.instance.enter(workgroupUniqueIdentifier: id,
-                                                on: session,
-                                                mechanism: .menu)
+                                                on: session)
     }
 
     private func currentSession() -> PTYSession? {

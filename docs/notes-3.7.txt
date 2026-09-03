@@ -60,6 +60,8 @@ Terminal-first fork changes:
   command for repository status.
 - Removed obsolete AI publishing, diagnostics,
   and Claude integration development artifacts.
+- Removed obsolete AI workgroup provenance and
+  member-snapshot plumbing.
 
 Major New Features:
 - Companion App: a new iOS app, iTerm2 Buddy,

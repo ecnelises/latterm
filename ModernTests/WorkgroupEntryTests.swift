@@ -442,8 +442,7 @@ final class WorkgroupEntryTests: WorkgroupEntryTestBase {
         XCTAssertTrue(
             iTermWorkgroupController.instance.enter(
                 workgroupUniqueIdentifier: wg.uniqueIdentifier,
-                on: leader,
-                mechanism: .menu))
+                on: leader))
         let inst = iTermWorkgroupController.instance.workgroupInstance(on: leader)
         XCTAssertNotNil(inst)
         XCTAssertEqual(inst?.workgroupUniqueIdentifier, wg.uniqueIdentifier)
@@ -466,8 +465,7 @@ final class WorkgroupEntryTests: WorkgroupEntryTestBase {
         XCTAssertTrue(
             iTermWorkgroupController.instance.enter(
                 workgroupUniqueIdentifier: wg.uniqueIdentifier,
-                on: leader,
-                mechanism: .menu))
+                on: leader))
         let originalGUID = leader.guid
         leader.setValue(UUID().uuidString, forKey: "guid")
         XCTAssertNotEqual(leader.guid, originalGUID,
@@ -486,14 +484,12 @@ final class WorkgroupEntryTests: WorkgroupEntryTestBase {
         XCTAssertTrue(
             iTermWorkgroupController.instance.enter(
                 workgroupUniqueIdentifier: wg.uniqueIdentifier,
-                on: leader,
-                mechanism: .menu))
+                on: leader))
         let inst1 = iTermWorkgroupController.instance.workgroupInstance(on: leader)
         XCTAssertTrue(
             iTermWorkgroupController.instance.enter(
                 workgroupUniqueIdentifier: wg.uniqueIdentifier,
-                on: leader,
-                mechanism: .menu))
+                on: leader))
         let inst2 = iTermWorkgroupController.instance.workgroupInstance(on: leader)
         XCTAssertTrue(inst1 === inst2,
                       "Idempotent enter should keep the same instance")
@@ -513,14 +509,12 @@ final class WorkgroupEntryTests: WorkgroupEntryTestBase {
         XCTAssertTrue(
             iTermWorkgroupController.instance.enter(
                 workgroupUniqueIdentifier: wg1.uniqueIdentifier,
-                on: leader,
-                mechanism: .menu))
+                on: leader))
         let inst1 = iTermWorkgroupController.instance.workgroupInstance(on: leader)
         XCTAssertTrue(
             iTermWorkgroupController.instance.enter(
                 workgroupUniqueIdentifier: wg2.uniqueIdentifier,
-                on: leader,
-                mechanism: .menu))
+                on: leader))
         let inst2 = iTermWorkgroupController.instance.workgroupInstance(on: leader)
         XCTAssertNotNil(inst2)
         XCTAssertFalse(inst1 === inst2,
@@ -1681,4 +1675,3 @@ final class WorkgroupEntryTests: WorkgroupEntryTestBase {
         instance = nil
     }
 }
-
