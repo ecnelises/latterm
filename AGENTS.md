@@ -76,7 +76,7 @@ iTerm2/
 
 ### Modifying Terminal Emulation
 - Escape sequences flow: `VT100Parser`/`VT100Terminal` → `VT100ScreenMutableState`/`VT100Screen` → `VT100Grid`
-- Look at `VT100ScreenTest.m` for examples
+- Look at `ModernTests/VT100ScreenTests.swift` and `ModernTests/VT100GridTests.swift` for examples
 - Test changes thoroughly
 
 ### Extending APIs
