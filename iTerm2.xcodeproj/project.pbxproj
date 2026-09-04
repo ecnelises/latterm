@@ -2082,7 +2082,6 @@
 		A653F66824CD6A8C0062377E /* iTermRestorableStateRestorer.m in Sources */ = {isa = PBXBuildFile; fileRef = A653F66624CD6A8C0062377E /* iTermRestorableStateRestorer.m */; };
 		A653F66B24CE7CE30062377E /* iTermGraphEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = A653F66924CE7CE30062377E /* iTermGraphEncoder.h */; };
 		A653F66C24CE7CE30062377E /* iTermGraphEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = A653F66A24CE7CE30062377E /* iTermGraphEncoder.m */; };
-		A653F66E24CE81740062377E /* iTermCodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A653F66D24CE81740062377E /* iTermCodingTests.m */; };
 		A653F67E24CF4EC70062377E /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = A653F67324CF4EC50062377E /* FMDatabaseQueue.m */; };
 		A653F67F24CF4EC70062377E /* FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = A653F67424CF4EC50062377E /* FMDatabasePool.m */; };
 		A653F68024CF4EC70062377E /* FMDatabaseAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = A653F67524CF4EC50062377E /* FMDatabaseAdditions.h */; };
@@ -6294,7 +6293,6 @@
 		A653F66624CD6A8C0062377E /* iTermRestorableStateRestorer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermRestorableStateRestorer.m; sourceTree = "<group>"; };
 		A653F66924CE7CE30062377E /* iTermGraphEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermGraphEncoder.h; sourceTree = "<group>"; };
 		A653F66A24CE7CE30062377E /* iTermGraphEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermGraphEncoder.m; sourceTree = "<group>"; };
-		A653F66D24CE81740062377E /* iTermCodingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermCodingTests.m; sourceTree = "<group>"; };
 		A653F67324CF4EC50062377E /* FMDatabaseQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FMDatabaseQueue.m; path = fmdb/FMDatabaseQueue.m; sourceTree = "<group>"; };
 		A653F67424CF4EC50062377E /* FMDatabasePool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FMDatabasePool.m; path = fmdb/FMDatabasePool.m; sourceTree = "<group>"; };
 		A653F67524CF4EC50062377E /* FMDatabaseAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FMDatabaseAdditions.h; path = fmdb/FMDatabaseAdditions.h; sourceTree = "<group>"; };
@@ -12112,7 +12110,6 @@
 				A65660DC2372ADEA00DC6744 /* iTermCacheTests.m */,
 				A6F22AC12396374500C5D1A9 /* iTermSyntheticConfParserTests.m */,
 				A63493FA23F2741D0047C31B /* iTermPromiseTests.m */,
-				A653F66D24CE81740062377E /* iTermCodingTests.m */,
 				A6024B8A254DDFEE0036D6CF /* iTermNSColorCategoryTests.m */,
 				A60F6FEA270B7F1D0017A003 /* iTermModifyOtherKeys1Test.m */,
 				A603A96729B12CEA000E9E98 /* SearchTests.m */,
@@ -18241,7 +18238,6 @@
 				A608CD0D214DE7C1007A7B87 /* iTermFunctionCallSuggesterTest.m in Sources */,
 				A6F22AC22396374500C5D1A9 /* iTermSyntheticConfParserTests.m in Sources */,
 				A608CD01214DE7C1007A7B87 /* VT100CSIParserTest.m in Sources */,
-				A653F66E24CE81740062377E /* iTermCodingTests.m in Sources */,
 				A61F8E301E62591800D315D0 /* iTermFakeUserDefaults.m in Sources */,
 				A608CCFB214DE7C1007A7B87 /* iTermNSStringCategoryTest.m in Sources */,
 				A608CD09214DE7C1007A7B87 /* iTermAutomaticProfileSwitcherTest.m in Sources */,

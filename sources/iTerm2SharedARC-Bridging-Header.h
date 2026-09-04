@@ -52,6 +52,7 @@
 #import "iTermDatabase.h"
 #import "iTermDirectoryEntry.h"
 #import "iTermEncoderAdapter.h"
+#import "iTermGraphTableTransformer.h"
 #import "iTermExpressionEvaluator.h"
 #import "iTermExpressionParser.h"
 #import "iTermFindPasteboard.h"
