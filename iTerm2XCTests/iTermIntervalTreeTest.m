@@ -1,6 +1,3 @@
-// TODO: Some day fix the unit tests
-#if 0
-
 #import <XCTest/XCTest.h>
 #import "IntervalTree.h"
 
@@ -22,10 +19,7 @@
 @end
 
 static Interval *MakeInterval(long long location, long long length) {
-    Interval *interval = [[[Interval alloc] init] autorelease];
-    interval.location = location;
-    interval.length = length;
-    return interval;
+    return [[[Interval alloc] initWithLocation:location length:length] autorelease];
 }
 
 @interface IntervalTreeTest : XCTestCase
@@ -369,5 +363,3 @@ static Interval *MakeInterval(long long location, long long length) {
     [tree_ sanityCheck];
 }
 @end
-
-#endif
