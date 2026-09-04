@@ -945,8 +945,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 // PTYTextView
 - (BOOL)hasTextSendingKeyMappingForEvent:(NSEvent*)event;
-- (BOOL)willHandleEvent: (NSEvent *)theEvent;
-- (void)handleEvent: (NSEvent *)theEvent;
 - (void)insertNewline:(nullable id)sender;
 - (void)insertTab:(nullable id)sender;
 - (void)moveUp:(nullable id)sender;
@@ -1098,8 +1096,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (void)renameMark:(id<iTermGenericNamedMarkReading>)mark to:(nullable NSString *)newName;
 - (NSArray<id<iTermGenericNamedMarkReading>> *)namedMarks;
 - (void)removeNamedMark:(id<iTermGenericNamedMarkReading>)mark;
-- (BOOL)canAddNamedMark;
-
 // Select this session and tab and bring window to foreground.
 - (void)reveal;
 // Switch the workgroup peer switcher to this session within its shared pane,
@@ -1188,7 +1184,7 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (BOOL)hasAnnouncementWithIdentifier:(NSString *)identifier;
 
 // Change the current profile but keep the name the same.
-- (BOOL)setProfile:(NSDictionary *)newProfile
+- (void)setProfile:(NSDictionary *)newProfile
     preservingName:(BOOL)preserveName;
 
 // Make the scroll view's document view be this session's textViewWrapper.

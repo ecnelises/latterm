@@ -64,14 +64,6 @@
     _outlineView.target = self;
     _outlineView.action = @selector(didClick:);
 
-    // Make never-before-made-visible webviews load their URLs or interaction state so they will be searchable. This is a race
-    // because they won't be searchable until the document starts and they won't be usefully searchable until "enough" of the
-    // document loads (which could take infinite time, oh well)
-    [[[iTermController sharedInstance] terminals] enumerateObjectsUsingBlock:^(PseudoTerminal *term, NSUInteger idx, BOOL *stop) {
-        for (PTYSession *session in term.allSessions) {
-            (void)session;
-        }
-    }];
 }
 
 - (void)windowWillClose:(NSNotification *)notification {

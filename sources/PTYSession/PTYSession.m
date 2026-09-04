@@ -4666,15 +4666,6 @@ ITERM_WEAKLY_REFERENCEABLE
     }
 }
 
-- (BOOL)willHandleEvent:(NSEvent *) theEvent
-{
-    return NO;
-}
-
-- (void)handleEvent:(NSEvent *)theEvent
-{
-}
-
 - (void)insertNewline:(id)sender {
     [self insertText:@"\n"];
 }
@@ -6269,10 +6260,6 @@ ITERM_WEAKLY_REFERENCEABLE
 
 - (void)setMinimumContrast:(float)value {
     [[self textview] setMinimumContrast:value];
-}
-
-- (BOOL)viewShouldWantLayer {
-    return NO;
 }
 
 - (void)useTransparencyDidChange {
@@ -8382,10 +8369,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (NSInteger)findDriverNumberOfSearchResults {
     return _textview.findOnPageHelper.numberOfSearchResults;
-}
-
-- (BOOL)findDriverEnterInFindPanelPerformsForwardSearch {
-    return NO;
 }
 
 - (NSInteger)findDriverCurrentIndex {
@@ -12466,10 +12449,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (BOOL)textViewShouldDrawFilledInCursor {
-    return NO;
-}
-
 - (void)textViewWillNeedUpdateForBlink {
     self.active = YES;
 }
@@ -15777,10 +15756,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (BOOL)canAddNamedMark {
-    return YES; // Always allow for terminal sessions
-}
-
 - (NSArray<id<iTermGenericNamedMarkReading>> *)namedMarks {
     return _screen.namedMarks;
 }
@@ -15822,12 +15797,12 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (BOOL)setProfile:(NSDictionary *)newProfile
+- (void)setProfile:(NSDictionary *)newProfile
     preservingName:(BOOL)preservingName {
-    return [self setProfile:newProfile preservingName:preservingName adjustWindow:YES];
+    [self setProfile:newProfile preservingName:preservingName adjustWindow:YES];
 }
 
-- (BOOL)setProfile:(NSDictionary *)newProfile
+- (void)setProfile:(NSDictionary *)newProfile
     preservingName:(BOOL)preserveName
       adjustWindow:(BOOL)adjustWindow {
     DLog(@"Set profile to\n%@", newProfile);
@@ -15851,11 +15826,10 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [self remarry];
     if (preserveName) {
         [self.variablesScope setValuesFromDictionary:@{ iTermVariableKeySessionProfileName: newProfile[KEY_NAME] ?: [NSNull null] }];
-        return YES;
+        return;
     }
     [self profileDidChangeToProfileWithName:newProfile[KEY_NAME]];
     DLog(@"Done setting profile of %@", self);
-    return YES;
 }
 
 - (void)screenSetPasteboard:(NSString *)value {
@@ -18975,12 +18949,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [_textview keyDown:event];
 }
 
-- (BOOL)popupHandleSelector:(SEL)selector
-                     string:(NSString *)string
-               currentValue:(NSString *)currentValue {
-    return NO;
-}
-
 #pragma mark - iTermPasteHelperDelegate
 
 - (void)pasteHelperWriteString:(NSString *)string {
@@ -19237,11 +19205,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
              @(currentPointSize), @(originalPointSize), @(fontZoomDelta));
     }
 
-    if (![self setProfile:replacementProfile preservingName:NO adjustWindow:NO]) {
-        DLog(@"APS setProfile failed");
-        [_view showUnobtrusiveMessage:[NSString stringWithFormat:@"Can’t switch to profile “%@”—wrong profile type.", underlyingProfile[KEY_NAME]]];
-        return;
-    }
+    [self setProfile:replacementProfile preservingName:NO adjustWindow:NO];
     if (savedProfile.isDivorced) {
         // When preserving font zoom, exclude font keys from the overrides
         // since the zoom delta will handle the font. The saved overrides may
@@ -19338,10 +19302,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 - (void)sessionViewDimmingAmountDidChange:(CGFloat)newDimmingAmount {
     [self sync];
     [_textview requestDelegateRedraw];
-}
-
-- (BOOL)sessionViewIsVisible {
-    return YES;
 }
 
 - (void)sessionViewDraggingExited:(id<NSDraggingInfo>)sender {

@@ -1331,11 +1331,9 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     if (isDimmed == _dim) {
         return;
     }
-    if ([_delegate sessionViewIsVisible]) {
-        _dim = isDimmed;
+    _dim = isDimmed;
+    if (_delegate) {
         [self updateDim];
-    } else {
-        _dim = isDimmed;
     }
 }
 
@@ -2774,10 +2772,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (NSInteger)findDriverNumberOfSearchResults {
     return [self.delegate findDriverNumberOfSearchResults];
-}
-
-- (BOOL)findDriverEnterInFindPanelPerformsForwardSearch {
-    return [self.delegate findDriverEnterInFindPanelPerformsForwardSearch];
 }
 
 - (void)showUnobtrusiveMessage:(NSString *)message {

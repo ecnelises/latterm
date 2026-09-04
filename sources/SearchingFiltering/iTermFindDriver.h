@@ -72,7 +72,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries;
 - (void)findDriverBottomUpPerformFindPanelAction:(id)sender;
 - (BOOL)findDriverBottomUpValidateMenuItem:(NSMenuItem *)menuItem;
 - (iTermSearchEngine *)findDriverSearchEngine;
-- (BOOL)findDriverEnterInFindPanelPerformsForwardSearch;
 
 @end
 

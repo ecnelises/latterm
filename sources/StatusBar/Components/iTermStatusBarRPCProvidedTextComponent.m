@@ -571,30 +571,6 @@ static NSString *const iTermStatusBarRPCRegistrationRequestV2Key = @"registratio
                                }];
 }
 
-- (void)itermWebViewJavascriptError:(NSString *)errorText {
-    NSError *error = nil;
-    NSString *signature = [iTermExpressionParser signatureForFunctionCallInvocation:self.invocation
-                                                                              error:&error];
-    if (!signature && error) {
-        signature = error.localizedDescription;
-    }
-    [[iTermAPIHelper sharedInstance] logToConnectionHostingFunctionWithSignature:signature
-                                                                          string:errorText];
-    [[iTermAPIHelper sharedInstance] logToConnectionHostingFunctionWithSignature:signature
-                                                                          string:@"Right-click in the webview and choose Inspect Element to open the Web Inspector."];
-}
-
-- (void)itermWebViewWillExecuteJavascript:(NSString *)javascript {
-    NSError *error = nil;
-    NSString *signature = [iTermExpressionParser signatureForFunctionCallInvocation:self.invocation
-                                                                              error:&error];
-    if (!signature && error) {
-        signature = error.localizedDescription;
-    }
-    [[iTermAPIHelper sharedInstance] logToConnectionHostingFunctionWithSignature:signature
-                                                                          string:[NSString stringWithFormat:@"Execute javascript: %@", javascript]];
-}
-
 #pragma mark - iTermObject
 
 - (nullable iTermBuiltInFunctions *)objectMethodRegistry {
@@ -695,14 +671,6 @@ static NSString *const iTermStatusBarRPCRegistrationRequestV2Key = @"registratio
 
 - (NSTimeInterval)statusBarComponentUpdateCadence {
     return [_common statusBarComponentUpdateCadence];
-}
-
-- (void)itermWebViewJavascriptError:(NSString *)errorText {
-    [_common itermWebViewJavascriptError:errorText];
-}
-
-- (void)itermWebViewWillExecuteJavascript:(NSString *)javascript {
-    [_common itermWebViewWillExecuteJavascript:javascript];
 }
 
 - (BOOL)isEqualToComponentIgnoringConfiguration:(id<iTermStatusBarComponent>)component {
@@ -828,14 +796,6 @@ static NSString *const iTermStatusBarRPCRegistrationRequestV2Key = @"registratio
 
 - (NSTimeInterval)statusBarComponentUpdateCadence {
     return [_common statusBarComponentUpdateCadence];
-}
-
-- (void)itermWebViewJavascriptError:(NSString *)errorText {
-    [_common itermWebViewJavascriptError:errorText];
-}
-
-- (void)itermWebViewWillExecuteJavascript:(NSString *)javascript {
-    [_common itermWebViewWillExecuteJavascript:javascript];
 }
 
 - (BOOL)isEqualToComponentIgnoringConfiguration:(id<iTermStatusBarComponent>)component {

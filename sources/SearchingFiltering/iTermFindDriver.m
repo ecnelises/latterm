@@ -669,10 +669,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (void)enterPressedWithShift:(BOOL)shiftPressed {
-    if ([self.delegate findDriverEnterInFindPanelPerformsForwardSearch]) {
-        [self searchNext];
-        return;
-    }
     const BOOL swap = [iTermAdvancedSettingsModel swapFindNextPrevious];
     if  (!shiftPressed ^ swap) {
         [self searchNext];

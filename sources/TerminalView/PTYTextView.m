@@ -2116,7 +2116,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.textViewIsActiveSession = [self.delegate textViewIsActiveSession];
         helper.textViewIsFirstResponder = self.window.firstResponder == self;
         helper.isInKeyWindow = [self isInKeyWindow];
-        helper.shouldDrawFilledInCursor = ([self.delegate textViewShouldDrawFilledInCursor] || _focusFollowsMouse.haveStolenFocus);
+        helper.shouldDrawFilledInCursor = _focusFollowsMouse.haveStolenFocus;
         helper.isFrontTextView = (self == [[iTermController sharedInstance] frontTextView]);
         helper.drawMarkIndicators = [_delegate textViewShouldShowMarkIndicators];
         helper.showSearchingCursor = _showSearchingCursor;

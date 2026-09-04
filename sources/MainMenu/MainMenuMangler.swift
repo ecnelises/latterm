@@ -54,7 +54,6 @@ class MainMenuMangler: NSObject {
         // Log.Start and Log.Stop removed - no identifiers in XIB
         "Log.ImportRecording": "square.and.arrow.down",
         "Log.ExportRecording": "square.and.arrow.up",
-        // Log.ExportCommandHistory removed - no identifier in XIB
         "Close": "xmark",
         "Close Terminal Window": "xmark.circle.fill",
         "Close All Panes in Tab": "xmark.circle",

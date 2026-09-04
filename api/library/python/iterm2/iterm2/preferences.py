@@ -17,7 +17,7 @@ class PreferenceKey(enum.Enum):
     ONLY_WHEN_MORE_TABS = "OnlyWhenMoreTabs"  #: Confirm close window when there are multiple tabs?  Takes a boolean.
     PROMPT_ON_QUIT = "PromptOnQuit"  #: Prompt before quitting?  Takes a boolean.
     INSTANT_REPLAY_MEMORY_MB = "IRMemory"  #: Memory (in megabytes) to use per session for instant replay.  Takes a floating point value.
-    SAVE_PASTE_HISTORY = "SavePasteHistory"  #: Should paste and command history be saved to disk?  Takes a boolean.
+    SAVE_PASTE_HISTORY = "SavePasteHistory"  #: Should paste history be saved to disk?  Takes a boolean.
     ENABLE_BONJOUR_DISCOVERY = "EnableRendezvous"  #: Discover hosts with bonjour?  Takes a boolean.
     SOFTWARE_UPDATE_ENABLE_AUTOMATIC_CHECKS = "SUEnableAutomaticChecks"  #: Automatically check for new versions of iTerm2?  Takes a boolean.
     SOFTWARE_UPDATE_ENABLE_TEST_RELEASES = "CheckTestRelease"  #: Check for beta versions for auto update?  Takes a boolean.
@@ -78,7 +78,6 @@ class PreferenceKey(enum.Enum):
     TRIPLE_CLICK_SELECTS_FULL_WRAPPED_LINES = "TripleClickSelectsFullWrappedLines"  #: Triple click selects full wrapped lines?  Takes a boolean.
     DOUBLE_CLICK_PERFORMS_SMART_SELECTION = "DoubleClickPerformsSmartSelection"  #: Double click performs smart selection?  Takes a boolean.
     ITERM_VERSION = "iTerm Version"  #: Last-used iTerm2 version. Do not set this.  Takes a string.
-    AUTO_COMMAND_HISTORY = "AutoCommandHistory"  #: Enable autocomplete with command history?  Takes a boolean.
     PASTE_SPECIAL_CHUNK_SIZE = "PasteSpecialChunkSize"  #: Default paste chunk size.  Takes a positive integer.
     PASTE_SPECIAL_CHUNK_DELAY = "PasteSpecialChunkDelay"  #: Default delay between paste chunks.  Takes a floating point number.
     NUMBER_OF_SPACES_PER_TAB = "NumberOfSpacesPerTab"  #: Default number of spaces per tab when converting tabs when pasting.  Takes a positive integer.

@@ -180,9 +180,6 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (void)textViewGetCurrentWorkingDirectoryWithCompletion:(void (^)(NSString *workingDirectory))completion;
 
 - (BOOL)textViewShouldPlaceCursorAt:(VT100GridCoord)coord verticalOk:(BOOL *)verticalOk;
-// If the textview isn't in the key window, the delegate can return YES in this
-// method to cause the cursor to be drawn as though it were key.
-- (BOOL)textViewShouldDrawFilledInCursor;
 
 // Send the appropriate mouse-reporting escape codes.
 - (BOOL)textViewReportMouseEvent:(NSEventType)eventType

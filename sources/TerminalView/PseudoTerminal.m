@@ -109,7 +109,6 @@
 #import "iTermSelection.h"
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
-#import "iTermSessionRestorationStatusProtocol.h"
 #import "iTermSessionTitleBuiltInFunction.h"
 #import "iTermSquash.h"
 #import "iTermSwiftyString.h"
@@ -230,7 +229,6 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
     iTermGraphCodable,
     iTermObject,
     iTermRestorableWindowController,
-    iTermSessionRestorationStatusProtocol,
     iTermTabBarControlViewDelegate,
     iTermPasswordManagerDelegate,
     iTermUniquelyIdentifiable,
@@ -343,7 +341,6 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
     BOOL _expectingDecodeOfRestorableState;
     
     // Tracks number of concurrent session restoration operations for deferred loading
-    NSInteger _sessionRestorationCount;
 
     // Used to prevent infinite reentrancy in windowDidChangeScreen:.
     BOOL _inWindowDidChangeScreen;
@@ -11909,7 +11906,7 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
     } else if (item.action == @selector(reset:)) {
         return self.currentSession != nil;
     } else if (item.action == @selector(addNamedMark:)) {
-        return self.currentSession != nil && [self.currentSession canAddNamedMark];
+        return self.currentSession != nil;
     } else if (item.action == @selector(annotateSelection:)) {
         return self.currentSession.hasSelection;
     } else if (item.action == @selector(clearBuffer:) ||
@@ -12595,14 +12592,12 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 }
 
 - (void)restoreArrangement:(NSDictionary *)arrangement {
-    _sessionRestorationCount++;
     [self loadArrangement:arrangement
                     named:nil
                  sessions:nil
        partialAttachments:nil
      largeContentProvider:nil];
     self.restorableStateDecodePending = NO;
-    [self decrementSessionRestorationCount];
 }
 
 - (void)asyncRestoreArrangement:(NSDictionary *)arrangement
@@ -12610,7 +12605,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
            largeContentProvider:(id<iTermLargeContentProvider>)largeContentProvider
                      completion:(void (^)(void))completion {
     RLog(@"asyncRestoreArrangement: begin");
-    _sessionRestorationCount++;
     [self openPartialAttachmentsForArrangement:arrangement
                                        timeout:timeout
                                     completion:^(NSDictionary *partialAttachments) {
@@ -12623,7 +12617,6 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
         self.restorableStateDecodePending = NO;
         // No more tabs will be restored, and in doing so deminiaturize the window.
         _suppressMakeCurrentTerminal &= ~iTermSuppressMakeCurrentTerminalMiniaturized;
-        [self decrementSessionRestorationCount];
         completion();
     }];
 }
@@ -13715,19 +13708,6 @@ backgroundColor:(NSColor *)backgroundColor {
     }
     assert(NO);
     return rect;
-}
-
-#pragma mark - iTermSessionRestorationStatusProtocol
-
-- (BOOL)isPerformingSessionRestoration {
-    return _sessionRestorationCount > 0;
-}
-
-- (void)decrementSessionRestorationCount {
-    _sessionRestorationCount--;
-    if (_sessionRestorationCount == 0) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:iTermSessionRestorationDidCompleteNotification object:self];
-    }
 }
 
 @end

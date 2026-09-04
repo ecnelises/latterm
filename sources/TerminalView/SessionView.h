@@ -78,9 +78,6 @@ extern NSString *const SessionViewWasSelectedForInspectionNotification;
 // Informs the delegate of a change to the dimming amount.
 - (void)sessionViewDimmingAmountDidChange:(CGFloat)newDimmingAmount;
 
-// Is this this view part of a visible tab?
-- (BOOL)sessionViewIsVisible;
-
 // Drag entered this view.
 - (NSDragOperation)sessionViewDraggingEntered:(id<NSDraggingInfo>)sender;
 - (void)sessionViewDraggingExited:(id<NSDraggingInfo>)sender;

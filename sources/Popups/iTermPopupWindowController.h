@@ -26,8 +26,6 @@
 - (void)popupPreview:(NSString *)text;
 - (void)popupInsertText:(NSString *)text popup:(iTermPopupWindowController *)popupWindowController;
 - (void)popupKeyDown:(NSEvent *)event;
-// Return YES if the delegate handles it, NO if Popup should handle it.
-- (BOOL)popupHandleSelector:(SEL)selector string:(NSString *)string currentValue:(NSString *)currentValue;
 - (void)popupWillClose:(iTermPopupWindowController *)popup;
 - (BOOL)popupWindowIsInFloatingHotkeyWindow;
 - (void)popupIsSearching:(BOOL)searching;
@@ -102,7 +100,6 @@
 - (NSAttributedString *)shrunkToFitAttributedString:(NSAttributedString *)attributedString
                                             inEntry:(PopupEntry *)entry
                                      baseAttributes:(NSDictionary *)baseAttributes;
-- (BOOL)passKeyEventToDelegateForSelector:(SEL)selector string:(NSString *)string;
 - (void)previewCurrentRow;
 - (BOOL)shouldEscapeShellCharacters;
 
