@@ -1132,7 +1132,6 @@
 		A608A30927BC79C600BA4F1A /* SelectionExtraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608A30827BC79C600BA4F1A /* SelectionExtraction.swift */; };
 		A608A58027978076003525F7 /* VT100ScreenMark.m in Sources */ = {isa = PBXBuildFile; fileRef = A693395B1851A61D00EBEA20 /* VT100ScreenMark.m */; };
 		A608CCF5214DE7C1007A7B87 /* iTermVariablesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A6BC9B20214A395A00F50C09 /* iTermVariablesTest.m */; };
-		A608CCF7214DE7C1007A7B87 /* iTermProcessCollectionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A60BB3901EB6A56800D76C09 /* iTermProcessCollectionTest.m */; };
 		A608CCF9214DE7C1007A7B87 /* iTermEquivalenceClassSetTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A6BDB0401B45E8BA00F511E6 /* iTermEquivalenceClassSetTest.m */; };
 		A608CCFA214DE7C1007A7B87 /* iTermIntervalTreeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A6BDB0471B45EB7F00F511E6 /* iTermIntervalTreeTest.m */; };
 		A608CCFB214DE7C1007A7B87 /* iTermNSStringCategoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A6BDB04B1B45EC3A00F511E6 /* iTermNSStringCategoryTest.m */; };
@@ -5572,7 +5571,6 @@
 		A60BB37D1EB5149100D76C09 /* iTermCopyModeState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermCopyModeState.m; sourceTree = "<group>"; };
 		A60BB3821EB54B6700D76C09 /* CopyMode.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = CopyMode.png; path = images/CopyMode.png; sourceTree = "<group>"; };
 		A60BB3831EB54B6700D76C09 /* CopyMode@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "CopyMode@2x.png"; path = "images/CopyMode@2x.png"; sourceTree = "<group>"; };
-		A60BB3901EB6A56800D76C09 /* iTermProcessCollectionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermProcessCollectionTest.m; sourceTree = "<group>"; };
 		A60BD9111B3913F6007D7F11 /* iTermTextViewAccessibilityHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermTextViewAccessibilityHelper.h; sourceTree = "<group>"; };
 		A60BD9121B3913F6007D7F11 /* iTermTextViewAccessibilityHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = iTermTextViewAccessibilityHelper.m; sourceTree = "<group>"; };
 		A60BD9181B3F5D76007D7F11 /* OpenDirectory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenDirectory.framework; path = System/Library/Frameworks/OpenDirectory.framework; sourceTree = SDKROOT; };
@@ -12088,7 +12086,6 @@
 				A6C7641E1B45CB2800E3C992 /* Supporting Files */,
 				C6675EB91C4FE95E0041173B /* Utilities */,
 				A6BC9B20214A395A00F50C09 /* iTermVariablesTest.m */,
-				A60BB3901EB6A56800D76C09 /* iTermProcessCollectionTest.m */,
 				A6BDB0401B45E8BA00F511E6 /* iTermEquivalenceClassSetTest.m */,
 				A6BDB0471B45EB7F00F511E6 /* iTermIntervalTreeTest.m */,
 				A6BDB04B1B45EC3A00F511E6 /* iTermNSStringCategoryTest.m */,
@@ -18258,7 +18255,6 @@
 				A608CCF9214DE7C1007A7B87 /* iTermEquivalenceClassSetTest.m in Sources */,
 				A62F8FD321DA8457008EA71C /* iTermTermkeyKeyMapperTest.m in Sources */,
 				A65660DD2372ADEA00DC6744 /* iTermCacheTests.m in Sources */,
-				A608CCF7214DE7C1007A7B87 /* iTermProcessCollectionTest.m in Sources */,
 				A608CD06214DE7C1007A7B87 /* iTermRuleTest.m in Sources */,
 				A60F6FEC270B7F640017A003 /* iTermModifyOtherKeys1Test.m in Sources */,
 				E8BAEA319661F3A7E51D77B1 /* PTYTextViewAccessibilityTest.m in Sources */,
