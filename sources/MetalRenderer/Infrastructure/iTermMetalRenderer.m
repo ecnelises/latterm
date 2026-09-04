@@ -542,19 +542,6 @@ int iTermBitsPerSampleForPixelFormat(MTLPixelFormat format) {
     MTLRegion region = MTLRegionMake2D(0, 0, bitmap.size.width, bitmap.size.height);
     const NSUInteger bytesPerRow = bitmap.bytesPerRow;
     [texture replaceRegion:region mipmapLevel:0 withBytes:bitmap.bitmapData bytesPerRow:bytesPerRow];
-#if 0
-    static int n;
-    n++;
-    [[NSImage imageWithRawData:[NSData dataWithBytes:bitmap.bitmapData length:bitmap.bytesPerRow * bitmap.size.height]
-                          size:NSMakeSize(bitmap.size.width, bitmap.size.height)
-                    scaledSize:NSMakeSize(bitmap.size.width, bitmap.size.height)
-                 bitsPerSample:bitmap.bitsPerSample
-               samplesPerPixel:bitmap.samplesPerPixel
-                   bytesPerRow:bitmap.bytesPerRow
-                      hasAlpha:bitmap.hasAlpha
-                colorSpaceName:bitmap.colorSpaceName]
-     saveAsPNGTo:[NSString stringWithFormat:@"/tmp/wtf%@.png", @(n)]];
-#endif
     [iTermTexture setBytesPerRow:bytesPerRow
                      rawDataSize:bytesPerRow * bitmap.size.height
                  samplesPerPixel:4

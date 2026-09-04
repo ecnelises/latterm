@@ -2286,12 +2286,6 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
             CGContextShowGlyphsAtPositions(ctx, glyphs, points, length);
         }
     }
-#if 0
-    // Indicates which regions were drawn with the fastpath
-    [[NSColor yellowColor] set];
-    NSFrameRect(NSMakeRect(point.x + positions[0], point.y, positions[length - 1] - positions[0] + _cellSize.width, _cellSize.height));
-#endif
-
     if (style >= 0) {
         CGContextSetFontSmoothingStyle(ctx, savedFontSmoothingStyle);
     }
