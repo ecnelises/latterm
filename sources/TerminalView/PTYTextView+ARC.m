@@ -30,7 +30,6 @@
 #import "iTermTextPopoverViewController.h"
 #import "iTermURLActionFactory.h"
 #import "iTermURLStore.h"
-#import "iTermWebViewWrapperViewController.h"
 #import "NSArray+iTerm.h"
 #import "NSColor+iTerm.h"
 #import "NSData+iTerm.h"
@@ -53,8 +52,6 @@
 #import "ToastWindowController.h"
 #import "URLAction.h"
 #import "VT100Terminal.h"
-
-#import <WebKit/WebKit.h>
 
 static const NSUInteger kDragPaneModifiers = (NSEventModifierFlagOption | NSEventModifierFlagCommand | NSEventModifierFlagShift);
 static const NSUInteger kRectangularSelectionModifiers = (NSEventModifierFlagCommand | NSEventModifierFlagOption);
@@ -865,16 +862,9 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
             return [NSURL fileURLWithPath:tempFile];
         }
 
-        case kURLActionOpenURL: {
-            if (!urlAction.string) {
-                break;
-            }
-            NSURL *url = [NSURL URLWithUserSuppliedString:urlAction.string];
-            if (![[self allowedQuickLookURLSchemes] containsObject:url.scheme]) {
-                return nil;
-            }
-            return url;
-        }
+        case kURLActionOpenURL:
+            return nil;
+
         case kURLActionShowCommandInfo:
         case kURLActionSmartSelectionAction:
             return nil;
@@ -885,11 +875,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
 - (void)openQuickLookForURL:(NSURL *)url
                   urlAction:(URLAction *)urlAction
                   withEvent:(NSEvent *)event {
-    if (urlAction.actionType == kURLActionOpenURL) {
-        [self showWebkitPopoverAtPoint:event.locationInWindow url:url];
-        return;
-    }
-
     NSPoint windowPoint = event.locationInWindow;
     NSRect windowRect = NSMakeRect(windowPoint.x - self.charWidth / 2,
                                    windowPoint.y - self.lineHeight / 2,
@@ -938,27 +923,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
         [self showDefinitionForAttributedString:word
                                         atPoint:point];
     }
-}
-
-- (void)showWebkitPopoverAtPoint:(NSPoint)pointInWindow url:(NSURL *)url {
-    WKWebView *webView = [[iTermWebViewFactory sharedInstance] webView];
-    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
-    [webView loadRequest:request];
-    NSPopover *popover = [[NSPopover alloc] init];
-    NSViewController *viewController = [[iTermWebViewWrapperViewController alloc] initWithWebView:webView
-                                                                                        backupURL:url];
-    popover.contentViewController = viewController;
-    popover.contentSize = viewController.view.frame.size;
-    NSRect rect = NSMakeRect(pointInWindow.x - self.charWidth / 2,
-                             pointInWindow.y - self.lineHeight / 2,
-                             self.charWidth,
-                             self.lineHeight);
-    rect = [self convertRect:rect fromView:nil];
-    popover.behavior = NSPopoverBehaviorSemitransient;
-    popover.delegate = self;
-    [popover showRelativeToRect:rect
-                         ofView:self
-                  preferredEdge:NSRectEdgeMinY];
 }
 
 #pragma mark - Copy to Pasteboard
@@ -2667,21 +2631,6 @@ toggleAnimationOfImage:(id<iTermImageInfoReading>)imageInfo {
 - (void)contextMenu:(iTermTextViewContextMenuHelper *)contextMenu
     removeNamedMark:(id<VT100ScreenMarkReading>)mark {
     [self.dataSource removeNamedMark:mark];
-}
-
-- (NSArray<NSString *> *)allowedQuickLookURLSchemes {
-    return @[ @"http", @"https" ];
-}
-
-- (BOOL)contextMenu:(iTermTextViewContextMenuHelper *)contextMenu
-    canQuickLookURL:(NSURL *)url {
-    return [[self allowedQuickLookURLSchemes] containsObject:url.scheme];
-}
-
-- (void)contextMenuHandleQuickLook:(iTermTextViewContextMenuHelper *)contextMenu
-                         url:(NSURL *)url
-                  windowCoordinate:(NSPoint)windowCoordinate {
-    [self showWebkitPopoverAtPoint:windowCoordinate url:url];
 }
 
 - (BOOL)contextMenuCurrentTabHasMultipleSessions:(iTermTextViewContextMenuHelper *)contextMenu {

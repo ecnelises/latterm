@@ -43,8 +43,7 @@ iTermSelectionDelegate,
 iTermSelectionScrollHelperDelegate,
 NSDraggingSource,
 NSFontChanging,
-NSMenuItemValidation,
-NSPopoverDelegate> {
+NSMenuItemValidation> {
     NSCursor *cursor_;
     PTYMouseHandler *_mouseHandler;
     iTermURLActionHelper *_urlActionHelper;

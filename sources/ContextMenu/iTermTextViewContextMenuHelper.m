@@ -337,7 +337,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
         [item action] == @selector(addNote:) ||
         [item action] == @selector(mail:) ||
         [item action] == @selector(browse:) ||
-        [item action] == @selector(quickLook:) ||
         [item action] == @selector(searchInBrowser:) ||
         [item action] == @selector(addTrigger:) ||
         [item action] == @selector(saveSelectionAsSnippet:)) {
@@ -539,9 +538,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
     add(scpTitle, @selector(downloadWithSCP:));
     if (shortSelectedText) {
         add(@"Open Selection as URL", @selector(browse:));
-    }
-    if (shortSelectedText && [self.delegate contextMenu:self canQuickLookURL:[NSURL URLWithUserSuppliedString:shortSelectedText]]) {
-        add(@"Quick Look Link", @selector(quickLook:));
     }
     add(@"Search the Web for Selection", @selector(searchInBrowser:));
 
@@ -1149,17 +1145,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
 - (void)browse:(id)sender {
     [_urlActionHelper findUrlInString:[self.delegate contextMenuSelectedText:self capped:0]
                   andOpenInBackground:NO];
-}
-
-- (void)quickLook:(id)sender {
-    NSString *string = [self.delegate contextMenuSelectedText:self capped:0];
-    NSURL *url = [NSURL URLWithUserSuppliedString:string];
-    if (!url) {
-        return;
-    }
-    [self.delegate contextMenuHandleQuickLook:self
-                                          url:url
-                             windowCoordinate:NSApp.currentEvent.locationInWindow];
 }
 
 - (void)searchInBrowser:(id)sender {

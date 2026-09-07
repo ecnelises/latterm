@@ -264,8 +264,240 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Moved dynamic appcast selection to the Sparkle 2 updater delegate, cleared the deprecated stored feed override, and retained EdDSA verification, automatic/manual checks, and restart signaling.
 - Removed the old framework link/copy references, dependency recipes, signing-project reference, and Sparkle gitlink, reducing the repository from eight git submodules to seven.
 
+### 2026-09-03 Redundant CoreParse Checkout Removal
+
+- Confirmed the tracked `ThirdParty/CoreParse` source tree is complete, carries the local compatibility fixes, and independently builds the framework consumed by the app.
+- Switched the dependency rebuild target and Xcode source-browser group from `submodules/CoreParse` to that app-owned source tree.
+- Removed the duplicate CoreParse gitlink, reducing the repository from seven git submodules to six without changing the expression-parser runtime boundary.
+
+### 2026-09-03 System Git Migration
+
+- Replaced the embedded libgit2 status, diff, branch, and repository-operation implementation with `/usr/bin/git` machine-readable porcelain and NUL-delimited diff output while preserving the existing `iTermGitState` boundary.
+- Removed the libgit2 gitlink, checked-in headers and binary artifacts, dependency recipes, and Xcode link/search settings after confirming no remaining source or runtime references.
+- Reduced the repository from six git submodules to five; Git status now fails soft when the system Git command is unavailable.
+
+### 2026-09-03 Obsolete AI Development Artifact Cleanup
+
+- Removed the orphaned AI model-catalog publisher and raw AI wire-log parser after confirming their model catalog, logger, and application consumers were already gone.
+- Removed the bundled AI plugin sandbox profile from all resource phases and deleted the unreferenced Claude Code hook model and integration research note.
+- Audited the remaining AI-like filenames and retained only historical release notes, terminal behavior fixtures, Companion protocol types, generic command explanation, and live code-review resources.
+- This development-artifact cleanup removed no additional submodule; all five remaining submodules still have live terminal, SSH, or Companion owners.
+
+### 2026-09-03 Workgroup Orchestrator Residue Removal
+
+- Removed unused workgroup entry provenance that had been introduced for the deleted AI orchestrator and onboarding paths.
+- Removed the unused resolved-member snapshot adapter after confirming no callers remain.
+- Preserved trigger, menu, and restoration entry behavior while shortening the public and internal workgroup entry APIs.
+
+### 2026-09-03 Stale Shell Integration Harness Removal
+
+- Removed the opt-in shell-integration live harness and its dedicated pseudo-terminal helper after confirming their runner and bundled shell scripts were already gone.
+- The harness previously skipped during ordinary tests and could not succeed when manually enabled because every tested integration script path was absent.
+- Preserved terminal-core OSC 133 parser, screen-state, prompt-mark, and session-directory tests.
+
+### 2026-09-03 Tip Compatibility Residue Removal
+
+- Removed the dynamic browser, AI, shell-integration, and SSH-integration string filter after confirming none of those removed tips remain in the static tip dictionary.
+- Removed the four still-present but unconditionally blocked tip entries from the dictionary itself, preserving the exact returned tip set without an intermediate filter.
+- Removed two unused browser-era WebKit forward declarations and corrected the named-mark notification's stale browser-session comment to describe its live window refresh behavior.
+
+### 2026-09-03 Inline Chat Compatibility Removal
+
+- Removed the disabled Show Inline Chat menu item, menu-icon mapping, responder action, and validation branch.
+- Removed the session's unreachable inline-chat ID, visibility, notification, right-gutter relayout, and compatibility toggle state after confirming there are no panel or model consumers.
+- Preserved the neighboring Clippings right-gutter feature and its layout notifications.
+
+### 2026-09-03 Orphaned Development Tooling Removal
+
+- Removed the unreferenced Python 2 UKCrashReport-to-plist converter and its sole dependency, the checked-in PLY 3.4 source, example, documentation, and test tree.
+- Removed the standalone crash fetch/clustering scripts after confirming they were not part of the build or release flow and depended on a personal Dropbox layout plus the removed AI-development workflow.
+- Removed an uncompiled image-popover helper introduced by the deleted AI/browser integration and two empty, unreferenced legacy test shells whose filenames no longer matched their declarations.
+- This cleanup removes app-unowned development files only; the five remaining git submodules and all live API, AppleScript, terminal, and crash-reporting runtime code remain unchanged.
+
+### 2026-09-04 Dynamic Web Tool Removal
+
+- Removed Python-script registration of arbitrary Toolbelt web views across the public protobuf schema, API server/helper dispatch, Python SDK and documentation, persistent dynamic-tool registry, application menu refresh path, and WebKit-backed Toolbelt implementation.
+- Rebuilt the bundled arm64 `it2` CLI against the reduced schema so its embedded protobuf runtime no longer publishes the removed request, response, or accessors.
+- Reserved the retired request and response field number 104 in their protobuf envelopes so it cannot be accidentally reused for an incompatible API operation.
+- Removed the obsolete duplicate Python protobuf stub from 2019; the SDK retains its generated in-package type stub as the single source of truth.
+- Preserved every built-in Toolbelt tool and the separate WebKit-backed terminal link-preview/status-popover path.
+
+### 2026-09-04 Scripted Status Bar Web Popover Removal
+
+- Removed the status-bar HTML popover's exclusive request and response messages from the public protobuf schema, API server/helper dispatch, Python SDK, reference documentation, and downloadable example, while reserving envelope field number 129.
+- Deleted the bundled `iterm2Invoke.js` resource and the WebKit script-message bridge that let arbitrary popover HTML invoke native functions and receive evaluated JavaScript callbacks.
+- Reduced the shared WebView factory to the ordinary WKWebView configuration needed by terminal URL previews, removing its script delegate protocol, runtime availability checks, and private Web Inspector preference.
+- Preserved script-provided status-bar text, icons, configuration knobs, click callbacks, and unread counts, as well as the terminal URL-preview popover and its external-browser fallback.
+- Rebuilt the bundled arm64 `it2` CLI against the reduced schema; no submodule is owned by this app/API surface, so all five live submodules remain unchanged.
+
+### 2026-09-04 Terminal-Only Profile Type Collapse
+
+- Removed the obsolete `ProfileType` option set after browser profiles had already been retired; profile models, filtered lists, settings search, action editors, paste configuration, Toolbelt, and status-bar setup now operate directly on the single surviving terminal profile kind.
+- Collapsed terminal-mode enclosure handling onto an always-visible layout group while retaining the independent hidden-control and shared-profile enclosure behavior.
+- Removed dynamic Toolbelt constructor and type-capability protocol hooks that no longer had consumers after script-provided web tools were deleted.
+- Preserved every built-in Toolbelt panel, terminal action, profile picker, advanced-paste option, and status-bar component; no default or serialized profile key changed.
+- Audited the five remaining submodules and confirmed none is owned by this app-level compatibility plumbing.
+
+### 2026-09-04 In-App Browser URL Routing Removal
+
+- Collapsed `NSWorkspace+iTerm` URL opening onto external applications after confirming every in-app-browser capability check was hardcoded false.
+- Removed unused browser target, split-pane style, upsell, and source-window parameters across URL actions, semantic history, launch services, terminal mouse handling, application controllers, and Swift callers.
+- Deleted the unreachable context-menu and Command-Shift-click URL split-pane actions while preserving command-mark selection and normal Command-click URL opening.
+- Preserved configured custom external browsers for HTTP, HTTPS, and FTP, system handlers for file and custom schemes, background activation behavior, URL handler commands, and profile-bound custom schemes.
+- Kept fail-soft legacy browser-profile migration separate from runtime URL routing so saved profiles still upgrade safely.
+- Audited all five remaining submodules; external URL routing uses only AppKit and app-owned code, so no dependency became removable.
+
+### 2026-09-04 Terminal Metadata UX Cleanup
+
+- Replaced user-facing Shell Integration installation requirements with the actual retained terminal metadata boundaries for prompts, commands, working directories, hosts, and users.
+- Reworked user-variable examples to emit `SetUserVar` directly, so the settings help and Python examples no longer depend on removed bundled shell helpers.
+- Repaired the Python menu generators for the relocated main-menu XIB and identifier-free menu items, then regenerated the SDK menu API and identifier reference from the current terminal-first menu.
+- Preserved OSC 7/133 parsing, prompt marks, command lifecycle state, automatic profile switching, status-bar variables, and prompt-aware paste behavior.
+- Audited all five remaining submodules; this UI, documentation, and SDK cleanup does not own any of them.
+
+### 2026-09-04 Terminal Session Compatibility Cleanup
+
+- Removed the browser-era named-mark capability hook now that every live session is a terminal session; menu validation depends directly on whether a current session exists.
+- Made the profile-switch helpers return `void` after confirming their browser-type rejection path was gone, and removed the automatic switcher's unreachable “wrong profile type” failure branch.
+- Removed the status-bar component's orphaned WebView JavaScript diagnostic callbacks and forwarding methods after the scripted HTML bridge and its delegate protocol had already been deleted.
+- Preserved named marks, automatic profile switching, script-provided status text and HTML formatting, and the separate terminal URL-preview WebView.
+- Audited the five remaining submodules; these app-owned compatibility seams do not own any dependency.
+
+### 2026-09-04 Obsolete Web Restoration Coordination Removal
+
+- Deleted the session-restoration status protocol and completion notification after confirming their only former consumers were the removed browser and dynamic WebView surfaces.
+- Removed the notification-only restoration counter from `PseudoTerminal`; synchronous and asynchronous arrangement restoration retain their load, attachment, decode, window-ordering, timeout, and completion behavior.
+- Removed Global Search's empty session traversal, which had previously forced hidden browser WebViews to begin loading before search.
+- Removed the protocol sources from the Xcode project while preserving terminal global search, arrangement restoration, and terminal URL previews.
+- Audited the five remaining submodules; this app-owned coordination residue does not own any dependency.
+
+### 2026-09-05 Popup Input Compatibility Removal
+
+- Removed the Popup delegate's key-selector interception path after persistent command history and its large-composer popup integration had been deleted; the sole remaining implementation always returned `NO`.
+- Simplified popup navigation, deletion, cancellation, selection, and text filtering to execute their existing fallback behavior directly.
+- Removed the matching `PTYSession` no-op delegate implementation, two ancient public event methods with no callers, and an unused layer-capability method left behind by an abandoned rendering experiment.
+- Preserved autocomplete, paste history, popup filtering, row selection, Composer behavior, and the live session mode handler used by Copy Mode and shortcut navigation.
+- Audited the five remaining submodules; this app-owned input-routing cleanup does not own any dependency.
+
+### 2026-09-05 Terminal Delegate Capability Collapse
+
+- Removed the Find driver's browser-specific Enter-key override after terminal sessions became its only delegate; Enter and Shift-Enter continue to follow the existing next/previous search preference.
+- Removed the text-view delegate's filled-cursor override after its automatic-command-history consumer was deleted; legacy and Metal rendering now read Focus Follows Mouse state directly.
+- Removed `SessionView`'s visibility query after confirming `PTYSession` was its only implementation and had returned `YES` since the protocol was introduced; detached views retain the prior no-redraw behavior through the nullable delegate check.
+- Removed the stale disabled-test implementation of the retired cursor delegate method while retaining direct drawing-helper cursor coverage.
+- Audited the five remaining submodules; these app-owned delegate seams do not own any dependency.
+
+### 2026-09-05 Python Preference Surface Alignment
+
+- Removed the Python SDK's `AUTO_COMMAND_HISTORY` preference enum after confirming the application setting, menu command, popup, model, and runtime behavior were already gone.
+- Corrected `SAVE_PASTE_HISTORY` documentation to describe its surviving paste-history-only behavior and retained the live application preference it controls.
+- Removed the stale command-history menu-icon comment and verified every remaining Python `PreferenceKey` value still has an application source, XIB, or test owner.
+- Audited removed Captured Output, recent-directory, and command-history terminology across live API and source files; only historical release notes and the truthful named-mark navigation tip remain.
+- Audited the five remaining submodules; this SDK/documentation cleanup does not own any dependency.
+
+### 2026-09-05 Disabled PTYTextView Golden Suite Removal
+
+- Deleted the 3,009-line `PTYTextViewTest.m` after confirming its entire contents had remained behind a top-level `#if 0`, so the test target compiled no code from it.
+- Deleted all 298 PNGs in its dedicated `tests/Goldens` directory (2.02 MiB) and removed their source, group, build-phase, and resource references from the Xcode project.
+- Preserved the active `ModernTests` rendering coverage, including `TerminalRendererTest`, `iTermCharacterSourceTests`, and `iTermRowOutputCacheTests`.
+- Audited the five remaining submodules; these disabled test fixtures did not own any dependency.
+
+### 2026-09-05 Process Collection Test Migration
+
+- Migrated the five behavior groups from the wholly disabled Objective-C `iTermProcessCollectionTest` into the active Swift `ModernTests` target.
+- Preserved coverage for independent process trees, deepest foreground jobs across branches, trees without foreground jobs, cycle isolation, and nested foreground-job precedence.
+- Deleted the old `#if 0` test shell and its Xcode source references after the replacement suite passed.
+- Audited the five remaining submodules; this test-only migration does not own any dependency.
+
+### 2026-09-05 Disabled Rendering Diagnostic Cleanup
+
+- Removed the `#if 0` CPU fast-path overlay that drew yellow borders around rendered glyph regions.
+- Removed the `#if 0` Metal texture diagnostic that wrote sequential `wtf*.png` dumps into `/tmp`.
+- Preserved the live renderer debug-info pipeline and explicit Metal image-dump helper used by active diagnostics.
+- Audited the five remaining submodules; these app-owned debug fragments did not own any dependency.
+
+### 2026-09-05 Interval Tree Test Reactivation
+
+- Re-enabled the 14 fast `iTermIntervalTreeTest` cases that had been hidden behind a file-wide `#if 0` despite covering live terminal data structures.
+- Updated the test helper to use `Interval`'s current designated initializer instead of mutating its now-read-only bounds.
+- Retained the separately guarded 1,000-iteration randomized stress test in its existing disabled state because it is explicitly documented as very slow.
+- Audited the five remaining submodules; this test-only reactivation does not own any dependency.
+
+### 2026-09-05 State Restoration Coding Test Migration
+
+- Replaced the wholly disabled 1,669-line `iTermCodingTests.m` suite with active Swift coverage in `ModernTests` and removed its legacy Xcode project entries.
+- Added five current-schema graph-table transformer tests covering nested reconstruction, malformed rows, invalid field types, multiple roots, and dangling parents.
+- Added four graph-delta array tests covering unchanged-generation skipping, value updates, deletion, and append behavior; the remaining graph encoder, database, recovery, and lazy-loading responsibilities were already covered by active ModernTests suites.
+- Exposed `iTermGraphTableTransformer` to the Swift target and completed the test-facing root-node out-parameter nullability contract.
+- Confirmed the separately disabled Semantic History questionable-suffix regression still changes raw-action filename semantics; left that behavior untouched for a dedicated compatibility decision.
+- Audited the five remaining submodules; this test-only migration does not own any dependency.
+
+### 2026-09-05 Disabled VT100Screen Test Cleanup
+
+- Deleted the 4,810-line `VT100ScreenTest.m` historical suite after confirming its entire 108-test body had remained behind a top-level `#if 0` since 2023 and no longer compiled against the current screen architecture.
+- A diagnostic compile reached 124 warnings and the compiler's 20-error limit across retired screen construction, delegate, grid, search-result, and mutable-state APIs; upstream still carries the same disabled shell.
+- Confirmed 25 annotation and resize regressions were migrated by name into the active Swift `VT100ScreenTests`, while current `VT100ScreenTests`, `VT100GridTests`, `SearchEngineTests`, and `LineBufferTests` provide 308 active tests across the surviving responsibilities.
+- Removed the obsolete file and build references from the legacy XCTest target.
+- Audited the five remaining submodules; this test-only cleanup does not own any dependency.
+
+### 2026-09-08 Embedded URL Preview Removal
+
+- Removed the terminal's WebKit-backed HTTP/HTTPS preview popover from Force Click and the selected-text context menu, eliminating the last in-app web-content surface.
+- Deleted the dedicated WebView factory and wrapper controller, their project references, the URL-preview context-menu delegate seam, and the now-unused custom WebView user-agent setting.
+- Preserved Command-click URL opening, Open Selection as URL, web search, configured external browsers, hover URL text, dictionary lookup, and Quick Look for local files and images.
+- Audited the five remaining submodules; this AppKit/WebKit surface did not own any of them, so no submodule became safe to remove.
+
 ### Recent Verification
 
+- `tools/build.sh Development` passes on 2026-09-08 after removing the embedded URL preview and its WebKit wrapper.
+- `tools/run_tests.expect ModernTests/VT100ScreenTests ModernTests/VT100GridTests ModernTests/SearchEngineTests ModernTests/LineBufferTests` passes all 308 active terminal-core tests under the ModernTests ASan variant on 2026-09-05.
+- An arm64 Development `build-for-testing` of the `iTerm2Tests` scheme compiles and links `iTerm2XCTests.xctest` on 2026-09-05 after deleting the disabled `VT100ScreenTest` suite.
+- `tools/build.sh Development` passes on 2026-09-05 after removing the disabled `VT100ScreenTest` suite.
+- `tools/run_tests.expect ModernTests/GraphTableTransformerTests ModernTests/GraphDeltaArrayTests` passes all 9 migrated state-restoration coding tests under the ModernTests ASan variant on 2026-09-05.
+- The surrounding graph database, delta encoder, recovery, and migrated coding suites pass all 27 selected ModernTests cases on 2026-09-05.
+- The complete lazy-loading, schema-migration, legacy-database, and provider regression selection passes all 39 tests on 2026-09-05.
+- `tools/build.sh Development` passes on 2026-09-05 after migrating the disabled state-restoration coding suite.
+- A selected arm64 Development run of `iTerm2XCTests/IntervalTreeTest` passes all 14 re-enabled interval overlap, ordering, balancing, and removal tests on 2026-09-05.
+- `tools/build.sh Development` passes on 2026-09-05 after removing the disabled CPU and Metal rendering diagnostics.
+- `tools/run_tests.expect ModernTests/ProcessCollectionTests` passes all 5 migrated process-tree tests on 2026-09-05.
+- An arm64 Development `build-for-testing` of the `iTerm2Tests` scheme compiles and links `iTerm2XCTests.xctest` on 2026-09-05 after deleting the disabled `PTYTextViewTest` suite and its dedicated golden images.
+- `tools/build.sh Development` passes on 2026-09-05 after aligning the Python preference surface and removing its stale main-menu comment.
+- Python bytecode compilation and an AST enum-presence check pass on 2026-09-05 after removing the dead command-history preference; every remaining SDK preference value matches a live application key.
+- `tools/build.sh Development` passes on 2026-09-05 after collapsing browser-search, automatic-history cursor, and constant SessionView delegate capabilities.
+- `tools/build.sh Development` passes on 2026-09-05 after removing obsolete Popup input interception and unused `PTYSession` event/layer hooks.
+- `tools/build.sh Development` passes on 2026-09-04 after deleting obsolete WebView restoration coordination and its Xcode project entries.
+- `tools/build.sh Development` passes on 2026-09-04 after removing terminal-session capability shims and orphaned status-bar WebView callbacks.
+- `tools/build.sh Development` passes on 2026-09-04 after the terminal-metadata wording and SDK generation cleanup.
+- `ibtool` compiles all three changed XIBs without document errors or warnings on 2026-09-04; only pre-existing layout notices remain.
+- Python bytecode compilation, XML validation, generator idempotency checks, and a direct `SetUserVar` escape-sequence smoke test pass on 2026-09-04. The Python pytest suite could not start because `pytest` is not installed in the local Python 3.14 environment.
+- `tools/run_tests.expect ModernTests/NSURLUserSuppliedStringTests ModernTests/ExtendURLSearchResultsTests` passes all 9 selected URL parsing and boundary-extension tests on 2026-09-04.
+- `tools/build.sh Development` passes on 2026-09-04 after removing obsolete in-app browser URL routing and split-pane compatibility paths.
+- A fresh-DerivedData arm64 Development build of the `ModernTests` scheme passes on 2026-09-04 after collapsing the terminal-only profile compatibility axis.
+- All 31 `ModernTests/iTermLayoutCalculatorTest` cases pass on 2026-09-04, including the Toolbelt frame and visibility coverage.
+- `tools/build.sh` passes on 2026-09-04 after collapsing terminal-only profile-type and dynamic Toolbelt compatibility plumbing.
+- `ibtool` compiles `PreferencePanel.xib` without document errors or warnings on 2026-09-04 after simplifying enclosure visibility; its pre-existing layout notices remain.
+- `tools/build.sh` and an isolated arm64 Development build of the `ModernTests` scheme pass on 2026-09-04 after removing scripted status-bar HTML popovers and the WebView RPC injection bridge.
+- A fresh-DerivedData arm64 Development app build passes on 2026-09-04, and its `Latterm.app` contains neither the removed JavaScript resource nor a stale bundled CLI.
+- Python bytecode compilation and a protobuf descriptor smoke test pass on 2026-09-04, confirming that field 129 and its request/response messages are retired.
+- `make it2cli` succeeds and all 39 `it2coreTests` pass on 2026-09-04 after rebuilding the bundled CLI against the reduced status-bar protocol.
+- `tools/build.sh` passes on 2026-09-04 after removing dynamic web Toolbelt tools and regenerating the Objective-C and Python protobuf bindings.
+- An isolated arm64 Development build of the `ModernTests` scheme passes on 2026-09-04 after the same API, Toolbelt, SDK, documentation, and project cleanup.
+- Python bytecode compilation and a protobuf descriptor smoke test pass on 2026-09-04, confirming that field 104 is retired and no register-tool messages remain.
+- `make it2cli` succeeds and all 39 `it2coreTests` pass on 2026-09-04 after rebuilding the bundled CLI against the reduced protocol.
+- An isolated arm64 Development build of the `iTerm2Tests` scheme succeeds on 2026-09-03 after removing the empty legacy test shells and orphaned development tooling.
+- `tools/build.sh` passes on 2026-09-03 after removing the obsolete crash-analysis scripts, vendored PLY tree, and uncompiled image-popover helper.
+- `xcrun ibtool --compile /tmp/Latterm-MainMenu.nib sources/MainMenu/MainMenu.xib` completes without output on 2026-09-03 after deleting the disabled inline-chat menu item.
+- `tools/build.sh` passes on 2026-09-03 after removing the inline-chat session state, notification, responder action, validation branch, and menu metadata.
+- `tools/build.sh` passes on 2026-09-03 after replacing the dynamic removed-feature tip filter with the final static tip set and deleting stale browser declarations.
+- `tools/run_tests.expect ModernTests/PromptMarkBaselineTests` rebuilds the ModernTests target and passes all 6 retained OSC 133 prompt-mark tests on 2026-09-03 after deleting the stale live harness.
+- `tools/build.sh` passes on 2026-09-03 after removing obsolete workgroup provenance and member-snapshot plumbing.
+- `tools/run_tests.expect ModernTests/WorkgroupEntryTests` passes all 55 workgroup entry tests on 2026-09-03 after shortening the entry API.
+- `tools/build.sh` passes on 2026-09-03 after removing the obsolete AI development artifacts and all `ai-plugin.sb` resource references; Xcode also removes the stale resource from the Development app bundle.
+- `tools/build.sh` passes on 2026-09-03 after replacing libgit2 with system Git and deleting its checked-in artifacts, link settings, and submodule.
+- `tools/run_tests.expect ModernTests/iTermGitClientTests` passes all 32 repository-status, diff, branch, nested-path, operation-state, and ahead/behind tests on 2026-09-03 after removing libgit2.
+- `tools/build.sh` passes on 2026-09-03 after switching CoreParse dependency rebuilds and source browsing to the tracked source tree and removing the duplicate submodule.
+- `tools/run_tests.expect ModernTests/iTermExpressionParserTests` passes all 124 expression parsing and evaluation tests on 2026-09-03 after the CoreParse checkout cleanup.
+- A standalone arm64 Release build of `ThirdParty/CoreParse/CoreParse.xcodeproj` succeeds on 2026-09-03 before switching the dependency rebuild path.
 - `tools/run_tests.expect ModernTests/iTermSoftwareUpdateServiceTests` passes all 3 update-operation, dynamic-feed, and restart-state tests on 2026-08-29.
 - `tools/build.sh` passes on 2026-08-29 and the built app embeds and links official `Sparkle.framework` 2.9.6.
 - `tools/run_tests.expect ModernTests/iTermVersionComparatorTests` passes all 3 dotted-number, Python-version, prerelease, build-number, and large-component tests on 2026-08-29.
@@ -339,7 +571,7 @@ The removal scope is real, not hypothetical:
 - Shell-integration installation and injection code is gone, and the former `sources/ShellIntegration/**` persistence model plus its Core Data dependency are now removed. OSC 7/133 parsing and session-local semantic state remain.
 - `sources/PTYSession.m` remains a major coupling point across terminal lifecycle, scripting, terminal control, triggers, and UI.
 - The source tree remains heavily Objective-C weighted: 500 Swift files vs 1,696 Objective-C/C-family headers and implementations among 2,299 files under `sources/` as of 2026-08-22.
-- Eight submodules remain. Redundant `fmdb`, `BTree`, and `MultiCursor` checkouts plus the optional regex-visualization, syntax-highlighting, third-party Markdown, and relay-operations dependencies are gone; further removals require separate audits of surviving SSH, rendering, parsing, Companion, updating, and build-tool paths.
+- Five submodules remain. Redundant `fmdb`, `BTree`, `MultiCursor`, `CoreParse`, and `libgit2` checkouts plus the optional regex-visualization, syntax-highlighting, third-party Markdown, updating, and relay-operations dependencies are gone; further removals require separate audits of surviving SSH, rendering, Companion, and build-tool paths.
 
 Because of that, a rewrite-first approach is the wrong move. The practical order is delete first, then simplify, then migrate.
 
@@ -461,8 +693,6 @@ High-risk later targets:
 
 - `submodules/NMSSH`, `submodules/libssh2`, `submodules/openssl`
 - `submodules/libsixel`
-- `submodules/libgit2`
-- `submodules/CoreParse`
 
 ## Recommended Phases
 

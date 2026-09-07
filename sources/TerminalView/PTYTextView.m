@@ -86,15 +86,12 @@
 #import "iTermUserDefaults.h"
 #import "iTermVirtualOffset.h"
 #import "iTermWarning.h"
-#import "iTermWebViewWrapperViewController.h"
 
 #import <CoreServices/CoreServices.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #include <math.h>
 #include <sys/time.h>
-
-#import <WebKit/WebKit.h>
 
 NSTimeInterval PTYTextViewHighlightLineAnimationDuration = 0.75;
 
@@ -7121,15 +7118,6 @@ static NSString *iTermStringFromRange(NSRange range) {
 - (int)accessibilityHelperNumberOfLines {
     return MIN([iTermAdvancedSettingsModel numberOfLinesForAccessibility],
                [_dataSource numberOfLines]);
-}
-
-#pragma mark - NSPopoverDelegate
-
-- (void)popoverDidClose:(NSNotification *)notification {
-    NSPopover *popover = notification.object;
-    iTermWebViewWrapperViewController *viewController = (iTermWebViewWrapperViewController *)popover.contentViewController;
-    [viewController terminateWebView];
-
 }
 
 #pragma mark - iTermKeyboardHandlerDelegate
