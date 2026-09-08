@@ -14,7 +14,6 @@
 #import "iTermDisclosableView.h"
 #import "iTermNotificationController.h"
 #import "iTermOptionalComponentDownloadWindowController.h"
-#import "iTermPreferences.h"
 #import "iTermRateLimitedUpdate.h"
 #import "iTermSetupCfgParser.h"
 #import "iTermSignatureVerifier.h"
@@ -304,11 +303,7 @@ NSString *const iTermPythonRuntimeDownloaderDidInstallRuntimeNotification = @"iT
 #if BETA
     url = [NSURL URLWithString:[iTermAdvancedSettingsModel pythonRuntimeBetaDownloadURL]];
 #else
-    if ([iTermPreferences boolForKey:kPreferenceKeyCheckForTestReleases]) {
-        url = [NSURL URLWithString:[iTermAdvancedSettingsModel pythonRuntimeBetaDownloadURL]];
-    } else {
-        url = [NSURL URLWithString:[iTermAdvancedSettingsModel pythonRuntimeDownloadURL]];
-    }
+    url = [NSURL URLWithString:[iTermAdvancedSettingsModel pythonRuntimeDownloadURL]];
 #endif
     __weak __typeof(self) weakSelf = self;
     __block BOOL stillNeedsConfirmation = confirm;

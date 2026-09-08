@@ -165,9 +165,6 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
 - (PseudoTerminal *)terminalWithTab:(PTYTab *)tab;
 - (PseudoTerminal *)terminalWithSession:(PTYSession *)session;
 
-// Set software-update defaults to reflect the app's preferences.
-- (void)refreshSoftwareUpdateUserDefaults;
-
 - (void)addRestorableSession:(iTermRestorableSession *)session;
 - (void)removeSessionFromRestorableSessions:(PTYSession *)session;
 - (iTermRestorableSession *)popRestorableSession;

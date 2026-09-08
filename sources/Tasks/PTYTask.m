@@ -764,16 +764,9 @@ static void HandleSigChld(int n) {
     path = [progpath copy];
     NSString *commandToExec = [progpath stringByStandardizingPath];
 
-    // Register a handler for the child death signal. There is some history here.
-    // Originally, a do-nothing handler was registered with the following comment:
-    //   We cannot ignore SIGCHLD because Sparkle (the software updater) opens a
-    //   Safari control which uses some buggy Netscape code that calls wait()
-    //   until it succeeds. If we wait() on its pid, that process locks because
-    //   it doesn't check if wait()'s failure is ECHLD. Instead of wait()ing here,
-    //   we reap our children when our select() loop sees that a pipes is broken.
-    // In response to bug 2903, wherein select() fails to return despite the file
-    // descriptor having EOF status, I changed the handler to unblock the task
-    // notifier.
+    // Register a handler for the child death signal. In response to bug 2903,
+    // wherein select() fails to return despite the file descriptor having EOF
+    // status, the handler unblocks the task notifier.
     signal(SIGCHLD, HandleSigChld);
 
     NSMutableArray<NSString *> *argv = [NSMutableArray array];

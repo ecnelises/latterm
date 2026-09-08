@@ -23,7 +23,6 @@ extern "C" {
 #import "LineBlockMetadataArray.h"
 #import "LineBufferHelpers.h"
 #import "NSArray+iTerm.h"
-#import "NSBundle+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "RegexKitLite.h"
 #import "iTermAdvancedSettingsModel.h"

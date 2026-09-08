@@ -12,8 +12,8 @@ die() {
   exit 1
 }
 
-if [[ $# -ne 1 || ! "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  die "usage: tools/release_latterm.sh <version>, for example 3.7.2026082401"
+if [[ $# -ne 1 || ! "$1" =~ ^[0-9]{2}\.([1-9]|1[0-2])\.[0-9]+$ ]]; then
+  die "usage: tools/release_latterm.sh <YY.M.patch>, for example 26.9.1"
 fi
 
 readonly VERSION="$1"

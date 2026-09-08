@@ -66,7 +66,6 @@
 #import "iTermSavePanel.h"
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
-#import "iTermSoftwareUpdateService.h"
 #import "iTermSetCurrentTerminalHelper.h"
 #import "iTermSystemVersion.h"
 #import "iTermUserDefaults.h"
@@ -177,9 +176,7 @@ static iTermController *gSharedInstance;
     const BOOL sessionsWillRestore = ([iTermAdvancedSettingsModel runJobsInServers] &&
                                       [iTermAdvancedSettingsModel restoreWindowContents] &&
                                       self.willRestoreWindowsAtNextLaunch);
-    return (sessionsWillRestore &&
-            (iTermSoftwareUpdateService.sharedInstance.restarting ||
-             ![iTermAdvancedSettingsModel killJobsInServersOnQuit]));
+    return (sessionsWillRestore && ![iTermAdvancedSettingsModel killJobsInServersOnQuit]);
 }
 
 - (void)dealloc {
@@ -202,16 +199,7 @@ static iTermController *gSharedInstance;
     [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
 
     if (self.shouldLeaveSessionsRunningOnQuit) {
-        // We don't want to kill running jobs. This can be for one of two reasons:
-        //
-        // 1. The application updater is restarting the app. Because jobs are run in servers and window
-        //    restoration is on, we don't want to close term windows because that will
-        //    send SIGHUP to the job processes. Normally this path is taken during
-        //    a user-initiated quit, so we want the jobs killed, but not in this case.
-        // 2. The user has set a pref to not kill jobs on quit.
-        //
-        // In either case, we only get here if we're pretty sure everything will get restored
-        // nicely.
+        // The user has chosen to leave jobs running and window restoration can reconnect them.
         RLog(@"Intentionally leaving sessions running on quit");
     } else {
         RLog(@"Will close all terminal windows to kill jobs: %@", _terminalWindows);
@@ -1338,17 +1326,6 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
         DebugLog([NSString stringWithFormat:@"Terminal %@ at %@", [term window], [NSValue valueWithRect:[[term window] frame]]]);
         DebugLog([[[term window] contentView] iterm_recursiveDescription]);
     }
-}
-
-- (void)refreshSoftwareUpdateUserDefaults {
-    BOOL checkForTestReleases = [iTermPreferences boolForKey:kPreferenceKeyCheckForTestReleases];
-    NSString *appCast = checkForTestReleases ?
-        [[NSBundle mainBundle] objectForInfoDictionaryKey:@"SUFeedURLForTesting"] :
-        [[NSBundle mainBundle] objectForInfoDictionaryKey:@"SUFeedURLForFinal"];
-    NSURL *url = [NSURL URLWithString:appCast];
-    NSNumber *shard = @([iTermController shard]);
-    url = [url URLByAppendingQueryParameter:[NSString stringWithFormat:@"shard=%@", shard]];
-    [iTermSoftwareUpdateService.sharedInstance configureFeedURL:url];
 }
 
 - (BOOL)selectionRespectsSoftBoundaries {

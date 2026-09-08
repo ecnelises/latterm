@@ -548,7 +548,6 @@ typedef struct {
             if (state.child.pid > 0) {
                 [[iTermProcessCache sharedInstance] unregisterTrackedPID:state.child.pid];
                 // Kill a server-owned child.
-                // TODO: Don't want to do this when Sparkle is upgrading.
                 killpg(state.child.pid, SIGHUP);
             }
             break;

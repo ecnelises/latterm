@@ -12,7 +12,6 @@
 #import "iTermPreviousState.h"
 #import "iTermProfilePreferences.h"
 #import "iTermShortcutInputView.h"
-#import "iTermSoftwareUpdateService.h"
 #import "iTermSystemVersion.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"
@@ -516,11 +515,6 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
         DLog(@"The key window's controller does not auto-hide the hotkey window: %@", keyWindow);
         return NO;
     }
-    if ([iTermSoftwareUpdateService.sharedInstance isUpdaterOwnedWindowController:keyWindowController]) {
-        DLog(@"The key window's controller belongs to the application updater (it is %@), so don't auto-hide.", keyWindowController);
-        return NO;
-    }
-
     // Don't hide when a panel becomes key
     if ([keyWindow isKindOfClass:[NSPanel class]]) {
         DLog(@"A panel %@ just became key", keyWindow);

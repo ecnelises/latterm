@@ -9,8 +9,7 @@ ITERM_CONF_PLIST = $(HOME)/Library/Preferences/com.googlecode.iterm2.plist
 # Local checkout of the iterm2-website repo, where built plugins are published.
 ITERM2_WEBSITE ?= $(HOME)/iterm2-website
 SUITE ?= $(notdir $(CURDIR))
-COMPACTDATE=$(shell date +"%Y%m%d")
-VERSION = $(shell cat version.txt | sed -e "s/%(extra)s/$(COMPACTDATE)/")
+VERSION = $(shell cat version.txt)
 NAME=$(shell echo $(VERSION) | sed -e "s/\\./_/g")
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
 CMAKE ?= $(HOMEBREW_PREFIX)/bin/cmake

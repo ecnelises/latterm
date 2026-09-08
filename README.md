@@ -89,10 +89,13 @@ xcrun notarytool store-credentials latterm-notary \
 Build, verify, notarize, staple, and package an exact version with:
 
 ```bash
-tools/release_latterm.sh 3.7.2026082401
+tools/release_latterm.sh 26.9.1
 ```
 
 The final zip and SHA-256 file are written under `Build/Releases/<version>/`.
+Release versions use `YY.M.patch`: the two-digit year, the calendar month
+without a leading zero, and a monthly release counter beginning at `0`.
+Latterm does not use iTerm2's update feeds; install new releases explicitly.
 
 ## Relationship To iTerm2
 

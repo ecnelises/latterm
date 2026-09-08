@@ -35,7 +35,6 @@
 #import "NSAppearance+iTerm.h"
 #import "NSApplication+iTerm.h"
 #import "NSArray+iTerm.h"
-#import "NSBundle+iTerm.h"
 #import "NSData+GZIP.h"
 #import "NSFileManager+iTerm.h"
 #import "NSFont+iTerm.h"
@@ -119,7 +118,6 @@
 #import "iTermServiceProvider.h"
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
-#import "iTermSoftwareUpdateService.h"
 #import "iTermSubpixelModelBuilder.h"
 #import "iTermSystemVersion.h"
 #import "iTermTipController.h"
@@ -1079,13 +1077,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
             // closing multiple sessions
             [reason addReason:[iTermPromptOnCloseReason closingMultipleSessionsPreferenceEnabled]];
         }
-        if ([iTermAdvancedSettingsModel runJobsInServers] &&
-            iTermSoftwareUpdateService.sharedInstance.restarting &&
-            [iTermAdvancedSettingsModel restoreWindowContents] &&
-            [[iTermController sharedInstance] willRestoreWindowsAtNextLaunch]) {
-            // Nothing will be lost so just restart without asking.
-            reason = [iTermPromptOnCloseReason noReason];
-        }
     }
 
     if (reason.hasReason) {
@@ -1473,17 +1464,7 @@ void TurnOnDebugLoggingAutomatically(void) {
     DLog(@"Make iTermFullScreenWindowManager");
     [iTermFullScreenWindowManager sharedInstance];
 
-    DLog(@"complainIfNightlyBuildIsTooOld");
-    [self complainIfNightlyBuildIsTooOld];
-
-    // Set the Appcast URL and when it changes update it.
-    DLog(@"refreshSoftwareUpdateUserDefaults");
-    [[iTermController sharedInstance] refreshSoftwareUpdateUserDefaults];
     DLog(@"Add observers");
-    [iTermPreferences addObserverForKey:kPreferenceKeyCheckForTestReleases
-                                  block:^(id before, id after) {
-                                      [[iTermController sharedInstance] refreshSoftwareUpdateUserDefaults];
-                                  }];
     [iTermLoggingHelper observeNotificationsWithHandler:^(NSString * _Nonnull guid) {
         [[PreferencePanel sharedInstance] openToProfileWithGuid:guid
                                                             key:KEY_AUTOLOG];
@@ -1692,11 +1673,6 @@ void TurnOnDebugLoggingAutomatically(void) {
                                                                name:NSWorkspaceSessionDidResignActiveNotification
                                                              object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(softwareUpdateWillRestartApp:)
-                                                 name:iTermSoftwareUpdateWillRestartNotification
-                                               object:iTermSoftwareUpdateService.sharedInstance];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(processTypeDidChange:)
                                                  name:iTermProcessTypeDidChangeNotification
                                                object:nil];
@@ -1818,11 +1794,6 @@ static iTermKeyEventReplayer *gReplayer;
 
     [[iTermBuriedSessions sharedInstance] setMenus:[NSArray arrayWithObjects:_buriedSessions, _statusIconBuriedSessions, nil]];
 
-    item = [[[NSMenuItem alloc] initWithTitle:@"Check For Updates"
-                                       action:@selector(checkForUpdatesFromMenu:)
-                                keyEquivalent:@""] autorelease];
-    [menu addItem:item];
-
     NSMenuItem *mainMenuItem = [[[NSMenuItem alloc] initWithTitle:@"Main Menu" action:nil keyEquivalent:@""] autorelease];
     mainMenuItem.submenu = [[NSApp mainMenu] it_deepCopy];
     [menu addItem:mainMenuItem];
@@ -1844,12 +1815,6 @@ static iTermKeyEventReplayer *gReplayer;
 
 - (void)workspaceSessionDidResignActive:(NSNotification *)notification {
     _workspaceSessionActive = NO;
-}
-
-- (void)softwareUpdateWillRestartApp:(NSNotification *)notification {
-    [NSApp invalidateRestorableState];
-    [[NSApp windows] makeObjectsPerformSelector:@selector(invalidateRestorableState)];
-    iTermRestorableStateController.forceSaveState = YES;
 }
 
 - (void)itermDidDecodeWindowRestorableState:(NSNotification *)notification {
@@ -2230,24 +2195,6 @@ static iTermKeyEventReplayer *gReplayer;
 
 #pragma mark - Startup Helpers
 
-- (void)complainIfNightlyBuildIsTooOld {
-    if (![NSBundle it_isNightlyBuild]) {
-        return;
-    }
-    NSTimeInterval age = -[[NSBundle it_buildDate] timeIntervalSinceNow];
-    if (age > 30 * 24 * 60 * 60) {
-        iTermWarningSelection selection =
-        [iTermWarning showWarningWithTitle:@"This nightly build is over 30 days old. Consider updating soon: you may be suffering from awful bugs in blissful ignorance."
-                                   actions:@[ @"I’ll Take My Chances", @"Update Now" ]
-                                identifier:@"NoSyncVeryOldNightlyBuildWarning"
-                               silenceable:kiTermWarningTypeSilenceableForOneMonth
-                                    window:nil];
-        if (selection == kiTermWarningSelection1) {
-            [iTermSoftwareUpdateService.sharedInstance checkForUpdates:nil];
-        }
-    }
-}
-
 // This performs startup activities as long as they haven't been run before.
 - (void)performStartupActivities {
     DLog(@"performStartupActivities");
@@ -2387,10 +2334,6 @@ static iTermKeyEventReplayer *gReplayer;
     NSPasteboard *pboard = [NSPasteboard generalPasteboard];
     [pboard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:self];
     [pboard setString:copyString forType:NSPasteboardTypeString];
-}
-
-- (IBAction)checkForUpdatesFromMenu:(id)sender {
-    [iTermSoftwareUpdateService.sharedInstance checkForUpdates:sender];
 }
 
 // Depth-first search for the menu item wired to a given action, so a

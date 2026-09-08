@@ -7,9 +7,6 @@
 # We can't use the python in $PATH because xcode ships with Python and we need one that has pybobjc.
 
 import os
-import sys
-import time
-import subprocess
 
 try:
     del os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -17,21 +14,7 @@ except KeyError:
     pass
 from Foundation import NSMutableDictionary
 
-if os.environ["CONFIGURATION"] == "Development":
-    cmd = "git log -1 --format=\"%H\""
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-
-    revision = "git.unknown"
-    for line in output.split("\n"):
-        if len(line.strip()) > 0:
-            revision = "git." + line.strip()[:10]
-            break
-
-elif os.environ["CONFIGURATION"] == "Nightly":
-    revision = time.strftime("%Y%m%d-nightly")
-else:
-    revision = time.strftime("%Y%m%d")
-version = open("version.txt").read().strip() % {"extra": revision}
+version = open("version.txt").read().strip()
 
 def update(path):
     plist = NSMutableDictionary.dictionaryWithContentsOfFile_(path)
@@ -47,7 +30,6 @@ def update(path):
 
 # Update the main app's plist
 
-# /Users/gnachman/git/iterm2/Build/Development
 srcDir = os.environ["SRCROOT"]
 print(f"SRCROOT={srcDir}")
 

@@ -17,7 +17,6 @@
 #import "iTermOptionalComponentDownloadWindowController.h"
 #import "iTermPreferences.h"
 #import "iTermSlowOperationGateway.h"
-#import "iTermSoftwareUpdateService.h"
 #import "iTermTipController.h"
 #import "iTermTuple.h"
 #import "iTermUserDefaults.h"
@@ -100,11 +99,8 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
 - (instancetype)init {
     self = [super init];
     if (self) {
-        const NSInteger runCount = [iTermLaunchExperienceController incrementRunCount];
-        if (runCount == 2 && !iTermSoftwareUpdateService.sharedInstance.automaticallyChecksForUpdates) {
-            // The application updater will offer to enable automatic checks this launch.
-            _choice = iTermLaunchExperienceChoiceNone;
-        } else if ([iTermLaunchExperienceController quelled]) {
+        [iTermLaunchExperienceController incrementRunCount];
+        if ([iTermLaunchExperienceController quelled]) {
             // Do nothing, we're quelled.
             _choice = iTermLaunchExperienceChoiceNone;
         } else {

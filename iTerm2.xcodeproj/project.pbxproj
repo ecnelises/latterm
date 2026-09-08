@@ -1365,10 +1365,6 @@
 		A623D94E1F8984700011F8C3 /* key@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A623D94A1F8983D80011F8C3 /* key@2x.png */; };
 		A623D94F1F8984710011F8C3 /* key@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A623D94A1F8983D80011F8C3 /* key@2x.png */; };
 		A623D9501F8984710011F8C3 /* key@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A623D94A1F8983D80011F8C3 /* key@2x.png */; };
-		A6F0A0152F9ABCDE00123456 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A6F0A0112F9ABCDE00123456 /* Sparkle */; };
-		A6F0A0162F9ABCDE00123456 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A6F0A0122F9ABCDE00123456 /* Sparkle */; };
-		A6F0A0172F9ABCDE00123456 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A6F0A0132F9ABCDE00123456 /* Sparkle */; };
-		A6F0A0182F9ABCDE00123456 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A6F0A0142F9ABCDE00123456 /* Sparkle */; };
 		A624231919CF6DE000182C08 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A624231819CF6DE000182C08 /* NMSSH.framework */; };
 		A624231F19CF6F2000182C08 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A624231819CF6DE000182C08 /* NMSSH.framework */; };
 		A624232019CF6F2C00182C08 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A624231819CF6DE000182C08 /* NMSSH.framework */; };
@@ -2780,8 +2776,6 @@
 		A68A310F186E2EDA007F550F /* PopupEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = A68A310D186E2EDA007F550F /* PopupEntry.h */; };
 		A68A3114186E2F14007F550F /* PopupWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A68A3112186E2F14007F550F /* PopupWindow.h */; };
 		A68A3119186E2F54007F550F /* PopupModel.h in Headers */ = {isa = PBXBuildFile; fileRef = A68A3117186E2F54007F550F /* PopupModel.h */; };
-		A68AC8F31F05C0860023A216 /* NSBundle+iTerm.h in Headers */ = {isa = PBXBuildFile; fileRef = A68AC8F11F05C0860023A216 /* NSBundle+iTerm.h */; };
-		A68AC8F41F05C0860023A216 /* NSBundle+iTerm.m in Sources */ = {isa = PBXBuildFile; fileRef = A68AC8F21F05C0860023A216 /* NSBundle+iTerm.m */; };
 		A68ADA0629CCBE420008E092 /* CommandInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68ADA0429CCBE420008E092 /* CommandInfoViewController.swift */; };
 		A68ADA0B29D397400008E092 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68ADA0A29D397400008E092 /* Progress.swift */; };
 		A68BADFB1E0DD52F00E4BB7B /* Touch Bar Function Keys.png in Resources */ = {isa = PBXBuildFile; fileRef = A68BADF91E0DD52F00E4BB7B /* Touch Bar Function Keys.png */; };
@@ -3928,8 +3922,6 @@
 		A6EC47AA2D8744140079845B /* KeyEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC47A92D87440E0079845B /* KeyEventRecorder.swift */; };
 		A6EC47CD21ED96F2000E1321 /* iTermLaunchExperienceController.h in Headers */ = {isa = PBXBuildFile; fileRef = A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */; };
 		A6EC47CE21ED96F2000E1321 /* iTermLaunchExperienceController.m in Sources */ = {isa = PBXBuildFile; fileRef = A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */; };
-		A6F0A0012F9ABCDE00123456 /* iTermSoftwareUpdateService.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F0A0032F9ABCDE00123456 /* iTermSoftwareUpdateService.h */; };
-		A6F0A0022F9ABCDE00123456 /* iTermSoftwareUpdateService.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F0A0042F9ABCDE00123456 /* iTermSoftwareUpdateService.m */; };
 		A6EC8055281C852200493544 /* NSAttributedString+iTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC8054281C852200493544 /* NSAttributedString+iTerm.swift */; };
 		A6EC8073281F2C2900493544 /* ExternalSearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6EC8072281F2C2900493544 /* ExternalSearchResult.swift */; };
 		A6EC8074281F368700493544 /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 1DC393C417B59B08000EE0F2 /* SearchResult.m */; };
@@ -6709,8 +6701,6 @@
 		A68A4C892128ED1200424F8A /* tmux.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = tmux.py; sourceTree = "<group>"; };
 		A68A4C8A2128ED1200424F8A /* preferences.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = preferences.py; sourceTree = "<group>"; };
 		A68A4C8B2128ED1300424F8A /* statusbar.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = statusbar.py; sourceTree = "<group>"; };
-		A68AC8F11F05C0860023A216 /* NSBundle+iTerm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBundle+iTerm.h"; sourceTree = "<group>"; };
-		A68AC8F21F05C0860023A216 /* NSBundle+iTerm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+iTerm.m"; sourceTree = "<group>"; };
 		A68ADA0429CCBE420008E092 /* CommandInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandInfoViewController.swift; sourceTree = "<group>"; };
 		A68ADA0A29D397400008E092 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
 		A68BADF91E0DD52F00E4BB7B /* Touch Bar Function Keys.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "Touch Bar Function Keys.png"; path = "images/Touch Bar Function Keys.png"; sourceTree = "<group>"; };
@@ -7595,8 +7585,6 @@
 		A6EC47A92D87440E0079845B /* KeyEventRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventRecorder.swift; sourceTree = "<group>"; };
 		A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermLaunchExperienceController.h; sourceTree = "<group>"; };
 		A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermLaunchExperienceController.m; sourceTree = "<group>"; };
-		A6F0A0032F9ABCDE00123456 /* iTermSoftwareUpdateService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSoftwareUpdateService.h; sourceTree = "<group>"; };
-		A6F0A0042F9ABCDE00123456 /* iTermSoftwareUpdateService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSoftwareUpdateService.m; sourceTree = "<group>"; };
 		A6EC8054281C852200493544 /* NSAttributedString+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+iTerm.swift"; sourceTree = "<group>"; };
 		A6EC8072281F2C2900493544 /* ExternalSearchResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSearchResult.swift; sourceTree = "<group>"; };
 		A6EC80802828E9F600493544 /* Conductor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conductor.swift; sourceTree = "<group>"; };
@@ -7976,7 +7964,6 @@
 				A6661311225CFF7A00840E89 /* BetterFontPicker.framework in Frameworks */,
 				A690F7041B424EF8009F76D8 /* OpenDirectory.framework in Frameworks */,
 				A624231919CF6DE000182C08 /* NMSSH.framework in Frameworks */,
-				A6F0A0172F9ABCDE00123456 /* Sparkle in Frameworks */,
 				530AB89B20AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
 				A67D19512237045C00BD0D4D /* libsixel.a in Frameworks */,
 				1D6EDAF519AEA20D005A7799 /* Security.framework in Frameworks */,
@@ -8004,7 +7991,6 @@
 				A6FB633223DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */,
 				1DFA7C9F1923F77C00DF1410 /* Security.framework in Frameworks */,
 				1D9A55B5180FA8F400B42CE9 /* AppKit.framework in Frameworks */,
-				A6F0A0162F9ABCDE00123456 /* Sparkle in Frameworks */,
 				1D9A5534180FA77F00B42CE9 /* Quartz.framework in Frameworks */,
 				1D9A5533180FA77900B42CE9 /* Carbon.framework in Frameworks */,
 				1DD39B7B180B8842004E56D5 /* libicucore.dylib in Frameworks */,
@@ -8044,7 +8030,6 @@
 				A6184F891BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */,
 				530AB89920AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
 				1D6C18BE12951A3C00937A4A /* Carbon.framework in Frameworks */,
-				A6F0A0152F9ABCDE00123456 /* Sparkle in Frameworks */,
 				1DF0897113DBAF4C00A52AD8 /* Quartz.framework in Frameworks */,
 				A6C763D21B45C5B200E3C992 /* libiTerm2Shared.a in Frameworks */,
 				A667195F1DCE36F8000CE608 /* libiTerm2SharedARC.a in Frameworks */,
@@ -8079,7 +8064,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A6F0A0182F9ABCDE00123456 /* Sparkle in Frameworks */,
 				A69FEF272E12417B00AFF7A8 /* iTermSwiftPackages.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -11210,8 +11194,6 @@
 				A6EC47CB21ED96F2000E1321 /* iTermLaunchExperienceController.h */,
 				A69833EF2F6B6CA500156A99 /* iTermLocalNetworkPermissionPrompter.swift */,
 				A6EC47CC21ED96F2000E1321 /* iTermLaunchExperienceController.m */,
-				A6F0A0032F9ABCDE00123456 /* iTermSoftwareUpdateService.h */,
-				A6F0A0042F9ABCDE00123456 /* iTermSoftwareUpdateService.m */,
 				A6F3DA8924540A20001D50C9 /* iTermUntitledWindowStateMachine.h */,
 				A6F3DA8A24540A20001D50C9 /* iTermUntitledWindowStateMachine.m */,
 			);
@@ -11758,8 +11740,6 @@
 				A68A30CD186D1414007F550F /* NSArray+iTerm.m */,
 				1D085F9416F04D0900B7FCE9 /* NSBezierPath+iTerm.h */,
 				1D085F9516F04D0900B7FCE9 /* NSBezierPath+iTerm.m */,
-				A68AC8F11F05C0860023A216 /* NSBundle+iTerm.h */,
-				A68AC8F21F05C0860023A216 /* NSBundle+iTerm.m */,
 				A605A1DA2EB292530072ED7E /* NSButton+iTerm.swift */,
 				A6B3A7411AC89DED008E8D4E /* NSCharacterSet+iTerm.h */,
 				A6B3A7421AC89DED008E8D4E /* NSCharacterSet+iTerm.m */,
@@ -14003,7 +13983,6 @@
 				A667192D1DCE36C3000CE608 /* iTermBadgeLabel.h in Headers */,
 				A667192E1DCE36C3000CE608 /* PSMLightHighContrastTabStyle.h in Headers */,
 				A6EC47CD21ED96F2000E1321 /* iTermLaunchExperienceController.h in Headers */,
-				A6F0A0012F9ABCDE00123456 /* iTermSoftwareUpdateService.h in Headers */,
 				A6EC937424E78A5100EEADEF /* iTermEditSnippetWindowController.h in Headers */,
 				53BCAAFA22668A1E00949829 /* iTermCachingFileManager.h in Headers */,
 				537C4FD8227BE18B00B292E2 /* iTermSecureKeyboardEntryController.h in Headers */,
@@ -14043,7 +14022,6 @@
 				A61A85A124F1A70500B03880 /* iTermGlobalSearchWindowController.h in Headers */,
 				A6F9EF3720850C41005530F7 /* iTermCompetentTableRowView.h in Headers */,
 				A638D2A1222230A3001CD688 /* iTermDirectedGraph.h in Headers */,
-				A68AC8F31F05C0860023A216 /* NSBundle+iTerm.h in Headers */,
 				A630118D20E6B71A008114B7 /* iTermStatusBarSetupCollectionViewItem.h in Headers */,
 				A648DAC62427E8E900C2FF02 /* iTermSearchQueryDidChangeNotification.h in Headers */,
 				A64DE9AA237A8555002E390C /* iTermFakeWindowTitleLabel.h in Headers */,
@@ -14477,7 +14455,6 @@
 			);
 			name = iTerm2ForApplescriptTesting;
 			packageProductDependencies = (
-				A6F0A0132F9ABCDE00123456 /* Sparkle */,
 			);
 			productName = "JTerminal (Application)";
 			productReference = 1D6EDB0A19AEA20D005A7799 /* iTerm2ForApplescriptTesting.app */;
@@ -14500,7 +14477,6 @@
 			);
 			name = iTerm2Tests;
 			packageProductDependencies = (
-				A6F0A0122F9ABCDE00123456 /* Sparkle */,
 			);
 			productName = iTermTests;
 			productReference = 1DD39AD4180B8117004E56D5 /* iTerm2Tests.app */;
@@ -14619,7 +14595,6 @@
 			);
 			name = iTerm2;
 			packageProductDependencies = (
-				A6F0A0112F9ABCDE00123456 /* Sparkle */,
 			);
 			productName = "JTerminal (Application)";
 			productReference = 8742065A0564169600CFC3F1 /* Latterm.app */;
@@ -14677,7 +14652,6 @@
 			);
 			name = iTerm2SharedARC;
 			packageProductDependencies = (
-				A6F0A0142F9ABCDE00123456 /* Sparkle */,
 			);
 			productName = SSKeychain;
 			productReference = A667195C1DCE36C3000CE608 /* libiTerm2SharedARC.a */;
@@ -14893,7 +14867,6 @@
 				72DF701C2DF2DAABC006F100 /* XCLocalSwiftPackageReference "CompanionCore" */,
 				6AEB4F694FB62FA208F96240 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				8282BAE40915D8F2B8CC6B66 /* XCRemoteSwiftPackageReference "Yams" */,
-				A6F0A0102F9ABCDE00123456 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			productRefGroup = 0464AB32006CD2EC7F000001 /* Products */;
 			projectDirPath = "";
@@ -17351,7 +17324,6 @@
 				A6FF4AEF246BBFDB00410BA2 /* iTermTmuxWindowCache.m in Sources */,
 				A61F457322FA8BD400E2054A /* iTermSetStatusBarComponentUnreadCountBuiltInFunction.m in Sources */,
 				A6EC47CE21ED96F2000E1321 /* iTermLaunchExperienceController.m in Sources */,
-				A6F0A0022F9ABCDE00123456 /* iTermSoftwareUpdateService.m in Sources */,
 				A6F7F8072763F47B005E433E /* VT100ScreenState.m in Sources */,
 				A6AFD68924496EF1007D0660 /* iTermMultiServerMessageBuilder.m in Sources */,
 				A69D559C232A0CF3002E0F99 /* iTermSessionLauncher.m in Sources */,
@@ -17657,7 +17629,6 @@
 				A62A78412F987D5B007CAA0B /* iTermSocket.m in Sources */,
 				A62A78422F987D5B007CAA0B /* iTermWebSocketFrameBuilder.m in Sources */,
 				A61A85AE24F23CBD00B03880 /* iTermGlobalSearchResult.m in Sources */,
-				A68AC8F41F05C0860023A216 /* NSBundle+iTerm.m in Sources */,
 				A62A77962F986BCC007CAA0B /* iTermCharacterWidth.c in Sources */,
 				A6A3EDE62E0D26E100D711DA /* MimeTypeUtilities.swift in Sources */,
 				A6EC808D282A28F500493544 /* SSHConfigurationWindowController.swift in Sources */,
@@ -23168,14 +23139,6 @@
 				minimumVersion = 5.0.0;
 			};
 		};
-		A6F0A0102F9ABCDE00123456 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle.git";
-			requirement = {
-				kind = exactVersion;
-				version = 2.9.6;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -23200,26 +23163,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6AEB4F694FB62FA208F96240 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
-		};
-		A6F0A0112F9ABCDE00123456 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A6F0A0102F9ABCDE00123456 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-		A6F0A0122F9ABCDE00123456 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A6F0A0102F9ABCDE00123456 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-		A6F0A0132F9ABCDE00123456 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A6F0A0102F9ABCDE00123456 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-		A6F0A0142F9ABCDE00123456 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A6F0A0102F9ABCDE00123456 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 

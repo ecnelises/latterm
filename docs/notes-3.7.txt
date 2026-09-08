@@ -9,6 +9,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Adopted year.month.patch version numbers.
+- Removed the inherited iTerm2 update channel and
+  its Sparkle dependency.
 - Removed Captured Output.
 - Removed automatic shell-integration loading and
   the legacy SSH helper bootstrap path.

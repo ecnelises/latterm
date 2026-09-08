@@ -96,8 +96,6 @@ extern NSString *const kPreferenceKeyPromptOnQuitEvenIfThereAreNoWindows;
 extern NSString *const kPreferenceKeyInstantReplayMemoryMegabytes;
 extern NSString *const kPreferenceKeySavePasteHistory;
 extern NSString *const kPreferenceKeyAddBonjourHostsToProfiles;
-extern NSString *const kPreferenceKeyCheckForUpdatesAutomatically;
-extern NSString *const kPreferenceKeyCheckForTestReleases;
 extern NSString *const kPreferenceKeyLoadPrefsFromCustomFolder;
 extern NSString *const kPreferenceKeyUseCustomScriptsFolder;  // Bool
 // Note: if kPreferenceKeyNeverRemindPrefsChangesLostForFileHaveSelection is false, then use the default value (.never).

@@ -8,7 +8,6 @@
 
 #import "GeneralPreferencesViewController.h"
 #import "SFSymbolEnum/SFSymbolEnum.h"
-#import "NSBundle+iTerm.h"
 #import "NSImage+iTerm.h"
 #import "NSTextField+iTerm.h"
 #import "NSWorkspace+iTerm.h"
@@ -78,15 +77,6 @@ enum {
 
     // Enable bonjour
     IBOutlet NSButton *_enableBonjour;
-
-    // Check for updates automatically
-    IBOutlet NSButton *_checkUpdate;
-
-    // Prompt for test-release updates
-    IBOutlet NSButton *_checkTestRelease;
-
-    // Warning that nightly builds can't update to beta/release
-    IBOutlet NSTextField *_nightlyBuildNotice;
 
     // Load prefs from custom folder
     IBOutlet NSButton *_loadPrefsFromCustomFolder;  // Should load?
@@ -423,20 +413,6 @@ enum {
 
     [self defineControl:_enableBonjour
                     key:kPreferenceKeyAddBonjourHostsToProfiles
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
-
-    [self defineControl:_checkUpdate
-                    key:kPreferenceKeyCheckForUpdatesAutomatically
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
-    if ([NSBundle it_isNightlyBuild]) {
-        _checkTestRelease.enabled = NO;
-    } else {
-        _nightlyBuildNotice.hidden = YES;
-    }
-    [self defineControl:_checkTestRelease
-                    key:kPreferenceKeyCheckForTestReleases
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
 
