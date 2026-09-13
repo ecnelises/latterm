@@ -51,7 +51,6 @@
 #import "PseudoTerminalRestorer.h"
 #import "SessionView.h"
 #import "SplitPanel.h"
-#import "TemporaryNumberAllocator.h"
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
 #import "TmuxLayoutParser.h"

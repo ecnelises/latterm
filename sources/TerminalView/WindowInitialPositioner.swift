@@ -11,22 +11,18 @@ private let kWindowNameFormat = "iTerm Window %d"
 private let kProfileWindowNameFormat = "iTerm Profile %@ %d"
 
 /// Allocates sequential numbers scoped to a string key (e.g., profile GUID).
-private class PerKeyNumberAllocator {
+final class PerKeyNumberAllocator {
     static let shared = PerKeyNumberAllocator()
-    private var allocated = [String: Set<Int32>]()
+    private var allocators = [String: TemporaryNumberAllocator]()
 
     func allocate(forKey key: String) -> Int32 {
-        let used = allocated[key, default: []]
-        var n: Int32 = 0
-        while used.contains(n) {
-            n += 1
-        }
-        allocated[key, default: []].insert(n)
-        return n
+        let allocator = allocators[key] ?? TemporaryNumberAllocator()
+        allocators[key] = allocator
+        return allocator.allocateNumber()
     }
 
     func deallocate(_ n: Int32, forKey key: String) {
-        allocated[key]?.remove(n)
+        allocators[key]?.deallocateNumber(n)
     }
 }
 
