@@ -8,13 +8,13 @@
 #import "iTermSwipeTracker.h"
 
 #import "DebugLogging.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSArray+iTerm.h"
 #import "NSDate+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSTimer+iTerm.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermGCDTimer.h"
-#import "iTermScrollWheelStateMachine.h"
 #import "iTermSwipeState+Private.h"
 #import "iTermSquash.h"
 
@@ -71,7 +71,7 @@ NSString *const iTermSwipeHandlerCancelSwipe = @"iTermSwipeHandlerCancelSwipe";
 
     NSMutableArray<NSString *> *log = [NSMutableArray array];
     [log addObject:[event description]];
-    DLog(@"Got event %@", iTermShortEventPhasesString(event));
+    DLog(@"Got event %@", [iTermScrollWheelStateMachine shortEventPhasesString:event]);
     NSTimeInterval lastEvent = [NSDate it_timeSinceBoot];
     while (1) {
         @autoreleasepool {
@@ -125,7 +125,7 @@ NSString *const iTermSwipeHandlerCancelSwipe = @"iTermSwipeHandlerCancelSwipe";
 }
 
 - (BOOL)internalHandleEvent:(NSEvent *)event {
-    DLog(@"internalHandleEvent: %@", iTermShortEventPhasesString(event));
+    DLog(@"internalHandleEvent: %@", [iTermScrollWheelStateMachine shortEventPhasesString:event]);
     if ([self isSwipeTrackingDisabled]) {
         DLog(@"Swipe tracking not enabled");
         return NO;

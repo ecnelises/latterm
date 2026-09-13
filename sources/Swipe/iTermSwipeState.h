@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "iTermScrollWheelStateMachine.h"
 #import "iTermSwipeHandler.h"
 
 NS_ASSUME_NONNULL_BEGIN

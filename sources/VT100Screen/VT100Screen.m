@@ -17,7 +17,6 @@
 #import "iTermImageInfo.h"
 #import "iTermImageMark.h"
 #import "iTermIntervalTreeObserver.h"
-#import "iTermOrderEnforcer.h"
 #import "iTermPreferences.h"
 #import "iTermSelection.h"
 #import "iTermTextExtractor.h"

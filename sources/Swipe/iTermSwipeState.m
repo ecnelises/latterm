@@ -9,6 +9,7 @@
 #import "iTermSwipeState+Private.h"
 
 #import "DebugLogging.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermSquash.h"
 
 static const CGFloat gSwipeFriction = 0.1;
@@ -286,7 +287,7 @@ static const CGFloat gSwipeFriction = 0.1;
 
 - (BOOL)handleEvent:(NSEvent *)event
          transition:(iTermScrollWheelStateMachineStateTransition)transition {
-    DLog(@"handleEvent:%@ before=%@ after=%@ dy=%0.1f", iTermShortEventPhasesString(event), @(transition.before), @(transition.after), event.scrollingDeltaY);
+    DLog(@"handleEvent:%@ before=%@ after=%@ dy=%0.1f", [iTermScrollWheelStateMachine shortEventPhasesString:event], @(transition.before), @(transition.after), event.scrollingDeltaY);
     _state = transition.after;
 
     switch (transition.before) {

@@ -124,7 +124,6 @@
 #import "iTermTipWindowController.h"
 #import "iTermToolbeltView.h"
 #import "iTermURLStore.h"
-#import "iTermUntitledWindowStateMachine.h"
 #import "iTermUserDefaults.h"
 #import "iTermVersionComparator.h"
 #import "iTermWarning.h"
@@ -3788,6 +3787,10 @@ static iTermKeyEventReplayer *gReplayer;
 #pragma mark - iTermUntitledWindowStateMachineDelegate
 
 - (void)untitledWindowStateMachineCreateNewWindow:(iTermUntitledWindowStateMachine *)sender {
+    if ([[NSApplication sharedApplication] isRunningUnitTests]) {
+        DLog(@"Nope, running unit tests");
+        return;
+    }
     RLog(@"untitledWindowStateMachineCreateNewWindow");
     [self newWindow:nil];
 }

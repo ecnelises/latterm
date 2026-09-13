@@ -14,7 +14,6 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermEchoProbe.h"
 #import "iTermImageMark.h"
-#import "iTermOrderEnforcer.h"
 #import "iTermTextExtractor.h"
 #import "LineBuffer.h"
 #import "NSArray+iTerm.h"

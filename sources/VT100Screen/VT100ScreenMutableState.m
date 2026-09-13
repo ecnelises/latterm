@@ -46,7 +46,6 @@
 #import "iTermGCD.h"
 #import "iTermImageMark.h"
 #import "iTermIntervalTreeObserver.h"
-#import "iTermOrderEnforcer.h"
 #import "iTermTextExtractor.h"
 #import "iTermTuple.h"
 #import "iTermURLStore.h"

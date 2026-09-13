@@ -6,6 +6,9 @@
 //
 
 #import "iTermSwipeState.h"
+#import "iTermScrollWheelStateMachineTypes.h"
+
+@class NSEvent;
 
 NS_ASSUME_NONNULL_BEGIN
 

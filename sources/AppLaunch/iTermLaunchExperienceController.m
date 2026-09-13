@@ -6,15 +6,12 @@
 //
 
 #import "iTermLaunchExperienceController.h"
+#import "iTerm2SharedARC-Swift.h"
 
 #import "NSArray+iTerm.h"
 #import "NSStringITerm.h"
 #import "PFMoveApplication.h"
-#import "PTYSession.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermController.h"
-#import "iTermOpenDirectory.h"
-#import "iTermOptionalComponentDownloadWindowController.h"
 #import "iTermPreferences.h"
 #import "iTermSlowOperationGateway.h"
 #import "iTermTipController.h"
@@ -23,18 +20,9 @@
 #import "iTermWarning.h"
 
 static NSString *const kHaveWarnedAboutPasteConfirmationChange = @"NoSyncHaveWarnedAboutPasteConfirmationChange";
-static NSString *const iTermLaunchExperienceControllerNextAnnoyanceTime = @"NoSyncNextAnnoyanceTime";
-static NSString *const iTermLaunchExperienceControllerRunCount = @"NoSyncLaunchExperienceControllerRunCount";
-static NSString *const iTermLaunchExperienceControllerTipOfTheDayEligibilityBeganTime = @"NoSyncTipOfTheDayEligibilityBeganTime";
-
-typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
-    iTermLaunchExperienceChoiceNone,
-    iTermLaunchExperienceChoiceDefaultPasteBehaviorChangeWarning,
-    iTermLaunchExperienceChoiceTipOfTheDay,
-};
 
 @implementation iTermLaunchExperienceController {
-    iTermLaunchExperienceChoice _choice;
+    iTermLaunchPromptScheduler *_promptScheduler;
 }
 
 + (instancetype)sharedInstance {
@@ -70,94 +58,38 @@ typedef NS_ENUM(NSUInteger, iTermLaunchExperienceChoice) {
     return iTermLaunchExperienceChoiceNone;
 }
 
-+ (void)quellAnnoyancesForDays:(NSInteger)days {
-    [[iTermUserDefaults userDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate] + days * 24 * 60 * 60
-                                              forKey:iTermLaunchExperienceControllerNextAnnoyanceTime];
-}
-
-+ (BOOL)quelled {
-    const NSTimeInterval quelledUntil = [[iTermUserDefaults userDefaults] doubleForKey:iTermLaunchExperienceControllerNextAnnoyanceTime];
-    const NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
-    return quelledUntil > now;
-}
-
-+ (NSInteger)runCount {
-    return [[iTermUserDefaults userDefaults] integerForKey:iTermLaunchExperienceControllerRunCount];
-}
-
-// Returns the number of times the app has launched since iTermLaunchExperienceController was
-// invented (or first install of 3.3+), including the current launch.
-+ (NSInteger)incrementRunCount {
-    const NSInteger runCount = [self runCount] + 1;
-    [[iTermUserDefaults userDefaults] setInteger:runCount
-                                               forKey:iTermLaunchExperienceControllerRunCount];
-    return runCount;
-}
-
 #pragma mark - Instance Methods
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [iTermLaunchExperienceController incrementRunCount];
-        if ([iTermLaunchExperienceController quelled]) {
-            // Do nothing, we're quelled.
-            _choice = iTermLaunchExperienceChoiceNone;
-        } else {
-            // Normal code path.
-            _choice = [iTermLaunchExperienceController preferredChoice];
-            if (_choice == iTermLaunchExperienceChoiceTipOfTheDay &&
-                ![[iTermUserDefaults userDefaults] objectForKey:iTermLaunchExperienceControllerTipOfTheDayEligibilityBeganTime]) {
-                [[iTermUserDefaults userDefaults] setDouble:[NSDate timeIntervalSinceReferenceDate]
-                                                          forKey:iTermLaunchExperienceControllerTipOfTheDayEligibilityBeganTime];
-                // The first time we're able to show the tip of the day we'll quell for 2 days so
-                // you get a break.
-                [iTermLaunchExperienceController quellAnnoyancesForDays:2];
-                _choice = iTermLaunchExperienceChoiceNone;
-            }
-        }
+        _promptScheduler = [[iTermLaunchPromptScheduler alloc]
+                            initWithUserDefaults:[iTermUserDefaults userDefaults]
+                            preferredChoice:^iTermLaunchExperienceChoice {
+            return [iTermLaunchExperienceController preferredChoice];
+        }];
     }
     return self;
 }
 
 - (void)performStartupActivities {
-    switch (_choice) {
-        case iTermLaunchExperienceChoiceTipOfTheDay:
-            // Will prompt for access.
-            [self.class quellAnnoyancesForDays:1];
-            [[iTermTipController sharedInstance] startWithPermissionPromptAllowed:YES notBefore:[NSDate date]];
-            return;
-        case iTermLaunchExperienceChoiceNone:
-            // This is the steady-state.
-            [[iTermTipController sharedInstance] startWithPermissionPromptAllowed:NO notBefore:[NSDate date]];
-            return;
-        case iTermLaunchExperienceChoiceDefaultPasteBehaviorChangeWarning:
-            // If permission was already granted then allow a tip after 24 hours.
-            [[iTermTipController sharedInstance] startWithPermissionPromptAllowed:NO
-                                                                        notBefore:[NSDate dateWithTimeIntervalSinceNow:24 * 60 * 60]];
-            return;
-    }
+    NSDate *notBefore = [_promptScheduler prepareForStartupActivities];
+    [[iTermTipController sharedInstance]
+     startWithPermissionPromptAllowed:_promptScheduler.permissionPromptAllowed
+     notBefore:notBefore];
 }
 
 - (void)applicationWillFinishLaunching {
 #if !DEBUG
-    // This is unconditional because it is so important. It enable software update.
+    // Offer to move non-debug builds to the Applications folder.
     PFMoveToApplicationsFolderIfNecessary();
 #endif
 }
 
 - (void)applicationDidFinishLaunching {
     [self checkIfSystemPythonModuleNeedsUpgrade];
-    switch (_choice) {
-        case iTermLaunchExperienceChoiceDefaultPasteBehaviorChangeWarning:
-            [self.class quellAnnoyancesForDays:1];
-            [self warnAboutChangeToDefaultPasteBehavior];
-            return;
-
-        case iTermLaunchExperienceChoiceTipOfTheDay:
-        case iTermLaunchExperienceChoiceNone:
-            return;
-
+    if ([_promptScheduler prepareToShowPasteWarning]) {
+        [self warnAboutChangeToDefaultPasteBehavior];
     }
 }
 
