@@ -61,11 +61,14 @@ final class OrderEnforcerTests: XCTestCase {
     }
 
     func testTokenDoesNotRetainEnforcer() {
-        var enforcer: iTermOrderEnforcer? = iTermOrderEnforcer()
-        weak var weakEnforcer = enforcer
-        let token = enforcer!.newToken()
-        XCTAssertTrue(token.peek())
-        enforcer = nil
+        weak var weakEnforcer: iTermOrderEnforcer?
+        var token: iTermOrderedToken!
+        autoreleasepool {
+            let enforcer = iTermOrderEnforcer()
+            weakEnforcer = enforcer
+            token = enforcer.newToken()
+            XCTAssertTrue(token.peek())
+        }
         XCTAssertNil(weakEnforcer)
         XCTAssertFalse(token.peek())
         XCTAssertFalse(token.commit())

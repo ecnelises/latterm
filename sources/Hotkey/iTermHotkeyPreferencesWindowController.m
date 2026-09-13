@@ -1,4 +1,5 @@
 #import "iTermHotkeyPreferencesWindowController.h"
+#import "iTerm2SharedARC-Swift.h"
 
 #import "iTermAdditionalHotKeyObjectValue.h"
 #import "iTermCarbonHotKeyController.h"

@@ -1,10 +1,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "ITAddressBookMgr.h"
-#import "iTermHotkeyPreferencesModel.h"
 #import "iTermShortcut.h"
 #import "NSDictionary+iTerm.h"
 
+@class iTermHotkeyPreferencesModel;
 
 @interface iTermHotkeyPreferencesWindowController : NSWindowController
 
