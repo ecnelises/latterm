@@ -354,8 +354,8 @@ Gw
                                                         </customView>
                                                     </subviews>
                                                     <connections>
-                                                        <outlet property="_duplicateWarning" destination="JUS-p9-fHO" id="I52-IY-UOI"/>
-                                                        <outlet property="_shortcut" destination="9Iu-kQ-Q1w" id="jf9-5l-xMH"/>
+                                                        <outlet property="duplicateWarning" destination="JUS-p9-fHO" id="I52-IY-UOI"/>
+                                                        <outlet property="shortcutInput" destination="9Iu-kQ-Q1w" id="jf9-5l-xMH"/>
                                                     </connections>
                                                 </tableCellView>
                                             </prototypeCellViews>

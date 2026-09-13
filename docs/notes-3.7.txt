@@ -9,6 +9,8 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Migrated alternate hotkey rows to Swift,
+  preserving editing and conflict warnings.
 - Migrated hotkey preferences to Swift while
   preserving defaults and saved profile values.
 - Migrated async result ordering to Swift,
