@@ -10,30 +10,21 @@
         <customObject id="-2" userLabel="File's Owner" customClass="PreferencePanel">
             <connections>
                 <outlet property="_advancedTabViewItem" destination="KyW-GB-ElH" id="D3N-Z7-BU3"/>
-                <outlet property="_advancedToolbarItem" destination="gtg-rw-6h8" id="fhX-IE-hiG"/>
                 <outlet property="_advancedViewController" destination="yRc-rn-aAD" id="sin-QU-dxg"/>
                 <outlet property="_appearancePreferencesViewController" destination="wvi-ET-SJJ" id="Ixg-gk-u6y"/>
                 <outlet property="_appearanceTabViewItem" destination="4439" id="Hau-Oo-c18"/>
-                <outlet property="_appearanceToolbarItem" destination="5889" id="3e8-bj-Pgh"/>
                 <outlet property="_arrangementsTabViewItem" destination="5417" id="Zhy-fF-7su"/>
-                <outlet property="_arrangementsToolbarItem" destination="5890" id="2RT-x5-vvx"/>
                 <outlet property="_generalPreferencesViewController" destination="9Se-ld-UJa" id="ebT-z7-cAn"/>
                 <outlet property="_globalTabViewItem" destination="1944" id="EaV-nW-mSM"/>
-                <outlet property="_globalToolbarItem" destination="5887" id="1KD-pS-eBt"/>
                 <outlet property="_keyboardTabViewItem" destination="3656" id="M15-z7-J3I"/>
-                <outlet property="_keyboardToolbarItem" destination="5888" id="Voj-Gc-oKG"/>
                 <outlet property="_keysViewController" destination="8TE-cq-5cL" id="4iT-4B-Ju4"/>
                 <outlet property="_mouseTabViewItem" destination="6059" id="yUj-wc-ZtM"/>
-                <outlet property="_mouseToolbarItem" destination="6056" id="Wc9-tZ-Fn8"/>
                 <outlet property="_pointerViewController" destination="pwh-OY-l3e" id="oUo-Ri-MHo"/>
                 <outlet property="_profilesTabViewItem" destination="1945" id="Byu-Qr-6Jc"/>
-                <outlet property="_profilesToolbarItem" destination="5886" id="2yS-fU-fSr"/>
                 <outlet property="_profilesViewController" destination="HVI-63-mNz" id="jfc-z4-6um"/>
                 <outlet property="_shortcutsTabViewItem" destination="B3u-OI-QBk" id="lIq-B3-nkv"/>
-                <outlet property="_shortcutsToolbarItem" destination="97f-06-acT" id="JSR-PF-6wg"/>
                 <outlet property="_shortcutsViewController" destination="Go1-4j-VZ4" id="UYk-oY-V6G"/>
                 <outlet property="_tabView" destination="1943" id="ygD-e3-PPB"/>
-                <outlet property="_toolbar" destination="5885" id="m2f-4x-oIV"/>
                 <outlet property="arrangements_" destination="5572" id="5584"/>
                 <outlet property="window" destination="1923" id="2981"/>
             </connections>
@@ -414,12 +405,12 @@ Gw
                                 </view>
                             </tabViewItem>
                             <tabViewItem label="Bookmarks" identifier="2" id="1945" userLabel="Profiles">
-                                <view key="view" id="1946">
+                                <view key="view" id="1946" customClass="iTermSettingsProfilesView">
                                     <rect key="frame" x="0.0" y="0.0" width="944" height="454"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="P2y-de-Vwq" userLabel="Wrapper view" customClass="iTermProfilePreferencesTabViewWrapperView">
-                                            <rect key="frame" x="327" y="0.0" width="608" height="454"/>
+                                            <rect key="frame" x="256" y="8" width="679" height="438"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <customView hidden="YES" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="F3K-0d-Q7D" userLabel="No Profile Selected view">
@@ -438,7 +429,7 @@ Gw
                                                         <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oIK-1O-5py">
                                                             <rect key="frame" x="-2" y="0.0" width="600" height="16"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Select a profile on the left to access its settings." id="qis-Bi-1PH">
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="Select a profile to access its settings." id="qis-Bi-1PH">
                                                                 <font key="font" usesAppearanceFont="YES"/>
                                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -446,12 +437,12 @@ Gw
                                                         </textField>
                                                     </subviews>
                                                 </customView>
-                                                <tabView fixedFrame="YES" allowsTruncatedLabels="NO" initialItem="2101" translatesAutoresizingMaskIntoConstraints="NO" id="2100" userLabel="Profiles Tab View">
+                                                <tabView fixedFrame="YES" allowsTruncatedLabels="NO" initialItem="2101" translatesAutoresizingMaskIntoConstraints="NO" id="2100" userLabel="Profiles Tab View" customClass="iTermSettingsTabView">
                                                     <rect key="frame" x="-7" y="0.0" width="612" height="450"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                     <tabViewItems>
-                                                        <tabViewItem label="General" identifier="1" id="2101">
+                                                        <tabViewItem label="Basics" identifier="1" id="2101">
                                                             <view key="view" id="2104" userLabel="Filler">
                                                                 <rect key="frame" x="10" y="33" width="592" height="404"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -463,7 +454,7 @@ Gw
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                             </view>
                                                         </tabViewItem>
-                                                        <tabViewItem label="Text" identifier="Text" id="4763">
+                                                        <tabViewItem label="Fonts &amp; Text" identifier="Text" id="4763">
                                                             <view key="view" id="4764" userLabel="Filler">
                                                                 <rect key="frame" x="10" y="33" width="592" height="404"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -511,9 +502,9 @@ Gw
                                             </connections>
                                         </customView>
                                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2111" userLabel="Square Button - Add Profile">
-                                            <rect key="frame" x="116" y="19" width="24" height="25"/>
+                                            <rect key="frame" x="82" y="20" width="24" height="25"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="2112">
+                                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="2112">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -522,9 +513,9 @@ Gw
                                             </connections>
                                         </button>
                                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nFj-0n-SWO" userLabel="Square Button - Tags&gt;">
-                                            <rect key="frame" x="0.0" y="19" width="53" height="25"/>
+                                            <rect key="frame" x="16" y="20" width="53" height="25"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <buttonCell key="cell" type="square" title="Tags &gt;" bezelStyle="shadowlessSquare" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="u6m-pp-fub">
+                                            <buttonCell key="cell" type="push" title="Tags &gt;" bezelStyle="rounded" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="u6m-pp-fub">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -533,9 +524,9 @@ Gw
                                             </connections>
                                         </button>
                                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2113" userLabel="Square Button - Delete Profile">
-                                            <rect key="frame" x="139" y="19" width="24" height="25"/>
+                                            <rect key="frame" x="106" y="20" width="24" height="25"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="2114">
+                                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="2114">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -544,14 +535,14 @@ Gw
                                             </connections>
                                         </button>
                                         <popUpButton fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3230">
-                                            <rect key="frame" x="162" y="19" width="157" height="25"/>
+                                            <rect key="frame" x="130" y="20" width="110" height="25"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <popUpButtonCell key="cell" type="square" title="Other Actions..." bezelStyle="shadowlessSquare" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="3231">
+                                            <popUpButtonCell key="cell" type="push" title="More…" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="3231">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="message"/>
                                                 <menu key="menu" title="OtherViews" id="3232">
                                                     <items>
-                                                        <menuItem title="Other Actions..." state="on" image="NSActionTemplate" hidden="YES" id="3235"/>
+                                                        <menuItem title="More…" state="on" image="NSActionTemplate" hidden="YES" id="3235"/>
                                                         <menuItem title="Set as Default" id="3318">
                                                             <modifierMask key="keyEquivalentModifierMask"/>
                                                             <connections>
@@ -595,7 +586,7 @@ Gw
                                             </popUpButtonCell>
                                         </popUpButton>
                                         <customView autoresizesSubviews="NO" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3260" customClass="ProfileListView">
-                                            <rect key="frame" x="0.0" y="52" width="319" height="392"/>
+                                            <rect key="frame" x="16" y="56" width="224" height="382"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                             <connections>
                                                 <outlet property="delegate" destination="HVI-63-mNz" id="lQ2-vb-0eJ"/>
@@ -641,60 +632,6 @@ Gw
                     </tabView>
                 </subviews>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="D08B01BC-1A7C-42DC-B326-C2E53519AB95" autosavesConfiguration="NO" allowsUserCustomization="NO" showsBaselineSeparator="NO" displayMode="iconAndLabel" sizeMode="regular" id="5885">
-                <allowedToolbarItems>
-                    <toolbarItem implicitItemIdentifier="45D9C222-64ED-4B5F-89E3-E9862F727A2B" label="General" paletteLabel="General" tag="-1" image="PrefsGeneral" sizingBehavior="auto" selectable="YES" id="5887">
-                        <nil key="toolTip"/>
-                        <connections>
-                            <action selector="showGlobalTabView:" target="-2" id="5895"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="A981DCF2-5E61-441F-8042-57635FC79EC6" label="Appearance" paletteLabel="Appearance" tag="-1" image="PrefsAppearance" sizingBehavior="auto" selectable="YES" id="5889">
-                        <nil key="toolTip"/>
-                        <connections>
-                            <action selector="showAppearanceTabView:" target="-2" id="5892"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="A3650111-7031-4C54-AE69-7C0A67F80581" label="Profiles" paletteLabel="Profiles" tag="-1" image="PrefsProfile" sizingBehavior="auto" selectable="YES" id="5886">
-                        <nil key="toolTip"/>
-                        <connections>
-                            <action selector="showProfilesTabView:" target="-2" id="5893"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="AD5C9306-CF41-4791-A62C-E30615D27619" label="Keys" paletteLabel="Keys" tag="-1" image="PrefsKeyboard" sizingBehavior="auto" selectable="YES" id="5888">
-                        <nil key="toolTip"/>
-                        <connections>
-                            <action selector="showKeyboardTabView:" target="-2" id="5891"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="1DFE8A74-36A5-440E-BBB1-67A1D8C0368B" label="Pointer" paletteLabel="Pointer" tag="-1" image="PrefsMouse" sizingBehavior="auto" selectable="YES" id="6056">
-                        <connections>
-                            <action selector="showMouseTabView:" target="-2" id="6058"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="E909A2CE-74E7-4BCC-B139-A2EDCEDC7A5A" label="Arrangements" paletteLabel="Arrangements" tag="-1" image="PrefsArrangements" sizingBehavior="auto" selectable="YES" id="5890">
-                        <nil key="toolTip"/>
-                        <connections>
-                            <action selector="showArrangementsTabView:" target="-2" id="5894"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="3F832EA9-FDDD-4862-94BF-B3813E2AD10B" label="Advanced" paletteLabel="Advanced" tag="-1" image="PrefsAdvanced" sizingBehavior="auto" selectable="YES" id="gtg-rw-6h8">
-                        <nil key="toolTip"/>
-                        <connections>
-                            <action selector="showAdvancedTabView:" target="-2" id="f9X-n8-IcJ"/>
-                        </connections>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="AC57CB9F-043A-4DC7-9155-F358367619B6" label="Shortcuts" paletteLabel="Shortcuts" tag="-1" image="PrefsShortcuts" sizingBehavior="auto" id="97f-06-acT">
-                        <connections>
-                            <action selector="showShortcutsTabView:" target="-2" id="e52-BD-2Aw"/>
-                        </connections>
-                    </toolbarItem>
-                </allowedToolbarItems>
-                <defaultToolbarItems/>
-                <connections>
-                    <outlet property="delegate" destination="-2" id="5896"/>
-                </connections>
-            </toolbar>
             <accessibility identifier="mainPreferencesWindow"/>
             <connections>
                 <outlet property="delegate" destination="-2" id="2982"/>
@@ -772,7 +709,7 @@ Gw
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5840">
                         <rect key="frame" x="20" y="18" width="24" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5843">
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5843">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -783,7 +720,7 @@ Gw
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5841">
                         <rect key="frame" x="43" y="18" width="24" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5842">
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5842">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
@@ -797,7 +734,7 @@ CA
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5879">
                         <rect key="frame" x="66" y="18" width="106" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="square" title="Load Defaults" bezelStyle="shadowlessSquare" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5880">
+                        <buttonCell key="cell" type="push" title="Load Defaults" bezelStyle="rounded" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5880">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -1119,7 +1056,7 @@ DQ
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6299">
                         <rect key="frame" x="20" y="21" width="24" height="24"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6302">
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6302">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -1130,7 +1067,7 @@ DQ
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6300">
                         <rect key="frame" x="43" y="21" width="24" height="24"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6301">
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6301">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
@@ -1885,7 +1822,7 @@ CA
             <subviews>
                 <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2133" userLabel="Name text field">
                     <rect key="frame" x="146" y="453" width="520" height="21"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="2136">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1907,7 +1844,7 @@ CA
                 </textField>
                 <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jFD-jQ-u7E" userLabel="Profile settings container">
                     <rect key="frame" x="16" y="59" width="650" height="389"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                     <subviews>
                         <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2141" userLabel="Shortcut key label">
                             <rect key="frame" x="31" y="371" width="90" height="16"/>
@@ -1920,11 +1857,11 @@ CA
                         </textField>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yEs-Em-Hdp" customClass="iTermTerminalModeEnclosure">
                             <rect key="frame" x="0.0" y="167" width="650" height="30"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES" widthSizable="YES"/>
                             <subviews>
                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VCV-s2-py0">
                                     <rect key="frame" x="553" y="3" width="104" height="32"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMinX="YES"/>
                                     <buttonCell key="cell" type="push" title="Configure…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="tEq-8C-H4O">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
@@ -1963,7 +1900,7 @@ CA
                                 </popUpButton>
                                 <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2131" userLabel="Command text field" customClass="iTermExpandingTextField">
                                     <rect key="frame" x="259" y="9" width="391" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Command for new sessions (interpolated string)" drawsBackground="YES" id="2138" customClass="iTermStatusIndicatingTextFieldCell">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -1979,7 +1916,7 @@ CA
                         </customView>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gZ1-Kt-xEF">
                             <rect key="frame" x="130" y="234" width="520" height="27"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <subviews>
                                 <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="flV-bs-rIS">
                                     <rect key="frame" x="-2" y="7" width="249" height="14"/>
@@ -2005,7 +1942,7 @@ CA
                         </customView>
                         <tokenField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3245" userLabel="Tags token Field">
                             <rect key="frame" x="130" y="342" width="520" height="21"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <string key="toolTip">Tags with slashes create a hierarchy which you can navigate in the Profiles menu or in the tags list adjacent to lists of profiles.</string>
                             <tokenFieldCell key="cell" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" placeholderString="Example: linux, dark bg, tag/subtag/subsubtag" drawsBackground="YES" allowsEditingTextAttributes="YES" id="3246">
                                 <font key="font" metaFont="system"/>
@@ -2022,7 +1959,7 @@ CA
                         </tokenField>
                         <textField toolTip="In the Minimal theme, tabs can show a subtitle as a second line of text." focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UWv-op-rJa" userLabel="Subtitle text field">
                             <rect key="frame" x="130" y="237" width="520" height="21"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Interpolated string" drawsBackground="YES" id="dMl-Zb-Sed">
                                 <font key="font" metaFont="system"/>
                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -2044,10 +1981,10 @@ CA
                         </textField>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="815-r4-Z3I">
                             <rect key="frame" x="0.0" y="207" width="650" height="22"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <subviews>
                                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Xzz-Fo-TWV" userLabel="Name label">
-                                    <rect key="frame" x="87" y="4" width="34" height="16"/>
+                                    <rect key="frame" x="61" y="4" width="60" height="16"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <textFieldCell key="cell" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Icon:" id="Bp6-8q-9J8">
                                         <font key="font" metaFont="system"/>
@@ -2057,7 +1994,7 @@ CA
                                 </textField>
                                 <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PFt-ce-pWw">
                                     <rect key="frame" x="127" y="-3" width="501" height="26"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                                     <popUpButtonCell key="cell" type="push" title="No Icon" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="9aT-V8-QXb" id="rEM-cS-sAI">
                                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="message"/>
@@ -2075,7 +2012,7 @@ CA
                                 </popUpButton>
                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CNi-xf-qcd" customClass="iTermImageWell">
                                     <rect key="frame" x="630" y="0.0" width="23" height="23"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMinX="YES"/>
                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" imageFrameStyle="photo" id="pKz-Ch-jE2"/>
                                     <connections>
                                         <outlet property="delegate" destination="dVg-Ac-SiZ" id="eoD-2Y-HxJ"/>
@@ -2141,7 +2078,7 @@ CA
                             </connections>
                         </popUpButton>
                         <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3243" userLabel="Tags label">
-                            <rect key="frame" x="84" y="345" width="37" height="16"/>
+                            <rect key="frame" x="61" y="345" width="60" height="16"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <textFieldCell key="cell" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Tags:" id="3244">
                                 <font key="font" metaFont="system"/>
@@ -2160,7 +2097,7 @@ CA
                         </textField>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Gk-SE-iET" customClass="iTermTerminalModeEnclosure">
                             <rect key="frame" x="0.0" y="20" width="650" height="151"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <subviews>
                                 <imageView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="G1r-AP-exF">
                                     <rect key="frame" x="372" y="135" width="16" height="16"/>
@@ -2169,7 +2106,7 @@ CA
                                 </imageView>
                                 <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5410" userLabel="Send text at start text field" customClass="iTermExpandingTextField">
                                     <rect key="frame" x="130" y="106" width="520" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Enter text to send at start (interpolated string)" drawsBackground="YES" id="5411">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -2218,7 +2155,7 @@ CA
                                 </matrix>
                                 <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2189" userLabel="Directory text field">
                                     <rect key="frame" x="226" y="39" width="424" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Enter initial directory (interpolated string)" drawsBackground="YES" id="2194">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -2261,7 +2198,7 @@ CA
                                 </textField>
                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="rcS-Ls-100">
                                     <rect key="frame" x="128" y="133" width="400" height="18"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                                     <string key="toolTip">Wraps the command in your login shell so dotfiles run first and your command sees the same $PATH and exported variables you’d have in an interactive terminal.</string>
                                     <buttonCell key="cell" type="check" title="Run command through your shell" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rcS-Ls-101">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -2278,7 +2215,7 @@ CA
                         </customView>
                         <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5037" userLabel="URL Schemes popup button">
                             <rect key="frame" x="127" y="-3" width="527" height="26"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="5038">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="message"/>
@@ -2291,11 +2228,11 @@ CA
                         </popUpButton>
                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NSI-ew-7Hx" customClass="iTermTerminalModeEnclosure">
                             <rect key="frame" x="76" y="259" width="574" height="78"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                             <subviews>
                                 <button horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kFr-1J-iPo">
                                     <rect key="frame" x="551" y="26" width="25" height="25"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMinX="YES"/>
                                     <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="inb-QV-C1Z">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
@@ -2318,7 +2255,7 @@ CA
                                 </button>
                                 <textField toolTip="The badge is text that appears in the top right of a session." focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sa9-oD-SMc" userLabel="Name text field">
                                     <rect key="frame" x="54" y="57" width="458" height="21"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Enter badge text (interpolated string)" drawsBackground="YES" id="M2Y-uM-p2q">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -2330,7 +2267,7 @@ CA
                                     </connections>
                                 </textField>
                                 <textField focusRingType="none" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iet-o6-fEv" userLabel="Name label">
-                                    <rect key="frame" x="10" y="34" width="35" height="16"/>
+                                    <rect key="frame" x="0" y="34" width="45" height="16"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     <textFieldCell key="cell" enabled="NO" sendsActionOnEndEditing="YES" alignment="right" title="Title:" id="cKG-uJ-P2E">
                                         <font key="font" metaFont="system"/>
@@ -2340,7 +2277,7 @@ CA
                                 </textField>
                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kmy-bS-CYF" userLabel="Edit advanced configuration push button">
                                     <rect key="frame" x="513" y="52" width="68" height="28"/>
-                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinY="YES" flexibleMinX="YES"/>
                                     <buttonCell key="cell" type="push" title="Edit…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9iq-xC-84R">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
@@ -3532,7 +3469,7 @@ CA
                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eDY-76-QLx">
                                     <rect key="frame" x="-5" y="-7" width="210" height="32"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <buttonCell key="cell" type="push" title="Manage Special Exceptions…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jSW-U8-dGZ">
+                                    <buttonCell key="cell" type="push" title="Character Fonts…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jSW-U8-dGZ">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -4571,17 +4508,6 @@ CA
                                 <action selector="settingChanged:" target="gMD-DK-gev" id="gxb-SG-9OG"/>
                             </connections>
                         </button>
-                        <button horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Fs-LK-buW">
-                            <rect key="frame" x="5" y="123" width="25" height="25"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YsN-fW-Qkw">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="help:" target="gMD-DK-gev" id="5mY-0e-RlU"/>
-                            </connections>
-                        </button>
                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZMH-MS-a4p">
                             <rect key="frame" x="337" y="217" width="89" height="27"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -5465,7 +5391,7 @@ CA
                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5667">
                             <rect key="frame" x="0.0" y="19" width="23" height="23"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5668">
+                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5668">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="systemBold"/>
                             </buttonCell>
@@ -5476,7 +5402,7 @@ CA
                         <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5669">
                             <rect key="frame" x="22" y="19" width="23" height="23"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5670">
+                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5670">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="systemBold"/>
                             </buttonCell>
@@ -5546,7 +5472,7 @@ CA
             <rect key="frame" x="0.0" y="0.0" width="842" height="489"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView identifier="KeysTabView" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gvH-pp-196">
+                <tabView identifier="KeysTabView" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gvH-pp-196" customClass="iTermSettingsTabView">
                     <rect key="frame" x="0.0" y="-16" width="849" height="506"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <font key="font" metaFont="system"/>
@@ -6080,7 +6006,7 @@ Refer to the manuals for individual applications to see if they support these mo
                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6w1-48-KZZ" userLabel="Add APS Rule">
                             <rect key="frame" x="204" y="29" width="24" height="24"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="QG6-AD-MgE">
+                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="QG6-AD-MgE">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -6181,7 +6107,7 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g8p-qY-0hw" userLabel="Remove APS Rule">
                             <rect key="frame" x="227" y="29" width="24" height="24"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" enabled="NO" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="c2V-qR-YqX">
+                            <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="only" alignment="center" enabled="NO" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="c2V-qR-YqX">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                 <font key="font" metaFont="system"/>
                             </buttonCell>
@@ -6367,7 +6293,7 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
             <rect key="frame" x="0.0" y="0.0" width="788" height="556"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CuK-St-ACL" userLabel="Tab View">
+                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CuK-St-ACL" userLabel="Tab View" customClass="iTermSettingsTabView">
                     <rect key="frame" x="0.0" y="3" width="775" height="559"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <font key="font" metaFont="system"/>
@@ -6542,7 +6468,7 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                                 </subviews>
                             </view>
                         </tabViewItem>
-                        <tabViewItem label="Magic" identifier="" id="a3F-w8-ggT">
+                        <tabViewItem label="Tools &amp; Performance" identifier="" id="a3F-w8-ggT">
                             <view key="view" id="h6U-Bn-0HU">
                                 <rect key="frame" x="10" y="33" width="755" height="513"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -7190,7 +7116,7 @@ You can choose to define the characters considered part of a word with a regular
                                 </subviews>
                             </view>
                         </tabViewItem>
-                        <tabViewItem label="Settings" identifier="" id="A3y-3j-WQF">
+                        <tabViewItem label="Backup &amp; Sync" identifier="" id="A3y-3j-WQF">
                             <view key="view" id="NGW-1C-GwI">
                                 <rect key="frame" x="10" y="33" width="755" height="513"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -7611,7 +7537,7 @@ You can choose to define the characters considered part of a word with a regular
             <rect key="frame" x="0.0" y="0.0" width="623" height="384"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="W2g-ef-8zn">
+                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="W2g-ef-8zn" customClass="iTermSettingsTabView">
                     <rect key="frame" x="0.0" y="10" width="610" height="380"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <font key="font" metaFont="system"/>
@@ -8301,7 +8227,7 @@ You can choose to define the characters considered part of a word with a regular
             <rect key="frame" x="0.0" y="0.0" width="932" height="471"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8E3-yy-qfF">
+                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8E3-yy-qfF" customClass="iTermSettingsTabView">
                     <rect key="frame" x="0.0" y="10" width="919" height="462"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <font key="font" metaFont="system"/>
@@ -9062,7 +8988,7 @@ instead of the system keyboard.</string>
             <rect key="frame" x="0.0" y="0.0" width="944" height="453"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="602-bD-Vdr">
+                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="602-bD-Vdr" customClass="iTermSettingsTabView">
                     <rect key="frame" x="-7" y="10" width="958" height="447"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <font key="font" metaFont="system"/>
@@ -9144,7 +9070,7 @@ instead of the system keyboard.</string>
                                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5569">
                                         <rect key="frame" x="17" y="11" width="23" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="smallSquare" title="-" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5570">
+                                        <buttonCell key="cell" type="push" title="-" bezelStyle="rounded" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5570">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
@@ -9155,7 +9081,7 @@ instead of the system keyboard.</string>
                                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5585">
                                         <rect key="frame" x="39" y="11" width="99" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <buttonCell key="cell" type="smallSquare" title="Set Default" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5586">
+                                        <buttonCell key="cell" type="push" title="Set Default" bezelStyle="rounded" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5586">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
@@ -9188,7 +9114,7 @@ instead of the system keyboard.</string>
             <rect key="frame" x="0.0" y="0.0" width="892" height="421"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kxy-pe-gzv">
+                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kxy-pe-gzv" customClass="iTermSettingsTabView">
                     <rect key="frame" x="0.0" y="10" width="879" height="417"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <font key="font" metaFont="system"/>
@@ -9338,7 +9264,7 @@ instead of the system keyboard.</string>
                                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6214">
                                                 <rect key="frame" x="40" y="19" width="21" height="23"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6215">
+                                                <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6215">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
@@ -9350,7 +9276,7 @@ instead of the system keyboard.</string>
                                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6216">
                                                 <rect key="frame" x="20" y="19" width="21" height="23"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6217">
+                                                <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6217">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
@@ -9416,7 +9342,7 @@ instead of the system keyboard.</string>
                                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6115">
                                                 <rect key="frame" x="60" y="19" width="106" height="23"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <buttonCell key="cell" type="smallSquare" title="Load Defaults" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6116">
+                                                <buttonCell key="cell" type="push" title="Load Defaults" bezelStyle="rounded" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="6116">
                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
@@ -9442,7 +9368,7 @@ instead of the system keyboard.</string>
             <rect key="frame" x="0.0" y="0.0" width="892" height="394"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jEa-TW-gyU">
+                <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jEa-TW-gyU" customClass="iTermSettingsTabView">
                     <rect key="frame" x="13" y="10" width="866" height="390"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <font key="font" metaFont="system"/>
@@ -9482,7 +9408,7 @@ instead of the system keyboard.</string>
             <subviews>
                 <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wcl-c7-peg">
                     <rect key="frame" x="20" y="20" width="952" height="364"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <clipView key="contentView" id="Fm3-fw-Qw5">
                         <rect key="frame" x="1" y="1" width="950" height="362"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -10178,14 +10104,6 @@ instead of the system keyboard.</string>
         <image name="NSAddTemplate" width="18" height="17"/>
         <image name="NSLockUnlockedTemplate" width="21" height="19"/>
         <image name="NSRemoveTemplate" width="18" height="5"/>
-        <image name="PrefsAdvanced" width="32" height="32"/>
-        <image name="PrefsAppearance" width="32" height="32"/>
-        <image name="PrefsArrangements" width="32" height="32"/>
-        <image name="PrefsGeneral" width="32" height="32"/>
-        <image name="PrefsKeyboard" width="32" height="32"/>
-        <image name="PrefsMouse" width="32" height="32"/>
-        <image name="PrefsProfile" width="32" height="32"/>
-        <image name="PrefsShortcuts" width="32" height="32"/>
         <image name="Warning" width="16" height="16"/>
         <image name="WarningSign" width="16" height="16"/>
         <image name="minus" catalog="system" width="14" height="4"/>

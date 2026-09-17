@@ -74,6 +74,7 @@ const CGFloat kDefaultTagsWidth = 80;
     id<ProfileListViewDelegate> delegate_;
     NSSet* selectedGuids_;
     BOOL debug;
+    BOOL _settingsAppearance;
     ProfileModelWrapper *dataSource_;
     int margin_;
     ProfileTagsView *tagsView_;
@@ -184,7 +185,7 @@ const CGFloat kDefaultTagsWidth = 80;
 
         [tableView_ setDoubleAction:@selector(onDoubleClick:)];
 
-        tableColumn_.title = @"Profile Name";
+        tableColumn_.title = NSLocalizedString(@"Profile Name", @"Profile list");
 
         [tableView_ sizeLastColumnToFit];
 
@@ -398,11 +399,11 @@ const CGFloat kDefaultTagsWidth = 80;
 
 - (void)_addTags:(NSArray*)tags toSearchField:(NSSearchField*)searchField
 {
-    NSMenu *cellMenu = [[[NSMenu alloc] initWithTitle:@"Search Menu"]
+    NSMenu *cellMenu = [[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Search Menu", @"Profile list")]
                         autorelease];
     NSMenuItem *item;
 
-    item = [[[NSMenuItem alloc] initWithTitle:@"Tags"
+    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Tags", @"Profile list")
                                        action:nil
                                 keyEquivalent:@""] autorelease];
     [item setTarget:self];
@@ -420,7 +421,7 @@ const CGFloat kDefaultTagsWidth = 80;
     }
 
     [cellMenu insertItem:[NSMenuItem separatorItem] atIndex:cellMenu.numberOfItems];
-    [cellMenu addItemWithTitle:@"Search Syntax Help" action:@selector(openHowToSearchHelp:) keyEquivalent:@""];
+    [cellMenu addItemWithTitle:NSLocalizedString(@"Search Syntax Help", @"Profile list") action:@selector(openHowToSearchHelp:) keyEquivalent:@""];
 
     id searchCell = [searchField cell];
     [searchCell setSearchMenuTemplate:cellMenu];
@@ -546,9 +547,26 @@ const CGFloat kDefaultTagsWidth = 80;
     [self reloadData];
 }
 
+- (void)useSettingsAppearance {
+    _settingsAppearance = YES;
+    splitView_.dividerStyle = NSSplitViewDividerStyleThin;
+    searchField_.placeholderString = NSLocalizedString(@"Filter Profiles", @"Search within Settings profiles");
+    searchField_.focusRingType = NSFocusRingTypeNone;
+    scrollView_.borderType = NSNoBorder;
+    scrollView_.autohidesScrollers = YES;
+    scrollView_.wantsLayer = YES;
+    scrollView_.layer.cornerRadius = 8;
+    scrollView_.layer.masksToBounds = YES;
+    tableView_.backgroundColor = NSColor.controlBackgroundColor;
+    // The header remains interactive so alphabetical sorting stays available.
+    tableColumn_.title = NSLocalizedString(@"Name", @"Profile list column");
+    tableColumn_.headerCell.font = [NSFont systemFontOfSize:11 weight:NSFontWeightMedium];
+    tableColumn_.headerCell.textColor = NSColor.secondaryLabelColor;
+}
+
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)rowIndex {
     NSView *view = [self tableView:tableView viewForTableColumn:tableView.tableColumns[0] row:rowIndex];
-    const CGFloat height = [view fittingSize].height;
+    const CGFloat height = MAX([view fittingSize].height, _settingsAppearance ? 28 : 0);
     _savedHeights[@(rowIndex)] = @(height);
     return height;
 }
@@ -679,7 +697,7 @@ const CGFloat kDefaultTagsWidth = 80;
     static NSString *const identifier = @"ProfileListViewIdentifier";
     BOOL multiline = NO;
     id value = [self stringOrAttributedStringForColumn:tableColumn row:row multiline:&multiline];
-    NSTableCellView *result;
+    iTermTableCellViewWithTextField *result;
     if ([value isKindOfClass:[NSAttributedString class]]) {
         result = [[tableView newTableCellViewWithTextFieldUsingIdentifier:identifier attributedString:value] autorelease];
         result.textField.toolTip = [value string];
@@ -687,6 +705,7 @@ const CGFloat kDefaultTagsWidth = 80;
         result = [[tableView newTableCellViewWithTextFieldUsingIdentifier:identifier font:_font string:value] autorelease];
         result.textField.toolTip = value;
     }
+    result.centersTextVertically = _settingsAppearance;
     return result;
 }
 
@@ -1173,6 +1192,10 @@ const CGFloat kDefaultTagsWidth = 80;
 }
 
 #pragma mark - NSSplitViewDelegate
+
+- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex {
+    return _settingsAppearance && tagsView_.isHidden;
+}
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification {
     if (!tagsViewIsCollapsed_ && NSWidth(tagsView_.frame) < 4) {

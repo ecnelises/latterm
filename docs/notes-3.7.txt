@@ -9,6 +9,58 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Centered profile names in more compact rows.
+- Combined startup and exit settings on one page.
+- Simplified profile editing with a selector and
+  optional profile-management list.
+- Aligned profile navigation and replaced the
+  old split-view drag handle with a thin divider.
+- Integrated the Settings sidebar and titlebar.
+- Grouped Settings by task and clarified which
+  options affect the app or selected profile.
+- Replaced classic tabs with wrapping sections.
+- Organized profile basics into identity, shell
+  startup, and title appearance sections.
+- Adapt profile details to narrow windows, with
+  stacked navigation and flexible form fields.
+- Keep each profile detail page scrollable.
+- Unified Settings page metadata and routing.
+- Removed the retired Settings toolbar while
+  preserving sidebar search and its options.
+- Refined Settings navigation, page headings,
+  profile lists, and spacing.
+- Let the Advanced table fill resized windows.
+- Fixed clipped Chinese profile labels and
+  translated profile menus and title previews.
+- Gave profile details more space beside the list.
+- Fixed Settings pages shrinking after navigation
+  and clipped profile details during resizing.
+- Scroll searched settings into view, including
+  controls inside profile subpages.
+- Removed Touch Bar configuration from Settings.
+- Modernized key presets and kept preset loading
+  independent of translated menu titles.
+- Localized snippet and character-font editors,
+  runtime menus, and validation messages.
+- Made Advanced search identify each setting and
+  match translated labels and preference keys.
+- Fixed save errors being lost in async tasks.
+- Kept Settings window size stable across pages
+  and remembered manual resizing.
+- Moved Settings search into the sidebar and
+  modernized profile-list action buttons.
+- Added Chinese Settings translations and fixed
+  localized interface loading and search.
+- Removed the explanation link from quit alerts.
+- Added Settings sidebar navigation, preserving
+  all categories, search, and session editing.
+- Sized profile pages using actual tab insets
+  to prevent clipping their rightmost controls.
+- Made character-specific fonts easier to find
+  and allowed choosing non-monospaced fonts.
+- Rejected invalid font ranges before rendering.
+- Preserved custom character-font sizes when
+  editing rules and saving font zoom changes.
 - Migrated editable number formatting to Swift
   and removed an unused integer formatter.
 - Unified window number allocation in Swift,

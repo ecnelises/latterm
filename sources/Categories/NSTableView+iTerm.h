@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString *const iTermDynamicProfileSymbolName;
 
 @interface iTermTableCellViewWithTextField: NSTableCellView
+@property(nonatomic) BOOL centersTextVertically;
 @end
 
 @interface NSTableView (iTerm)

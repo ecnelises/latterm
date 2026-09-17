@@ -28,11 +28,9 @@
 #import "ProfilesTextPreferencesViewController.h"
 #import "ProfilesWindowPreferencesViewController.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermController.h"
 #import "iTermDynamicProfileManager.h"
-#import "iTermFlippedView.h"
 #import "iTermProfilePreferences.h"
 #import "iTermProfilePreferencesTabViewWrapperView.h"
 #import "iTermSavePanel.h"
@@ -56,7 +54,6 @@
 @end
 
 static const CGFloat kExtraMarginBetweenWindowBottomAndTabViewForEditCurrentSessionMode = 7;
-static const CGFloat kSideMarginsWithinInnerTabView = 11;
 NSString *const kProfileSessionNameDidEndEditing = @"kProfileSessionNameDidEndEditing";
 NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChange";
 
@@ -228,7 +225,23 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 }
 
 - (void)awakeFromNib {
+    [_generalViewController organizeSettingsForm];
     [_profilesListView setUnderlyingDatasource:[_delegate profilePreferencesModel]];
+    [_profilesListView useSettingsAppearance];
+    [[iTermSettingsProfilesView castFrom:self.view]
+        configureWithProfileList:_profilesListView
+                         details:_tabViewWrapperView
+                         actions:@[_toggleTagsButton, _addProfileButton, _removeProfileButton, _otherActionsPopup]];
+
+    __weak __typeof(self) weakSelf = self;
+    [iTermSettingsProfilesView castFrom:self.view].onSelectProfile = ^(NSString *guid) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [strongSelf->_profilesListView clearSearchField];
+        [strongSelf->_profilesListView selectRowByGuid:guid];
+    };
 
     Profile *profile = [self selectedProfile];
     if (profile) {
@@ -251,40 +264,20 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
         NSTabViewItem *tabViewItem = tuple[0];
         NSView *view = tuple[1];
 
-        // Maximum allowed height for a tab view item. Taller ones get a scroll view.
-        static const CGFloat kMaxHeight = 492;
-        if (view.frame.size.height > kMaxHeight) {
-            // If the view is too tall, wrap it in a scroll view.
-            NSRect theFrame = NSMakeRect(0, 0, view.frame.size.width, kMaxHeight);
-            iTermSizeRememberingView *sizeRememberingView =
-                [[iTermSizeRememberingView alloc] initWithFrame:theFrame];
-            sizeRememberingView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-            sizeRememberingView.autoresizesSubviews = YES;
-            NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:theFrame];
-            scrollView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
-            scrollView.drawsBackground = NO;
-            scrollView.hasVerticalScroller = YES;
-            scrollView.hasHorizontalScroller = NO;
-
-            iTermFlippedView *flippedView =
-                [[iTermFlippedView alloc] initWithFrame:view.bounds];
-            [flippedView addSubview:view];
-            [flippedView flipSubviews];
-
-            NSScroller *verticalScroller = [scrollView verticalScroller];
-            CGFloat scrollbarWidth = NSWidth([verticalScroller frame]);
-            flippedView.frame = NSMakeRect(flippedView.frame.origin.x, flippedView.frame.origin.y, view.frame.size.width - scrollbarWidth, flippedView.frame.size.height);
-
-            [scrollView setDocumentView:flippedView];
-            [sizeRememberingView addSubview:scrollView];
-
-            [tabViewItem setView:sizeRememberingView];
-        } else {
-            // Replace the filler view with the real one which isn't in the view
-            // hierarchy in the .xib file which was done to make it easier for
-            // views' sizes to differ.
-            [tabViewItem setView:view];
+        // Every detail page scrolls independently, including the shorter pages
+        // when the profile selector moves above them in a narrow window.
+        NSSize requiredSize = view.frame.size;
+        if (tabViewItem == _generalTab) {
+            requiredSize.width = 540;
         }
+        NSRect frame = NSMakeRect(0, 0, requiredSize.width, MIN(requiredSize.height, 492));
+        iTermSizeRememberingView *container = [[iTermSizeRememberingView alloc] initWithFrame:frame];
+        container.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+        iTermSettingsContentView *scrollView = [[iTermSettingsContentView alloc] initWithContent:view];
+        scrollView.frame = container.bounds;
+        [scrollView setMinimumContentSize:requiredSize];
+        [container addSubview:scrollView];
+        tabViewItem.view = container;
     }
     _initialized = YES;
     [self refreshWithSideEffects:NO];
@@ -312,12 +305,14 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 }
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
+    [iTermSettingsProfilesView castFrom:self.view].editingSession = YES;
     (void)[_generalViewController setVisibilityForHiddenModeEnclosures:YES
                                             sharedProfilesEnclosures:YES
                                                          tabViewItem:_generalTab];
     [_generalViewController.internalState removeAllObjects];
 
     _profilesListView.hidden = YES;
+    self.view.autoresizesSubviews = YES;
     _otherActionsPopup.hidden = YES;
     _addProfileButton.hidden = YES;
     _removeProfileButton.hidden = YES;
@@ -478,7 +473,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)profileTableTagsVisibilityDidChange:(ProfileListView *)profileListView {
-    [_toggleTagsButton setTitle:profileListView.tagsVisible ? @"< Tags" : @"Tags >"];
+    [_toggleTagsButton setTitle:profileListView.tagsVisible ? NSLocalizedString(@"‹ Tags", @"Hide profile tags") : NSLocalizedString(@"Tags ›", @"Show profile tags")];
 }
 
 #pragma mark - Private
@@ -524,6 +519,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)updateSubviewsForProfile:(Profile *)profile {
+    [self updateProfilePicker];
     ProfileModel *model = [_delegate profilePreferencesModel];
     if ([model numberOfBookmarks] < 2 || !profile) {
         _removeProfileButton.enabled = NO;
@@ -561,8 +557,16 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 }
 
+- (void)updateProfilePicker {
+    NSArray<Profile *> *profiles = [[_delegate profilePreferencesModel] bookmarks];
+    [[iTermSettingsProfilesView castFrom:self.view] updateProfilesWithNames:[profiles valueForKey:KEY_NAME]
+                                                               identifiers:[profiles valueForKey:KEY_GUID]
+                                                        selectedIdentifier:[_profilesListView selectedGuid]];
+}
+
 - (void)reloadData {
     [_profilesListView reloadData];
+    [self updateProfilePicker];
 }
 
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)tabViewItem animated:(BOOL)animated {
@@ -575,50 +579,44 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)resizeWindowForView:(iTermSizeRememberingView *)theView animated:(BOOL)animated {
-    // The window's size includes all space around the tab view, plus the tab view.
-    // These variables hold the space on each side of the tab view.
-    CGFloat spaceAbove = 0;
-    CGFloat spaceBelow = 0;
-    CGFloat spaceLeft = 0;
-
-    // Compute the size of the tab view item.
-    CGSize tabViewSize;
-    CGFloat preferredWidth = kSideMarginsWithinInnerTabView + theView.originalSize.width + kSideMarginsWithinInnerTabView;
-    const CGFloat kTabViewMinWidth = 579;
-    tabViewSize.width = MAX(kTabViewMinWidth, preferredWidth);
-    tabViewSize.height = theView.originalSize.height;
-
-    // Compute left margin
-    const CGFloat kSideMarginBetweenWindowAndTabView = 9;
-    if (_profilesListView.isHidden) {
-      spaceLeft = kSideMarginBetweenWindowAndTabView;
-    } else {
-      // Leave space the for the profiles list view on the left.
-      spaceLeft = NSMaxX(_profilesListView.frame) + kSideMarginBetweenWindowAndTabView;
+    if (self.preferencePanel && ![iTermSettingsProfilesView castFrom:self.view].editingSession) {
+        // The outer page follows the window. Each inner viewport owns its own
+        // minimum content size instead of forcing both columns offscreen.
+        [self.preferencePanel preferencePanelSetContentSize:NSZeroSize];
+        return;
     }
-
-    // Add space for legacy scroller if needed
-    CGFloat spaceRight = kSideMarginBetweenWindowAndTabView;
+    NSWindow *window = self.view.window;
+    // Measure the existing hierarchy so sidebar, profile list, session editing,
+    // and AppKit tab insets all contribute their actual widths. The wrapper
+    // owns the tab frame and can be narrower than the tab's minimum size.
+    const CGFloat tabInsets = NSWidth(_tabView.bounds) - NSWidth(_tabView.contentRect);
+    CGFloat preferredWidth = theView.originalSize.width + tabInsets;
     if ([NSScroller preferredScrollerStyle] == NSScrollerStyleLegacy) {
-        spaceRight += [NSScroller scrollerWidthForControlSize:NSControlSizeRegular
-                                                scrollerStyle:NSScrollerStyleLegacy];
+        preferredWidth += [NSScroller scrollerWidthForControlSize:NSControlSizeRegular
+                                                   scrollerStyle:NSScrollerStyleLegacy];
     }
+    NSView *container = self.preferencePanel.preferencePanelContentView ?: window.contentView;
+    const CGFloat surroundingWidth = NSWidth(container.bounds) - NSWidth(_tabViewWrapperView.bounds);
+    const CGFloat contentWidth = surroundingWidth + MAX(579, preferredWidth);
 
     // Other margins are easy.
     const CGFloat kDistanceFromContentTopToTabViewItemTop = 36;
     const CGFloat kDistanceFromContentBottomToWindowBottom = 16;
-    spaceAbove = kDistanceFromContentTopToTabViewItemTop;
-    spaceBelow = kDistanceFromContentBottomToWindowBottom;
-    if (_profilesListView.isHidden) {
+    const CGFloat spaceAbove = kDistanceFromContentTopToTabViewItemTop;
+    CGFloat spaceBelow = kDistanceFromContentBottomToWindowBottom;
+    if ([iTermSettingsProfilesView castFrom:self.view].editingSession) {
         spaceBelow += kExtraMarginBetweenWindowBottomAndTabViewForEditCurrentSessionMode;
     }
 
     // Compute the size of the content within the window.
-    NSSize contentSize = NSMakeSize(spaceLeft + tabViewSize.width + spaceRight,
-                                    spaceAbove + tabViewSize.height + spaceBelow);
+    NSSize contentSize = NSMakeSize(contentWidth, spaceAbove + theView.originalSize.height + spaceBelow);
+
+    if (self.preferencePanel) {
+        [self.preferencePanel preferencePanelSetContentSize:contentSize];
+        return;
+    }
 
     // Compute a window frame with the new size that preserves the top left coordinate.
-    NSWindow *window = self.view.window;
     NSPoint windowTopLeft = NSMakePoint(NSMinX(window.frame), NSMaxY(window.frame));
     NSRect frame = [window frameRectForContentRect:NSMakeRect(windowTopLeft.x, 0, contentSize.width, contentSize.height)];
     frame.origin.y = windowTopLeft.y - frame.size.height;
@@ -1215,6 +1213,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (void)profilesGeneralPreferencesNameDidChange {
     [_profilesListView selectLockedSelection];
+    [self updateProfilePicker];
 }
 
 - (void)profilesGeneralPreferencesNameDidEndEditing {

@@ -30,9 +30,15 @@
     if (self) {
         static NSUInteger nextDocId;
         _docid = @(nextDocId++);
-        _displayName = [displayName copy];
+        _displayName = [NSLocalizedString(displayName, @"Settings search result") copy];
         _identifier = [identifier copy];
-        _keywordPhrases = [keywordPhrases copy];
+        NSMutableOrderedSet<NSString *> *phrases = [NSMutableOrderedSet orderedSetWithArray:keywordPhrases ?: @[]];
+        [phrases addObject:displayName];
+        [phrases addObject:identifier];
+        for (NSString *phrase in phrases.array) {
+            [phrases addObject:NSLocalizedString(phrase, @"Settings search keyword")];
+        }
+        _keywordPhrases = [phrases.array copy];
     }
     return self;
 }
@@ -290,6 +296,23 @@
     }];
 
     NSSet<NSNumber *> *docIDs = [self intersectCursorDocIDs:cursors];
+    // Word boundaries in Chinese depend on the surrounding phrase: a short
+    // query such as 字体 need not be a prefix of the indexed word. Supplement
+    // the token index with literal substring matches for non-ASCII queries.
+    if (![trimmedQuery canBeConvertedToEncoding:NSASCIIStringEncoding] &&
+        [trimmedQuery rangeOfString:@"\""].location == NSNotFound) {
+        NSMutableSet<NSNumber *> *matches = [docIDs mutableCopy];
+        for (NSNumber *docID in _docs) {
+            iTermPreferencesSearchDocument *document = _docs[docID];
+            if ([document.indexablePhrases anyWithBlock:^BOOL(NSString *phrase) {
+                return [phrase rangeOfString:trimmedQuery
+                                     options:NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location != NSNotFound;
+            }]) {
+                [matches addObject:docID];
+            }
+        }
+        docIDs = matches;
+    }
     if (tuple.firstObject.count) {
         docIDs = [self documentsWithLiteralPhrases:tuple.firstObject fromDocIDs:docIDs];
     }

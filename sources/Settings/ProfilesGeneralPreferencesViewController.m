@@ -24,6 +24,7 @@
 #import "iTermRateLimitedUpdate.h"
 #import "iTermSessionTitleBuiltInFunction.h"
 #import "iTermShortcutInputView.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermStatusIndicatingTextFieldCell.h"
 #import "iTermVariableScope.h"
 #import "iTermVariableScope+Session.h"
@@ -425,6 +426,30 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     [self commitControls];
 }
 
+- (void)organizeSettingsForm {
+    NSView *legacyContainer = _tagsLabel.superview;
+    NSArray<NSString *> *titles = @[
+        NSLocalizedString(@"Profile Identity", @"Profile settings section"),
+        NSLocalizedString(@"Shell & Startup", @"Profile settings section"),
+        NSLocalizedString(@"Titles & Icon", @"Profile settings section")
+    ];
+    NSArray<NSArray<NSView *> *> *groups = @[
+        @[_profileNameFieldLabel, _profileNameField, _shortcutLabel, _profileShortcut,
+          _tagsLabel, _tagsTokenField],
+        @[_commandType.superview, _initialDirectoryType.superview, _schemesLabel, _urlSchemes],
+        @[_titleSettings.superview, _subtitleLabel, _subtitleText, _tallTabBarRequestView, _iconContainer]
+    ];
+    iTermSettingsFormView *form = [[iTermSettingsFormView alloc] initWithContainer:self.view
+                                                                        titles:titles groups:groups];
+    if (legacyContainer.subviews.count == 0) {
+        [legacyContainer removeFromSuperview];
+    }
+    [self.view setFrameSize:NSMakeSize(NSWidth(self.view.frame), form.preferredHeight)];
+    [(iTermSizeRememberingView *)self.view setOriginalSize:self.view.frame.size];
+    form.frame = self.view.bounds;
+    [self.view addSubview:form];
+}
+
 - (void)updateSubtitlesAllowed {
     BOOL subtitlesAllowed;
     if (@available(macOS 26, *)) {
@@ -817,12 +842,12 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
             NSString *rhs = obj2[@"CFBundleURLSchemes"][0];
             return [lhs compare:rhs];
         }];
-        [_urlSchemes addItemWithTitle:@"Select URL Schemes…"];
+        [_urlSchemes addItemWithTitle:NSLocalizedString(@"Select URL Schemes…", @"Profile settings")];
         for (NSDictionary *dict in urlArray) {
             NSString *scheme = dict[@"CFBundleURLSchemes"][0];
             [_urlSchemes addItemWithTitle:scheme];
         }
-        [_urlSchemes setTitle:@"Select URL Schemes…"];
+        [_urlSchemes setTitle:NSLocalizedString(@"Select URL Schemes…", @"Profile settings")];
     }
 
     [[_urlSchemes menu] setAutoenablesItems:YES];
@@ -1037,14 +1062,14 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     NSString *value = [self stringForKey:KEY_CUSTOM_COMMAND];
     if ([value isEqualToString:kProfilePreferenceCommandTypeCustomValue]) {
         [_commandType selectItemWithTag:iTermGeneralProfilePreferenceCustomCommandTagCustom];
-        _customCommand.placeholderString = @"Enter command to run when a new session is created";
+        _customCommand.placeholderString = NSLocalizedString(@"Enter command to run when a new session is created", @"Profile settings");
     } else if ([value isEqualToString:kProfilePreferenceCommandTypeCustomShellValue]) {
         [_commandType selectItemWithTag:iTermGeneralProfilePreferenceCustomCommandTagCustomShell];
-        _customCommand.placeholderString = @"Enter full path to shell";
+        _customCommand.placeholderString = NSLocalizedString(@"Enter full path to shell", @"Profile settings");
         [self removeWhitespaceFromCustomCommand];
     } else if ([value isEqualToString:kProfilePreferenceCommandTypeSSHValue]) {
         [_commandType selectItemWithTag:iTermGeneralProfilePreferenceCustomCommandTagSSH];
-        _customCommand.placeholderString = @"Arguments to ssh";
+        _customCommand.placeholderString = NSLocalizedString(@"Arguments to ssh", @"Profile settings");
     } else {
         [_commandType selectItemWithTag:iTermGeneralProfilePreferenceCustomCommandTagLoginShell];
     }
@@ -1244,14 +1269,14 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         }
     }
 
-    titleSettings.title = customName ?: [iTermSessionTitleBuiltInFunction titleForSessionName:@"Name"
-                                                                                  profileName:@"Profile"
-                                                                                          job:@"Job"
-                                                                                  commandLine:@"Job+Args"
+    titleSettings.title = customName ?: [iTermSessionTitleBuiltInFunction titleForSessionName:NSLocalizedString(@"Name", @"Profile settings")
+                                                                                  profileName:NSLocalizedString(@"Profile", @"Profile settings")
+                                                                                          job:NSLocalizedString(@"Job", @"Profile settings")
+                                                                                  commandLine:NSLocalizedString(@"Job+Args", @"Profile settings")
                                                                                           pwd:@"PWD"
                                                                                           tty:@"TTY"
-                                                                                         user:@"User"
-                                                                                         host:@"Host"
+                                                                                         user:NSLocalizedString(@"User", @"Profile settings")
+                                                                                         host:NSLocalizedString(@"Host", @"Profile settings")
                                                                                 homeDirectory:nil
                                                                                      tmuxPane:nil
                                                                                      iconName:@"“Shell”"

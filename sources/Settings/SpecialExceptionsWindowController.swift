@@ -25,19 +25,19 @@ enum SpecialExceptionRangePreset: CaseIterable {
     var title: String {
         switch self {
         case .han:
-            return "Han (CJK Unified Ideographs)"
+            return NSLocalizedString("Han (CJK Unified Ideographs)", comment: "Character font preset")
         case .hiraganaKatakana:
-            return "Hiragana/Katakana"
+            return NSLocalizedString("Hiragana/Katakana", comment: "Character font preset")
         case .hangulSyllables:
-            return "Hangul Syllables"
+            return NSLocalizedString("Hangul Syllables", comment: "Character font preset")
         case .arabic:
-            return "Arabic"
+            return NSLocalizedString("Arabic", comment: "Character font preset")
         case .cyrillic:
-            return "Cyrillic"
+            return NSLocalizedString("Cyrillic", comment: "Character font preset")
         case .greek:
-            return "Greek (Greek and Coptic)"
+            return NSLocalizedString("Greek (Greek and Coptic)", comment: "Character font preset")
         case .privateUseArea:
-            return "Private Use Area"
+            return NSLocalizedString("Private Use Area", comment: "Character font preset")
         }
     }
 
@@ -97,7 +97,9 @@ class SpecialExceptionEntryEditorWindowController: NSWindowController, NSTextFie
     }
 
     override func awakeFromNib() {
-        compositeView.mode = .fixedPitch
+        // CJK and other script fonts are not necessarily tagged as fixed pitch.
+        // Terminal cell metrics still come from the primary profile font.
+        compositeView.mode = .normal
         compositeView.removeSizePicker()
         compositeView.removeMemberPicker()
         compositeView.removeOptionsButton()
@@ -114,7 +116,7 @@ class SpecialExceptionEntryEditorWindowController: NSWindowController, NSTextFie
         guard let d = parseUnicode(Substring(destination.stringValue)) else {
             return false
         }
-        guard d >= 0 && d + range.count < FontTable.unicodeLimit else {
+        guard d >= 0 && d < FontTable.unicodeLimit && range.count <= FontTable.unicodeLimit - d else {
             return false
         }
         return true
@@ -142,32 +144,32 @@ class SpecialExceptionEntryEditorWindowController: NSWindowController, NSTextFie
         preview.textColor = .textColor
         switch checkedRange {
         case .ascii:
-            preview.string = "Start must be at least U+80. ASCII doesn’t support special exceptions."
+            preview.string = NSLocalizedString("Start must be at least U+80. ASCII doesn’t support special exceptions.", comment: "Character font validation")
         case .incomplete:
             preview.string = ""
         case .inverted:
-            preview.string = "Invalid range."
+            preview.string = NSLocalizedString("Invalid range.", comment: "Character font validation")
         case .limitTooLarge:
-            preview.string = "End is higher than U+110000, the maximum Unicode code point."
+            preview.string = NSLocalizedString("End is higher than U+10FFFF, the maximum Unicode code point.", comment: "Character font validation")
         case .taken:
-            preview.string = "Range includes an already-assigned code point."
+            preview.string = NSLocalizedString("Range includes an already-assigned code point.", comment: "Character font validation")
         case .invalidDestination:
-            preview.string = "Invalid destination"
+            preview.string = NSLocalizedString("Invalid destination", comment: "Character font validation")
         case let .valid(source: sourceRange, destination: _):
             guard let familyName = affordance.familyName,
                   let font = NSFont(name: familyName, size: NSFont.systemFontSize) else {
-                preview.string = "No font selected."
+                preview.string = NSLocalizedString("No font selected.", comment: "Character font validation")
                 return
             }
             if (!destinationIsValid(range: sourceRange)) {
-                preview.string = "Invalid destination."
+                preview.string = NSLocalizedString("Invalid destination.", comment: "Character font validation")
                 return
             }
             let disallowed = IndexSet([9, 10, 13, 0xad, 0x200e, 0x200f, 0x200b, 0x200c])
             let combined = NSMutableAttributedString()
             for i in sourceRange {
                 if combined.length >= 1024 * 10 {
-                    combined.append(NSAttributedString(string: " [truncated]",
+                    combined.append(NSAttributedString(string: NSLocalizedString(" [truncated]", comment: "Font preview truncation"),
                                                        attributes: [
                                                         .foregroundColor: NSColor.textColor,
                                                         .font: NSFont.systemFont(ofSize: NSFont.systemFontSize)]))
@@ -216,7 +218,8 @@ class SpecialExceptionEntryEditorWindowController: NSWindowController, NSTextFie
         entry = FontTable.Entry(start: range.lowerBound,
                                 count: range.count,
                                 destination: hasDestination.state == .on ? parseUnicode(Substring(destination.stringValue)) : nil,
-                                fontName: familyName)
+                                fontName: familyName,
+                                pointSize: entry?.pointSize)
         return true
     }
 
@@ -263,7 +266,9 @@ class SpecialExceptionEntryEditorWindowController: NSWindowController, NSTextFie
 
     private var count: Int? {
         if let start = parseUnicode(Substring(start.stringValue)),
-           let end = parseUnicode(Substring(end.stringValue)) {
+           let end = parseUnicode(Substring(end.stringValue)),
+           (0..<FontTable.unicodeLimit).contains(start),
+           (0..<FontTable.unicodeLimit).contains(end) {
             return end - start + 1
         }
         return nil
@@ -279,16 +284,17 @@ class SpecialExceptionEntryEditorWindowController: NSWindowController, NSTextFie
               let count else {
             return .incomplete
         }
-        let destEnd = destStart + count - 1
         guard destStart >= 128 else {
             return .ascii
         }
         guard count > 0 else {
             return .inverted
         }
-        guard destStart + count <= FontTable.unicodeLimit else {
+        guard destStart < FontTable.unicodeLimit,
+              count <= FontTable.unicodeLimit - destStart else {
             return .limitTooLarge
         }
+        let destEnd = destStart + count - 1
         if disallowedIndexes.intersects(integersIn: destStart...destEnd) {
             return .taken
         }
@@ -398,6 +404,10 @@ final class SpecialExceptionsWindowController: NSWindowController {
         return instance
     }
 
+    override var windowNibPath: String? {
+        SettingsLocalization.nibPath("SpecialExceptionsWindowController")
+    }
+
     override func windowDidLoad() {
         crud = CRUDTableViewController(tableView: tableView,
                                        addRemove: addRemove,
@@ -447,9 +457,14 @@ final class SpecialExceptionsWindowController: NSWindowController {
             if response == .OK, let item {
                 let encoder = JSONEncoder()
                 if let data = try? encoder.encode(config) {
-                    Task {
-                        try await data.writeTo(saveItem: item)
-                        item.revealInFinderIfLocal()
+                    Task { @MainActor [weak self] in
+                        do {
+                            try await data.writeTo(saveItem: item)
+                            item.revealInFinderIfLocal()
+                        } catch {
+                            self?.showError(error.localizedDescription,
+                                            heading: NSLocalizedString("Export Failed", comment: "Character font export"))
+                        }
                     }
                 }
             }
@@ -478,16 +493,12 @@ final class SpecialExceptionsWindowController: NSWindowController {
 
     private func importString(_ content: String) {
         guard let newConfig = FontTable.Config(string: content) else {
-            showError("This file is not well formed. Is it from a newer version of Latterm?")
-            return
-        }
-        guard newConfig.version <= FontTable.Config.latestKnownVersion else {
-            showError("This file is from a newer version of Latterm and cannot be loaded.")
+            showError(NSLocalizedString("This file contains invalid or unsupported character-font rules.", comment: "Character font import"))
             return
         }
         let missing = missingFonts(newConfig)
         guard missing.isEmpty else {
-            showError("You must install the following fonts to use the exceptions in this file:\n\n\(missing.joined(separator: "\n"))")
+            showError(String(format: NSLocalizedString("You must install the following fonts to use the exceptions in this file:\n\n%@", comment: "Missing fonts"), missing.joined(separator: "\n")))
             return
         }
         crud.undoable {
@@ -519,13 +530,13 @@ final class SpecialExceptionsWindowController: NSWindowController {
         }
     }
 
-    private func showError(_ message: String) {
+    private func showError(_ message: String, heading: String = NSLocalizedString("Problem Importing Special Exceptions", comment: "Character font editor")) {
         iTermWarning.show(withTitle: message,
-                          actions: ["OK"],
+                          actions: [NSLocalizedString("OK", comment: "Confirm")],
                           accessory: nil,
                           identifier: "SpecialExceptionsImportError",
                           silenceable: .kiTermWarningTypePersistent,
-                          heading: "Problem Importing Special Exceptions",
+                          heading: heading,
                           window: window)
     }
 
@@ -540,12 +551,12 @@ final class SpecialExceptionsWindowController: NSWindowController {
 
     @IBAction func installNerdFontBundle(_ sender: Any) {
         if !config.entries.isEmpty {
-            let selection = iTermWarning.show(withTitle: "This will replace existing special exceptions. Continue?",
-                                              actions: ["OK", "Cancel"],
+            let selection = iTermWarning.show(withTitle: NSLocalizedString("This will replace existing special exceptions. Continue?", comment: "Character font editor"),
+                                              actions: [NSLocalizedString("OK", comment: "Confirm"), NSLocalizedString("Cancel", comment: "Cancel")],
                                               accessory: nil,
                                               identifier: "SpecialExceptionsInstallNerdBundleConfirmation",
                                               silenceable: .kiTermWarningTypePersistent,
-                                              heading: "Confirm",
+                                              heading: NSLocalizedString("Confirm", comment: "Character font editor"),
                                               window: window)
             if selection == .kiTermWarningSelection1 {
                 return

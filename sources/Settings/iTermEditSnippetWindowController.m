@@ -7,6 +7,7 @@
 
 #import "iTermEditSnippetWindowController.h"
 #import "NSStringITerm.h"
+#import "iTerm2SharedARC-Swift.h"
 
 @interface iTermEditSnippetWindowController ()<NSTokenFieldDelegate>
 
@@ -27,7 +28,7 @@
 
 - (instancetype)initWithSnippet:(iTermSnippet *)snippet
                      completion:(void (^)(iTermSnippet * _Nullable snippet))completion {
-    self = [super initWithWindowNibName:NSStringFromClass([self class])];
+    self = [super initWithWindowNibPath:[iTermSettingsLocalization nibPath:NSStringFromClass(self.class)] owner:self];
     if (self) {
         if (snippet) {
             _title = snippet.title;
@@ -41,7 +42,7 @@
                 _title = [pasteboardString ellipsizedDescriptionNoLongerThan:40];
                 _value = pasteboardString;
             } else {
-                _title = @"Untitled";
+                _title = NSLocalizedString(@"Untitled", @"New snippet title");
                 _value = @"";
             }
             _guid = [[NSUUID UUID] UUIDString];

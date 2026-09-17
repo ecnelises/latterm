@@ -40,6 +40,11 @@
     [super dealloc];
 }
 
+- (NSNumber *)numberValue
+{
+    return self.number;
+}
+
 - (NSString *)description
 {
     return [NSString stringWithFormat:@"<Number: %@>", [self number]];

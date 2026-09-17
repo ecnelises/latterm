@@ -341,7 +341,7 @@ typedef enum {
 }
 
 - (void)profileTableTagsVisibilityDidChange:(ProfileListView *)profileListView {
-    [toggleTagsButton_ setTitle:profileListView.tagsVisible ? @"< Tags" : @"Tags >"];
+    [toggleTagsButton_ setTitle:profileListView.tagsVisible ? NSLocalizedString(@"‹ Tags", @"Hide profile tags") : NSLocalizedString(@"Tags ›", @"Show profile tags")];
 }
 
 - (void)profileTableSelectionDidChange:(id)profileTable

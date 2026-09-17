@@ -12,6 +12,7 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermPreferences.h"
 #import "iTermSlider.h"
+#import "iTermSizeRememberingView.h"
 #import "NSArray+iTerm.h"
 #import "NSColor+iTerm.h"
 #import "NSDictionary+iTerm.h"
@@ -1271,8 +1272,18 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
     const CGFloat kTabViewMinWidth = MAX(minimumWidthForOuterTabView, self.minimumWidth);
     const CGFloat inset = NSWidth(tabView.bounds) - NSWidth(theView.superview.bounds);
     const CGFloat bottomMargin = 36;
-    CGSize tabViewSize = NSMakeSize(MAX(kTabViewMinWidth, theView.bounds.size.width) + inset,
-                                    theView.bounds.size.height + bottomMargin);
+    const NSSize preferredSize = [theView isKindOfClass:[iTermSizeRememberingView class]] ?
+        [(iTermSizeRememberingView *)theView originalSize] : theView.bounds.size;
+    CGSize tabViewSize = NSMakeSize(MAX(kTabViewMinWidth, preferredSize.width) + inset,
+                                    preferredSize.height + bottomMargin);
+    if (self.preferencePanel) {
+        NSView *container = self.preferencePanel.preferencePanelContentView;
+        const NSSize margins = NSMakeSize(NSWidth(container.bounds) - NSWidth(tabView.bounds),
+                                           NSHeight(container.bounds) - NSHeight(tabView.bounds));
+        [self.preferencePanel preferencePanelSetContentSize:NSMakeSize(tabViewSize.width + margins.width,
+                                                                       tabViewSize.height + margins.height)];
+        return;
+    }
     NSRect frame = [self windowFrameForTabViewSize:tabViewSize tabView:tabView];
     frame.size.width = MAX(self.preferencePanel.preferencePanelMinimumWidth ?: iTermPreferencePanelGetWindowMinimumWidth(NO),
                            frame.size.width);

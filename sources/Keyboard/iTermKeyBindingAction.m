@@ -217,52 +217,52 @@ static NSString *GetProfileName(NSString *guid) {
 
     switch (_keyAction) {
         case KEY_ACTION_MOVE_TAB_LEFT:
-            actionString = @"Move Tab Left";
+            actionString = NSLocalizedString(@"Move Tab Left", @"Keyboard shortcut");
             break;
         case KEY_ACTION_MOVE_TAB_RIGHT:
-            actionString = @"Move Tab Right";
+            actionString = NSLocalizedString(@"Move Tab Right", @"Keyboard shortcut");
             break;
         case KEY_ACTION_NEXT_MRU_TAB:
-            actionString = @"Cycle Tabs Forward";
+            actionString = NSLocalizedString(@"Cycle Tabs Forward", @"Keyboard shortcut");
             break;
         case KEY_ACTION_PREVIOUS_MRU_TAB:
-            actionString = @"Cycle Tabs Backward";
+            actionString = NSLocalizedString(@"Cycle Tabs Backward", @"Keyboard shortcut");
             break;
         case KEY_ACTION_NEXT_PANE:
-            actionString = @"Next Pane";
+            actionString = NSLocalizedString(@"Next Pane", @"Keyboard shortcut");
             break;
         case KEY_ACTION_PREVIOUS_PANE:
-            actionString = @"Previous Pane";
+            actionString = NSLocalizedString(@"Previous Pane", @"Keyboard shortcut");
             break;
         case KEY_ACTION_NEXT_SESSION:
-            actionString = @"Next Tab";
+            actionString = NSLocalizedString(@"Next Tab", @"Keyboard shortcut");
             break;
         case KEY_ACTION_NEXT_WINDOW:
-            actionString = @"Next Window";
+            actionString = NSLocalizedString(@"Next Window", @"Keyboard shortcut");
             break;
         case KEY_ACTION_PREVIOUS_SESSION:
-            actionString = @"Previous Tab";
+            actionString = NSLocalizedString(@"Previous Tab", @"Keyboard shortcut");
             break;
         case KEY_ACTION_PREVIOUS_WINDOW:
-            actionString = @"Previous Window";
+            actionString = NSLocalizedString(@"Previous Window", @"Keyboard shortcut");
             break;
         case KEY_ACTION_SCROLL_END:
-            actionString = @"Scroll To End";
+            actionString = NSLocalizedString(@"Scroll To End", @"Keyboard shortcut");
             break;
         case KEY_ACTION_SCROLL_HOME:
-            actionString = @"Scroll To Top";
+            actionString = NSLocalizedString(@"Scroll To Top", @"Keyboard shortcut");
             break;
         case KEY_ACTION_SCROLL_LINE_DOWN:
-            actionString = @"Scroll One Line Down";
+            actionString = NSLocalizedString(@"Scroll One Line Down", @"Keyboard shortcut");
             break;
         case KEY_ACTION_SCROLL_LINE_UP:
-            actionString = @"Scroll One Line Up";
+            actionString = NSLocalizedString(@"Scroll One Line Up", @"Keyboard shortcut");
             break;
         case KEY_ACTION_SCROLL_PAGE_DOWN:
-            actionString = @"Scroll One Page Down";
+            actionString = NSLocalizedString(@"Scroll One Page Down", @"Keyboard shortcut");
             break;
         case KEY_ACTION_SCROLL_PAGE_UP:
-            actionString = @"Scroll One Page Up";
+            actionString = NSLocalizedString(@"Scroll One Page Up", @"Keyboard shortcut");
             break;
         case KEY_ACTION_ESCAPE_SEQUENCE:
             actionString = [NSString stringWithFormat:@"%@ %@", @"Send ^[", _parameter];

@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol iTermPreferencePanelSizing<NSObject>
 - (CGFloat)preferencePanelMinimumWidth;
+- (CGFloat)preferencePanelNavigationWidth;
+- (NSView *)preferencePanelContentView;
+- (void)preferencePanelSetContentSize:(NSSize)size;
 @end
 
 // Post this notif if you change a setting that the settings panel should pick up. See the userinfo
@@ -180,6 +183,8 @@ extern NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues;
 - (void)willDeselectTab;
 
 - (void)resizeWindowForCurrentTabAnimated:(BOOL)animated;
+// Override for panes that manage their own responsive scrolling viewport.
+- (void)resizeWindowForTabViewItem:(NSTabViewItem *)item animated:(BOOL)animated;
 
 // Override this if you have a tab view.
 - (NSTabView * _Nullable)tabView;

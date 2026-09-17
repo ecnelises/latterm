@@ -49,6 +49,14 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
 - (void)defineControlsInContainer:(iTermPreferencesBaseViewController *)container
                     containerView:(NSView *)containerView {
     [containerView addSubview:self.view];
+    self.view.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    _titleColumn.title = NSLocalizedString(@"Title", @"Settings table column");
+    _editButton.title = NSLocalizedString(@"Edit", @"Settings action");
+    _importButton.toolTip = NSLocalizedString(@"Import…", @"Settings action");
+    _exportButton.toolTip = NSLocalizedString(@"Export…", @"Settings action");
+    _removeButton.toolTip = NSLocalizedString(@"Remove", @"Settings action");
+    _actionColumns.title = NSLocalizedString(@"Action", @"Settings table column");
+
     containerView.autoresizesSubviews = YES;
     self.view.frame = containerView.bounds;
     _actions = [[[iTermActionsModel sharedInstance] actions] copy];
@@ -249,24 +257,24 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
                                                   encoding:NSUTF8StringEncoding
                                                      error:&error];
     if (!content || error) {
-        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"While loading %@: %@", url.path, error.localizedDescription]
+        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"While loading %@: %@", @"Settings import and export"), url.path, error.localizedDescription]
                                    actions:@[ @"OK" ]
                                  accessory:nil
                                 identifier:@"NoSyncImportActionsFailed"
                                silenceable:kiTermWarningTypePersistent
-                                   heading:[NSString stringWithFormat:@"Import Failed"]
+                                   heading:[NSString stringWithFormat:NSLocalizedString(@"Import Failed", @"Settings import and export")]
                                     window:self.view.window];
         return;
     }
 
     id root = [NSJSONSerialization it_objectForJsonString:content error:&error];
     if (!root) {
-        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"While parsing %@: %@", url.path, error.localizedDescription]
+        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"While parsing %@: %@", @"Settings import and export"), url.path, error.localizedDescription]
                                    actions:@[ @"OK" ]
                                  accessory:nil
                                 identifier:@"NoSyncImportActionsFailed"
                                silenceable:kiTermWarningTypePersistent
-                                   heading:[NSString stringWithFormat:@"Import Failed"]
+                                   heading:[NSString stringWithFormat:NSLocalizedString(@"Import Failed", @"Settings import and export")]
                                     window:self.view.window];
         return;
     }
@@ -294,12 +302,12 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
 }
 
 - (void)showEncodingErrorForURL:(NSURL *)url {
-    [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"Malformed file at %@", url.path]
+    [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Malformed file at %@", @"Settings import and export"), url.path]
                                actions:@[ @"OK" ]
                              accessory:nil
                             identifier:@"NoSyncActionEncodingError"
                            silenceable:kiTermWarningTypePersistent
-                               heading:[NSString stringWithFormat:@"Import Failed"]
+                               heading:[NSString stringWithFormat:NSLocalizedString(@"Import Failed", @"Settings import and export")]
                                 window:self.view.window];
 }
 
@@ -315,13 +323,13 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
     NSString *json = [NSJSONSerialization it_jsonStringForObject:array];
     [json writeToSaveItem:item completionHandler:^(NSError *error) {
         if (error) {
-            [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"Error saving to %@: %@",
+            [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Error saving to %@: %@", @"Settings import and export"),
                                                 item.displayName, error.localizedDescription]
                                        actions:@[ @"OK" ]
                                      accessory:nil
                                     identifier:@"NoSyncActionWritingError"
                                    silenceable:kiTermWarningTypePersistent
-                                       heading:[NSString stringWithFormat:@"Export Failed"]
+                                       heading:[NSString stringWithFormat:NSLocalizedString(@"Export Failed", @"Settings import and export")]
                                         window:self.view.window];
         } else {
             [item revealInFinderIfLocal];

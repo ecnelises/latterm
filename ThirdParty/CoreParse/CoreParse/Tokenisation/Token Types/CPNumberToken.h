@@ -50,6 +50,9 @@
  */
 @property (readwrite,copy) NSNumber *number;
 
+// Preserve the accessor exported by the previously bundled framework.
+@property (readonly) NSNumber *numberValue;
+
 @end
 
 @interface NSObject (CPIsNumberToken)

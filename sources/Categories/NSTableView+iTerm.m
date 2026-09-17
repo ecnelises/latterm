@@ -90,7 +90,16 @@ NSString *const iTermDynamicProfileSymbolName = @"iTermDynamicProfileSymbolName"
     frame.size.width -= horizontalInset * 2;
     frame.origin.y += verticalPadding;
     frame.size.height -= verticalPadding * 2;
+    if (self.centersTextVertically) {
+        frame.size.height = MIN(frame.size.height, self.textField.fittingSize.height);
+        frame.origin.y = NSMidY(self.bounds) - frame.size.height / 2;
+    }
     self.textField.frame = frame;
+}
+
+- (void)setCentersTextVertically:(BOOL)centersTextVertically {
+    _centersTextVertically = centersTextVertically;
+    [self updateTextFieldFrame];
 }
 
 - (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle {

@@ -209,7 +209,6 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
                            key:nil];
 
     [self updateDeleteSendsCtrlH];
-    [_keyMappingViewController hideAddTouchBarItem];
 
     [iTermFlagsChangedNotification subscribe:self block:^(iTermFlagsChangedNotification * _Nonnull notification) {
         [weakSelf flagsDidChange];
@@ -583,14 +582,6 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     return [iTermKeyMappings sortedKeystrokesForProfile:profile];
 }
 
-- (NSArray<iTermTouchbarItem *> *)keyMappingSortedTouchbarItems:(iTermKeyMappingViewController *)viewController {
-    return nil;
-}
-
-- (NSDictionary *)keyMappingTouchBarItems {
-    return nil;
-}
-
 - (BOOL)keyMapping:(iTermKeyMappingViewController *)viewController shouldImportKeystrokes:(NSSet<iTermKeystroke *> *)keystrokesThatWillChange {
     Profile *profile = [self.delegate profilePreferencesCurrentProfile];
     NSSet<iTermKeystroke *> *keystrokesInProfile = [iTermKeyMappings keystrokesInKeyMappingsInProfile:profile];
@@ -612,7 +603,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
 }
 
 - (void)keyMapping:(iTermKeyMappingViewController *)viewController
-     didChangeItem:(iTermKeystrokeOrTouchbarItem *)item
+     didChangeItem:(iTermKeystroke *)keystroke
            atIndex:(NSInteger)index
           toAction:(iTermKeyBindingAction *)action
         isAddition:(BOOL)addition {
@@ -620,15 +611,6 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     assert(profile);
     NSMutableDictionary *dict = [profile mutableCopy];
 
-    __block iTermKeystroke *keystroke;
-    [item whenFirst:^(iTermKeystroke * _Nonnull theKeystroke) {
-        keystroke = theKeystroke;
-    } second:^(iTermTouchbarItem * _Nonnull object) {
-        keystroke = nil;
-    }];
-    if (!keystroke) {
-        return;
-    }
     if ([iTermKeyMappings haveGlobalKeyMappingForKeystroke:keystroke]) {
         if (![self warnAboutOverride]) {
             return;
@@ -647,8 +629,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
 }
 
 - (void)keyMapping:(iTermKeyMappingViewController *)viewController
-  removeKeystrokes:(NSSet<iTermKeystroke *> *)keystrokes
-     touchbarItems:(NSSet<iTermTouchbarItem *> *)touchbarItems {
+  removeKeystrokes:(NSSet<iTermKeystroke *> *)keystrokes {
     Profile *profile = [self.delegate profilePreferencesCurrentProfile];
     assert(profile);
 
@@ -661,7 +642,6 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
         [iTermKeyMappings removeMappingAtIndex:index fromProfile:dict];
     }];
 
-    // Ignore touch bar items because we don't support profile-specific touch bar items.
 
     [[self.delegate profilePreferencesCurrentModel] setBookmark:dict withGuid:profile[KEY_GUID]];
     [[self.delegate profilePreferencesCurrentModel] flush];

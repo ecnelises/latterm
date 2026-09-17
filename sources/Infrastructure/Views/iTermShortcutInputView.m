@@ -153,11 +153,11 @@
     }
     NSString *string;
     if (isFirstResponder && self.hotkeyBeingRecorded.length == 0) {
-        string = @"Recording";
+        string = NSLocalizedString(@"Recording", @"Keyboard shortcut");
     } else if (isFirstResponder) {
         string = self.hotkeyBeingRecorded;
     } else if (self.stringValue.length == 0) {
-        string = self.isEnabled ? @"Click to Set" : @"";
+        string = self.isEnabled ? NSLocalizedString(@"Click to Set", @"Keyboard shortcut") : @"";
     } else {
         string = self.stringValue;
     }

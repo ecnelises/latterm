@@ -32,6 +32,7 @@
 @property(nonatomic, readonly) NSTextField *profileNameFieldForEditCurrentSession;
 @property(nonatomic, readonly) NSString *selectedGuid;
 
+- (void)organizeSettingsForm;
 - (void)layoutSubviewsForEditCurrentSessionMode;
 - (void)updateShortcutTitles;
 - (void)windowWillClose;

@@ -53,19 +53,19 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
     [super awakeFromNib];
     NSMenu *menu = [[NSMenu alloc] init];
     menu.delegate = self;
-    [menu addItem:[[NSMenuItem alloc] initWithTitle:@"Duplicate"
+    [menu addItem:[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Duplicate", @"Snippet action")
                                              action:@selector(duplicateSnippets:)
                                       keyEquivalent:@""]];
-    [menu addItem:[[NSMenuItem alloc] initWithTitle:@"Delete"
+    [menu addItem:[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Delete", @"Snippet action")
                                              action:@selector(deleteSnippets:)
                                       keyEquivalent:@""]];
-    [menu addItem:[[NSMenuItem alloc] initWithTitle:@"Add Above"
+    [menu addItem:[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Add Above", @"Snippet action")
                                              action:@selector(addSnippetAbove:)
                                       keyEquivalent:@""]];
-    [menu addItem:[[NSMenuItem alloc] initWithTitle:@"Add Below"
+    [menu addItem:[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Add Below", @"Snippet action")
                                              action:@selector(addSnippetBelow:)
                                       keyEquivalent:@""]];
-    [menu addItem:[[NSMenuItem alloc] initWithTitle:@"Edit"
+    [menu addItem:[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit", @"Snippet action")
                                              action:@selector(editClickedSnippet:)
                                       keyEquivalent:@""]];
     _tableView.menu = menu;
@@ -175,6 +175,15 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
 - (void)defineControlsInContainer:(iTermPreferencesBaseViewController *)container
                     containerView:(NSView *)containerView {
     [containerView addSubview:self.view];
+    self.view.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    _titleColumn.title = NSLocalizedString(@"Title", @"Settings table column");
+    _editButton.title = NSLocalizedString(@"Edit", @"Settings action");
+    _importButton.toolTip = NSLocalizedString(@"Import…", @"Settings action");
+    _exportButton.toolTip = NSLocalizedString(@"Export…", @"Settings action");
+    _removeButton.toolTip = NSLocalizedString(@"Remove", @"Settings action");
+    _valueColumn.title = NSLocalizedString(@"Text", @"Settings table column");
+    _searchField.placeholderString = NSLocalizedString(@"Search Snippets", @"Snippet search");
+
     containerView.autoresizesSubviews = YES;
     self.view.frame = containerView.bounds;
     [self load];
@@ -441,24 +450,24 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
                                                   encoding:NSUTF8StringEncoding
                                                      error:&error];
     if (!content || error) {
-        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"While loading %@: %@", url.path, error.localizedDescription]
+        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"While loading %@: %@", @"Settings import and export"), url.path, error.localizedDescription]
                                    actions:@[ @"OK" ]
                                  accessory:nil
                                 identifier:@"NoSyncImportSnippetsFailed"
                                silenceable:kiTermWarningTypePersistent
-                                   heading:[NSString stringWithFormat:@"Import Failed"]
+                                   heading:[NSString stringWithFormat:NSLocalizedString(@"Import Failed", @"Settings import and export")]
                                     window:self.view.window];
         return;
     }
 
     id root = [NSJSONSerialization it_objectForJsonString:content error:&error];
     if (!root) {
-        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"While parsing %@: %@", url.path, error.localizedDescription]
+        [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"While parsing %@: %@", @"Settings import and export"), url.path, error.localizedDescription]
                                    actions:@[ @"OK" ]
                                  accessory:nil
                                 identifier:@"NoSyncImportSnippetsFailed"
                                silenceable:kiTermWarningTypePersistent
-                                   heading:[NSString stringWithFormat:@"Import Failed"]
+                                   heading:[NSString stringWithFormat:NSLocalizedString(@"Import Failed", @"Settings import and export")]
                                     window:self.view.window];
         return;
     }
@@ -486,12 +495,12 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
 }
 
 - (void)showEncodingErrorForURL:(NSURL *)url {
-    [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"Malformed file at %@", url.path]
+    [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Malformed file at %@", @"Settings import and export"), url.path]
                                actions:@[ @"OK" ]
                              accessory:nil
                             identifier:@"NoSyncSnippetEncodingError"
                            silenceable:kiTermWarningTypePersistent
-                               heading:[NSString stringWithFormat:@"Import Failed"]
+                               heading:[NSString stringWithFormat:NSLocalizedString(@"Import Failed", @"Settings import and export")]
                                 window:self.view.window];
 }
 
@@ -507,13 +516,13 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
     NSString *json = [NSJSONSerialization it_jsonStringForObject:array];
     [json writeToSaveItem:item completionHandler:^(NSError *error) {
         if (error) {
-            [iTermWarning showWarningWithTitle:[NSString stringWithFormat:@"Error saving to %@: %@",
+            [iTermWarning showWarningWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Error saving to %@: %@", @"Settings import and export"),
                                                 item.displayName, error.localizedDescription]
                                        actions:@[ @"OK" ]
                                      accessory:nil
                                     identifier:@"NoSyncSnippetWritingError"
                                    silenceable:kiTermWarningTypePersistent
-                                       heading:[NSString stringWithFormat:@"Export Failed"]
+                                       heading:[NSString stringWithFormat:NSLocalizedString(@"Export Failed", @"Settings import and export")]
                                         window:self.view.window];
         } else {
             [item revealInFinderIfLocal];

@@ -369,8 +369,8 @@ const CGFloat sideMarginWidth = 40;
                 [[iTermSearchableComboViewItem alloc] initWithLabel:@"Remap Modifiers in Latterm Only" tag:KEY_ACTION_REMAP_LOCALLY],
             ]] : [NSNull null],
             [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Recent Tabs" items:@[
-                [[iTermSearchableComboViewItem alloc] initWithLabel:@"Cycle Tabs Forward" tag:KEY_ACTION_NEXT_MRU_TAB],
-                [[iTermSearchableComboViewItem alloc] initWithLabel:@"Cycle Tabs Backward" tag:KEY_ACTION_PREVIOUS_MRU_TAB],
+                [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Cycle Tabs Forward", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_MRU_TAB],
+                [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Cycle Tabs Backward", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_MRU_TAB],
             ]],
         ] arrayByRemovingNulls]];
     }
@@ -401,23 +401,23 @@ const CGFloat sideMarginWidth = 40;
         ] arrayByRemovingNulls]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Tabs" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Next Tab" tag:KEY_ACTION_NEXT_SESSION],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Previous Tab" tag:KEY_ACTION_PREVIOUS_SESSION],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Next Tab", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_SESSION],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Previous Tab", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_SESSION],
         ]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Reorder Tabs" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move Tab Left" tag:KEY_ACTION_MOVE_TAB_LEFT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move Tab Right" tag:KEY_ACTION_MOVE_TAB_RIGHT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Tab Left", @"Keyboard shortcut") tag:KEY_ACTION_MOVE_TAB_LEFT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Tab Right", @"Keyboard shortcut") tag:KEY_ACTION_MOVE_TAB_RIGHT],
         ]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Windows" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Next Window" tag:KEY_ACTION_NEXT_WINDOW],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Previous Window" tag:KEY_ACTION_PREVIOUS_WINDOW],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Next Window", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_WINDOW],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Previous Window", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_WINDOW],
         ]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Panes" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Next Pane" tag:KEY_ACTION_NEXT_PANE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Previous Pane" tag:KEY_ACTION_PREVIOUS_PANE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Next Pane", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_PANE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Previous Pane", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_PANE],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane Above" tag:KEY_ACTION_SELECT_PANE_ABOVE],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane Below" tag:KEY_ACTION_SELECT_PANE_BELOW],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane On Left" tag:KEY_ACTION_SELECT_PANE_LEFT],
@@ -434,10 +434,10 @@ const CGFloat sideMarginWidth = 40;
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Scroll" items:@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll to End" tag:KEY_ACTION_SCROLL_END],
             [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll to Top" tag:KEY_ACTION_SCROLL_HOME],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll One Line Down" tag:KEY_ACTION_SCROLL_LINE_DOWN],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll One Line Up" tag:KEY_ACTION_SCROLL_LINE_UP],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll One Page Down" tag:KEY_ACTION_SCROLL_PAGE_DOWN],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll One Page Up" tag:KEY_ACTION_SCROLL_PAGE_UP],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Line Down", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_LINE_DOWN],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Line Up", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_LINE_UP],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Page Down", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_PAGE_DOWN],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Page Up", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_PAGE_UP],
         ]],
 
         [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Split Panes" items:@[

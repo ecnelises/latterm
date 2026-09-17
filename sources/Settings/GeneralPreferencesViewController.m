@@ -149,6 +149,7 @@ enum {
     IBOutlet NSButton *_syncTmuxClipboard;
 
     IBOutlet NSTabView *_tabView;
+    NSTabViewItem *_startupClosingTab;
 
     IBOutlet NSButton *_enterCopyModeAutomatically;
     IBOutlet NSButton *_warningButton;
@@ -704,6 +705,61 @@ enum {
     [self updateEnabledState];
     [self commitControls];
     [self updateValueForInfo:allowSendingClipboardInfo];
+    [self organizeStartupAndClosing];
+}
+
+// Keep the original controls and preference/search bindings, but show the
+// complete start/exit lifecycle together instead of two mostly empty panes.
+- (void)organizeStartupAndClosing {
+    _startupClosingTab = [_tabView tabViewItemAtIndex:[_tabView indexOfTabViewItemWithIdentifier:@"1"]];
+    NSTabViewItem *closingTab = [_tabView tabViewItemAtIndex:[_tabView indexOfTabViewItemWithIdentifier:@"2"]];
+    NSArray<NSView *> *startup = @[_openWindowsAtStartupLabel, _openWindowsAtStartup, _warningButton,
+                                  _openBookmark, _restoreWindowsToSameSpaces, _alwaysOpenWindowAtStartup, _alwaysOpenLegend];
+    NSArray<NSView *> *closing = @[_quitWhenAllWindowsClosed, _confirmClosingMultipleSessions,
+                                  _promptOnQuit, _evenIfThereAreNoWindows, _disableConfirmationOnShutdown];
+    NSView *canvas = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 600, 500)];
+    NSArray<NSValue *> *startupFrames = @[
+        [NSValue valueWithRect:NSMakeRect(16, 158, 568, 18)],
+        [NSValue valueWithRect:NSMakeRect(13, 120, 530, 28)],
+        [NSValue valueWithRect:NSMakeRect(558, 124, 23, 20)],
+        [NSValue valueWithRect:NSMakeRect(14, 90, 570, 18)],
+        [NSValue valueWithRect:NSMakeRect(14, 62, 570, 18)],
+        [NSValue valueWithRect:NSMakeRect(14, 34, 570, 18)],
+        [NSValue valueWithRect:NSMakeRect(36, 16, 548, 12)]
+    ];
+    for (NSUInteger index = 0; index < startup.count; index++) {
+        NSView *control = startup[index];
+        [control removeFromSuperview];
+        control.frame = startupFrames[index].rectValue;
+        control.autoresizingMask = control == _warningButton ? NSViewMinXMargin : NSViewWidthSizable;
+        [canvas addSubview:control];
+    }
+    for (NSUInteger index = 0; index < closing.count; index++) {
+        NSView *control = closing[index];
+        [control removeFromSuperview];
+        const CGFloat indent = control == _evenIfThereAreNoWindows ? 36 : 14;
+        control.frame = NSMakeRect(indent, 132 - index * 28, 584 - indent, 18);
+        control.autoresizingMask = NSViewWidthSizable;
+        [canvas addSubview:control];
+    }
+    iTermSettingsFormView *form = [[iTermSettingsFormView alloc] initWithContainer:canvas
+        titles:@[NSLocalizedString(@"When Latterm Starts", @"Settings section"),
+                 NSLocalizedString(@"Closing & Confirmation", @"Settings section")]
+        groups:@[startup, closing]];
+    iTermSettingsContentView *scroll = [[iTermSettingsContentView alloc] initWithContent:form];
+    [scroll setMinimumContentSize:NSMakeSize(540, form.preferredHeight)];
+    scroll.frame = _startupClosingTab.view.bounds;
+    _startupClosingTab.view = scroll;
+    _startupClosingTab.label = NSLocalizedString(@"Startup & Exit", @"Settings section");
+    [_tabView removeTabViewItem:closingTab];
+}
+
+- (void)resizeWindowForTabViewItem:(NSTabViewItem *)item animated:(BOOL)animated {
+    if (item == _startupClosingTab && self.preferencePanel) {
+        [self.preferencePanel preferencePanelSetContentSize:NSZeroSize];
+        return;
+    }
+    [super resizeWindowForTabViewItem:item animated:animated];
 }
 
 - (void)customScriptsFolderDidChange {

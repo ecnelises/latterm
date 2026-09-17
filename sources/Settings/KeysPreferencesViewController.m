@@ -20,7 +20,6 @@
 #import "iTermNotificationController.h"
 #import "iTermPresetKeyMappings.h"
 #import "iTermTextPopoverViewController.h"
-#import "iTermTouchbarMappings.h"
 #import "iTermTuple.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
@@ -715,15 +714,6 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
     return [iTermKeyMappings sortedGlobalKeystrokes];
 }
 
-- (NSArray<iTermTouchbarItem *> *)keyMappingSortedTouchbarItems:(iTermKeyMappingViewController *)viewController {
-    NSDictionary *dict = [iTermTouchbarMappings globalTouchBarMap];
-    return [iTermTouchbarMappings sortedTouchbarItemsInDictionary:dict];
-}
-
-- (NSDictionary *)keyMappingTouchBarItems {
-    return [iTermTouchbarMappings globalTouchBarMap];
-}
-
 - (BOOL)keyMapping:(iTermKeyMappingViewController *)viewController shouldImportKeystrokes:(NSSet<iTermKeystroke *> *)keystrokesThatWillChange {
     NSSet<iTermKeystroke *> *keystrokesInGlobalMapping = [iTermKeyMappings keystrokesInGlobalMapping];
     if (![keystrokesInGlobalMapping isSubsetOfSet:keystrokesThatWillChange]) {
@@ -739,35 +729,23 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
 }
 
 - (void)keyMapping:(iTermKeyMappingViewController *)viewController
-     didChangeItem:(iTermKeystrokeOrTouchbarItem *)item
+     didChangeItem:(iTermKeystroke *)keystroke
            atIndex:(NSInteger)index
           toAction:(iTermKeyBindingAction *)action
         isAddition:(BOOL)addition {
     [iTermKeyMappings suppressNotifications:^{
-        [item whenFirst:
-         ^(iTermKeystroke * _Nonnull keystroke) {
-            NSMutableDictionary *dict = [[iTermKeyMappings globalKeyMap] mutableCopy];
-            if ([self anyProfileHasMappingForKeystroke:keystroke]) {
-                if (![self warnAboutPossibleOverride]) {
-                    return;
-                }
+        NSMutableDictionary *dict = [[iTermKeyMappings globalKeyMap] mutableCopy];
+        if ([self anyProfileHasMappingForKeystroke:keystroke]) {
+            if (![self warnAboutPossibleOverride]) {
+                return;
             }
-            [iTermKeyMappings setMappingAtIndex:index
-                                   forKeystroke:keystroke
-                                         action:action
-                                      createNew:addition
-                                   inDictionary:dict];
-            [iTermKeyMappings setGlobalKeyMap:dict];
         }
-                 second:
-         ^(iTermTouchbarItem * _Nonnull touchbarItem) {
-            NSMutableDictionary *dict = [[iTermTouchbarMappings globalTouchBarMap] mutableCopy];
-            [iTermTouchbarMappings updateDictionary:dict
-                                    forTouchbarItem:touchbarItem
-                                             action:action];
-            [iTermTouchbarMappings setGlobalTouchBarMap:dict];
-            [self maybeExplainHowToEditTouchBarControls];
-        }];
+        [iTermKeyMappings setMappingAtIndex:index
+                               forKeystroke:keystroke
+                                     action:action
+                                  createNew:addition
+                               inDictionary:dict];
+        [iTermKeyMappings setGlobalKeyMap:dict];
     }];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:kKeyBindingsChangedNotification
@@ -775,21 +753,8 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
                                                       userInfo:nil];
 }
 
-- (void)maybeExplainHowToEditTouchBarControls {
-    if ([iTermUserDefaults haveExplainedHowToAddTouchbarControls]) {
-        return;
-    }
-    if ([[iTermTouchbarMappings globalTouchBarMap] count] != 1) {
-        return;
-    }
-    [[iTermNotificationController sharedInstance] notify:@"Touch Bar Item Added"
-                                         withDescription:@"Select View > Customize Touch Bar to enable your new touch bar item."];
-    [iTermUserDefaults setHaveExplainedHowToAddTouchbarControls:YES];
-}
-
 - (void)keyMapping:(iTermKeyMappingViewController *)viewController
-  removeKeystrokes:(NSSet<iTermKeystroke *> *)keystrokes
-     touchbarItems:(NSSet<iTermTouchbarItem *> *)touchbarItems {
+  removeKeystrokes:(NSSet<iTermKeystroke *> *)keystrokes {
     [iTermKeyMappings suppressNotifications:^{
         [keystrokes enumerateObjectsUsingBlock:^(iTermKeystroke * _Nonnull keystroke, BOOL * _Nonnull stop) {
             NSUInteger index = [[iTermKeyMappings sortedGlobalKeystrokes] indexOfObject:keystroke];
@@ -797,12 +762,8 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
             [iTermKeyMappings setGlobalKeyMap:[iTermKeyMappings removeMappingAtIndex:index
                                                                         inDictionary:[iTermKeyMappings globalKeyMap]]];
         }];
-        [touchbarItems enumerateObjectsUsingBlock:^(iTermTouchbarItem * _Nonnull touchbarItem, BOOL * _Nonnull stop) {
-            [iTermTouchbarMappings removeTouchbarItem:touchbarItem];
-        }];
     }];
 
-    // iTermKeyMappings posts this for you but iTermTouchbarMappings does not.
     [[NSNotificationCenter defaultCenter] postNotificationName:kKeyBindingsChangedNotification
                                                         object:nil
                                                       userInfo:nil];

@@ -1823,7 +1823,7 @@ extension Conductor {
             }
             return
         }
-        Task {
+        Task { [self] in
             do {
                 DLog("Request suggestions \(request)")
                 let suggestions = try await self.suggestions(request.inputs)

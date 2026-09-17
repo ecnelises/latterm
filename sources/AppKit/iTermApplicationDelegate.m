@@ -72,7 +72,6 @@
 #import "iTermColorPresets.h"
 #import "iTermController.h"
 #import "iTermDependencyEditorWindowController.h"
-#import "iTermDisclosableView.h"
 #import "iTermFileDescriptorSocketPath.h"
 #import "iTermFontPanel.h"
 #import "iTermFullScreenWindowManager.h"
@@ -1097,22 +1096,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         alert.informativeText = message;
         [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Default confirmation button title")];
         [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Default cancellation button title")];
-        iTermDisclosableView *accessory = [[iTermDisclosableView alloc] initWithFrame:NSZeroRect
-                                                                               prompt:NSLocalizedString(@"Why am I being prompted?",
-                                                                                                        @"Prompt-on-quit disclosure prompt")
-                                                                              message:[NSString stringWithFormat:NSLocalizedString(@"You are being prompted because:\n\n%@",
-                                                                                                                                  @"Prompt-on-quit disclosure body"),
-                                                                                       reason.message]];
-        iTermAccessoryViewUnfucker *unfucker = [[iTermAccessoryViewUnfucker alloc] initWithView:accessory];
-        accessory.frame = NSMakeRect(0, 0, accessory.intrinsicContentSize.width, accessory.intrinsicContentSize.height);
-        accessory.requestLayout = ^{
-            [unfucker layout];
-            [alert layout];
-            [alert layout];
-        };
-        [unfucker layout];
-        alert.accessoryView = unfucker;
-        [alert layout];
         if ([alert runModal] != NSAlertFirstButtonReturn) {
             RLog(@"User declined to quit");
             return NSTerminateCancel;

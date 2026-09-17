@@ -59,6 +59,9 @@ extern NSString *const kProfileWasDeletedNotification;
   NSTableViewDelegate,
   ProfileTableMenuHandler>
 
+// Applies the embedded Settings list style; other profile pickers keep their layout.
+- (void)useSettingsAppearance;
+
 @property(nonatomic, readonly) BOOL tagsVisible;
 @property(nonatomic) CGFloat tagsFraction;
 @property(nonatomic, weak) IBOutlet id<ProfileListViewDelegate> delegate;

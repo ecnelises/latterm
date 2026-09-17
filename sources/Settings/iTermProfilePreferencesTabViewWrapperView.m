@@ -13,9 +13,18 @@
 
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize {
     [super resizeWithOldSuperviewSize:oldSize];
-    NSRect frame = self.bounds;
-    frame.size.width = MAX(frame.size.width, 565);
-    _tabView.frame = frame;
+    [self layoutTabView];
+}
+
+- (void)setFrameSize:(NSSize)newSize {
+    [super setFrameSize:newSize];
+    [self layoutTabView];
+}
+
+- (void)layoutTabView {
+    _tabView.frame = self.bounds;
+    NSTabView *tabs = (NSTabView *)_tabView;
+    tabs.selectedTabViewItem.view.frame = tabs.contentRect;
 }
 
 @end

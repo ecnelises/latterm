@@ -119,7 +119,6 @@ NSString *const kSessionProfileDidChange = @"kSessionProfileDidChange";
 NSString *const kPreferencePanelDidLoadNotification = @"kPreferencePanelDidLoadNotification";
 NSString *const kPreferencePanelWillCloseNotification = @"kPreferencePanelWillCloseNotification";
 
-static NSString *const iTermPreferencePanelSearchFieldToolbarItemIdentifier = @"iTermPreferencePanelSearchFieldToolbarItemIdentifier";
 static NSString *const iTermPrefsScrimMouseUpNotification = @"iTermPrefsScrimMouseUpNotification";
 
 CGFloat iTermPreferencePanelGetWindowMinimumWidth(BOOL session) {
@@ -133,9 +132,7 @@ CGFloat iTermPreferencePanelGetWindowMinimumWidth(BOOL session) {
     }
 #endif
 
-    // Need extra space to keep search field from collapsing.
-    // Use 760 if you are OK with the search field hiding tabs when focused (I don't like it
-    // because it stays hidden after the search field loses focus if there's a query).
+    // Preserve enough room for the existing preference forms and inner tabs.
     return 785;
 }
 
@@ -229,58 +226,6 @@ static PreferencePanel *gSessionsPreferencePanel;
 - (void)click:(NSGestureRecognizer *)gestureRecognizer {
     if (gestureRecognizer.state == NSGestureRecognizerStateRecognized) {
         [[NSNotificationCenter defaultCenter] postNotificationName:iTermPrefsScrimMouseUpNotification object:nil];
-    }
-}
-
-@end
-
-// Workaround for macOS 26 (Tahoe) search field bugs. Issue 12708.
-//
-// 1. Vertical centering: NSSearchToolbarItem draws the text and glyphs off
-//    center. Merely round-tripping the cell through the archiver (see
-//    -bigSurSearchFieldToolbarItem, which decodes into this subclass) fixes it,
-//    so no rect overrides are needed for that.
-// 2. Focus ring: on 26.2 the system focus ring was broken (it hugged the small
-//    internal editor instead of the capsule; FB21919006), so we draw our own.
-//    It was fixed by 26.5.1, where the custom ring instead leaves corner
-//    artifacts, so we skip it there and let the system draw the ring.
-@interface iTermPrefsSearchFieldCell : NSSearchFieldCell
-@end
-
-@implementation iTermPrefsSearchFieldCell
-
-- (NSRect)cancelButtonRectForBounds:(NSRect)rect {
-    NSRect result = [super cancelButtonRectForBounds:rect];
-    result.origin.y -= 2;
-    return result;
-}
-
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
-    [super drawWithFrame:cellFrame inView:controlView];
-
-    if (@available(macOS 26.5.1, *)) {
-        // The system focus ring works again as of 26.5.1. Drawing our own on top
-        // leaves thin angled fragments below the capsule corners, so skip it.
-        return;
-    }
-
-    // Draw custom focus ring that extends beyond cell bounds
-    if ([controlView respondsToSelector:@selector(currentEditor)] &&
-        [(NSControl *)controlView currentEditor] != nil) {
-        [NSGraphicsContext saveGraphicsState];
-
-        // Extend frame by 4 points on top and bottom
-        NSRect focusFrame = NSInsetRect(cellFrame, -0.5, -4);
-
-        // Use system accent color for focus ring
-        NSColor *focusColor = [NSColor keyboardFocusIndicatorColor];
-        [focusColor setStroke];
-
-        NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:focusFrame xRadius:16 yRadius:16];
-        path.lineWidth = 3.0;
-        [path stroke];
-
-        [NSGraphicsContext restoreGraphicsState];
     }
 }
 
@@ -427,6 +372,11 @@ static PreferencePanel *gSessionsPreferencePanel;
     for (NSScreen *screen in [NSScreen screens]) {
         if (NSEqualRects(screen.frame, screenFrame)) {
             NSRect frame = self.frame;
+            if (dict[@"size"]) {
+                NSSize size = NSSizeFromString(dict[@"size"]);
+                frame.size.width = MIN(screen.visibleFrame.size.width, MAX(self.minSize.width, size.width));
+                frame.size.height = MIN(screen.visibleFrame.size.height, MAX(self.minSize.height, size.height));
+            }
             frame.origin.x = topLeft.x;
             frame.origin.y = topLeft.y - frame.size.height;
             [self setFrame:frame display:NO];
@@ -440,7 +390,8 @@ static PreferencePanel *gSessionsPreferencePanel;
     const NSPoint topLeft = NSMakePoint(frame.origin.x,
                                         frame.origin.y + frame.size.height);
     return @{ @"topLeft": NSStringFromPoint(topLeft),
-              @"screenFrame": NSStringFromRect(screen.frame) };
+              @"screenFrame": NSStringFromRect(screen.frame),
+              @"size": NSStringFromSize(frame.size) };
 }
 
 - (NSWindowPersistableFrameDescriptor)stringWithSavedFrame {
@@ -480,7 +431,7 @@ static PreferencePanel *gSessionsPreferencePanel;
 
 @end
 
-@interface PreferencePanel() <iTermPrefsPanelDelegate, iTermPreferencesSearchEngineResultsWindowControllerDelegate, NSSearchFieldDelegate, NSTabViewDelegate, iTermPreferencePanelSizing, NSToolbarItemValidation, NSMenuItemValidation>
+@interface PreferencePanel() <iTermPrefsPanelDelegate, iTermPreferencesSearchEngineResultsWindowControllerDelegate, NSSearchFieldDelegate, NSTabViewDelegate, iTermPreferencePanelSizing, NSMenuItemValidation>
 
 @end
 
@@ -497,36 +448,24 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     IBOutlet iTermAdvancedSettingsViewController *_advancedViewController;
     IBOutlet iTermShortcutsViewController *_shortcutsViewController;
 
-    IBOutlet NSToolbar *_toolbar;
     IBOutlet NSTabView *_tabView;
-    IBOutlet NSToolbarItem *_globalToolbarItem;
+    iTermSettingsSidebarView *_settingsSidebar;
+    iTermSettingsContentView *_settingsContent;
+    iTermSettingsPageHeaderView *_settingsHeader;
+    NSArray<iTermSettingsPage *> *_settingsPages;
     IBOutlet NSTabViewItem *_globalTabViewItem;
-    IBOutlet NSToolbarItem *_appearanceToolbarItem;
     IBOutlet NSTabViewItem *_appearanceTabViewItem;
-    IBOutlet NSToolbarItem *_keyboardToolbarItem;
-    IBOutlet NSToolbarItem *_arrangementsToolbarItem;
     IBOutlet NSTabViewItem *_keyboardTabViewItem;
     IBOutlet NSTabViewItem *_arrangementsTabViewItem;
-    IBOutlet NSToolbarItem *_profilesToolbarItem;
     IBOutlet NSTabViewItem *_profilesTabViewItem;
-    IBOutlet NSToolbarItem *_mouseToolbarItem;
     IBOutlet NSTabViewItem *_mouseTabViewItem;
-    IBOutlet NSToolbarItem *_advancedToolbarItem;
     IBOutlet NSTabViewItem *_advancedTabViewItem;
     IBOutlet NSTabViewItem *_shortcutsTabViewItem;
-    IBOutlet NSToolbarItem *_shortcutsToolbarItem;
 
-    NSToolbarItem *_searchFieldToolbarItem;
-#ifdef MAC_OS_X_VERSION_10_16
-    NSSearchToolbarItem *_bigSurSearchFieldToolbarItem NS_AVAILABLE_MAC(10_16);
-    NSMenuItem *_showNonDefaultValuesMenuItem NS_AVAILABLE_MAC(10_16);
-#endif
-    NSDictionary<NSString *, NSString *> *_keywords;
-    NSDictionary<NSString *, id<iTermSearchableViewController>> *_keywordToViewController;
+    NSSearchField *_settingsSearchField;
     // This class is not well named. It is a view controller for the window
     // arrangements tab. It's also a singleton :(
     IBOutlet WindowArrangements *arrangements_;
-    NSSize _standardSize;
     NSInteger _disableResize;
     BOOL _tmux;
     NSTimeInterval _delay;
@@ -558,11 +497,10 @@ static iTermPreferencesSearchEngine *gSearchEngine;
 
 - (instancetype)initWithProfileModel:(ProfileModel*)model
               editCurrentSessionMode:(BOOL)editCurrentSessionMode {
-    self = [super initWithWindowNibName:@"PreferencePanel"];
+    NSString *path = [iTermSettingsLocalization nibPath:@"PreferencePanel"];
+    self = path ? [super initWithWindowNibPath:path owner:self] : [super initWithWindowNibName:@"PreferencePanel"];
     if (self) {
         _profileModel = model;
-
-        [_toolbar setSelectedItemIdentifier:[_globalToolbarItem itemIdentifier]];
 
         _editCurrentSessionMode = editCurrentSessionMode;
     }
@@ -578,26 +516,6 @@ static iTermPreferencesSearchEngine *gSearchEngine;
 - (void)awakeFromNib {
     ITAssertWithMessage(self.isWindowLoaded, @"window not loaded in %@", NSStringFromSelector(_cmd));
     [self.window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
-    [_toolbar setSelectedItemIdentifier:[_globalToolbarItem itemIdentifier]];
-
-    BOOL setStyle = YES;
-#if DEBUG
-    if (@available(macOS 26.1, *)) {} else if (@available(macOS 26, *)) {
-        setStyle = NO;
-    }
-#endif
-    if (setStyle) {
-        self.window.toolbarStyle = NSWindowToolbarStylePreference;
-    }
-
-    _globalToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolGearshape) accessibilityDescription:@"General"];
-    _appearanceToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolEye) accessibilityDescription:@"Appearance"];
-    _keyboardToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolKeyboard) accessibilityDescription:@"Keys"];
-    _arrangementsToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolMacwindowOnRectangle) accessibilityDescription:@"Arrangements"];
-    _profilesToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolPerson) accessibilityDescription:@"Profiles"];
-    _mouseToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolCursorarrowMotionlines) accessibilityDescription:@"Pointer"];
-    _advancedToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolGearshape2) accessibilityDescription:@"Advanced"];
-    _shortcutsToolbarItem.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolBoltCircle) accessibilityDescription:@"Shortcuts"];
 
     _globalTabViewItem.view = _generalPreferencesViewController.view;
     _appearanceTabViewItem.view = _appearancePreferencesViewController.view;
@@ -613,18 +531,41 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     _profilesViewController.preferencePanel = self;
     _profilesViewController.tmuxSession = _tmux;
     _pointerViewController.preferencePanel = self;
+    _shortcutsViewController.preferencePanel = self;
+
+    _settingsPages = @[
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryGeneral
+                                       tabViewItem:_globalTabViewItem controller:_generalPreferencesViewController],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryAppearance
+                                       tabViewItem:_appearanceTabViewItem controller:_appearancePreferencesViewController],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryProfiles
+                                       tabViewItem:_profilesTabViewItem controller:_profilesViewController],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryKeys
+                                       tabViewItem:_keyboardTabViewItem controller:_keysViewController],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryArrangements
+                                       tabViewItem:_arrangementsTabViewItem controller:arrangements_],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryPointer
+                                       tabViewItem:_mouseTabViewItem controller:_pointerViewController],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryShortcuts
+                                       tabViewItem:_shortcutsTabViewItem controller:_shortcutsViewController],
+        [[iTermSettingsPage alloc] initWithCategory:iTermSettingsCategoryAdvanced
+                                       tabViewItem:_advancedTabViewItem controller:_advancedViewController]
+    ];
+    [self installSettingsContent];
+    if (!_editCurrentSessionMode) {
+        [self installSettingsSidebar];
+    }
 
     if (_editCurrentSessionMode) {
         [self layoutSubviewsForEditCurrentSessionMode];
-        self.window.title = @"Edit Session";
+        self.window.title = NSLocalizedString(@"Edit Session", @"Session settings window");
     } else {
-        [_toolbar setVisible:YES];
         [self resizeWindowForTabViewItem:_globalTabViewItem animated:NO];
         NSString *suiteName = [iTermUserDefaults customSuiteName];
         if (suiteName.length > 0) {
-            self.window.title = [NSString stringWithFormat:@"Settings: %@", suiteName];
+            self.window.title = [NSString stringWithFormat:NSLocalizedString(@"Settings: %@", @"Settings window with custom suite"), suiteName];
         } else {
-            self.window.title = @"Settings";
+            self.window.title = NSLocalizedString(@"Settings", @"Settings window");
         }
     }
 
@@ -644,11 +585,58 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     }
 }
 
+- (void)installSettingsContent {
+    self.window.toolbar = nil;
+    self.window.styleMask |= NSWindowStyleMaskResizable;
+    if (!_editCurrentSessionMode) {
+        self.window.styleMask |= NSWindowStyleMaskFullSizeContentView;
+        self.window.titleVisibility = NSWindowTitleHidden;
+        self.window.titlebarAppearsTransparent = YES;
+        self.window.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+        self.window.movableByWindowBackground = YES;
+    }
+    self.window.contentMinSize = NSMakeSize(820, 560);
+    NSRect visible = (self.window.screen ?: NSScreen.mainScreen).visibleFrame;
+    [self.window setContentSize:NSMakeSize(MIN(1280, visible.size.width - 40),
+                                           MIN(780, visible.size.height - 80))];
+    _settingsContent = [[iTermSettingsContentView alloc] initWithContent:_tabView];
+    const CGFloat width = self.preferencePanelNavigationWidth;
+    NSRect frame = self.window.contentView.bounds;
+    frame.origin.x += width;
+    frame.size.width -= width;
+    if (!_editCurrentSessionMode) {
+        const CGFloat headerHeight = iTermSettingsPageHeaderView.preferredHeight;
+        _settingsHeader = [[iTermSettingsPageHeaderView alloc] initWithFrame:
+            NSMakeRect(NSMinX(frame), NSMaxY(frame) - headerHeight, NSWidth(frame), headerHeight)];
+        [self.window.contentView addSubview:_settingsHeader];
+        frame.size.height -= headerHeight;
+        self.window.backgroundColor = NSColor.windowBackgroundColor;
+    }
+    _settingsContent.frame = frame;
+    [self.window.contentView addSubview:_settingsContent];
+}
+
+- (void)installSettingsSidebar {
+    const CGFloat width = iTermSettingsSidebarView.preferredWidth;
+    _settingsSidebar = [[iTermSettingsSidebarView alloc] initWithPages:_settingsPages
+                                                        searchField:self.searchField];
+    _settingsSidebar.frame = NSMakeRect(0, 0, width, NSHeight(self.window.contentView.bounds));
+    __weak PreferencePanel *weakSelf = self;
+    _settingsSidebar.onSelect = ^(iTermSettingsPage *page) {
+        PreferencePanel *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [strongSelf hideScrimAndSERP];
+        [strongSelf->_tabView selectTabViewItem:page.tabViewItem];
+    };
+    [self.window.contentView addSubview:_settingsSidebar];
+    [self synchronizeNavigationForTabViewItem:_tabView.selectedTabViewItem];
+}
+
 - (void)layoutSubviewsForEditCurrentSessionMode {
     [self selectProfilesTab];
     [_profilesViewController layoutSubviewsForEditCurrentSessionMode];
-    [_toolbar setVisible:NO];
-
     [_profilesViewController resizeWindowForCurrentTabAnimated:NO];
     [_profilesViewController didLayoutSubviewsForEditCurrentSessionMode];
 }
@@ -714,7 +702,6 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     if (shouldDisableResize) {
         _disableResize--;
     }
-    [_toolbar setSelectedItemIdentifier:[_profilesToolbarItem itemIdentifier]];
 }
 
 // NOTE: Callers should invoke makeKeyAndOrderFront if they are so inclined.
@@ -834,9 +821,9 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (NSArray<iTermSetting *> *)allSettings {
     return [_tabView.tabViewItems flatMapWithBlock:^NSArray *(__kindof NSTabViewItem *tabViewItem) {
-        NSToolbarItem *toolbarItem = [self toolbarItemForTabViewItem:tabViewItem];
+        iTermSettingsPage *page = [self settingsPageForTabViewItem:tabViewItem];
         iTermPreferencesBaseViewController *vc = [self viewControllerForTabViewItem:tabViewItem];
-        return [vc allSettingsWithPathComponents:@[toolbarItem.label]];
+        return page && vc ? [vc allSettingsWithPathComponents:@[page.title]] : @[];
     }];
 }
 
@@ -963,64 +950,26 @@ andEditComponentWithIdentifier:(NSString *)identifier
     [_tabView selectTabViewItem:_shortcutsTabViewItem];
 }
 
-#pragma mark - NSToolbarDelegate and ToolbarItemValidation
+#pragma mark - Settings Search
 
-- (BOOL)validateToolbarItem:(NSToolbarItem *)theItem {
-    return YES;
-}
-
-- (NSSearchToolbarItem *)bigSurSearchFieldToolbarItem {
-    if (!_bigSurSearchFieldToolbarItem) {
-        _bigSurSearchFieldToolbarItem = [[NSSearchToolbarItem alloc] initWithItemIdentifier:iTermPreferencePanelSearchFieldToolbarItemIdentifier];
-        _bigSurSearchFieldToolbarItem.label = @"";
-        // Prevent the search field from expanding when focused, which shifts toolbar icons.
-        _bigSurSearchFieldToolbarItem.preferredWidthForSearchField = 180;
-        _bigSurSearchFieldToolbarItem.searchField.delegate = self;
-
-        // Workaround for macOS 26 search field bugs. Issue 12708. See
-        // iTermPrefsSearchFieldCell for details.
-        if (@available(macOS 27, *)) {
-            // Presumably fixed in macOS 27.
-        } else if (@available(macOS 26, *)) {
-            // Copy the existing cell and replace it with our subclass. The archiver
-            // round-trip alone fixes the vertical centering of the text and glyphs.
-            NSSearchFieldCell *originalCell = _bigSurSearchFieldToolbarItem.searchField.cell;
-            NSData *archivedCell = [NSKeyedArchiver archivedDataWithRootObject:originalCell
-                                                         requiringSecureCoding:NO
-                                                                         error:nil];
-            NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingFromData:archivedCell error:nil];
-            unarchiver.requiresSecureCoding = NO;
-            [unarchiver setClass:[iTermPrefsSearchFieldCell class] forClassName:NSStringFromClass([NSSearchFieldCell class])];
-            NSSearchFieldCell *newCell = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
-            _bigSurSearchFieldToolbarItem.searchField.cell = newCell;
-
-            if (@available(macOS 26.5.1, *)) {
-                // The system focus ring works again; let it draw normally.
-            } else {
-                // The system focus ring is broken on 26.2 (FB21919006); suppress it
-                // so the custom ring in -[iTermPrefsSearchFieldCell drawWithFrame:]
-                // is the only one shown.
-                _bigSurSearchFieldToolbarItem.searchField.focusRingType = NSFocusRingTypeNone;
-            }
-        }
-
-        NSMenu *menu = [[NSMenu alloc] initWithTitle:@"Search Options"];
-        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:@"Show indicators for non-default values"
+- (NSSearchField *)searchField {
+    if (!_settingsSearchField) {
+        _settingsSearchField = [[NSSearchField alloc] initWithFrame:NSMakeRect(0, 0, 180, 26)];
+        _settingsSearchField.delegate = self;
+        _settingsSearchField.accessibilityLabel = NSLocalizedString(@"Search Settings", @"Settings search");
+        _settingsSearchField.accessibilityIdentifier = @"SettingsSearch";
+        NSMenu *menu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Search Options", @"Settings search menu")];
+        NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Show indicators for non-default values", @"Settings search menu")
                                                           action:@selector(toggleIndicateNonDefaultValues:)
                                                    keyEquivalent:@""];
         menuItem.target = self;
-        menuItem.state = NSControlStateValueOff;
-
         [menu addItem:menuItem];
-        _bigSurSearchFieldToolbarItem.searchField.searchMenuTemplate = menu;
-
-        // Store the reference to the menu item for later use
-        _showNonDefaultValuesMenuItem = menuItem;
+        _settingsSearchField.searchMenuTemplate = menu;
     }
-    return _bigSurSearchFieldToolbarItem;
+    return _settingsSearchField;
 }
 
-- (void)toggleIndicateNonDefaultValues:(id)sender NS_AVAILABLE_MAC(10_16) {
+- (void)toggleIndicateNonDefaultValues:(id)sender {
     [iTermPreferences setBool:![iTermPreferences boolForKey:kPreferenceKeyIndicateNonDefaultValues]
                        forKey:kPreferenceKeyIndicateNonDefaultValues];
     [[NSNotificationCenter defaultCenter] postNotificationName:iTermPreferencesDidToggleIndicateNonDefaultValues
@@ -1028,82 +977,10 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-    if (@available(macOS 10.16, *)) {
-        if (menuItem.action == @selector(toggleIndicateNonDefaultValues:)) {
-            menuItem.state = [iTermPreferences boolForKey:kPreferenceKeyIndicateNonDefaultValues] ? NSControlStateValueOn: NSControlStateValueOff;
-            return YES;
-        }
+    if (menuItem.action == @selector(toggleIndicateNonDefaultValues:)) {
+        menuItem.state = [iTermPreferences boolForKey:kPreferenceKeyIndicateNonDefaultValues] ? NSControlStateValueOn : NSControlStateValueOff;
     }
     return YES;
-}
-
-- (NSArray *)orderedToolbarIdentifiersExcludingSearch:(BOOL)excludesSearch {
-    if (!_globalToolbarItem) {
-        return @[];
-    }
-    if (!_searchFieldToolbarItem) {
-        [self createSearchField];
-    }
-    NSArray *result = @[ [_globalToolbarItem itemIdentifier],
-                         [_appearanceToolbarItem itemIdentifier],
-                         [_profilesToolbarItem itemIdentifier],
-                         [_keyboardToolbarItem itemIdentifier],
-                         [_arrangementsToolbarItem itemIdentifier],
-                         [_mouseToolbarItem itemIdentifier],
-                         [_shortcutsToolbarItem itemIdentifier],
-                         [_advancedToolbarItem itemIdentifier],
-                         NSToolbarFlexibleSpaceItemIdentifier,
-                         [_searchFieldToolbarItem itemIdentifier] ];
-    if (excludesSearch) {
-        result = [result subarrayWithRange:NSMakeRange(0, [result count] - 2)];
-    }
-    return result;
-}
-
-- (void)createSearchField {
-    _searchFieldToolbarItem = self.bigSurSearchFieldToolbarItem;
-}
-
-- (NSDictionary *)toolbarIdentifierToItemDictionary {
-    if (!_globalToolbarItem) {
-        return @{};
-    }
-    if (!_searchFieldToolbarItem) {
-        [self createSearchField];
-    }
-    NSDictionary *dict =
-    @{ [_globalToolbarItem itemIdentifier]: _globalToolbarItem,
-       [_appearanceToolbarItem itemIdentifier]: _appearanceToolbarItem,
-       [_profilesToolbarItem itemIdentifier]: _profilesToolbarItem,
-       [_keyboardToolbarItem itemIdentifier]: _keyboardToolbarItem,
-       [_arrangementsToolbarItem itemIdentifier]: _arrangementsToolbarItem,
-       [_mouseToolbarItem itemIdentifier]: _mouseToolbarItem,
-       [_shortcutsToolbarItem itemIdentifier]: _shortcutsToolbarItem,
-       [_advancedToolbarItem itemIdentifier]: _advancedToolbarItem,
-       _searchFieldToolbarItem.itemIdentifier: _searchFieldToolbarItem };
-    return dict;
-}
-
-- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar
-     itemForItemIdentifier:(NSString *)itemIdentifier
- willBeInsertedIntoToolbar:(BOOL)flag {
-    if (!flag) {
-        return nil;
-    }
-    NSDictionary *theDict = [self toolbarIdentifierToItemDictionary];
-    return theDict[itemIdentifier];
-}
-
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar {
-    return [self orderedToolbarIdentifiersExcludingSearch:NO];
-}
-
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar {
-    return [self orderedToolbarIdentifiersExcludingSearch:NO];
-}
-
-- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar {
-    return [self orderedToolbarIdentifiersExcludingSearch:YES];
 }
 
 #pragma mark - Hotkey Window
@@ -1128,94 +1005,44 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 #pragma mark - NSTabViewDelegate
 
-- (NSToolbarItem *)toolbarItemForTabViewItem:(NSTabViewItem *)tabViewItem {
-    if (tabViewItem == _globalTabViewItem) {
-        return _globalToolbarItem;
-    }
-    if (tabViewItem == _appearanceTabViewItem) {
-        return _appearanceToolbarItem;
-    }
-    if (tabViewItem == _keyboardTabViewItem) {
-        return _keyboardToolbarItem;
-    }
-    if (tabViewItem == _arrangementsTabViewItem) {
-        return _arrangementsToolbarItem;
-    }
-    if (tabViewItem == _profilesTabViewItem) {
-        return _profilesToolbarItem;
-    }
-    if (tabViewItem == _mouseTabViewItem) {
-        return _mouseToolbarItem;
-    }
-    if (tabViewItem == _shortcutsTabViewItem) {
-        return _shortcutsToolbarItem;
-    }
-    if (tabViewItem == _advancedTabViewItem) {
-        return _advancedToolbarItem;
+- (iTermSettingsPage *)settingsPageForTabViewItem:(NSTabViewItem *)tabViewItem {
+    for (iTermSettingsPage *page in _settingsPages) {
+        if (page.tabViewItem == tabViewItem) {
+            return page;
+        }
     }
     return nil;
 }
 
+- (void)synchronizeNavigationForTabViewItem:(NSTabViewItem *)tabViewItem {
+    iTermSettingsPage *page = [self settingsPageForTabViewItem:tabViewItem];
+    if (!page) {
+        return;
+    }
+    [_settingsSidebar selectPage:page];
+    [_settingsHeader showPage:page];
+}
+
 - (NSTabViewItem *)tabViewItemForViewController:(id)viewController {
-    if (viewController == _generalPreferencesViewController) {
-        return _globalTabViewItem;
+    for (iTermSettingsPage *page in _settingsPages) {
+        if (page.controller == viewController) {
+            return page.tabViewItem;
+        }
     }
-    if (viewController == _appearancePreferencesViewController) {
-        return _appearanceTabViewItem;
-    }
-    if (viewController == _keysViewController) {
-        return _keyboardTabViewItem;
-    }
-    if (viewController == arrangements_) {
-        return _arrangementsTabViewItem;
-    }
-    if (viewController == _profilesViewController ||
-        [_profilesViewController hasViewController:viewController]) {
+    if ([_profilesViewController hasViewController:viewController]) {
         return _profilesTabViewItem;
-    }
-    if (viewController == _pointerViewController) {
-        return _mouseTabViewItem;
-    }
-    if (viewController == _shortcutsViewController) {
-        return _shortcutsTabViewItem;
-    }
-    if (viewController == _advancedViewController) {
-        return _advancedTabViewItem;
     }
     return nil;
 }
 
 - (iTermPreferencesBaseViewController *)viewControllerForTabViewItem:(NSTabViewItem *)tabViewItem {
-    if (tabViewItem == _globalTabViewItem) {
-        return _generalPreferencesViewController;
-    }
-    if (tabViewItem == _appearanceTabViewItem) {
-        return _appearancePreferencesViewController;
-    }
-    if (tabViewItem == _keyboardTabViewItem) {
-        return _keysViewController;
-    }
-    if (tabViewItem == _arrangementsTabViewItem) {
-        // TODO: the arrangements vc doesn't have the right superclass
-        return nil;
-    }
-    if (tabViewItem == _profilesTabViewItem) {
-        return _profilesViewController;
-    }
-    if (tabViewItem == _mouseTabViewItem) {
-        return _pointerViewController;
-    }
-    if (tabViewItem == _shortcutsTabViewItem) {
-        return _shortcutsViewController;
-    }
-    if (tabViewItem == _advancedTabViewItem) {
-        // TODO: the advanced vc doesn't have the right superclass
-        return nil;
-    }
-    return nil;
+    NSViewController *controller = [self settingsPageForTabViewItem:tabViewItem].controller;
+    return [iTermPreferencesBaseViewController castFrom:controller];
 }
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+    [self synchronizeNavigationForTabViewItem:tabViewItem];
+    [_settingsContent scrollToTop];
     if (tabViewItem == _profilesTabViewItem) {
         if (_disableResize == 0) {
             [_profilesViewController resizeWindowForCurrentTabAnimated:YES];
@@ -1239,32 +1066,13 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 
     iTermSizeRememberingView *theView = (iTermSizeRememberingView *)tabViewItem.view;
-    [theView resetToOriginalSize];
-    NSRect rect = self.window.frame;
-    NSPoint topLeft = rect.origin;
-    topLeft.y += rect.size.height;
-    NSSize size = [tabViewItem.view frame].size;
-    rect.size = size;
-    rect.size.height += 87;
-    rect.size.width += 26;
-    rect.origin = topLeft;
-    rect.origin.y -= rect.size.height;
-    rect.size.width = MAX([self preferencePanelMinimumWidth], rect.size.width);
-    [[self window] setFrame:rect display:YES animate:animated];
+    NSSize size = theView.originalSize;
+    size.width += 26;
+    size.height += 9;
+    [self preferencePanelSetContentSize:size];
 }
 
 #pragma mark - NSSearchFieldDelegate
-
-- (NSSearchField *)searchField {
-#ifdef MAC_OS_X_VERSION_10_16
-    if (@available(macOS 10.16, *)) {
-        if (self.bigSurSearchFieldToolbarItem) {
-            return self.bigSurSearchFieldToolbarItem.searchField;
-        }
-    }
-#endif
-    return (NSSearchField *)_searchFieldToolbarItem.view;
-}
 
 - (void)controlTextDidChange:(NSNotification *)obj {
     NSSearchField *searchField = self.searchField;
@@ -1277,13 +1085,13 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (NSArray<id<iTermSearchableViewController>> *)searchableViewControllers {
-    return @[_generalPreferencesViewController,
-             _appearancePreferencesViewController,
-             _keysViewController,
-             _profilesViewController,
-             _pointerViewController,
-             _advancedViewController,
-             _shortcutsViewController];
+    NSMutableArray<id<iTermSearchableViewController>> *controllers = [NSMutableArray array];
+    for (iTermSettingsPage *page in _settingsPages) {
+        if ([page.controller conformsToProtocol:@protocol(iTermSearchableViewController)]) {
+            [controllers addObject:(id<iTermSearchableViewController>)page.controller];
+        }
+    }
+    return controllers;
 }
 
 - (void)buildSearchEngineIfNeeded {
@@ -1358,8 +1166,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (void)selectTabViewItem:(NSTabViewItem *)tabViewItem {
     [_tabView selectTabViewItem:tabViewItem];
-    NSToolbarItem *item = [self toolbarItemForTabViewItem:tabViewItem];
-    [_toolbar setSelectedItemIdentifier:item.itemIdentifier];
+    [self synchronizeNavigationForTabViewItem:tabViewItem];
 }
 
 - (void)selectTabForViewController:(id<iTermSearchableViewController>)viewController {
@@ -1405,6 +1212,15 @@ andEditComponentWithIdentifier:(NSString *)identifier
     _scrim.cutoutView = [viewController searchableViewControllerRevealItemForDocument:document
                                                                              forQuery:self.searchField.stringValue
                                                                         willChangeTab:&waitForInnerTabToSwitch];
+    [self.window.contentView layoutSubtreeIfNeeded];
+    NSView *target = _scrim.cutoutView;
+    for (NSView *ancestor = target.superview; ancestor; ancestor = ancestor.superview) {
+        if ([ancestor isKindOfClass:[NSScrollView class]]) {
+            NSScrollView *scrollView = (NSScrollView *)ancestor;
+            NSView *document = scrollView.documentView;
+            [document scrollRectToVisible:[target convertRect:target.bounds toView:document]];
+        }
+    }
     _revealingControl = NO;
     if (switchingTabsOut) {
         *switchingTabsOut = waitForTabToSwitch;
@@ -1475,8 +1291,20 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 #pragma mark - iTermPreferencePanelSizing
 
+- (NSView *)preferencePanelContentView {
+    return _tabView;
+}
+
+- (void)preferencePanelSetContentSize:(NSSize)size {
+    [_settingsContent setMinimumContentSize:size];
+}
+
 - (CGFloat)preferencePanelMinimumWidth {
-    return iTermPreferencePanelGetWindowMinimumWidth(_editCurrentSessionMode);
+    return iTermPreferencePanelGetWindowMinimumWidth(_editCurrentSessionMode) + self.preferencePanelNavigationWidth;
+}
+
+- (CGFloat)preferencePanelNavigationWidth {
+    return _editCurrentSessionMode ? 0 : iTermSettingsSidebarView.preferredWidth;
 }
 
 @end

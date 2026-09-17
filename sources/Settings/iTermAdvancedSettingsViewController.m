@@ -180,20 +180,37 @@ static NSDictionary *gIntrospection;
    return sortedAdvancedSettings;
 }
 
+// Localize presentation only. Model descriptions and preference identifiers
+// remain stable for storage, grouping, and English search.
++ (NSString *)localizedDescription:(NSString *)description {
+    return [[[description componentsSeparatedByString:@"\n"] mapWithBlock:^id(NSString *line) {
+        return NSLocalizedString(line, @"Advanced setting description");
+    }] componentsJoinedByString:@"\n"];
+}
+
++ (NSString *)searchTextForSetting:(NSDictionary *)setting {
+    NSString *description = setting[kAdvancedSettingDescription];
+    NSRange separator = [description rangeOfString:@": "];
+    NSString *category = separator.location == NSNotFound ? @"" : [description substringToIndex:separator.location];
+    NSString *body = separator.location == NSNotFound ? description : [description substringFromIndex:NSMaxRange(separator)];
+    return [NSString stringWithFormat:@"%@ %@ %@ %@", setting[kAdvancedSettingIdentifier], description,
+            NSLocalizedString(category, @"Advanced setting category"), [self localizedDescription:body]];
+}
+
 + (NSArray *)groupedSettingsArrayFromSortedArray:(NSArray *)sorted {
     NSString *previousCategory = nil;
     NSMutableArray *result = [NSMutableArray array];
     for (NSDictionary *dict in sorted) {
         NSString *description = dict[kAdvancedSettingDescription];
-        NSInteger colon = [description rangeOfString:@":"].location;
-        NSString *thisCategory = [description substringToIndex:colon];
-        NSString *remainder = [description substringFromIndex:colon + 2];
+        NSRange separator = [description rangeOfString:@": "];
+        NSString *thisCategory = separator.location == NSNotFound ? @"Advanced" : [description substringToIndex:separator.location];
+        NSString *remainder = separator.location == NSNotFound ? description : [description substringFromIndex:NSMaxRange(separator)];
         if (![thisCategory isEqualToString:previousCategory]) {
             previousCategory = [thisCategory copy];
-            [result addObject:thisCategory];
+            [result addObject:NSLocalizedString(thisCategory, @"Advanced setting category")];
         }
         NSMutableDictionary *temp = [dict mutableCopy];
-        temp[kAdvancedSettingDescription] = remainder;
+        temp[kAdvancedSettingDescription] = [self localizedDescription:remainder];
         [result addObject:temp];
     }
     return result;
@@ -284,8 +301,8 @@ static NSDictionary *gIntrospection;
     [button setAction:@selector(toggleOnOff:)];
     button.identifier = @"onoff";
     [button.menu removeAllItems];
-    [button.menu addItemWithTitle:@"No" action:nil keyEquivalent:@""];
-    [button.menu addItemWithTitle:@"Yes" action:nil keyEquivalent:@""];
+    [button.menu addItemWithTitle:NSLocalizedString(@"No", @"Advanced setting value") action:nil keyEquivalent:@""];
+    [button.menu addItemWithTitle:NSLocalizedString(@"Yes", @"Advanced setting value") action:nil keyEquivalent:@""];
     [button selectItemAtIndex:on ? 1 : 0];
     return button;
 }
@@ -324,9 +341,9 @@ static NSDictionary *gIntrospection;
     [button setAction:@selector(toggleTristate:)];
     button.identifier = @"tristate";
     [button.menu removeAllItems];
-    [button.menu addItemWithTitle:@"Unspecified" action:nil keyEquivalent:@""];
-    [button.menu addItemWithTitle:@"No" action:nil keyEquivalent:@""];
-    [button.menu addItemWithTitle:@"Yes" action:nil keyEquivalent:@""];
+    [button.menu addItemWithTitle:NSLocalizedString(@"Unspecified", @"Advanced setting value") action:nil keyEquivalent:@""];
+    [button.menu addItemWithTitle:NSLocalizedString(@"No", @"Advanced setting value") action:nil keyEquivalent:@""];
+    [button.menu addItemWithTitle:NSLocalizedString(@"Yes", @"Advanced setting value") action:nil keyEquivalent:@""];
 
     NSNumber *value = [self objectForRow:row];
     if (!value) {
@@ -360,7 +377,7 @@ static NSDictionary *gIntrospection;
     button.identifier = @"enum";
     [button.menu removeAllItems];
     for (NSString *title in options) {
-        [button.menu addItemWithTitle:title action:nil keyEquivalent:@""];
+        [button.menu addItemWithTitle:NSLocalizedString(title, @"Advanced setting option") action:nil keyEquivalent:@""];
     }
     if (value >= 0 && value < options.count) {
         [button selectItemAtIndex:value];
@@ -424,7 +441,7 @@ static NSDictionary *gIntrospection;
             NSArray *parts = [_searchField.stringValue componentsSeparatedByString:@" "];
             NSArray *sortedSettings = [[self class] sortedAdvancedSettings];
             for (NSDictionary *dict in sortedSettings) {
-                NSString *description = dict[kAdvancedSettingDescription];
+                NSString *description = [self.class searchTextForSetting:dict];
                 if ([self description:description matchesQuery:parts]) {
                     [result addObject:dict];
                 }
@@ -477,6 +494,10 @@ static NSDictionary *gIntrospection;
 }
 
 #pragma mark - NSTableViewDelegate
+
+- (void)tableViewColumnDidResize:(NSNotification *)notification {
+    [_tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _tableView.numberOfRows)]];
+}
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row {
     NSArray *settings = [self filteredAdvancedSettings];
@@ -765,9 +786,13 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
 - (NSArray<iTermPreferencesSearchDocument *> *)searchableViewControllerDocuments {
     if (!_docs) {
         _docs = [[iTermAdvancedSettingsViewController sortedAdvancedSettings] mapWithBlock:^id(NSDictionary *dict) {
-            iTermPreferencesSearchDocument *doc = [iTermPreferencesSearchDocument documentWithDisplayName:@"Advanced Preferences…"  // dict[kAdvancedSettingDescription]
-                                                                                               identifier:@"Advanced Preferences"  // dict[kAdvancedSettingIdentifier]
-                                                                                           keywordPhrases:@[ dict[kAdvancedSettingDescription] ]];
+            NSString *description = dict[kAdvancedSettingDescription];
+            NSRange separator = [description rangeOfString:@": "];
+            NSString *body = separator.location == NSNotFound ? description : [description substringFromIndex:NSMaxRange(separator)];
+            NSString *title = [[self.class localizedDescription:body] componentsSeparatedByString:@"\n"].firstObject;
+            iTermPreferencesSearchDocument *doc = [iTermPreferencesSearchDocument
+                documentWithDisplayName:title identifier:dict[kAdvancedSettingIdentifier]
+                keywordPhrases:@[[self.class searchTextForSetting:dict]]];
             doc.queryIndependentScore = -1;
             doc.ownerIdentifier = self.documentOwnerIdentifier;
             return doc;
@@ -791,7 +816,8 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
     *willChangeTab = NO;
     NSUInteger index = [self indexOfIdentifier:document.identifier];
     if (index == NSNotFound) {
-        // Remove the existing search query and try again
+        // A global search result must not be hidden by the local filter.
+        _searchField.stringValue = @"";
         _filteredAdvancedSettings = nil;
         _excludeDefaults.state = NSControlStateValueOff;
         [_tableView reloadData];

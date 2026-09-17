@@ -407,7 +407,7 @@ NMSSH: force libssh2
 	echo Begin building NMSSH
 	rm -rf ThirdParty/NMSSH.framework
 	cp submodules/libssh2/include/* submodules/NMSSH/NMSSH-OSX/Libraries/include/libssh2
-	cd submodules/NMSSH && xcodebuild -target NMSSH -project NMSSH.xcodeproj -configuration Release CONFIGURATION_BUILD_DIR=../../ThirdParty $(SIGNING_FLAGS) $(ARCH_FLAGS)
+	cd submodules/NMSSH && xcodebuild -target NMSSH -project NMSSH.xcodeproj -configuration Release CONFIGURATION_BUILD_DIR=../../ThirdParty MACOSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) $(SIGNING_FLAGS) $(ARCH_FLAGS)
 
 paranoid-NMSSH: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" NMSSH

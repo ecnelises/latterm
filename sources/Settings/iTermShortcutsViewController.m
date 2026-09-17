@@ -40,13 +40,13 @@
                                             willChangeTab:(BOOL *)willChangeTab {
     if ([document.identifier isEqualToString:kPreferenceKeyActions]) {
         NSString *identifier = @"Actions";
-        *willChangeTab = [_tabView.selectedTabViewItem.identifier isEqualToString:identifier];
+        *willChangeTab = ![_tabView.selectedTabViewItem.identifier isEqualToString:identifier];
         [_tabView selectTabViewItemWithIdentifier:identifier];
         return _actionsView;
     }
     if ([document.identifier isEqualToString:kPreferenceKeySnippets]) {
         NSString *identifier = @"Snippets";
-        *willChangeTab = [_tabView.selectedTabViewItem.identifier isEqualToString:identifier];
+        *willChangeTab = ![_tabView.selectedTabViewItem.identifier isEqualToString:identifier];
         [_tabView selectTabViewItemWithIdentifier:identifier];
         return _snippetsView;
     }

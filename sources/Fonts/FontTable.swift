@@ -167,7 +167,7 @@ class FontTable: NSObject, FontProviderProtocol {
                              count: count,
                              destination: destination,
                              fontName: fontName,
-                             pointSize: pointSize + growth)
+                             pointSize: min(200, max(2, pointSize + growth)))
             } else {
                 return self
             }
@@ -194,7 +194,35 @@ class FontTable: NSObject, FontProviderProtocol {
             } catch {
                 return nil
             }
+            guard version > 0, version <= Self.latestKnownVersion, hasValidEntries else {
+                return nil
+            }
             sortEntries()
+        }
+
+        // Imported profiles and exception files are untrusted input. Validate
+        // before forming Swift ranges or populating the renderer's range map.
+        private var hasValidEntries: Bool {
+            var assigned = IndexSet()
+            for entry in entries {
+                guard entry.start >= 0, entry.start < FontTable.unicodeLimit,
+                      entry.count > 0, entry.count <= FontTable.unicodeLimit - entry.start,
+                      !entry.fontName.isEmpty else {
+                    return false
+                }
+                let inputStart = entry.destination ?? entry.start
+                guard inputStart >= 0, inputStart < FontTable.unicodeLimit,
+                      entry.count <= FontTable.unicodeLimit - inputStart else {
+                    return false
+                }
+                if let size = entry.pointSize, !size.isFinite || size <= 0 {
+                    return false
+                }
+                let range = inputStart..<(inputStart + entry.count)
+                guard !assigned.intersects(integersIn: range) else { return false }
+                assigned.insert(integersIn: range)
+            }
+            return true
         }
 
         private mutating func sortEntries() {
@@ -402,12 +430,13 @@ class FontTable: NSObject, FontProviderProtocol {
         if delta == 0 {
             return self
         }
+        let grownConfig = config?.byAddingPointSize(delta)
         return FontTable(
             defaultFont: PTYFontInfo(font: asciiFont.font.it_fontByAdding(toPointSize: delta)),
             nonAsciiFont: defaultNonASCIIFont.map {
                 PTYFontInfo(font: $0.font.it_fontByAdding(toPointSize: delta))
             },
-            config: config.map { ($0.stringValue, $0.byAddingPointSize(delta)) })
+            config: grownConfig.map { ($0.stringValue, $0) })
     }
 
     @objc(fontTableForProfile:)

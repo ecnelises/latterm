@@ -58,25 +58,25 @@ class AttributedStringSaver: NSObject {
     private func reallySave(window: NSWindow,
                             item: iTermSavePanelItem,
                             attributedString: NSAttributedString) {
-        do {
-            let documentAttributes: [NSAttributedString.DocumentAttributeKey: Any] = [
-                .documentType: NSAttributedString.DocumentType.rtf
-            ].merging(self.documentAttributes) { (_, new) in new }
+        Task { @MainActor in
+            do {
+                let documentAttributes: [NSAttributedString.DocumentAttributeKey: Any] = [
+                    .documentType: NSAttributedString.DocumentType.rtf
+                ].merging(self.documentAttributes) { (_, new) in new }
 
-            let range = NSRange(location: 0, length: attributedString.length)
-            let rtfData = try attributedString.data(from: range,
-                                                    documentAttributes: documentAttributes)
-            Task {
+                let range = NSRange(location: 0, length: attributedString.length)
+                let rtfData = try attributedString.data(from: range,
+                                                        documentAttributes: documentAttributes)
                 try await rtfData.writeTo(saveItem: item)
+            } catch {
+                _ = iTermWarning.show(withTitle: "There was a problem saving the file: \(error.localizedDescription)",
+                                      actions: ["OK"],
+                                      accessory: nil,
+                                      identifier: nil,
+                                      silenceable: .kiTermWarningTypePersistent,
+                                      heading: "Could Not Save File",
+                                      window: window)
             }
-        } catch {
-            _ = iTermWarning.show(withTitle: "There was a problem saving the file: \(error.localizedDescription)",
-                                  actions: ["OK"],
-                                  accessory: nil,
-                                  identifier: nil,
-                                  silenceable: .kiTermWarningTypePersistent,
-                                  heading: "Could Not Save File",
-                                  window: window)
         }
     }
 }
