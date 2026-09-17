@@ -9,7 +9,7 @@
 //  1. shouldLeaveEmptyAreaAtTop (decoration heights approach):
 //     - Used during transitional states when tab bar is on loan but not yet an accessory
 //     - Adds tab bar height to decorationHeightTop
-//     - Applied in calculateLayoutWithHiddenTabBarInputs
+//     - Applied when the tab bar is hidden
 //
 //  2. tabViewFrameByShrinkingForFullScreenTabBar (frame shrinking approach):
 //     - Used when tab bar IS a titlebar accessory that overlaps content
@@ -30,332 +30,86 @@ const int kLayoutTabPositionRight = 3;
 
 @implementation iTermLayoutCalculator
 
-#pragma mark - Main Entry Point
-
+// Compute the space reserved for decorations once, then carve the status bar
+// out of the resulting terminal area. Flashing tabs overlay rather than reserve
+// space. An on-loan top tab is accounted for by the fullscreen accessory path.
 + (iTermLayoutOutputs)calculateLayoutWithInputs:(iTermLayoutInputs)inputs {
+    iTermLayoutOutputs outputs = {0};
+    outputs.decorationHeightTop = inputs.notchInset +
+        (inputs.divisionViewVisible ? inputs.divisionViewHeight : 0);
+    const CGFloat contentWidth = inputs.contentViewWidth -
+        (inputs.shouldShowToolbelt ? inputs.toolbeltWidth : 0);
+    CGFloat terminalX = 0;
+    CGFloat terminalWidth = contentWidth;
+
     if (!inputs.tabBarVisible) {
-        return [self calculateLayoutWithHiddenTabBarInputs:inputs];
+        if (inputs.shouldLeaveEmptyAreaAtTop || inputs.drawWindowTitleInPlaceOfTabBar) {
+            outputs.decorationHeightTop += inputs.tabBarHeight;
+        }
+    } else {
+        switch (inputs.tabPosition) {
+            case kLayoutTabPositionLeft:
+            case kLayoutTabPositionRight: {
+                const BOOL onLeft = inputs.tabPosition == kLayoutTabPositionLeft;
+                outputs.tabBarFrame = CGRectMake(onLeft ? 0 : contentWidth - inputs.leftTabBarWidth,
+                                                 0,
+                                                 inputs.leftTabBarWidth,
+                                                 inputs.contentViewHeight - outputs.decorationHeightTop);
+                if (!inputs.tabBarFlashing) {
+                    terminalX = onLeft ? inputs.leftTabBarWidth : 0;
+                    terminalWidth -= inputs.leftTabBarWidth;
+                }
+                break;
+            }
+            case kLayoutTabPositionBottom:
+                outputs.tabBarFrame = CGRectMake(0, 0, contentWidth, inputs.tabBarHeight);
+                if (!inputs.tabBarFlashing) {
+                    outputs.decorationHeightBottom = inputs.tabBarHeight;
+                }
+                break;
+            case kLayoutTabPositionTop:
+            default: {
+                if (!inputs.tabBarOnLoan && !inputs.tabBarFlashing) {
+                    outputs.decorationHeightTop += inputs.tabBarHeight;
+                }
+                const CGFloat overlayOffset = (!inputs.tabBarOnLoan && inputs.tabBarFlashing) ?
+                    inputs.tabBarHeight : 0;
+                outputs.tabBarFrame = CGRectMake(0,
+                                                 inputs.contentViewHeight - outputs.decorationHeightTop - overlayOffset,
+                                                 contentWidth,
+                                                 inputs.tabBarHeight);
+                break;
+            }
+        }
     }
 
-    switch (inputs.tabPosition) {
-        case kLayoutTabPositionTop:
-            return [self calculateLayoutWithVisibleTopTabBarInputs:inputs];
-        case kLayoutTabPositionBottom:
-            return [self calculateLayoutWithVisibleBottomTabBarInputs:inputs];
-        case kLayoutTabPositionLeft:
-            return [self calculateLayoutWithVisibleLeftTabBarInputs:inputs];
-        case kLayoutTabPositionRight:
-            return [self calculateLayoutWithVisibleRightTabBarInputs:inputs];
-        default:
-            return [self calculateLayoutWithVisibleTopTabBarInputs:inputs];
+    CGRect terminalFrame = CGRectMake(terminalX,
+                                      outputs.decorationHeightBottom,
+                                      terminalWidth,
+                                      inputs.contentViewHeight - outputs.decorationHeightTop - outputs.decorationHeightBottom);
+    // Hidden, on-loan tabs already sit above the status bar. Preserve that
+    // ordering during native fullscreen transitions without deducting twice.
+    CGRect statusBarContainer = terminalFrame;
+    if (!inputs.tabBarVisible) {
+        statusBarContainer = [self tabViewFrameByShrinkingForFullScreenTabBar:terminalFrame withInputs:inputs];
     }
-}
-
-#pragma mark - Hidden Tab Bar Layout
-
-+ (iTermLayoutOutputs)calculateLayoutWithHiddenTabBarInputs:(iTermLayoutInputs)inputs {
-    iTermLayoutOutputs outputs = {0};
-
-    // Calculate decoration heights
-    outputs.decorationHeightBottom = 0;
-    outputs.decorationHeightTop = inputs.notchInset;
-
-    if (inputs.divisionViewVisible) {
-        outputs.decorationHeightTop += inputs.divisionViewHeight;
+    if (inputs.hasStatusBar) {
+        const CGFloat statusBarY = inputs.statusBarOnTop ?
+            CGRectGetMaxY(statusBarContainer) - inputs.statusBarHeight : CGRectGetMinY(statusBarContainer);
+        outputs.statusBarFrame = CGRectMake(CGRectGetMinX(statusBarContainer),
+                                           statusBarY,
+                                           CGRectGetWidth(statusBarContainer),
+                                           inputs.statusBarHeight);
+        if (inputs.statusBarOnTop) {
+            outputs.decorationHeightTop += inputs.statusBarHeight;
+        } else {
+            outputs.decorationHeightBottom += inputs.statusBarHeight;
+        }
+        terminalFrame.origin.y = outputs.decorationHeightBottom;
+        terminalFrame.size.height = inputs.contentViewHeight - outputs.decorationHeightTop - outputs.decorationHeightBottom;
     }
-
-    // Handle transitional state: tab bar on loan but not yet positioned as accessory
-    if (inputs.shouldLeaveEmptyAreaAtTop) {
-        outputs.decorationHeightTop += inputs.tabBarHeight;
-    } else if (inputs.drawWindowTitleInPlaceOfTabBar) {
-        // Compact window with hidden tab bar: leave space for fake title bar
-        outputs.decorationHeightTop += inputs.tabBarHeight;
-    }
-
-    // Calculate tabview width (excluding toolbelt)
-    CGFloat tabViewWidth = inputs.contentViewWidth;
-    if (inputs.shouldShowToolbelt) {
-        tabViewWidth -= inputs.toolbeltWidth;
-    }
-
-    // Initial tab view frame
-    CGRect tabViewFrame = CGRectMake(
-        0,
-        outputs.decorationHeightBottom,
-        tabViewWidth,
-        inputs.contentViewHeight - outputs.decorationHeightTop - outputs.decorationHeightBottom
-    );
-
-    // Apply fullscreen tab bar shrinking if needed
-    tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:tabViewFrame
-                                                         withInputs:inputs];
-
-    // Layout status bar and adjust decoration heights
-    [self layoutStatusBarWithInputs:inputs
-                   decorationTop:&outputs.decorationHeightTop
-                decorationBottom:&outputs.decorationHeightBottom
-                  statusBarFrame:&outputs.statusBarFrame
-                   tabViewFrame:tabViewFrame];
-
-    // Recalculate tab view frame with status bar adjustments
-    outputs.tabViewFrame = CGRectMake(
-        0,
-        outputs.decorationHeightBottom,
-        tabViewWidth,
-        inputs.contentViewHeight - outputs.decorationHeightTop - outputs.decorationHeightBottom
-    );
-
-    // Apply fullscreen tab bar shrinking again after status bar adjustment
-    outputs.tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:outputs.tabViewFrame
-                                                                 withInputs:inputs];
-
-    // Tab bar frame is zero when hidden
-    outputs.tabBarFrame = CGRectZero;
-
-    // Calculate toolbelt frame
+    outputs.tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:terminalFrame withInputs:inputs];
     outputs.toolbeltFrame = [self toolbeltFrameWithInputs:inputs];
-
-    return outputs;
-}
-
-#pragma mark - Visible Top Tab Bar Layout
-
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleTopTabBarInputs:(iTermLayoutInputs)inputs {
-    iTermLayoutOutputs outputs = {0};
-
-    outputs.decorationHeightBottom = 0;
-    outputs.decorationHeightTop = inputs.notchInset;
-
-    // Add tab bar height if not on loan and not flashing
-    if (!inputs.tabBarOnLoan && !inputs.tabBarFlashing) {
-        outputs.decorationHeightTop += inputs.tabBarHeight;
-    }
-
-    if (inputs.divisionViewVisible) {
-        outputs.decorationHeightTop += inputs.divisionViewHeight;
-    }
-
-    // Calculate tabview width
-    CGFloat tabViewWidth = inputs.contentViewWidth;
-    if (inputs.shouldShowToolbelt) {
-        tabViewWidth -= inputs.toolbeltWidth;
-    }
-
-    CGRect frame = CGRectMake(
-        0,
-        outputs.decorationHeightBottom,
-        tabViewWidth,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    // Layout status bar
-    CGFloat tempTop = outputs.decorationHeightTop;
-    CGFloat tempBottom = outputs.decorationHeightBottom;
-    [self layoutStatusBarWithInputs:inputs
-                   decorationTop:&tempTop
-                decorationBottom:&tempBottom
-                  statusBarFrame:&outputs.statusBarFrame
-                   tabViewFrame:frame];
-
-    // Calculate final tab view frame
-    outputs.tabViewFrame = CGRectMake(
-        0,
-        tempBottom,
-        tabViewWidth,
-        inputs.contentViewHeight - tempBottom - tempTop
-    );
-
-    outputs.tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:outputs.tabViewFrame
-                                                                 withInputs:inputs];
-
-    outputs.decorationHeightTop = tempTop;
-    outputs.decorationHeightBottom = tempBottom;
-
-    // Tab bar frame at top
-    CGFloat tabBarOffset = 0;
-    if (!inputs.tabBarOnLoan && inputs.tabBarFlashing) {
-        tabBarOffset = inputs.tabBarHeight;
-    }
-    outputs.tabBarFrame = CGRectMake(
-        CGRectGetMinX(outputs.tabViewFrame),
-        CGRectGetMaxY(frame) - tabBarOffset,
-        CGRectGetWidth(outputs.tabViewFrame),
-        inputs.tabBarHeight
-    );
-
-    outputs.toolbeltFrame = [self toolbeltFrameWithInputs:inputs];
-
-    return outputs;
-}
-
-#pragma mark - Visible Bottom Tab Bar Layout
-
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleBottomTabBarInputs:(iTermLayoutInputs)inputs {
-    iTermLayoutOutputs outputs = {0};
-
-    // Tab bar at bottom
-    outputs.tabBarFrame = CGRectMake(
-        0,
-        0,
-        inputs.contentViewWidth - (inputs.shouldShowToolbelt ? inputs.toolbeltWidth : 0),
-        inputs.tabBarHeight
-    );
-
-    outputs.decorationHeightTop = inputs.notchInset;
-    outputs.decorationHeightBottom = 0;
-
-    if (inputs.divisionViewVisible) {
-        outputs.decorationHeightTop += inputs.divisionViewHeight;
-    }
-
-    if (!inputs.tabBarFlashing) {
-        outputs.decorationHeightBottom += inputs.tabBarHeight;
-    }
-
-    CGRect frame = CGRectMake(
-        CGRectGetMinX(outputs.tabBarFrame),
-        outputs.decorationHeightBottom,
-        CGRectGetWidth(outputs.tabBarFrame),
-        inputs.contentViewHeight - outputs.decorationHeightTop - outputs.decorationHeightBottom
-    );
-
-    // Layout status bar
-    [self layoutStatusBarWithInputs:inputs
-                   decorationTop:&outputs.decorationHeightTop
-                decorationBottom:&outputs.decorationHeightBottom
-                  statusBarFrame:&outputs.statusBarFrame
-                   tabViewFrame:frame];
-
-    outputs.tabViewFrame = CGRectMake(
-        CGRectGetMinX(outputs.tabBarFrame),
-        outputs.decorationHeightBottom,
-        CGRectGetWidth(outputs.tabBarFrame),
-        inputs.contentViewHeight - outputs.decorationHeightTop - outputs.decorationHeightBottom
-    );
-
-    outputs.tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:outputs.tabViewFrame
-                                                                 withInputs:inputs];
-
-    outputs.toolbeltFrame = [self toolbeltFrameWithInputs:inputs];
-
-    return outputs;
-}
-
-#pragma mark - Visible Left Tab Bar Layout
-
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleLeftTabBarInputs:(iTermLayoutInputs)inputs {
-    iTermLayoutOutputs outputs = {0};
-
-    outputs.decorationHeightTop = inputs.notchInset;
-    outputs.decorationHeightBottom = 0;
-
-    if (inputs.divisionViewVisible) {
-        outputs.decorationHeightTop += inputs.divisionViewHeight;
-    }
-
-    // Tab bar on left side
-    outputs.tabBarFrame = CGRectMake(
-        0,
-        outputs.decorationHeightBottom,
-        inputs.leftTabBarWidth,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    CGFloat widthAdjustment = 0;
-    CGFloat xOffset = 0;
-    if (inputs.tabBarFlashing) {
-        xOffset = -CGRectGetMaxX(outputs.tabBarFrame);
-        widthAdjustment -= CGRectGetWidth(outputs.tabBarFrame);
-    }
-    if (inputs.shouldShowToolbelt) {
-        widthAdjustment += inputs.toolbeltWidth;
-    }
-
-    CGRect frame = CGRectMake(
-        CGRectGetMaxX(outputs.tabBarFrame) + xOffset,
-        outputs.decorationHeightBottom,
-        inputs.contentViewWidth - CGRectGetWidth(outputs.tabBarFrame) - widthAdjustment,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    // Layout status bar
-    [self layoutStatusBarWithInputs:inputs
-                   decorationTop:&outputs.decorationHeightTop
-                decorationBottom:&outputs.decorationHeightBottom
-                  statusBarFrame:&outputs.statusBarFrame
-                   tabViewFrame:frame];
-
-    outputs.tabViewFrame = CGRectMake(
-        CGRectGetMaxX(outputs.tabBarFrame) + xOffset,
-        outputs.decorationHeightBottom,
-        inputs.contentViewWidth - CGRectGetWidth(outputs.tabBarFrame) - widthAdjustment,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    outputs.tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:outputs.tabViewFrame
-                                                                 withInputs:inputs];
-
-    outputs.toolbeltFrame = [self toolbeltFrameWithInputs:inputs];
-
-    return outputs;
-}
-
-#pragma mark - Visible Right Tab Bar Layout
-
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleRightTabBarInputs:(iTermLayoutInputs)inputs {
-    iTermLayoutOutputs outputs = {0};
-
-    outputs.decorationHeightTop = inputs.notchInset;
-    outputs.decorationHeightBottom = 0;
-
-    if (inputs.divisionViewVisible) {
-        outputs.decorationHeightTop += inputs.divisionViewHeight;
-    }
-
-    const CGFloat toolbeltWidth = inputs.shouldShowToolbelt ? inputs.toolbeltWidth : 0;
-    const CGFloat tabBarMaxX = inputs.contentViewWidth - toolbeltWidth;
-
-    outputs.tabBarFrame = CGRectMake(
-        tabBarMaxX - inputs.leftTabBarWidth,
-        outputs.decorationHeightBottom,
-        inputs.leftTabBarWidth,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    CGFloat widthAdjustment = 0;
-    const CGFloat tabViewWidthAdjustment = CGRectGetWidth(outputs.tabBarFrame);
-    if (inputs.tabBarFlashing) {
-        widthAdjustment -= CGRectGetWidth(outputs.tabBarFrame);
-    }
-    if (inputs.shouldShowToolbelt) {
-        widthAdjustment += inputs.toolbeltWidth;
-    }
-
-    CGRect frame = CGRectMake(
-        0,
-        outputs.decorationHeightBottom,
-        inputs.contentViewWidth - tabViewWidthAdjustment - widthAdjustment,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    [self layoutStatusBarWithInputs:inputs
-                   decorationTop:&outputs.decorationHeightTop
-                decorationBottom:&outputs.decorationHeightBottom
-                  statusBarFrame:&outputs.statusBarFrame
-                   tabViewFrame:frame];
-
-    outputs.tabViewFrame = CGRectMake(
-        0,
-        outputs.decorationHeightBottom,
-        inputs.contentViewWidth - tabViewWidthAdjustment - widthAdjustment,
-        inputs.contentViewHeight - outputs.decorationHeightBottom - outputs.decorationHeightTop
-    );
-
-    outputs.tabViewFrame = [self tabViewFrameByShrinkingForFullScreenTabBar:outputs.tabViewFrame
-                                                                 withInputs:inputs];
-
-    outputs.toolbeltFrame = [self toolbeltFrameWithInputs:inputs];
-
     return outputs;
 }
 
@@ -390,8 +144,8 @@ const int kLayoutTabPositionRight = 3;
         return frame;
     }
 
-    // If tab bar is not on loan and not flashing, it was already accounted for
-    if (!inputs.tabBarOnLoan && !inputs.tabBarFlashing) {
+    // A non-loaned tab bar was already accounted for by the layout.
+    if (!inputs.tabBarOnLoan) {
         return frame;
     }
 
@@ -435,37 +189,6 @@ const int kLayoutTabPositionRight = 3;
     }
 
     return toolbeltFrame;
-}
-
-#pragma mark - Status Bar Layout
-
-+ (void)layoutStatusBarWithInputs:(iTermLayoutInputs)inputs
-                   decorationTop:(CGFloat *)decorationTop
-                decorationBottom:(CGFloat *)decorationBottom
-                  statusBarFrame:(CGRect *)statusBarFrame
-                   tabViewFrame:(CGRect)containingFrame {
-    if (!inputs.hasStatusBar) {
-        *statusBarFrame = CGRectZero;
-        return;
-    }
-
-    if (inputs.statusBarOnTop) {
-        *statusBarFrame = CGRectMake(
-            CGRectGetMinX(containingFrame),
-            CGRectGetMaxY(containingFrame) - inputs.statusBarHeight,
-            CGRectGetWidth(containingFrame),
-            inputs.statusBarHeight
-        );
-        *decorationTop += inputs.statusBarHeight;
-    } else {
-        *statusBarFrame = CGRectMake(
-            CGRectGetMinX(containingFrame),
-            CGRectGetMinY(containingFrame),
-            CGRectGetWidth(containingFrame),
-            inputs.statusBarHeight
-        );
-        *decorationBottom += inputs.statusBarHeight;
-    }
 }
 
 @end

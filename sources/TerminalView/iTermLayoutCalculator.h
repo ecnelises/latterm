@@ -98,21 +98,6 @@ typedef struct {
 /// Calculate the toolbelt frame.
 + (CGRect)toolbeltFrameWithInputs:(iTermLayoutInputs)inputs;
 
-/// Calculate layout for hidden tab bar case.
-+ (iTermLayoutOutputs)calculateLayoutWithHiddenTabBarInputs:(iTermLayoutInputs)inputs;
-
-/// Calculate layout for visible top tab bar.
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleTopTabBarInputs:(iTermLayoutInputs)inputs;
-
-/// Calculate layout for visible bottom tab bar.
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleBottomTabBarInputs:(iTermLayoutInputs)inputs;
-
-/// Calculate layout for visible left tab bar.
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleLeftTabBarInputs:(iTermLayoutInputs)inputs;
-
-/// Calculate layout for visible right tab bar.
-+ (iTermLayoutOutputs)calculateLayoutWithVisibleRightTabBarInputs:(iTermLayoutInputs)inputs;
-
 @end
 
 // Tab position constants (matching PSMTabBarControl)

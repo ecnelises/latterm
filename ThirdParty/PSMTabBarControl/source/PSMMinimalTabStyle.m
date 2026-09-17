@@ -355,21 +355,26 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
                       withTabColor:(NSColor *)tabColor
                    highlightAmount:(CGFloat)highlightAmount
                         horizontal:(BOOL)horizontal {
-    const BOOL horizontalOrientation = self.tabBar.orientation == PSMTabBarHorizontalOrientation;
+    if (!horizontal) {
+        // Fill through the content edge. Insetting vertical cells exposed a
+        // selected-background rail next to dimmed panes. Yosemite's extra
+        // half-point fill is also inappropriate for a borderless minimal tab.
+        [[self backgroundColorSelected:selected highlightAmount:highlightAmount] set];
+        NSRectFill(cellFrame);
+        if (tabColor) {
+            [[self cellBackgroundColorForTabColor:tabColor selected:selected] set];
+            NSRectFillUsingOperation(cellFrame, NSCompositingOperationSourceOver);
+        }
+        return;
+    }
     NSEdgeInsets insets = NSEdgeInsetsZero;
     BOOL drawFrame = NO;
-    if (!horizontalOrientation) {
-        insets.right = 1;
-        insets.left = 1;
-    }
     if (highlightAmount > 0 && !selected) {
-        if (horizontalOrientation) {
-            drawFrame = YES;
-            insets.left = 1.0;
-            insets.right = 0.5;
-            insets.bottom = 1.0;
-            insets.top = 0.5;
-        }
+        drawFrame = YES;
+        insets.left = 1.0;
+        insets.right = 0.5;
+        insets.bottom = 1.0;
+        insets.top = 0.5;
     }
     if (drawFrame) {
         [[self backgroundColorSelected:NO highlightAmount:0] set];
@@ -565,13 +570,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     const NSInteger numberOfVisibleCells = [self numberOfVisibleCells:bar];
 
     if (!horizontalOrientation) {
-        if (bar.cells.count == 1) {
-            [self drawOutlineAroundVerticalTabBarWithOneTab:bar];
-        } else if (selectedIndex == 0) {
-            [self drawOutlineAroundVerticalTabBarWithFirstTabSelected:bar];
-        } else {
-            [self drawOutlineAroundVerticalTabBarWithInteriorTabSelected:bar];
-        }
+        [self drawOutlineAroundVerticalTabBar:bar];
     } else if (bar.tabLocation == PSMTab_TopTab) {
         if (bar.cells.count == 1) {
             [self drawOutlineAroundTopTabBarWithOneTab:bar];
@@ -764,65 +763,32 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 
 #pragma mark Draw outline around vertical tab bar
 
-- (void)drawOutlineAroundVerticalTabBarWithOneTab:(PSMTabBarControl *)bar {
-    if (!self.treatLeftInsetAsPartOfFirstTab) {
-        [self drawOutlineAboveSelectedTabInVerticalTabBar:bar];
-    }
-    [self drawOutlineUnderSelectedTabInVerticalTabBar:bar];
-}
+- (void)drawOutlineAroundVerticalTabBar:(PSMTabBarControl *)bar {
+    PSMTabBarCell *cell = [self selectedCellInTabBarControl:bar];
+    const BOOL selectedIsVisible = cell && !cell.isInOverflowMenu;
+    const NSRect bounds = bar.bounds;
+    const BOOL onRight = bar.tabLocation == PSMTab_RightTab;
+    const CGFloat contentEdge = onRight ? NSMinX(bounds) + 0.5 : NSMaxX(bounds) - 0.5;
+    const CGFloat outerEdge = onRight ? NSMaxX(bounds) : NSMinX(bounds);
+    const NSRect selectedFrame = selectedIsVisible ? cell.frame :
+        NSMakeRect(NSMinX(bounds), NSMaxY(bounds) - bar.height, NSWidth(bounds), bar.height);
 
-- (void)drawOutlineAroundVerticalTabBarWithFirstTabSelected:(PSMTabBarControl *)bar {
-    if (!self.treatLeftInsetAsPartOfFirstTab) {
-        [self drawOutlineAboveSelectedTabInVerticalTabBar:bar];
-    }
-    [self drawOutlineUnderSelectedTabInVerticalTabBar:bar];
-}
-
-- (void)drawOutlineAboveSelectedTabInVerticalTabBar:(PSMTabBarControl *)bar {
     NSBezierPath *path = [NSBezierPath bezierPath];
-
-    PSMTabBarCell *const cell = [self selectedCellInTabBarControl:bar];
-    NSRect frame = cell.frame;
-    if (!cell || cell.isInOverflowMenu) {
-        frame = NSMakeRect(0,
-                           NSMaxY(bar.frame) - bar.height,
-                           NSWidth(bar.frame),
-                           bar.height);
+    path.lineWidth = 1;
+    if (!(self.firstTabIsSelected && self.treatLeftInsetAsPartOfFirstTab)) {
+        const CGFloat y = NSMinY(selectedFrame) + 0.5;
+        [path moveToPoint:NSMakePoint(contentEdge, NSMinY(bounds) + 0.5)];
+        [path lineToPoint:NSMakePoint(contentEdge, y)];
+        [path lineToPoint:NSMakePoint(outerEdge, y)];
     }
-    const CGFloat top = 0.5;
-    const CGFloat right = bar.frame.size.width - 0.5;
-    const CGFloat bottom = NSMinY(frame) + 0.5;
-
-    [path moveToPoint:NSMakePoint(right, top)];
-    [path lineToPoint:NSMakePoint(right, bottom)];
-    [path lineToPoint:NSMakePoint(0, bottom)];
-
+    if (selectedIsVisible) {
+        const CGFloat y = NSMaxY(selectedFrame) - 0.5;
+        [path moveToPoint:NSMakePoint(outerEdge, y)];
+        [path lineToPoint:NSMakePoint(contentEdge, y)];
+        [path lineToPoint:NSMakePoint(contentEdge, NSMaxY(bounds) - 0.5)];
+    }
     [[self outlineColor] set];
     [path stroke];
-}
-
-- (void)drawOutlineUnderSelectedTabInVerticalTabBar:(PSMTabBarControl *)bar {
-    NSBezierPath *path = [NSBezierPath bezierPath];
-
-    PSMTabBarCell *const cell = [self selectedCellInTabBarControl:bar];
-    if (!cell || cell.isInOverflowMenu) {
-        return;
-    }
-    const CGFloat top = NSMaxY(cell.frame) - 0.5;
-    const CGFloat right = bar.frame.size.width - 0.5;
-    const CGFloat bottom = NSMaxY(bar.frame) - 0.5;
-
-    [path moveToPoint:NSMakePoint(0, top)];
-    [path lineToPoint:NSMakePoint(right, top)];
-    [path lineToPoint:NSMakePoint(right, bottom)];
-
-    [[self outlineColor] set];
-    [path stroke];
-}
-
-- (void)drawOutlineAroundVerticalTabBarWithInteriorTabSelected:(PSMTabBarControl *)bar {
-    [self drawOutlineAboveSelectedTabInVerticalTabBar:bar];
-    [self drawOutlineUnderSelectedTabInVerticalTabBar:bar];
 }
 
 - (NSColor *)cellBackgroundColorForTabColor:(NSColor *)tabColor

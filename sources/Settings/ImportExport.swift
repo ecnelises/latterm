@@ -244,7 +244,7 @@ private struct EraseAction {
         // The forName: variant of removePersistentDomain is routed through
         // cfprefsd by domain name, so the receiver instance is functionally
         // irrelevant here. Use iTermUserDefaults.userDefaults() anyway to
-        // match the project convention from CLAUDE.md.
+        // match the project convention from AGENTS.md.
         let defaults = iTermUserDefaults.userDefaults()
         defaults.removePersistentDomain(forName: suiteName)
         defaults.synchronize()

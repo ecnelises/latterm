@@ -209,7 +209,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.tabBarHeight = 28
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withHiddenTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Decoration height at top should include tab bar height
         XCTAssertEqual(outputs.decorationHeightTop, CGFloat(inputs.tabBarHeight))
@@ -227,7 +227,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.shouldLeaveEmptyAreaAtTop = false
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withHiddenTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // No decoration at top (no tab bar, no notch)
         XCTAssertEqual(outputs.decorationHeightTop, 0)
@@ -248,7 +248,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.tabBarHeight = 28
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withVisibleTopTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Decoration should include tab bar height
         XCTAssertEqual(outputs.decorationHeightTop, CGFloat(inputs.tabBarHeight))
@@ -268,7 +268,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.tabBarHeight = 28
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withVisibleTopTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Flashing tab bar doesn't add to decoration (overlaps content)
         XCTAssertEqual(outputs.decorationHeightTop, 0)
@@ -285,7 +285,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.statusBarHeight = 21
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withHiddenTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Decoration should include status bar height
         XCTAssertEqual(outputs.decorationHeightTop, CGFloat(inputs.statusBarHeight))
@@ -303,7 +303,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.statusBarHeight = 21
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withHiddenTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Bottom decoration should include status bar height
         XCTAssertEqual(outputs.decorationHeightBottom, CGFloat(inputs.statusBarHeight))
@@ -369,7 +369,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.divisionViewVisible = true
         inputs.divisionViewHeight = 1
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withVisibleTopTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Division view should add to top decoration
         XCTAssertGreaterThanOrEqual(outputs.decorationHeightTop,
@@ -383,7 +383,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.notchInset = 32  // Notch height
         inputs.contentViewHeight = 600
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withHiddenTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         // Notch should add to top decoration
         XCTAssertEqual(outputs.decorationHeightTop, CGFloat(inputs.notchInset))
@@ -464,7 +464,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.leftTabBarWidth = 200
         inputs.contentViewWidth = 800
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withVisibleRightTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         XCTAssertEqual(outputs.tabBarFrame.origin.x, 600)
         XCTAssertEqual(outputs.tabBarFrame.size.width, 200)
@@ -482,7 +482,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.toolbeltWidth = 150
         inputs.contentViewWidth = 800
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withVisibleRightTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         XCTAssertEqual(outputs.tabBarFrame.origin.x, 450)
         XCTAssertEqual(outputs.tabBarFrame.size.width, 200)
@@ -499,7 +499,7 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         inputs.tabBarFlashing = true
         inputs.contentViewWidth = 800
 
-        let outputs = iTermLayoutCalculator.calculateLayout(withVisibleRightTabBarInputs: inputs)
+        let outputs = iTermLayoutCalculator.calculateLayout(with: inputs)
 
         XCTAssertEqual(outputs.tabViewFrame.origin.x, 0)
         XCTAssertEqual(outputs.tabViewFrame.size.width, 800)
@@ -635,4 +635,80 @@ final class iTermLayoutCalculatorTest: XCTestCase {
         // Full height available
         XCTAssertEqual(outputs.tabViewFrame.size.height, CGFloat(inputs.contentViewHeight))
     }
+
+    func testSideTabLayoutsMirrorAcrossTerminalWithStatusAndToolbelt() {
+        for hasToolbelt in [false, true] {
+            for hasStatus in [false, true] {
+                for statusOnTop in [false, true] {
+                    for flashing in [false, true] {
+                        var inputs = makeDefaultInputs()
+                        inputs.shouldShowToolbelt = ObjCBool(hasToolbelt)
+                        inputs.hasStatusBar = ObjCBool(hasStatus)
+                        inputs.statusBarOnTop = ObjCBool(statusOnTop)
+                        inputs.tabBarFlashing = ObjCBool(flashing)
+                        inputs.notchInset = 32
+                        inputs.divisionViewVisible = true
+                        inputs.tabPosition = kLayoutTabPositionLeft
+                        let left = iTermLayoutCalculator.calculateLayout(with: inputs)
+                        inputs.tabPosition = kLayoutTabPositionRight
+                        let right = iTermLayoutCalculator.calculateLayout(with: inputs)
+
+                        let contentWidth = inputs.contentViewWidth - (hasToolbelt ? inputs.toolbeltWidth : 0)
+                        XCTAssertEqual(left.tabViewFrame.size, right.tabViewFrame.size)
+                        XCTAssertEqual(left.tabViewFrame.minY, right.tabViewFrame.minY)
+                        XCTAssertEqual(left.tabViewFrame.maxX, contentWidth)
+                        XCTAssertEqual(right.tabViewFrame.minX, 0)
+                        XCTAssertEqual(left.tabBarFrame.minX, 0)
+                        XCTAssertEqual(right.tabBarFrame.maxX, contentWidth)
+                        XCTAssertEqual(left.tabBarFrame.size, right.tabBarFrame.size)
+                        XCTAssertEqual(left.toolbeltFrame, right.toolbeltFrame)
+                        if flashing {
+                            XCTAssertEqual(left.tabViewFrame, right.tabViewFrame)
+                            XCTAssertEqual(left.tabViewFrame.width, contentWidth)
+                        } else {
+                            XCTAssertEqual(left.tabBarFrame.maxX, left.tabViewFrame.minX)
+                            XCTAssertEqual(right.tabViewFrame.maxX, right.tabBarFrame.minX)
+                        }
+                        if hasStatus {
+                            for layout in [left, right] {
+                                XCTAssertEqual(layout.statusBarFrame.minX, layout.tabViewFrame.minX)
+                                XCTAssertEqual(layout.statusBarFrame.width, layout.tabViewFrame.width)
+                                if statusOnTop {
+                                    XCTAssertEqual(layout.statusBarFrame.minY, layout.tabViewFrame.maxY)
+                                } else {
+                                    XCTAssertEqual(layout.statusBarFrame.maxY, layout.tabViewFrame.minY)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    func testHiddenFullscreenAccessoryPlacesStatusBarBelowReservedArea() {
+        var inputs = makeDefaultInputs()
+        inputs.tabBarVisible = false
+        inputs.tabBarOnLoan = true
+        inputs.tabBarShouldBeAccessory = true
+        inputs.tabBarAccessoryOverlapsContent = true
+        inputs.inFullscreen = true
+        inputs.hasStatusBar = true
+        inputs.statusBarOnTop = true
+        inputs.shouldShowToolbelt = true
+        inputs.notchInset = 32
+        let layout = iTermLayoutCalculator.calculateLayout(with: inputs)
+        XCTAssertEqual(layout.statusBarFrame.maxY, 600 - 32 - 28)
+        XCTAssertEqual(layout.tabViewFrame.maxY, layout.statusBarFrame.minY)
+        XCTAssertEqual(layout.toolbeltFrame.maxY, layout.statusBarFrame.maxY)
+
+        // During the earlier on-loan transition, reserving decoration space
+        // produces exactly the same frames and must not deduct a second tab bar.
+        inputs.shouldLeaveEmptyAreaAtTop = true
+        let transition = iTermLayoutCalculator.calculateLayout(with: inputs)
+        XCTAssertEqual(transition.tabViewFrame, layout.tabViewFrame)
+        XCTAssertEqual(transition.statusBarFrame, layout.statusBarFrame)
+        XCTAssertEqual(transition.toolbeltFrame, layout.toolbeltFrame)
+    }
+
 }

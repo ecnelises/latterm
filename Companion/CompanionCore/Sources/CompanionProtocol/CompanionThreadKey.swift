@@ -25,7 +25,7 @@
 //  the token, not the chatID), so the sync-path NSE recomputes the same value to
 //  land on the same keys.
 //
-//  Cleanup: when revision-1 support is dropped (see CLAUDE.md), the legacy path -
+//  Cleanup: when revision-1 support is dropped (see AGENTS.md), the legacy path -
 //  the only place this value is exposed off-device - goes away, and the
 //  watermark/thread keying can be simplified to the raw chatID, dropping this
 //  HMAC (a coordinated change with CompanionClient.advancePushWatermark).

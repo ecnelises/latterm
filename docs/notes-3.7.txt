@@ -61,6 +61,11 @@ Terminal-first fork changes:
 - Rejected invalid font ranges before rendering.
 - Preserved custom character-font sizes when
   editing rules and saving font zoom changes.
+- Fixed extra edge strips on minimal side tabs
+  next to dimmed split panes and mirrored the
+  outline correctly for right-side tabs.
+- Unified terminal-window layout and removed
+  duplicate tab and status bar layout paths.
 - Migrated editable number formatting to Swift
   and removed an unused integer formatter.
 - Unified window number allocation in Swift,

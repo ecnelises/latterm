@@ -68,7 +68,7 @@ Use these sections in order. Skip any that have no content.
   - "in-session prompt overlay" → "the prompt panel that appears before…"
   - "cc-status hook", retain-cycle fixes, KVO refactors, XPC plumbing → omit
 - Use **Title Case for feature names**: Smart Selection, Smart Selection Action, Workgroups, Code Review, Quick Look, Special Exceptions, Edit Session, Clippings, etc.
-- Use **curly quotes** (`“ ”`, `‘ ’`) for user-visible quoted text. Use straight quotes only inside literal shell syntax (e.g. `$'…'`) or literal program output (e.g. `"unmatched '"`). Per CLAUDE.md, don't use `"` in user-visible strings except as the shorthand for inches.
+- Use **curly quotes** (`“ ”`, `‘ ’`) for user-visible quoted text. Use straight quotes only inside literal shell syntax (e.g. `$'…'`) or literal program output (e.g. `"unmatched '"`). Per AGENTS.md, don't use `"` in user-visible strings except as the shorthand for inches.
 
 ### Order of introduction
 
@@ -92,7 +92,7 @@ Collapse repetitive low-detail items:
 - File names:
   - `notes-<version>.txt` — cumulative, relative to the previous stable.
   - `notes-<version>beta<N>.txt` — per-beta diff, relative to the previous beta.
-- After creating a new notes file, `git add` it (per CLAUDE.md).
+- After creating a new notes file, `git add` it (per AGENTS.md).
 
 ## Pre-commit checklist
 
