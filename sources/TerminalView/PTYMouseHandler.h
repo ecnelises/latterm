@@ -57,9 +57,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)mouseHandlerMoveCursorToCoord:(VT100GridCoord)coord
                              forEvent:(NSEvent *)event;
 - (void)mouseHandlerSetFindOnPageCursorCoord:(VT100GridCoord)clickPoint;
-- (BOOL)mouseHandlerAtPasswordPrompt:(PTYMouseHandler *)handler;
-- (VT100GridCoord)mouseHandlerCursorCoord:(PTYMouseHandler *)handler;
-- (void)mouseHandlerOpenPasswordManager:(PTYMouseHandler *)handler;
 - (BOOL)mouseHandler:(PTYMouseHandler *)handler getFindOnPageCursor:(VT100GridCoord *)coord;
 - (void)mouseHandlerResetFindOnPageCursor:(PTYMouseHandler *)handler;
 - (BOOL)mouseHandlerIsValid:(PTYMouseHandler *)handler;

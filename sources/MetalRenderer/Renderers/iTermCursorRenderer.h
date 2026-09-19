@@ -10,7 +10,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSColor *color;
 @property (nonatomic) VT100GridCoord coord;
 @property (nonatomic) BOOL doubleWidth;
-@property (nonatomic) BOOL backgroundIsDark;
 // Pixel offset for smooth cursor animation
 @property (nonatomic) CGPoint pixelOffset;
 // Opacity in [0, 1] for smooth blink fading. Defaults to 1.
@@ -24,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)newIMECursorRendererWithDevice:(id<MTLDevice>)device;
 + (instancetype)newBlockCursorRendererWithDevice:(id<MTLDevice>)device;
 + (instancetype)newFrameCursorRendererWithDevice:(id<MTLDevice>)device;
-+ (instancetype)newKeyCursorRendererWithDevice:(id<MTLDevice>)device;
 + (instancetype)newHorizontalShadowCursorRendererWithDevice:(id<MTLDevice>)device;
 + (instancetype)newVerticalShadowCursorRendererWithDevice:(id<MTLDevice>)device;
 
@@ -42,9 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface iTermFrameCursorRenderer : iTermCursorRenderer
-@end
-
-@interface iTermKeyCursorRenderer : iTermCursorRenderer
 @end
 
 NS_ASSUME_NONNULL_END

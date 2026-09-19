@@ -447,13 +447,9 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     [NSGraphicsContext saveGraphicsState];
     [self clipOutSuppressedBottomIfNeeded:virtualOffset];
 
-    const int cursorY = self.cursorCoord.y + origin.y;
-
-    NSColor *cursorBackgroundColor;
     if ([self haveAnyImagesUnderText]) {
         if ([self blendManually]) {
             [self drawBackgroundRunArrays:backgroundRunArrays
-                                  cursorY:-1
                               drawingMode:iTermBackgroundDrawingModeOnlyTransparent
                             virtualOffset:virtualOffset];
         }
@@ -463,15 +459,13 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
         // as the default background color the same as the default background color.
         [self drawKittyImagesInRange:iTermSignedRangeWithBounds(NSIntegerMin, -1073741824)
                        virtualOffset:virtualOffset];
-        cursorBackgroundColor = [self drawBackgroundRunArrays:backgroundRunArrays
-                                                      cursorY:cursorY
-                                                  drawingMode:iTermBackgroundDrawingModeOmitTransparent
-                                                virtualOffset:virtualOffset];
+        [self drawBackgroundRunArrays:backgroundRunArrays
+                          drawingMode:iTermBackgroundDrawingModeOmitTransparent
+                        virtualOffset:virtualOffset];
     } else {
-        cursorBackgroundColor = [self drawBackgroundRunArrays:backgroundRunArrays
-                                                      cursorY:cursorY
-                                                  drawingMode:iTermBackgroundDrawingModeDefault
-                                                virtualOffset:virtualOffset];
+        [self drawBackgroundRunArrays:backgroundRunArrays
+                          drawingMode:iTermBackgroundDrawingModeDefault
+                        virtualOffset:virtualOffset];
     }
     // Negative z-index values mean that the images will be drawn under the text. This allows
     // rendering of text on top of images.
@@ -504,7 +498,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     iTermCursor *cursor = nil;
     if (drawCursorBeforeText) {
         cursor = [self drawCursor:NO
-            cursorBackgroundColor:cursorBackgroundColor
                     virtualOffset:virtualOffset];
     }
 
@@ -550,12 +543,10 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     if (drawCursorBeforeText) {
         if ([iTermAdvancedSettingsModel drawOutlineAroundCursor]) {
             [self drawCursor:YES
-       cursorBackgroundColor:cursorBackgroundColor
                virtualOffset:virtualOffset];
         }
     } else {
         cursor = [self drawCursor:NO
-            cursorBackgroundColor:cursorBackgroundColor
                     virtualOffset:virtualOffset];
     }
     if (self.cursorShadow) {
@@ -563,8 +554,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     }
 
     if (self.copyMode) {
-        [self drawCopyModeCursorWithBackgroundColor:cursorBackgroundColor
-                                      virtualOffset:virtualOffset];
+        [self drawCopyModeCursorWithVirtualOffset:virtualOffset];
     }
     [self drawButtons:virtualOffset];
 }
@@ -604,11 +594,9 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
 
 #pragma mark - Drawing: Background
 
-- (NSColor *)drawBackgroundRunArrays:(NSArray<iTermBackgroundColorRunsInLine *> *)backgroundRunArrays
-                             cursorY:(int)cursorY
-                         drawingMode:(iTermBackgroundDrawingMode)drawingMode
-                       virtualOffset:(CGFloat)virtualOffset {
-    NSColor *cursorBackgroundColor = nil;
+- (void)drawBackgroundRunArrays:(NSArray<iTermBackgroundColorRunsInLine *> *)backgroundRunArrays
+                    drawingMode:(iTermBackgroundDrawingMode)drawingMode
+                  virtualOffset:(CGFloat)virtualOffset {
     NSColor *defaultColor = [self colorForMarginsUsingDominant:NO];
     const BOOL extend = [iTermAdvancedSettingsModel extendBackgroundColorIntoMargins] && self.softAlternateScreenMode;
     for (NSInteger i = 0; i < backgroundRunArrays.count; ) {
@@ -617,12 +605,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
         if (rows == 0) {
             rows = [self numberOfEquivalentBackgroundColorLinesInRunArrays:backgroundRunArrays fromIndex:i];
             runArray.numberOfEquivalentRows = rows;
-        }
-        if (cursorY >= runArray.line &&
-            cursorY < runArray.line + runArray.numberOfEquivalentRows) {
-            NSColor *color = [self unprocessedColorForBackgroundRun:[runArray runAtVisualIndex:self.cursorCoord.x] ?: runArray.lastRun
-                                                     enableBlending:NO];
-            cursorBackgroundColor = [_colorMap processedBackgroundColorForBackgroundColor:color];
         }
         [self drawBackgroundForLine:runArray.line
                                 atY:runArray.y
@@ -645,7 +627,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
         }
         i += rows;
     }
-    return cursorBackgroundColor;
 }
 
 - (void)drawBackgroundForLine:(int)line
@@ -3693,9 +3674,6 @@ iTermKittyImageDraw *iTermFindKittyImageDrawForVirtualPlaceholder(NSArray<iTermK
 }
 
 - (BOOL)cursorIsSolidRectangle {
-    if (_passwordInput) {
-        return NO;
-    }
     BOOL saved = _blinkingItemsVisible;
     _blinkingItemsVisible = YES;
     const BOOL wouldDraw = [self shouldDrawCursor];
@@ -3762,13 +3740,11 @@ typedef struct {
     }
 }
 
-- (void)drawCopyModeCursorWithBackgroundColor:(NSColor *)cursorBackgroundColor
-                                virtualOffset:(CGFloat)virtualOffset {
+- (void)drawCopyModeCursorWithVirtualOffset:(CGFloat)virtualOffset {
     iTermCursor *cursor = [iTermCursor itermCopyModeCursorInSelectionState:self.copyModeSelecting];
     cursor.delegate = self;
 
     [self reallyDrawCursor:cursor
-           backgroundColor:cursorBackgroundColor
                         at:VT100GridCoordMake(_copyModeCursorCoord.x, _copyModeCursorCoord.y - _numberOfScrollbackLines)
             coordIsLogical:NO
                    outline:NO
@@ -3776,7 +3752,6 @@ typedef struct {
 }
 
 - (iTermCursor *)drawCursor:(BOOL)outline
-      cursorBackgroundColor:(NSColor *)cursorBackgroundColor
               virtualOffset:(CGFloat)virtualOffset {
     DLog(@"drawCursor:%@", @(outline));
 
@@ -3816,7 +3791,6 @@ typedef struct {
             CGContextSetAlpha(ctx, alpha);
         }
         NSRect rect = [self reallyDrawCursor:cursor
-                             backgroundColor:cursorBackgroundColor
                                           at:_cursorCoord
                               coordIsLogical:YES
                                      outline:outline
@@ -3903,7 +3877,6 @@ typedef struct {
 }
 
 - (NSRect)reallyDrawCursor:(iTermCursor *)cursor
-           backgroundColor:(NSColor *)backgroundColor
                         at:(VT100GridCoord)nominalCursorCoord
             coordIsLogical:(BOOL)coordIsLogical
                    outline:(BOOL)outline
@@ -3911,25 +3884,6 @@ typedef struct {
     const VT100GridCoord cursorCoord = coordIsLogical ? [self coordinateByTransformingScreenCoordinateForRTL:nominalCursorCoord] : nominalCursorCoord;
     const iTermCursorInfo cursorInfo = [self cursorInfoForCoord:cursorCoord];
     NSColor *cursorColor = [self cursorColorWithOutline:outline];
-
-    if (_passwordInput) {
-        NSImage *keyImage;
-        if (backgroundColor.isDark) {
-            keyImage = [NSImage it_imageNamed:@"key-light" forClass:self.class];
-        } else {
-            keyImage = [NSImage it_imageNamed:@"key-dark" forClass:self.class];
-        }
-        CGPoint point = cursorInfo.rect.origin;
-        [keyImage it_drawInRect:NSMakeRect(point.x, point.y, _cellSize.width, _cellSize.height)
-                       fromRect:NSZeroRect
-                      operation:NSCompositingOperationSourceOver
-                       fraction:1
-                 respectFlipped:YES
-                          hints:nil
-                  virtualOffset:virtualOffset];
-        return cursorInfo.rect;
-    }
-
 
     NSColor *cursorTextColor;
     if (_reverseVideo) {

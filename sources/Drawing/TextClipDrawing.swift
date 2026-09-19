@@ -42,7 +42,6 @@ class TextClipDrawing: NSObject {
         var drawMarkIndicators: Bool
         var showSearchingCursor: Bool
         var copyMode: Bool
-        var passwordInput: Bool
         var shouldShowTimestamps: Bool
         var colorMap: iTermColorMapReading
         var delegate: iTermTextDrawingHelperDelegate?
@@ -65,7 +64,6 @@ class TextClipDrawing: NSObject {
             drawMarkIndicators = helper.drawMarkIndicators
             showSearchingCursor = helper.showSearchingCursor
             copyMode = helper.copyMode
-            passwordInput = helper.passwordInput
             shouldShowTimestamps = helper.shouldShowTimestamps
             colorMap = helper.colorMap
             delegate = helper.delegate
@@ -89,7 +87,6 @@ class TextClipDrawing: NSObject {
             helper.drawMarkIndicators = drawMarkIndicators
             helper.showSearchingCursor = showSearchingCursor
             helper.copyMode = copyMode
-            helper.passwordInput = passwordInput
             helper.shouldShowTimestamps = shouldShowTimestamps
             helper.colorMap = colorMap
             helper.delegate = delegate
@@ -197,7 +194,6 @@ class TextClipDrawing: NSObject {
         drawingHelper.drawMarkIndicators = false
         drawingHelper.showSearchingCursor = false
         drawingHelper.copyMode = false
-        drawingHelper.passwordInput = false
         drawingHelper.shouldShowTimestamps = false
         drawingHelper.colorMap = colorMap;
         originalDelegate = drawingHelper.delegate!

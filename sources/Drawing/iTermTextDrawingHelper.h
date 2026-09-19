@@ -348,9 +348,6 @@ extern const CGFloat iTermCursorGuideAlphaThreshold;
 @property(nonatomic, assign) BOOL asciiLigatures;
 @property(nonatomic, assign) BOOL nonAsciiLigatures;
 
-// Show the password input cursor?
-@property(nonatomic) BOOL passwordInput;
-
 @property(nonatomic) NSRect indicatorFrame;
 
 @property(nonatomic, readonly) iTermTimestampDrawHelper *timestampDrawHelper;

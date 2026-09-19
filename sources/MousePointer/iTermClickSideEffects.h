@@ -13,7 +13,6 @@ typedef NS_OPTIONS(NSUInteger, iTermClickSideEffects) {
     iTermClickSideEffectsReport = (1 << 3),
     iTermClickSideEffectsMoveCursor = (1 << 4),
     iTermClickSideEffectsMoveFindOnPageCursor = (1 << 5),
-    iTermClickSideEffectsOpenPasswordManager = (1 << 6),
     iTermClickSideEffectsDrag = (1 << 7),
 
     iTermClickSideEffectsIgnore = 0xfffffffffffffffULL

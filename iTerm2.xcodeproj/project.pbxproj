@@ -1208,12 +1208,6 @@
 		A60EAE7D23F9CEB3007536CE /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A60EAE7C23F9CEB3007536CE /* ApplicationServices.framework */; };
 		A60EF16C2DE65651002837B9 /* DateFormatter+iTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60EF16B2DE6564D002837B9 /* DateFormatter+iTerm.swift */; };
 		A60F6FEC270B7F640017A003 /* iTermModifyOtherKeys1Test.m in Sources */ = {isa = PBXBuildFile; fileRef = A60F6FEA270B7F1D0017A003 /* iTermModifyOtherKeys1Test.m */; };
-		A610941A2A4A213D00AC2268 /* key-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = A61094182A4A213D00AC2268 /* key-dark.png */; };
-		A610941B2A4A213D00AC2268 /* key-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = A61094182A4A213D00AC2268 /* key-dark.png */; };
-		A610941C2A4A213D00AC2268 /* key-dark.png in Resources */ = {isa = PBXBuildFile; fileRef = A61094182A4A213D00AC2268 /* key-dark.png */; };
-		A610941D2A4A213D00AC2268 /* key-light.png in Resources */ = {isa = PBXBuildFile; fileRef = A61094192A4A213D00AC2268 /* key-light.png */; };
-		A610941E2A4A213D00AC2268 /* key-light.png in Resources */ = {isa = PBXBuildFile; fileRef = A61094192A4A213D00AC2268 /* key-light.png */; };
-		A610941F2A4A213D00AC2268 /* key-light.png in Resources */ = {isa = PBXBuildFile; fileRef = A61094192A4A213D00AC2268 /* key-light.png */; };
 		A6109B612B969B4100D8E4E9 /* graphic_neovim.png in Resources */ = {isa = PBXBuildFile; fileRef = A6109B5F2B969B4000D8E4E9 /* graphic_neovim.png */; };
 		A6109B622B969B4100D8E4E9 /* graphic_neovim.png in Resources */ = {isa = PBXBuildFile; fileRef = A6109B5F2B969B4000D8E4E9 /* graphic_neovim.png */; };
 		A6109B632B969B4100D8E4E9 /* graphic_neovim.png in Resources */ = {isa = PBXBuildFile; fileRef = A6109B5F2B969B4000D8E4E9 /* graphic_neovim.png */; };
@@ -5590,8 +5584,6 @@
 		A60EAE7C23F9CEB3007536CE /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		A60EF16B2DE6564D002837B9 /* DateFormatter+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateFormatter+iTerm.swift"; sourceTree = "<group>"; };
 		A60F6FEA270B7F1D0017A003 /* iTermModifyOtherKeys1Test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermModifyOtherKeys1Test.m; sourceTree = "<group>"; };
-		A61094182A4A213D00AC2268 /* key-dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "key-dark.png"; path = "images/key-dark.png"; sourceTree = "<group>"; };
-		A61094192A4A213D00AC2268 /* key-light.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "key-light.png"; path = "images/key-light.png"; sourceTree = "<group>"; };
 		A6109B5F2B969B4000D8E4E9 /* graphic_neovim.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = graphic_neovim.png; path = "hyper-tab-icons-plus/png/graphic_neovim.png"; sourceTree = "<group>"; };
 		A6109B602B969B4000D8E4E9 /* graphic_neovim@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "graphic_neovim@2x.png"; path = "hyper-tab-icons-plus/png/graphic_neovim@2x.png"; sourceTree = "<group>"; };
 		A6110C382526FFCF00D18F61 /* iTermModifyOtherKeysMapper1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermModifyOtherKeysMapper1.h; sourceTree = "<group>"; };
@@ -8544,8 +8536,6 @@
 				A69EB7272E68CE0C00BD3181 /* iTerm2 App Icon for Nightly.icon */,
 				A69EB7282E68CE0C00BD3181 /* iTerm2 App Icon for Release.icon */,
 				A61BB46722001E650027F47D /* iTermRecordingIcon.icns */,
-				A61094182A4A213D00AC2268 /* key-dark.png */,
-				A61094192A4A213D00AC2268 /* key-light.png */,
 				A623D94A1F8983D80011F8C3 /* key@2x.png */,
 				A60A80E02C4F66B3002C3AA2 /* LatchBio.png */,
 				1D8BBA761B30FD230005A852 /* Later.png */,
@@ -15253,7 +15243,6 @@
 				A6EFF23C1D20F6C000806EEF /* EraseDarkBackground@2x.png in Resources */,
 				1DEDF56B19C917FD005B023A /* new-tab.png in Resources */,
 				1D6ED9D519AEA20D005A7799 /* TabClose_Front.png in Resources */,
-				A610941C2A4A213D00AC2268 /* key-dark.png in Resources */,
 				A67F6160214395990093940A /* graphic_monitor@2x.png in Resources */,
 				A6FE8D17209541BC00B5C648 /* rsa_pub.pem in Resources */,
 				A6AC04C821F0FDBD00CD2774 /* StatusBarComposerExpand@2x.png in Resources */,
@@ -15323,7 +15312,6 @@
 				A6E16C6924A866F300C6DB06 /* WindowCornerFull_BigSur@2x.png in Resources */,
 				A67F613A214395680093940A /* graphic_heroku@2x.png in Resources */,
 				A62A7A6B2F988829007CAA0B /* iTermPasswordManager.xib in Resources */,
-				A610941F2A4A213D00AC2268 /* key-light.png in Resources */,
 				1D6ED9E819AEA20D005A7799 /* PrefsMouse.png in Resources */,
 				A6E7AE8E214394DD00DE9F3B /* graphic_composer@2x.png in Resources */,
 				A6E7AE60214394CA00DE9F3B /* graphic_clojure.png in Resources */,
@@ -15514,7 +15502,6 @@
 				A6DC98A228A82608009D21C0 /* Window@2x.png in Resources */,
 				A6F18B5A2AE2F39C006C08EE /* uniE0CF_lego_separator_thin.pdf in Resources */,
 				A67F61A8214395B70093940A /* graphic_rails.png in Resources */,
-				A610941E2A4A213D00AC2268 /* key-light.png in Resources */,
 				A6F7A71D213CB143004DE961 /* StatusBarIconFolder.png in Resources */,
 				A67F619F214395B70093940A /* graphic_psql@2x.png in Resources */,
 				A6EC0B072C87DF5E00598D20 /* uniE0D7_Powerline_normal-left-inverse-cutout.pdf in Resources */,
@@ -15541,7 +15528,6 @@
 				A65B72B51B33C07D00F947A7 /* NextTip@2x.png in Resources */,
 				A6BEE47B26E0A624009C0C2C /* FilterIndicator.png in Resources */,
 				A6F7A720213CB143004DE961 /* StatusBarIconCPU@2x.png in Resources */,
-				A610941B2A4A213D00AC2268 /* key-dark.png in Resources */,
 				A6F18B3F2AE2F39C006C08EE /* uniE0B0_Powerline_normal-left.pdf in Resources */,
 				A62A7A972F988AB7007CAA0B /* iTermTextPopoverViewController.xib in Resources */,
 				A61E51592F9897A800EB2B55 /* Autocomplete.xib in Resources */,
@@ -15811,7 +15797,6 @@
 				A6F18B532AE2F39C006C08EE /* uniE0D1_lego_block_sideways.pdf in Resources */,
 				536EF5B823F6684D00B81875 /* it2run in Resources */,
 				A6F1B3AE268FD0F300546767 /* StatusBarIconTriggers@2x.png in Resources */,
-				A610941A2A4A213D00AC2268 /* key-dark.png in Resources */,
 				A6E7AE86214394DD00DE9F3B /* graphic_curl.png in Resources */,
 				A66F52D92106F6F100571168 /* gitup@2x.png in Resources */,
 				1D5FDD7C1208E91100C46BA3 /* close.png in Resources */,
@@ -16164,7 +16149,6 @@
 				A6971F3520D8D3CB0075CFD4 /* iTermAdvancedGPUSettingsWindowController.xib in Resources */,
 				A6F7A73A213CB143004DE961 /* StatusBarIconClock.png in Resources */,
 				A67F6187214395A70093940A /* graphic_perl@2x.png in Resources */,
-				A610941D2A4A213D00AC2268 /* key-light.png in Resources */,
 				A67F615B214395990093940A /* graphic_micro.png in Resources */,
 				1DBBA5E11B3CB0590026E3B6 /* restore-arrangement@2x.png in Resources */,
 				A68E333B1DE78D08003F1D8E /* Man Page Touch Bar Icon.png in Resources */,

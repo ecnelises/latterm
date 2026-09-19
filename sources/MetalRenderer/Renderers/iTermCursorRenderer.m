@@ -31,11 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) CGFloat cursorHeight;
 @end
 
-@interface iTermKeyCursorRenderer()
-@property (nonatomic, strong) id<MTLTexture> cachedTexture;
-@property (nonatomic) CGSize cachedTextureSize;
-@end
-
 @implementation iTermCursorRendererTransientState
 
 - (instancetype)initWithConfiguration:(__kindof iTermRenderConfiguration *)configuration {
@@ -77,10 +72,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface iTermFrameCursorRendererTransientState : iTermCursorRendererTransientState
 @property (nonatomic, weak) iTermFrameCursorRenderer *renderer;
-@property (nonatomic, strong) id<MTLTexture> texture;
-@end
-
-@interface iTermKeyCursorRendererTransientState : iTermCursorRendererTransientState
 @property (nonatomic, strong) id<MTLTexture> texture;
 @end
 
@@ -202,14 +193,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@implementation iTermKeyCursorRendererTransientState
-
-- (NSImage *)newImage {
-    return [[NSBundle bundleForClass:self.class] imageForResource:@"key"];
-}
-
-@end
-
 
 @interface iTermUnderlineCursorRenderer : iTermCursorRenderer
 @end
@@ -255,12 +238,6 @@ NS_ASSUME_NONNULL_BEGIN
     return [[iTermCopyModeCursorRenderer alloc] initWithDevice:device
                                             vertexFunctionName:@"iTermTextureCursorVertexShader"
                                           fragmentFunctionName:@"iTermTextureCursorFragmentShader"];
-}
-
-+ (instancetype)newKeyCursorRendererWithDevice:(id<MTLDevice>)device {
-    return [[iTermKeyCursorRenderer alloc] initWithDevice:device
-                                       vertexFunctionName:@"iTermTextureCursorVertexShader"
-                                     fragmentFunctionName:@"iTermTextureCursorFragmentShader"];
 }
 
 + (instancetype)newFrameCursorRendererWithDevice:(id<MTLDevice>)device {
@@ -621,74 +598,6 @@ static id<MTLBuffer> iTermNewVertexBufferWithBlockCursorQuad(iTermCursorRenderer
                                              @(iTermVertexInputIndexOffset): tState.offsetBuffer }
                           fragmentBuffers:@{}
                                  textures:@{ @(iTermTextureIndexPrimary): tState.texture } ];
-}
-
-@end
-
-@implementation iTermKeyCursorRenderer {
-    id<MTLTexture> _lightTexture;
-    id<MTLTexture> _darkTexture;
-    CGSize _textureSize;
-}
-
-- (Class)transientStateClass {
-    return [iTermKeyCursorRendererTransientState class];
-}
-
-- (void)initializeTransientState:(iTermKeyCursorRendererTransientState *)tState {
-    [super initializeTransientState:tState];
-    tState.vertexBuffer = [_cellRenderer newQuadOfSize:CGSizeMake(tState.cellConfiguration.cellSize.width,
-                                                                  tState.cellConfiguration.cellSize.height)
-                                           poolContext:tState.poolContext];
-}
-
-- (void)drawWithFrameData:(iTermMetalFrameData *)frameData
-           transientState:(__kindof iTermMetalCellRendererTransientState *)transientState {
-    iTermCopyModeCursorRendererTransientState *tState = transientState;
-    iTermCursorDescription description = {
-        .origin = {
-            tState.cellConfiguration.cellSize.width * tState.coord.x,
-            tState.cellConfiguration.cellSize.height * (tState.cellConfiguration.gridSize.height - tState.coord.y - 1),
-        },
-        .color = { 1, 1, 1, 1 }
-    };
-    id<MTLBuffer> descriptionBuffer = [_descriptionPool requestBufferFromContext:tState.poolContext
-                                                                       withBytes:&description
-                                                                  checkIfChanged:YES];
-    ITAssertWithMessage(descriptionBuffer != nil, @"Nil description buffer of size %@", @(_descriptionPool.bufferSize));
-    ITAssertWithMessage(tState.vertexBuffer != nil, @"Nil vertex buffer");
-    ITAssertWithMessage(tState.offsetBuffer != nil, @"Nil offset buffer");
-
-    if (!_lightTexture ||
-        ![NSObject object:self.colorSpace isEqualToObject:tState.configuration.colorSpace] ||
-        !CGSizeEqualToSize(_textureSize, tState.cellConfiguration.cellSize)) {
-        _lightTexture = [self.cellRenderer textureFromImage:[iTermImageWrapper withImage:[[[[NSBundle bundleForClass:self.class] imageForResource:@"key-light"] it_imageOfSize:tState.cellConfiguration.cellSize] it_verticallyFlippedImage]]
-                                               context:nil
-                                            colorSpace:tState.configuration.colorSpace];
-        _darkTexture = [self.cellRenderer textureFromImage:[iTermImageWrapper withImage:[[[[NSBundle bundleForClass:self.class] imageForResource:@"key-dark"] it_imageOfSize:tState.cellConfiguration.cellSize] it_verticallyFlippedImage]]
-                                               context:nil
-                                            colorSpace:tState.configuration.colorSpace];
-        if (!_lightTexture || !_darkTexture) {
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [iTermAppSignatureValidator warnWithReason:@"While loading the key cursor image"];
-                });
-            });
-            return;
-        }
-        self.colorSpace = tState.configuration.colorSpace;
-        _textureSize = tState.cellConfiguration.cellSize;
-    }
-    [_cellRenderer drawWithTransientState:tState
-                            renderEncoder:frameData.renderEncoder
-                         numberOfVertices:6
-                             numberOfPIUs:0
-                            vertexBuffers:@{ @(iTermVertexInputIndexVertices): tState.vertexBuffer,
-                                             @(iTermVertexInputIndexCursorDescription): descriptionBuffer,
-                                             @(iTermVertexInputIndexOffset): tState.offsetBuffer }
-                          fragmentBuffers:@{}
-                                 textures:@{ @(iTermTextureIndexPrimary): tState.backgroundIsDark ? _lightTexture : _darkTexture } ];
 }
 
 @end

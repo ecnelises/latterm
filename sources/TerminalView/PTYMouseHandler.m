@@ -595,23 +595,6 @@ static double EuclideanDistance(NSPoint p1, NSPoint p2) {
                 result |= iTermClickSideEffectsMoveFindOnPageCursor;
             }
         }
-        if ([self.mouseDelegate mouseHandlerAtPasswordPrompt:self] &&
-            !altPressed &&
-            !cmdPressed) {
-            if (VT100GridCoordEquals(clickCoord, VT100GridCoordInvalid)) {
-                clickCoord =
-                [self.mouseDelegate mouseHandler:self
-                                      clickPoint:event
-                                   allowOverflow:NO
-                                      firstMouse:_mouseDownWasFirstMouse];
-            }
-            const VT100GridCoord cursorCoord =
-            [self.mouseDelegate mouseHandlerCursorCoord:self];
-            if (VT100GridCoordEquals(clickCoord, cursorCoord)) {
-                [self.mouseDelegate mouseHandlerOpenPasswordManager:self];
-                result |= iTermClickSideEffectsOpenPasswordManager;
-            }
-        }
     } else if (isShiftedSingleClick) {
         const NSEventModifierFlags mask = (NSEventModifierFlagOption |
                                            NSEventModifierFlagCommand |

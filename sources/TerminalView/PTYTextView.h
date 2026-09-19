@@ -258,7 +258,6 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (BOOL)textViewPasswordInput;
 - (void)textViewDidSelectRangeForFindOnPage:(VT100GridCoordRange)range;
 - (void)textViewNeedsDisplayInRect:(NSRect)rect;
-- (void)textViewDidSelectPasswordPrompt;
 - (iTermImageWrapper *)textViewBackgroundImage;
 - (iTermBackgroundImageMode)backgroundImageMode;
 - (BOOL)textViewShouldDrawRect;

@@ -9,6 +9,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Use the normal cursor for password input and
+  remove its click-to-open password shortcut.
+  Password Manager remains available in menus.
 - Removed unused Touch Bar action editing paths
   while preserving shortcut and action titles.
 - Centered profile names in more compact rows.

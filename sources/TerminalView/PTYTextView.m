@@ -2078,7 +2078,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.copyMode = NO;
         helper.copyModeSelecting = NO;
         helper.copyModeCursorCoord = VT100GridCoordMake(-1, -1);
-        helper.passwordInput = NO;
         helper.badgeTopMargin = 0;
         helper.badgeRightMargin = 0;
         helper.shouldShowTimestamps = NO;
@@ -2120,9 +2119,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.copyMode = _delegate.textViewCopyMode;
         helper.copyModeSelecting = _delegate.textViewCopyModeSelecting;
         helper.copyModeCursorCoord = _delegate.textViewCopyModeCursorCoord;
-        helper.passwordInput = ([self isInKeyWindow] &&
-                                [_delegate textViewIsActiveSession] &&
-                                _delegate.textViewPasswordInput);
         helper.badgeTopMargin = [_delegate textViewBadgeTopMargin];
         helper.badgeRightMargin = [_delegate textViewBadgeRightMargin];
         helper.shouldShowTimestamps = self.showTimestamps;
@@ -7767,19 +7763,6 @@ static NSString *iTermStringFromRange(NSRange range) {
     VT100GridAbsCoordMake(clickPoint.x,
                           [_dataSource totalScrollbackOverflow] + clickPoint.y);
     [_findOnPageHelper setStartPoint:absCoord];
-}
-
-- (BOOL)mouseHandlerAtPasswordPrompt:(PTYMouseHandler *)handler {
-    return _delegate.textViewPasswordInput;
-}
-
-- (VT100GridCoord)mouseHandlerCursorCoord:(PTYMouseHandler *)handler {
-    return VT100GridCoordMake([_dataSource cursorX] - 1,
-                              [_dataSource numberOfLines] - [_dataSource height] + [_dataSource cursorY] - 1);
-}
-
-- (void)mouseHandlerOpenPasswordManager:(PTYMouseHandler *)handler {
-    [_delegate textViewDidSelectPasswordPrompt];
 }
 
 - (BOOL)mouseHandler:(PTYMouseHandler *)handler

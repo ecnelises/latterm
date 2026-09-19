@@ -134,7 +134,6 @@ typedef struct {
     iTermCursorRenderer *_frameCursorRenderer;
     iTermCopyModeCursorRenderer *_copyModeCursorRenderer;
     iTermCopyBackgroundRenderer *_copyBackgroundRenderer;
-    iTermCursorRenderer *_keyCursorRenderer;
     iTermImageRenderer *_imageRenderer;
     iTermCopyToDrawableRenderer *_copyToDrawableRenderer;
     iTermBlockRenderer *_blockRenderer;
@@ -230,7 +229,6 @@ typedef struct {
         _blockCursorRenderer = [iTermCursorRenderer newBlockCursorRendererWithDevice:device];
         _frameCursorRenderer = [iTermCursorRenderer newFrameCursorRendererWithDevice:device];
         _copyModeCursorRenderer = [iTermCursorRenderer newCopyModeCursorRendererWithDevice:device];
-        _keyCursorRenderer = [iTermCursorRenderer newKeyCursorRendererWithDevice:device];
         _copyBackgroundRenderer = [[iTermCopyBackgroundRenderer alloc] initWithDevice:device];
         _copyToDrawableRenderer = [[iTermCopyToDrawableRenderer alloc] initWithDevice:device];
         _blockRenderer = [[iTermBlockRenderer alloc] initWithDevice:device];
@@ -1479,12 +1477,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         tState.coord = cursorInfo.copyModeCursorCoord;
     }
     const CGFloat cursorFadeAlpha = cursorInfo.fadeAlpha;
-    if (cursorInfo.cursorVisible && cursorInfo.password) {
-        iTermCursorRendererTransientState *tState = [frameData transientStateForRenderer:_keyCursorRenderer];
-        tState.coord = cursorInfo.coord;
-        tState.fadeAlpha = cursorFadeAlpha;
-        tState.backgroundIsDark = SIMDPerceivedBrightness(cursorInfo.backgroundColor) < 0.5;
-    } else if (cursorInfo.cursorVisible) {
+    if (cursorInfo.cursorVisible) {
         switch (cursorInfo.type) {
             case CURSOR_UNDERLINE: {
                 iTermCursorRendererTransientState *tState = [frameData transientStateForRenderer:_underlineCursorRenderer];
@@ -2287,7 +2280,7 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
 - (void)drawCursorBeforeTextWithFrameData:(iTermMetalFrameData *)frameData {
     iTermMetalCursorInfo *cursorInfo = [frameData.perFrameState metalDriverCursorInfo];
 
-    if (!cursorInfo.copyMode && !cursorInfo.password && cursorInfo.cursorVisible) {
+    if (!cursorInfo.copyMode && cursorInfo.cursorVisible) {
         switch (cursorInfo.type) {
             case CURSOR_UNDERLINE:
                 [self drawCellRenderer:_underlineCursorRenderer
@@ -2325,32 +2318,26 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
                           stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
     }
     if (cursorInfo.cursorVisible) {
-        if (cursorInfo.password) {
-            [self drawCellRenderer:_keyCursorRenderer
-                         frameData:frameData
-                              stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
-        } else {
-            switch (cursorInfo.type) {
-                case CURSOR_UNDERLINE:
-                    if (cursorInfo.cursorShadow) {
-                        [self drawCellRenderer:_horizontalShadowCursorRenderer frameData:frameData stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
-                    }
-                    break;
-                case CURSOR_VERTICAL:
-                    if (cursorInfo.cursorShadow) {
-                        [self drawCellRenderer:_verticalShadowCursorRenderer frameData:frameData stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
-                    }
-                    break;
-                case CURSOR_BOX:
-                    if (cursorInfo.frameOnly) {
-                        [self drawCellRenderer:_frameCursorRenderer
-                                     frameData:frameData
-                                          stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
-                    }
-                    break;
-                case CURSOR_DEFAULT:
-                    break;
-            }
+        switch (cursorInfo.type) {
+            case CURSOR_UNDERLINE:
+                if (cursorInfo.cursorShadow) {
+                    [self drawCellRenderer:_horizontalShadowCursorRenderer frameData:frameData stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
+                }
+                break;
+            case CURSOR_VERTICAL:
+                if (cursorInfo.cursorShadow) {
+                    [self drawCellRenderer:_verticalShadowCursorRenderer frameData:frameData stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
+                }
+                break;
+            case CURSOR_BOX:
+                if (cursorInfo.frameOnly) {
+                    [self drawCellRenderer:_frameCursorRenderer
+                                 frameData:frameData
+                                      stat:iTermMetalFrameDataStatPqEnqueueDrawCursor];
+                }
+                break;
+            case CURSOR_DEFAULT:
+                break;
         }
     }
     if (frameData.perFrameState.imeInfo) {
@@ -2682,7 +2669,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
                _blockCursorRenderer,
                _frameCursorRenderer,
                _copyModeCursorRenderer,
-               _keyCursorRenderer,
                _timestampsRenderer,
                _blockRenderer,
                _pillBackgroundRenderer ?: [NSNull null],

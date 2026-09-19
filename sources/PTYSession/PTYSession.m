@@ -13593,12 +13593,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     return _passwordInput;
 }
 
-- (void)textViewDidSelectPasswordPrompt {
-    iTermApplicationDelegate *delegate = [iTermApplication.sharedApplication delegate];
-    [delegate openPasswordManagerToAccountName:nil
-                                     inSession:self];
-}
-
 - (void)textViewDidSelectRangeForFindOnPage:(VT100GridCoordRange)range {
     if (_modeHandler.mode == iTermSessionModeCopy) {
         [iTermCopyModeState castFrom:_modeHandler.copyModeHandler.state].coord = range.start;
