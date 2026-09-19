@@ -346,7 +346,6 @@ clean:
 	rm -rf submodules/libssh2/libssh2.a
 	rm -f *~
 	git -C submodules/NMSSH/ checkout NMSSH-OSX/Libraries/lib/
-	rm -rf BetterFontPicker/BetterFontPicker.framework && git checkout BetterFontPicker/BetterFontPicker.framework
 	rm -rf ColorPicker/ColorPicker.framework && git checkout ColorPicker/ColorPicker.framework
 	rm -rf ThirdParty && git checkout ThirdParty
 	cd submodules/libsixel && make distclean || true
@@ -459,12 +458,6 @@ paranoid-deps: force
 paranoid-libssh2: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libssh2
 
-paranoid-BetterFontPicker: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" BetterFontPicker
-
-paranoid-BetterFontPicker-Dev: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" BetterFontPicker-Dev
-
 paranoid-libsixel: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libsixel
 
@@ -486,16 +479,10 @@ unicode:
 DepsIfNeeded: force
 	tools/rebuild-deps-if-needed
 
-BetterFontPicker: force
-	cd BetterFontPicker && $(MAKE)
-
-BetterFontPicker-Dev: force
-	cd BetterFontPicker && $(MAKE) dev
-
 ColorPicker: force
 	cd ColorPicker && $(MAKE)
 
-bindeps: BetterFontPicker
+bindeps: force
 	$(MAKE) ColorPicker
 
 cleandeps: force

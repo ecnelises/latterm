@@ -6,7 +6,7 @@
 //  Copyright © 2020 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
 
 class SystemFontClassifier {
     static let didUpdateNotificationName = NSNotification.Name("SystemFontClassifierDidUpdate")

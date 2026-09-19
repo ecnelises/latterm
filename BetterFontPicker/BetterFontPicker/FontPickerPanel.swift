@@ -6,7 +6,7 @@
 //  Copyright © 2019 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
 
 public class FontPickerPanel: NSPanel {
     public override var canBecomeKey: Bool {

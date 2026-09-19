@@ -173,7 +173,7 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
     }
 
     private func imageViewForImage(withName name: String) -> NSImageView {
-        let bundle = Bundle(for: FontPickerCompositeView.self)
+        let bundle = FontPickerResources.bundle
         if let image = bundle.image(forResource: NSImage.Name(name)) {
             return NSImageView(image: image)
         } else {

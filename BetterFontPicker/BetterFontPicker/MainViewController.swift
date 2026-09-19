@@ -6,7 +6,18 @@
 //  Copyright © 2019 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
+
+enum FontPickerResources {
+    static let bundle: Bundle = {
+        #if SWIFT_PACKAGE
+        return Bundle.module
+        #else
+        // The standalone Xcode demo still builds this source as a framework.
+        return Bundle(for: MainViewController.self)
+        #endif
+    }()
+}
 
 fileprivate var tokenCache: NSCache<NSString, NSArray> = {
     let value = NSCache<NSString, NSArray>()
@@ -97,11 +108,11 @@ public class MainViewController: NSViewController, NSTextFieldDelegate, TableVie
     public var tableViewController: TableViewController?
 
     init() {
-        super.init(nibName: "MainViewController", bundle: Bundle(for: MainViewController.self))
+        super.init(nibName: "MainViewController", bundle: FontPickerResources.bundle)
     }
 
     override init(nibName nibNameOrNil: NSNib.Name?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: "MainViewController", bundle: Bundle(for: MainViewController.self))
+        super.init(nibName: "MainViewController", bundle: FontPickerResources.bundle)
     }
 
     required init?(coder: NSCoder) {

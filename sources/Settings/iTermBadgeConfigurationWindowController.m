@@ -15,7 +15,7 @@
 #import "NSColor+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSObject+iTerm.h"
-#import <BetterFontPicker/BetterFontPicker-Swift.h>
+@import BetterFontPicker;
 
 static const CGFloat iTermBadgeConfigurationBadgeViewInset = 3;
 

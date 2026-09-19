@@ -23,7 +23,7 @@
 #import "NSTextField+iTerm.h"
 #import "PreferencePanel.h"
 #import "PTYFontInfo.h"
-#import <BetterFontPicker/BetterFontPicker-Swift.h>
+@import BetterFontPicker;
 
 @interface ProfilesTextPreferencesViewController ()<BFPCompositeViewDelegate, BFPSizePickerViewDelegate, NSMenuItemValidation>
 @property(nonatomic, strong) NSFont *normalFont;

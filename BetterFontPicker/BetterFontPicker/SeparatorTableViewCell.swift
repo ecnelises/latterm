@@ -6,7 +6,7 @@
 //  Copyright © 2019 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
 
 class SeparatorTableViewCell: NSTableRowView {
     static let thickness = CGFloat(2)

@@ -6,7 +6,7 @@
 //  Copyright © 2022 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
 
 fileprivate protocol MenuButtonProtocol {
     var menuForMenuButton: NSMenu? { get }

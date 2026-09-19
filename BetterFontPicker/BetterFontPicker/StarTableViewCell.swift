@@ -6,7 +6,7 @@
 //  Copyright © 2019 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
 
 class StarImageView: NSImageView {
     @objc(hitTest:)
@@ -17,8 +17,8 @@ class StarImageView: NSImageView {
 
 class StarTableViewCell: NSView {
     static let width = 26
-    static let emptyStarImage = Bundle(for: StarTableViewCell.self).image(forResource: NSImage.Name("EmptyStar"))!
-    static let filledStarImage = Bundle(for: StarTableViewCell.self).image(forResource: NSImage.Name("FilledStar"))
+    static let emptyStarImage = FontPickerResources.bundle.image(forResource: NSImage.Name("EmptyStar"))!
+    static let filledStarImage = FontPickerResources.bundle.image(forResource: NSImage.Name("FilledStar"))
     private let imageView = NSImageView(frame: NSRect(x: 0,
                                                       y: 0,
                                                       width: StarTableViewCell.emptyStarImage.size.width,

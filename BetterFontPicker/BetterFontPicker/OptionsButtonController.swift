@@ -6,7 +6,7 @@
 //  Copyright © 2022 George Nachman. All rights reserved.
 //
 
-import Foundation
+import AppKit
 
 protocol OptionsButtonControllerDelegate: AnyObject {
     func optionsDidChange(_ controller: OptionsButtonController)

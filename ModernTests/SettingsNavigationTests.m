@@ -649,6 +649,43 @@
     [[NSFileManager defaultManager] removeItemAtURL:url error:NULL];
 }
 
+- (void)testPackagedFontPickerLoadsResourcesAndPreservesFontSelection {
+    NSBundle *appBundle = NSBundle.mainBundle;
+    NSURL *resourceURL = [appBundle URLForResource:@"BetterFontPicker_BetterFontPicker"
+                                    withExtension:@"bundle"];
+    XCTAssertNotNil(resourceURL);
+    NSBundle *resources = resourceURL ? [NSBundle bundleWithURL:resourceURL] : nil;
+    XCTAssertNotNil([resources URLForResource:@"MainViewController" withExtension:@"nib"]);
+    for (NSString *name in @[@"EmptyStar", @"FilledStar", @"HorizontalSpacingIcon", @"VerticalSpacingIcon"]) {
+        NSImage *image = [resources imageForResource:name];
+        XCTAssertNotNil(image, @"%@", name);
+        XCTAssertGreaterThan(image.size.width, 1, @"%@", name);
+    }
+    NSURL *frameworkURL = [appBundle.privateFrameworksURL URLByAppendingPathComponent:@"BetterFontPicker.framework"];
+    NSBundle *framework = [NSBundle bundleWithURL:frameworkURL];
+    XCTAssertNotNil(framework.executableURL);
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:framework.executablePath]);
+
+    Class controllerClass = NSClassFromString(@"BFPMainViewController");
+    XCTAssertNotNil(controllerClass);
+    NSViewController *controller = [[controllerClass alloc] initWithNibName:nil bundle:nil];
+    XCTAssertNotNil(controller.view);
+    NSTableView *table = [controller valueForKey:@"tableView"];
+    XCTAssertEqualObjects(NSStringFromClass(table.class), @"BFPFontListTableView");
+    XCTAssertNotNil(table.dataSource);
+    [table reloadData];
+    XCTAssertGreaterThan(table.numberOfRows, 0);
+
+    Class pickerClass = NSClassFromString(@"BFPCompositeView");
+    XCTAssertNotNil(pickerClass);
+    NSView *picker = [[pickerClass alloc] initWithFrame:NSMakeRect(0, 0, 400, 40)];
+    NSFont *font = [NSFont monospacedSystemFontOfSize:17 weight:NSFontWeightRegular];
+    [picker setValue:font forKey:@"font"];
+    NSFont *selectedFont = [picker valueForKey:@"font"];
+    XCTAssertEqualObjects(selectedFont.fontName, font.fontName);
+    XCTAssertEqualWithAccuracy(selectedFont.pointSize, font.pointSize, 0.01);
+}
+
 - (void)testPackagedActionDropdownLoadsItsResourceBundle {
     NSBundle *appBundle = NSBundle.mainBundle;
     NSURL *resourceURL = [appBundle URLForResource:@"SearchableComboListView_SearchableComboListView"
