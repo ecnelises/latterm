@@ -35,7 +35,6 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermProfileModelJournal.h"
-#import "iTermProfileSearchToken.h"
 #import "iTermUserDefaults.h"
 
 NSString *const kReloadAddressBookNotification = @"iTermReloadAddressBook";

@@ -15,7 +15,7 @@ extension NSAttributedString {
         }
         var tags = [String]()
         var phrases = [String: String]()
-        if phraseIdentifier == kTagRestrictionOperator {
+        if phraseIdentifier == iTermProfileSearchToken.tagRestrictionOperator {
             tags.append(string)
         } else {
             phrases[phraseIdentifier] = string
@@ -291,7 +291,7 @@ class ProfileStyleSearchEngine: NSObject {
                     return .excluded
                 }
                 if let range = Range(queryToken.range) {
-                    result.phraseIndexes[kTagRestrictionOperator + tag, default: IndexSet()].insert(integersIn: range)
+                    result.phraseIndexes[iTermProfileSearchToken.tagRestrictionOperator + tag, default: IndexSet()].insert(integersIn: range)
                     status = .matched
                 }
             }

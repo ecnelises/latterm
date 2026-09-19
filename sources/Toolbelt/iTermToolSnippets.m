@@ -13,7 +13,6 @@
 #import "iTermActionsModel.h"
 #import "iTermApplication.h"
 #import "iTermEditSnippetWindowController.h"
-#import "iTermProfileSearchToken.h"
 #import "iTermSearchField.h"
 #import "iTermSnippetsModel.h"
 #import "iTermTuple.h"
@@ -480,7 +479,7 @@ static NSButton *iTermToolSnippetsNewButton(NSString *imageName, NSString *title
     NSMutableArray<iTermProfileSearchToken *> *tokens = [NSMutableArray array];
     for (NSString *phrase in phrases) {
         iTermProfileSearchToken *token = [[iTermProfileSearchToken alloc] initWithPhrase:phrase
-                                                                               operators:@[ kTagRestrictionOperator, @"name:"]];
+                                                                               operators:@[ iTermProfileSearchToken.tagRestrictionOperator, @"name:"]];
         [tokens addObject:token];
     }
     return tokens;

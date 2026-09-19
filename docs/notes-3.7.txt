@@ -9,6 +9,8 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Migrated profile search tokens to Swift while
+  preserving filters and highlight ranges.
 - Removed unused duplicate dropdown UI sources.
 - Use the normal cursor for password input and
   remove its click-to-open password shortcut.
