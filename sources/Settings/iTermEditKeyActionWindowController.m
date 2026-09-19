@@ -318,7 +318,7 @@ const CGFloat sideMarginWidth = 40;
 
     IBOutlet iTermShortcutInputView *_shortcutField;
     IBOutlet NSTextField *_keyboardShortcutLabel;
-    IBOutlet NSTextField *_touchBarLabel;
+    IBOutlet NSTextField *_actionTitleField;
     IBOutlet NSView *_comboViewContainer;
     iTermSearchableComboView *_comboView;
     IBOutlet NSTextField *_parameter;
@@ -513,11 +513,8 @@ const CGFloat sideMarginWidth = 40;
     switch (self.mode) {
         case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
             break;
-        case iTermEditKeyActionWindowControllerModeTouchBarItem:
-            _touchBarLabel.placeholderString = @"Label to show in Touch Bar";
-            break;
         case iTermEditKeyActionWindowControllerModeUnbound:
-            _touchBarLabel.placeholderString = self.titleIsInterpolated ? @"Title (Interpolated String)" : @"Title";
+            _actionTitleField.placeholderString = self.titleIsInterpolated ? @"Title (Interpolated String)" : @"Title";
             break;
     }
 
@@ -540,7 +537,7 @@ const CGFloat sideMarginWidth = 40;
         formattedString = [iTermKeystrokeFormatter stringForKeystroke:self.currentKeystroke];
     }
     _shortcutField.stringValue = formattedString;
-    _touchBarLabel.stringValue = self.label ?: @"";
+    _actionTitleField.stringValue = self.label ?: @"";
     _okButton.enabled = [self shouldEnableOK];
     (void)[_comboView selectItemWithTag:self.action];
 
@@ -658,17 +655,6 @@ const CGFloat sideMarginWidth = 40;
                                       version:[iTermAction currentVersion]];
 }
 
-- (iTermKeystrokeOrTouchbarItem *)keystrokeOrTouchbarItem {
-    switch (_mode) {
-        case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
-            return [iTermOr first:self.currentKeystroke];
-        case iTermEditKeyActionWindowControllerModeTouchBarItem:
-            return [iTermOr second:[[iTermTouchbarItem alloc] initWithIdentifier:self.touchBarItemID]];
-        case iTermEditKeyActionWindowControllerModeUnbound:
-            return nil;
-    }
-}
-
 #pragma mark - iTermShortcutInputViewDelegate
 
 // Note: This is called directly by iTermHotKeyController when the action requires key remapping
@@ -694,22 +680,16 @@ const CGFloat sideMarginWidth = 40;
                                                                                         passthrough:self
                                                                                       functionsOnly:NO];
                 }
-                _touchBarLabel.delegate = _labelDelegate;
+                _actionTitleField.delegate = _labelDelegate;
             } else {
-                _touchBarLabel.delegate = self;
+                _actionTitleField.delegate = self;
             }
-            _touchBarLabel.hidden = NO;
-            _shortcutField.hidden = YES;
-            break;
-        case iTermEditKeyActionWindowControllerModeTouchBarItem:
-            _keyboardShortcutLabel.stringValue = @"Touch Bar Label";
-            _touchBarLabel.delegate = self;
-            _touchBarLabel.hidden = NO;
+            _actionTitleField.hidden = NO;
             _shortcutField.hidden = YES;
             break;
         case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
             _keyboardShortcutLabel.stringValue = @"Keyboard Shortcut:";
-            _touchBarLabel.hidden = YES;
+            _actionTitleField.hidden = YES;
             _shortcutField.hidden = NO;
             break;
     }
@@ -936,11 +916,6 @@ const CGFloat sideMarginWidth = 40;
     switch (self.mode) {
         case iTermEditKeyActionWindowControllerModeUnbound:
             break;
-        case iTermEditKeyActionWindowControllerModeTouchBarItem:
-            if (!_touchBarLabel.stringValue.length) {
-                return NO;
-            }
-            break;
         case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
             if (!self.currentKeystroke) {
                 return NO;
@@ -967,15 +942,7 @@ const CGFloat sideMarginWidth = 40;
 - (IBAction)ok:(id)sender {
     switch (self.mode) {
         case iTermEditKeyActionWindowControllerModeUnbound:
-            self.label = _touchBarLabel.stringValue ?: @"";
-            break;
-        case iTermEditKeyActionWindowControllerModeTouchBarItem:
-            if (!_touchBarLabel.stringValue.length) {
-                DLog(@"Beep: empty touch bar label");
-                NSBeep();
-                return;
-            }
-            self.label = _touchBarLabel.stringValue;
+            self.label = _actionTitleField.stringValue ?: @"";
             break;
         case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
             if (!self.currentKeystroke) {

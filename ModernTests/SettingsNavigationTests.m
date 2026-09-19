@@ -9,6 +9,8 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermKeyMappingViewController.h"
 #import "iTermEditSnippetWindowController.h"
+#import "iTermEditKeyActionWindowController.h"
+#import "iTermActionsModel.h"
 
 @interface PreferencePanel (NavigationTests)
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)item animated:(BOOL)animated;
@@ -28,6 +30,11 @@
 @interface iTermKeyMappingViewController (SettingsTests)
 - (void)loadPresets:(id)sender;
 - (void)importFromOpenPanel:(NSURL *)url;
+@end
+
+@interface iTermEditKeyActionWindowController (SettingsTests)
+- (BOOL)shouldEnableOK;
+- (void)ok:(id)sender;
 @end
 
 @interface SettingsKeyMappingDelegate : NSObject <iTermKeyMappingViewControllerDelegate>
@@ -631,6 +638,58 @@
     [controller importFromOpenPanel:url];
     XCTAssertEqual(delegate.importedKeys, 1);
     [[NSFileManager defaultManager] removeItemAtURL:url error:NULL];
+}
+
+- (void)testKeyboardActionEditorRequiresKeystrokeAndHidesActionTitle {
+    iTermEditKeyActionWindowController *controller = [[iTermEditKeyActionWindowController alloc]
+        initWithContext:iTermVariablesSuggestionContextSession
+                   mode:iTermEditKeyActionWindowControllerModeKeyboardShortcut];
+    [controller setAction:KEY_ACTION_IGNORE parameter:@"" applyMode:iTermActionApplyModeCurrentSession];
+    XCTAssertNotNil(controller.window);
+    NSTextField *title = [controller valueForKey:@"_actionTitleField"];
+    NSView *shortcut = [controller valueForKey:@"_shortcutField"];
+    XCTAssertNotNil(title);
+    XCTAssertTrue(title.hidden);
+    XCTAssertFalse(shortcut.hidden);
+    XCTAssertFalse([controller shouldEnableOK]);
+    iTermKeystroke *keystroke = [[iTermKeystroke alloc] initWithSerialized:@"0x61-0x0"];
+    controller.currentKeystroke = keystroke;
+    XCTAssertTrue([controller shouldEnableOK]);
+    [controller ok:nil];
+    XCTAssertTrue(controller.ok);
+    XCTAssertEqualObjects(controller.currentKeystroke, keystroke);
+    XCTAssertEqual(controller.action, KEY_ACTION_IGNORE);
+    [controller close];
+}
+
+- (void)testUnboundActionEditorPreservesPlainInterpolatedAndEmptyTitles {
+    for (NSNumber *interpolated in @[@NO, @YES]) {
+        iTermEditKeyActionWindowController *controller = [[iTermEditKeyActionWindowController alloc]
+            initWithContext:iTermVariablesSuggestionContextSession
+                       mode:iTermEditKeyActionWindowControllerModeUnbound];
+        controller.titleIsInterpolated = interpolated.boolValue;
+        controller.label = @"Saved action title";
+        [controller setAction:KEY_ACTION_IGNORE parameter:@"" applyMode:iTermActionApplyModeCurrentSession];
+        XCTAssertNotNil(controller.window);
+        NSTextField *title = [controller valueForKey:@"_actionTitleField"];
+        NSView *shortcut = [controller valueForKey:@"_shortcutField"];
+        XCTAssertNotNil(title);
+        XCTAssertFalse(title.hidden);
+        XCTAssertTrue(shortcut.hidden);
+        XCTAssertNotNil(title.delegate);
+        XCTAssertEqualObjects(title.stringValue, controller.label);
+        XCTAssertTrue([controller shouldEnableOK]);
+        NSString *const editedTitle = interpolated.boolValue ? @"Session \\(session.name)" : @"Renamed action";
+        title.stringValue = editedTitle;
+        [controller ok:nil];
+        XCTAssertTrue(controller.ok);
+        XCTAssertEqualObjects(controller.unboundAction.title, editedTitle);
+        title.stringValue = @"";
+        XCTAssertTrue([controller shouldEnableOK]);
+        [controller ok:nil];
+        XCTAssertEqualObjects(controller.unboundAction.title, @"");
+        [controller close];
+    }
 }
 
 - (void)testSnippetEditorUsesLocalizedWindowWithoutTranslatingUserContent {

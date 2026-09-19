@@ -30,7 +30,7 @@
                 <outlet property="_settingToTogglePopup" destination="nFt-9i-VJ3" id="9Jd-ik-DPt"/>
                 <outlet property="_shortcutField" destination="OcE-sI-T64" id="El9-Wc-JTH"/>
                 <outlet property="_snippetsPopup" destination="cTx-aj-BkY" id="FtX-yX-BLZ"/>
-                <outlet property="_touchBarLabel" destination="oHw-49-aB1" id="SwV-cq-OK3"/>
+                <outlet property="_actionTitleField" destination="oHw-49-aB1" id="SwV-cq-OK3"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -79,10 +79,10 @@
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oHw-49-aB1" userLabel="Touch Bar Label">
+                            <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oHw-49-aB1" userLabel="Action Title">
                                 <rect key="frame" x="150" y="119" width="271" height="22"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Label to show in Touch Bar" drawsBackground="YES" usesSingleLineMode="YES" id="mYT-YJ-w7Z">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" continuous="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" placeholderString="Title" drawsBackground="YES" usesSingleLineMode="YES" id="mYT-YJ-w7Z">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

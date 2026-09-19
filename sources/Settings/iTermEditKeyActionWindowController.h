@@ -18,16 +18,13 @@
 
 typedef NS_ENUM(NSUInteger, iTermEditKeyActionWindowControllerMode) {
     iTermEditKeyActionWindowControllerModeKeyboardShortcut = 0,
-    iTermEditKeyActionWindowControllerModeTouchBarItem,
-    iTermEditKeyActionWindowControllerModeUnbound
+    iTermEditKeyActionWindowControllerModeUnbound = 2
 };
 
 @interface iTermEditKeyActionWindowController : NSWindowController
 
 @property(nonatomic) BOOL titleIsInterpolated;
 @property(nonatomic, strong) iTermKeystroke *currentKeystroke;
-@property(nonatomic, copy) NSString *touchBarItemID;
-@property(nonatomic, readonly) iTermKeystrokeOrTouchbarItem *keystrokeOrTouchbarItem;
 @property(nonatomic, readonly, copy) NSString *parameterValue;
 @property(nonatomic, copy) NSString *label;
 @property(nonatomic, readonly) int action;

@@ -21,7 +21,6 @@
 #import "iTermPresetKeyMappings.h"
 #import "iTermSizeRememberingView.h"
 #import "iTermShortcutInputView.h"
-#import "iTermTouchbarMappings.h"
 #import "iTermTuple.h"
 #import "iTermWarning.h"
 #import "NSAppearance+iTerm.h"
@@ -205,7 +204,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
 
     [self addViewToSearchIndex:_keyMappingViewController.view
                    displayName:@"Profile key bindings"
-                       phrases:@[ @"mapping", @"shortcuts", @"touch bar", @"preset", @"xterm", @"natural", @"terminal.app compatibility", @"numeric keypad" ]
+                       phrases:@[ @"mapping", @"shortcuts", @"preset", @"xterm", @"natural", @"terminal.app compatibility", @"numeric keypad" ]
                            key:nil];
 
     [self updateDeleteSendsCtrlH];
@@ -248,7 +247,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
 #pragma mark - CSI u
 
 // Returns (Combo, Action)
-- (NSArray<iTermTuple<iTermKeystroke *, iTermKeyBindingAction *> *> *)incompatibleKeystrokeOrTouchbarBindings {
+- (NSArray<iTermTuple<iTermKeystroke *, iTermKeyBindingAction *> *> *)incompatibleKeystrokeBindings {
     Profile *profile = [self.delegate profilePreferencesCurrentProfile];
     if (!profile) {
         return nil;
@@ -337,7 +336,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     }
     iTermWarning *warning = [[iTermWarning alloc] init];
     NSArray<iTermTuple<iTermKeystroke *, iTermKeyBindingAction *> *> *incompatibles =
-        [self incompatibleKeystrokeOrTouchbarBindings];
+        [self incompatibleKeystrokeBindings];
     if (incompatibles.count == 0) {
         return;
     }
