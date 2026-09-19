@@ -68,7 +68,6 @@
 #import "iTermSetCurrentTerminalHelper.h"
 #import "iTermSystemVersion.h"
 #import "iTermUserDefaults.h"
-#import "iTermVersionComparator.h"
 #import "iTermWarning.h"
 #import "iTermWebSocketCookieJar.h"
 

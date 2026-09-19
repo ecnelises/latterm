@@ -9,6 +9,8 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Migrated version comparisons to Swift while
+  preserving prerelease and numeric ordering.
 - Build the color picker and its resources from
   a local Swift package.
 - Simplified crash reports with copy, export,

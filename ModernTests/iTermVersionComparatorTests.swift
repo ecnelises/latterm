@@ -46,4 +46,30 @@ final class iTermVersionComparatorTests: XCTestCase {
         assertOrder("2.0.0.2429", "2.0.0.2430", .orderedAscending)
         assertOrder("1.99999999999999999999", "1.100000000000000000000", .orderedAscending)
     }
+
+    func testEmptyVersionsAndSeparators() {
+        assertOrder("", "", .orderedSame)
+        assertOrder("", "1", .orderedAscending)
+        assertOrder("", "beta", .orderedDescending)
+        assertOrder("1.2", "1-2", .orderedSame)
+        assertOrder("1 2", "1\n2", .orderedSame)
+        assertOrder("1", "1.", .orderedAscending)
+        assertOrder("1..2", "1.2", .orderedAscending)
+    }
+
+    func testUnicodeVersionParts() {
+        assertOrder("1é", "1e\u{301}", .orderedSame)
+        assertOrder("1😀", "1", .orderedAscending)
+        assertOrder("1.١", "1.٢", .orderedAscending)
+        assertOrder("1.１２", "1.２", .orderedDescending)
+        assertOrder("1.0١", "1.١", .orderedSame)
+    }
+
+    func testNumericPartsDoNotOverflow() {
+        let zeros = String(repeating: "0", count: 256)
+        let nines = String(repeating: "9", count: 256)
+        assertOrder("1." + zeros, "1.0", .orderedSame)
+        assertOrder("1." + zeros + "12", "1.12", .orderedSame)
+        assertOrder("1." + nines, "1.1" + zeros, .orderedAscending)
+    }
 }

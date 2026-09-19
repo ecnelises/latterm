@@ -17,7 +17,7 @@
 #import "iTermRateLimitedUpdate.h"
 #import "iTermSetupCfgParser.h"
 #import "iTermSignatureVerifier.h"
-#import "iTermVersionComparator.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSFileManager+iTerm.h"

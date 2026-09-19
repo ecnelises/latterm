@@ -8,7 +8,7 @@
 #import "iTermOptionalComponentDownloadWindowController.h"
 
 #import "DebugLogging.h"
-#import "iTermVersionComparator.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSArray+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"

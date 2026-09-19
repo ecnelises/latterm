@@ -123,7 +123,6 @@
 #import "iTermToolbeltView.h"
 #import "iTermURLStore.h"
 #import "iTermUserDefaults.h"
-#import "iTermVersionComparator.h"
 #import "iTermWarning.h"
 #import "iTermWebSocketCookieJar.h"
 #import <Quartz/Quartz.h>

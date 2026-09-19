@@ -15,7 +15,7 @@
 #import "iTermScriptsMenuController.h"
 #import "iTermSetupCfgParser.h"
 #import "iTermTuple.h"
-#import "iTermVersionComparator.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"
 #import "NSFileManager+iTerm.h"
