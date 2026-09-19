@@ -261,9 +261,6 @@
 		1D6ED8C219AEA20D005A7799 /* PTYTab.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D2E802C129DA45A00F3D71E /* PTYTab.h */; };
 		1D6ED8C319AEA20D005A7799 /* SessionView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D2E812F12A18F7500F3D71E /* SessionView.h */; };
 		1D6ED8C419AEA20D005A7799 /* ScreenChar.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D36155312CBF33E00803EA9 /* ScreenChar.h */; };
-		1D6ED8C519AEA20D005A7799 /* UKCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D94EAA512D64022008225A9 /* UKCrashReporter.h */; };
-		1D6ED8C619AEA20D005A7799 /* UKNibOwner.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D94EAA912D64022008225A9 /* UKNibOwner.h */; };
-		1D6ED8C919AEA20D005A7799 /* UKSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D94EAAB12D64022008225A9 /* UKSystemInfo.h */; };
 		1D6ED8CA19AEA20D005A7799 /* iTermWarning.h in Headers */ = {isa = PBXBuildFile; fileRef = A6099B0318D6B0FD00081FA9 /* iTermWarning.h */; };
 		1D6ED8CB19AEA20D005A7799 /* ProfilesColorsPreferencesViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E713BD18FCF036008D94DD /* ProfilesColorsPreferencesViewController.h */; };
 		1D6ED8CE19AEA20D005A7799 /* NSTextField+iTerm.h in Headers */ = {isa = PBXBuildFile; fileRef = A6DF401A1897607E00F05947 /* NSTextField+iTerm.h */; };
@@ -430,8 +427,6 @@
 		1D6ED9A719AEA20D005A7799 /* EncodingsWithLowerCase.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1D8C6BF4126592DF00E2744E /* EncodingsWithLowerCase.plist */; };
 		1D6ED9AA19AEA20D005A7799 /* IBarCursor.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC7429F127C96F90069594C /* IBarCursor.png */; };
 		1D6ED9AC19AEA20D005A7799 /* NewOutput@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6B70FC019830F0D007A4284 /* NewOutput@2x.png */; };
-		1D6ED9AD19AEA20D005A7799 /* UKCrashReporter Readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1D94EAA412D64022008225A9 /* UKCrashReporter Readme.txt */; };
-		1D6ED9AF19AEA20D005A7799 /* UKCrashReporter.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1D94EAA812D64022008225A9 /* UKCrashReporter.strings */; };
 		1D6ED9B519AEA20D005A7799 /* bell.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DA02CFA1327612600D7E7DB /* bell.png */; };
 		1D6ED9B819AEA20D005A7799 /* wrap_to_bottom.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DA030F71328BD7C00D7E7DB /* wrap_to_bottom.png */; };
 		1D6ED9B919AEA20D005A7799 /* wrap_to_top.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DA030F81328BD7C00D7E7DB /* wrap_to_top.png */; };
@@ -525,11 +520,6 @@
 		1D93D34B1269746F007F741B /* DVRIndexEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D93D3491269746F007F741B /* DVRIndexEntry.h */; };
 		1D93D34F126974BC007F741B /* DVRDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D93D34D126974BC007F741B /* DVRDecoder.h */; };
 		1D93D35312697529007F741B /* DVREncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D93D35112697529007F741B /* DVREncoder.h */; };
-		1D94EAAD12D64022008225A9 /* UKCrashReporter Readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1D94EAA412D64022008225A9 /* UKCrashReporter Readme.txt */; };
-		1D94EAAE12D64022008225A9 /* UKCrashReporter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D94EAA512D64022008225A9 /* UKCrashReporter.h */; };
-		1D94EAB112D64022008225A9 /* UKCrashReporter.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1D94EAA812D64022008225A9 /* UKCrashReporter.strings */; };
-		1D94EAB212D64022008225A9 /* UKNibOwner.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D94EAA912D64022008225A9 /* UKNibOwner.h */; };
-		1D94EAB412D64022008225A9 /* UKSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D94EAAB12D64022008225A9 /* UKSystemInfo.h */; };
 		1D99C8E41BD59C37001EE1FC /* SearchCursor.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D99C8E21BD59C37001EE1FC /* SearchCursor.png */; };
 		1D99C8E51BD59C37001EE1FC /* SearchCursor.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D99C8E21BD59C37001EE1FC /* SearchCursor.png */; };
 		1D99C8E61BD59C37001EE1FC /* SearchCursor.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D99C8E21BD59C37001EE1FC /* SearchCursor.png */; };
@@ -964,6 +954,7 @@
 		616ABD699141533212F458CF /* ToolStatusCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10914CB04BC4D2847EC8EB23 /* ToolStatusCellView.swift */; };
 		639530D5AD779882EF35DAE4 /* iTermLargeContentObject.h in Sources */ = {isa = PBXBuildFile; fileRef = 13C5AE44EEA24B945DE0A064 /* iTermLargeContentObject.h */; };
 		64EC42E62879047B5E0EF077 /* CompanionMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE0FD36EF2CD108D533CC26 /* CompanionMessages.swift */; };
+		6576B80F85FC545019BF4ACE /* CrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F299444E8974289DC7D0C30D /* CrashReporter.swift */; };
 		687AB9D8BFF418D6AAC85F1D /* SettingsLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 863EB142E6E5072207B710E8 /* SettingsLocalization.swift */; };
 		6A01F4220CBCC9D9258D0138 /* iTermAttributedStringBuilderBenchmark.h in Sources */ = {isa = PBXBuildFile; fileRef = B017AB697F0D773A08D2C2E5 /* iTermAttributedStringBuilderBenchmark.h */; };
 		6A8ED0F641A9897F39D60FBE /* VT100ScreenState+RCDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = DB46A60B018E4C5F6859B164 /* VT100ScreenState+RCDataSource.m */; };
@@ -1927,9 +1918,6 @@
 		A63493E523E7AC160047C31B /* iTermStatusBarAutoRainbowController.m in Sources */ = {isa = PBXBuildFile; fileRef = A63493E323E7AC160047C31B /* iTermStatusBarAutoRainbowController.m */; };
 		A63493E823E945BA0047C31B /* iTermGlobalScopeController.h in Headers */ = {isa = PBXBuildFile; fileRef = A63493E623E945BA0047C31B /* iTermGlobalScopeController.h */; };
 		A63493E923E945BA0047C31B /* iTermGlobalScopeController.m in Sources */ = {isa = PBXBuildFile; fileRef = A63493E723E945BA0047C31B /* iTermGlobalScopeController.m */; };
-		A63493EB23F0A3EF0047C31B /* UKCrashReporter.xib in Resources */ = {isa = PBXBuildFile; fileRef = A63493EA23F0A3EE0047C31B /* UKCrashReporter.xib */; };
-		A63493EC23F0A3EF0047C31B /* UKCrashReporter.xib in Resources */ = {isa = PBXBuildFile; fileRef = A63493EA23F0A3EE0047C31B /* UKCrashReporter.xib */; };
-		A63493ED23F0A3EF0047C31B /* UKCrashReporter.xib in Resources */ = {isa = PBXBuildFile; fileRef = A63493EA23F0A3EE0047C31B /* UKCrashReporter.xib */; };
 		A63493F823F2685A0047C31B /* iTermPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = A63493F623F2685A0047C31B /* iTermPromise.h */; };
 		A63493F923F2685A0047C31B /* iTermPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = A63493F723F2685A0047C31B /* iTermPromise.m */; };
 		A63493FE23F277020047C31B /* iTermPromiseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A63493FA23F2741D0047C31B /* iTermPromiseTests.m */; };
@@ -3402,9 +3390,6 @@
 		A6C763E61B45C70100E3C992 /* SCEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = A663012719D0864C004AF81C /* SCEvents.m */; };
 		A6C763E71B45C70E00E3C992 /* SSKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 1DFA7C901923E89100DF1410 /* SSKeychain.m */; };
 		A6C763E81B45C70E00E3C992 /* SSKeychainQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 1DFA7C8C1923E86400DF1410 /* SSKeychainQuery.m */; };
-		A6C763E91B45C71900E3C992 /* UKCrashReporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D94EAA612D64022008225A9 /* UKCrashReporter.m */; };
-		A6C763EA1B45C71900E3C992 /* UKNibOwner.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D94EAAA12D64022008225A9 /* UKNibOwner.m */; };
-		A6C763EB1B45C71900E3C992 /* UKSystemInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D94EAAC12D64022008225A9 /* UKSystemInfo.m */; };
 		A6C763FE1B45C72F00E3C992 /* iTermTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D9A5521180FA46100B42CE9 /* iTermTests.m */; };
 		A6C764161B45C77100E3C992 /* libSSKeychain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DFA7C671923E83500DF1410 /* libSSKeychain.a */; };
 		A6C764171B45C7B200E3C992 /* NMSSH.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A624231819CF6DE000182C08 /* NMSSH.framework */; };
@@ -4912,14 +4897,6 @@
 		1D93D35212697529007F741B /* DVREncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = DVREncoder.m; sourceTree = "<group>"; tabWidth = 4; };
 		1D93D3591269778C007F741B /* DVRBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = DVRBuffer.m; sourceTree = "<group>"; tabWidth = 4; };
 		1D93D3B012697D53007F741B /* DVRIndexEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = DVRIndexEntry.m; sourceTree = "<group>"; tabWidth = 4; };
-		1D94EAA412D64022008225A9 /* UKCrashReporter Readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "UKCrashReporter Readme.txt"; sourceTree = "<group>"; };
-		1D94EAA512D64022008225A9 /* UKCrashReporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UKCrashReporter.h; sourceTree = "<group>"; };
-		1D94EAA612D64022008225A9 /* UKCrashReporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UKCrashReporter.m; sourceTree = "<group>"; };
-		1D94EAA812D64022008225A9 /* UKCrashReporter.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = UKCrashReporter.strings; sourceTree = "<group>"; };
-		1D94EAA912D64022008225A9 /* UKNibOwner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UKNibOwner.h; sourceTree = "<group>"; };
-		1D94EAAA12D64022008225A9 /* UKNibOwner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UKNibOwner.m; sourceTree = "<group>"; };
-		1D94EAAB12D64022008225A9 /* UKSystemInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UKSystemInfo.h; sourceTree = "<group>"; };
-		1D94EAAC12D64022008225A9 /* UKSystemInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UKSystemInfo.m; sourceTree = "<group>"; };
 		1D94EAC712D641D3008225A9 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		1D99C8E21BD59C37001EE1FC /* SearchCursor.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = SearchCursor.png; path = images/SearchCursor.png; sourceTree = "<group>"; };
 		1D99C8E31BD59C37001EE1FC /* SearchCursor@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "SearchCursor@2x.png"; path = "images/SearchCursor@2x.png"; sourceTree = "<group>"; };
@@ -6115,7 +6092,6 @@
 		A63493E323E7AC160047C31B /* iTermStatusBarAutoRainbowController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermStatusBarAutoRainbowController.m; sourceTree = "<group>"; };
 		A63493E623E945BA0047C31B /* iTermGlobalScopeController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermGlobalScopeController.h; sourceTree = "<group>"; };
 		A63493E723E945BA0047C31B /* iTermGlobalScopeController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermGlobalScopeController.m; sourceTree = "<group>"; };
-		A63493EA23F0A3EE0047C31B /* UKCrashReporter.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UKCrashReporter.xib; sourceTree = "<group>"; };
 		A63493F623F2685A0047C31B /* iTermPromise.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermPromise.h; sourceTree = "<group>"; };
 		A63493F723F2685A0047C31B /* iTermPromise.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermPromise.m; sourceTree = "<group>"; };
 		A63493FA23F2741D0047C31B /* iTermPromiseTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermPromiseTests.m; sourceTree = "<group>"; };
@@ -7891,6 +7867,7 @@
 		EFF831B875F22773855E32DA /* MoveSessionBuiltInFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MoveSessionBuiltInFunctions.swift; sourceTree = "<group>"; };
 		F10731A1F54B9BF72FBAC682 /* Box.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Box.swift; sourceTree = "<group>"; };
 		F1D98D4F4D522B88FB7F898D /* CompanionVideoEncoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionVideoEncoder.swift; sourceTree = "<group>"; };
+		F299444E8974289DC7D0C30D /* CrashReporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CrashReporter.swift; sourceTree = "<group>"; };
 		F38C0DAB55C8520927EB4FB0 /* iTermNotifyOnStatusChangeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermNotifyOnStatusChangeController.swift; sourceTree = "<group>"; };
 		F3B5FAC6E1BA6FD7E3E1752C /* CompanionKeyInjection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionKeyInjection.swift; sourceTree = "<group>"; };
 		F3F259C5F8B721015754BAE2 /* iTermRowOutputCache.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; path = iTermRowOutputCache.mm; sourceTree = "<group>"; };
@@ -8389,7 +8366,6 @@
 				1D85D1C41306687700A3E998 /* RegexKitLite */,
 				A663012119D08638004AF81C /* SCEvents */,
 				1DFA7C621923E77900DF1410 /* SSKeychain */,
-				1D94EAA312D64022008225A9 /* UKCrashReporter */,
 				A6E9AA842F19699B00A04BAE /* CoreParse */,
 			);
 			name = ThirdParty;
@@ -8712,22 +8688,6 @@
 				1D85D1DA1306687700A3E998 /* RegexKitLite.m */,
 			);
 			path = RegexKitLite;
-			sourceTree = "<group>";
-		};
-		1D94EAA312D64022008225A9 /* UKCrashReporter */ = {
-			isa = PBXGroup;
-			children = (
-				A63493EA23F0A3EE0047C31B /* UKCrashReporter.xib */,
-				1D94EAA512D64022008225A9 /* UKCrashReporter.h */,
-				1D94EAA912D64022008225A9 /* UKNibOwner.h */,
-				1D94EAAB12D64022008225A9 /* UKSystemInfo.h */,
-				1D94EAA612D64022008225A9 /* UKCrashReporter.m */,
-				1D94EAAA12D64022008225A9 /* UKNibOwner.m */,
-				1D94EAAC12D64022008225A9 /* UKSystemInfo.m */,
-				1D94EAA812D64022008225A9 /* UKCrashReporter.strings */,
-				1D94EAA412D64022008225A9 /* UKCrashReporter Readme.txt */,
-			);
-			path = UKCrashReporter;
 			sourceTree = "<group>";
 		};
 		1DA3E2AB1970AC4000001E6E /* LogoParts */ = {
@@ -10849,6 +10809,7 @@
 				1DD39B19180B82F5004E56D5 /* DebugLogging.m */,
 				1DD39B18180B82F5004E56D5 /* DebugLogging.h */,
 				A6D24D3C26BC5FA600CCE211 /* SwiftDebugLogging.swift */,
+				F299444E8974289DC7D0C30D /* CrashReporter.swift */,
 			);
 			path = Logging;
 			sourceTree = "<group>";
@@ -13187,13 +13148,10 @@
 				1D6ED8C219AEA20D005A7799 /* PTYTab.h in Headers */,
 				1D6ED8C319AEA20D005A7799 /* SessionView.h in Headers */,
 				1D6ED8C419AEA20D005A7799 /* ScreenChar.h in Headers */,
-				1D6ED8C519AEA20D005A7799 /* UKCrashReporter.h in Headers */,
 				A6E77FB21A2BE434009B1CB6 /* iTermNumberOfSpacesAccessoryViewController.h in Headers */,
 				A6E77F821A23F484009B1CB6 /* iTermFindOnPageHelper.h in Headers */,
 				A6E525DE1A9C5730007B898E /* VT100StateMachine.h in Headers */,
-				1D6ED8C619AEA20D005A7799 /* UKNibOwner.h in Headers */,
 				1D468F051B06A79000226083 /* StopTrigger.h in Headers */,
-				1D6ED8C919AEA20D005A7799 /* UKSystemInfo.h in Headers */,
 				1D6ED8CA19AEA20D005A7799 /* iTermWarning.h in Headers */,
 				1D6ED8CB19AEA20D005A7799 /* ProfilesColorsPreferencesViewController.h in Headers */,
 				1D6ED8CE19AEA20D005A7799 /* NSTextField+iTerm.h in Headers */,
@@ -13519,11 +13477,8 @@
 				1D2E802E129DA45A00F3D71E /* PTYTab.h in Headers */,
 				1D2E813112A18F7500F3D71E /* SessionView.h in Headers */,
 				1D36155512CBF33E00803EA9 /* ScreenChar.h in Headers */,
-				1D94EAAE12D64022008225A9 /* UKCrashReporter.h in Headers */,
 				A6E77FB11A2BE434009B1CB6 /* iTermNumberOfSpacesAccessoryViewController.h in Headers */,
 				A6E77F811A23F484009B1CB6 /* iTermFindOnPageHelper.h in Headers */,
-				1D94EAB212D64022008225A9 /* UKNibOwner.h in Headers */,
-				1D94EAB412D64022008225A9 /* UKSystemInfo.h in Headers */,
 				A6E525DF1A9C5730007B898E /* VT100StateTransition.h in Headers */,
 				A6099B0518D6B0FD00081FA9 /* iTermWarning.h in Headers */,
 				A6E713BF18FCF036008D94DD /* ProfilesColorsPreferencesViewController.h in Headers */,
@@ -15091,14 +15046,12 @@
 				A6B3A73D1AC74E02008E8D4E /* FindCursorCell2.png in Resources */,
 				1D6ED9AA19AEA20D005A7799 /* IBarCursor.png in Resources */,
 				1D6ED9AC19AEA20D005A7799 /* NewOutput@2x.png in Resources */,
-				1D6ED9AD19AEA20D005A7799 /* UKCrashReporter Readme.txt in Resources */,
 				A6F7A745213CB143004DE961 /* StatusBarIconPaste.png in Resources */,
 				A6E7433F2F98389A001349AE /* flowchart.png in Resources */,
 				A6E743402F98389A001349AE /* flowchart@2x.png in Resources */,
 				A6F7A712213CB143004DE961 /* StatusBarIconFolder@2x.png in Resources */,
 				53AA7648237E35A50094D75A /* OpenQuicklyActionIcon@2x.png in Resources */,
 				A623D9501F8984710011F8C3 /* key@2x.png in Resources */,
-				1D6ED9AF19AEA20D005A7799 /* UKCrashReporter.strings in Resources */,
 				A62A77C62F987ADB007CAA0B /* SplitPanel.xib in Resources */,
 				A697CEC82D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */,
 				A62A78622F987DCA007CAA0B /* iTermScriptConsole.xib in Resources */,
@@ -15241,7 +15194,6 @@
 				1D6ED9D319AEA20D005A7799 /* TabClose_Front_Pressed.png in Resources */,
 				A62A7B5B2F9896A7007CAA0B /* iTermMinimalComposerViewController.xib in Resources */,
 				A635029E229B5F8B0042B779 /* YosemiteAddTab@2x.png in Resources */,
-				A63493ED23F0A3EF0047C31B /* UKCrashReporter.xib in Resources */,
 				A69D721C264716FC009D6EAC /* UnselectedTabShadow.png in Resources */,
 				A6B4832C29D73DA10055E24A /* placeholdertext.fill.png in Resources */,
 				1D6ED9D419AEA20D005A7799 /* TabClose_Front_Rollover.png in Resources */,
@@ -15661,7 +15613,6 @@
 				A6F7A70B213CB143004DE961 /* StatusBarIconNetwork.png in Resources */,
 				1DC2AF5219521CFF005769D5 /* QuestionMarkSign.png in Resources */,
 				A62A77BB2F9879B8007CAA0B /* AboutWindow.xib in Resources */,
-				A63493EC23F0A3EF0047C31B /* UKCrashReporter.xib in Resources */,
 				A6D3205829C492410088BBE1 /* nerd.itse in Resources */,
 				A6109B652B969B4100D8E4E9 /* graphic_neovim@2x.png in Resources */,
 				A69A2FB92E5D3BEC00803E66 /* TahoeDarkMidTab.png in Resources */,
@@ -16009,7 +15960,6 @@
 				A69EB7292E68CE0C00BD3181 /* iTerm2 App Icon for Beta.icon in Resources */,
 				A69EB72A2E68CE0C00BD3181 /* iTerm2 App Icon for Nightly.icon in Resources */,
 				A69EB72B2E68CE0C00BD3181 /* iTerm2 App Icon for Release.icon in Resources */,
-				1D94EAAD12D64022008225A9 /* UKCrashReporter Readme.txt in Resources */,
 				A6E16C5F24A85D5F00C6DB06 /* BigSurAddTab@2x.png in Resources */,
 				A6F7A737213CB143004DE961 /* StatusBarIconGitBranch@2x.png in Resources */,
 				A65B72A91B3285A300F947A7 /* DisableTips.png in Resources */,
@@ -16024,7 +15974,6 @@
 				53C5650921B8CDF5002B3167 /* PowerlineSolidRightArrow.pdf in Resources */,
 				A6E737192F96D931001349AE /* LIMSIQ.png in Resources */,
 				A66E805227545CBC003ABDF9 /* SecureKeyboardEntry.png in Resources */,
-				1D94EAB112D64022008225A9 /* UKCrashReporter.strings in Resources */,
 				A6E7AE83214394DD00DE9F3B /* graphic_code@2x.png in Resources */,
 				A6EFF2381D20F6BE00806EEF /* EraseDarkBackground@2x.png in Resources */,
 				53C5650321B8C8C2002B3167 /* PowerlineLN.pdf in Resources */,
@@ -16252,7 +16201,6 @@
 				530AB7BC20A641E000D2AA08 /* repl_banner.txt in Resources */,
 				A67F614A214395870093940A /* graphic_http.png in Resources */,
 				A6A64E692508C5B50040490B /* OpenQuicklySnippetIcon.png in Resources */,
-				A63493EB23F0A3EF0047C31B /* UKCrashReporter.xib in Resources */,
 				A6B3A73B1AC74E02008E8D4E /* FindCursorCell2.png in Resources */,
 				A61E51442F98978000EB2B55 /* iTermTriggersPanel.xib in Resources */,
 				A61E51452F98978000EB2B55 /* PreferencePanel.xib in Resources */,
@@ -17917,6 +17865,7 @@
 				5FDDDC1E767D8D0DFC5DD1E5 /* SettingsTabView.swift in Sources */,
 				B03E0EE9ADB1F15C86EB8140 /* SettingsFormView.swift in Sources */,
 				81ECA18CD6E4C588A25C91B2 /* iTermProfileSearchToken.swift in Sources */,
+				6576B80F85FC545019BF4ACE /* CrashReporter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -17997,7 +17946,6 @@
 				A6C7639B1B45C52B00E3C992 /* TmuxHistoryParser.m in Sources */,
 				A6C762BD1B45C52B00E3C992 /* NSPasteboard+iTerm.m in Sources */,
 				539325F31DD66EFA00CABCEF /* iTermPreciseTimer.m in Sources */,
-				A6C763EA1B45C71900E3C992 /* UKNibOwner.m in Sources */,
 				A6DC814E285CF45C0050788C /* GPBWrappers.pbobjc.m in Sources */,
 				A6CEC10A1DCE8146009F4FD2 /* GPBDescriptor.m in Sources */,
 				A6DC8149285CF45C0050788C /* GPBStruct.pbobjc.m in Sources */,
@@ -18084,7 +18032,6 @@
 				A62A78232F987C34007CAA0B /* AATree.m in Sources */,
 				A6C7638C1B45C52B00E3C992 /* ProfileTableView.m in Sources */,
 				A6C762DB1B45C52B00E3C992 /* PTYSession.m in Sources */,
-				A6C763EB1B45C71900E3C992 /* UKSystemInfo.m in Sources */,
 				A60BB3811EB51D0E00D76C09 /* iTermCopyModeState.m in Sources */,
 				A6C763891B45C52B00E3C992 /* ProfileModel.m in Sources */,
 				A6C762F31B45C52B00E3C992 /* DVRIndexEntry.m in Sources */,
@@ -18109,7 +18056,6 @@
 				A6C763981B45C52B00E3C992 /* TmuxControllerRegistry.m in Sources */,
 				A6EFF2211D1DD89B00806EEF /* iTermHotKeyMigrationHelper.m in Sources */,
 				A6C763C01B45C52B00E3C992 /* VT100ControlParser.m in Sources */,
-				A6C763E91B45C71900E3C992 /* UKCrashReporter.m in Sources */,
 				A6FF4AF4246D112F00410BA2 /* iTermMultiServerProtocol.c in Sources */,
 				A62A784E2F987D7B007CAA0B /* iTermScriptingWindow.m in Sources */,
 				A6FEA2691CF2C83700376F28 /* iTermPreviousState.m in Sources */,

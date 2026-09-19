@@ -44,7 +44,6 @@
 #import "PasteboardHistory.h"
 #import "PreferencePanel.h"
 #import "PseudoTerminal.h"
-#import "UKCrashReporter.h"
 #import "VT100Screen.h"
 #import "WindowArrangements.h"
 #import "iTerm.h"
@@ -136,7 +135,7 @@ static iTermController *gSharedInstance;
     self = [super init];
 
     if (self) {
-        UKCrashReporterCheckForCrash();
+        [iTermCrashReporter checkForCrash];
 
         // create the "~/Library/Application Support/iTerm2" directory if it does not exist
         [[NSFileManager defaultManager] applicationSupportDirectory];
