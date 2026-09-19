@@ -24,7 +24,7 @@
 #import "NSView+iTerm.h"
 #import "RegexKitLite.h"
 
-#import <SearchableComboListView/SearchableComboListView-Swift.h>
+@import SearchableComboListView;
 
 const CGFloat sideMarginWidth = 40;
 

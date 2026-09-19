@@ -9,6 +9,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Build searchable dropdowns from Swift Package
+  sources instead of checked-in frameworks.
+- Fixed a stale dropdown interface connection.
 - Migrated profile search tokens to Swift while
   preserving filters and highlight ranges.
 - Removed unused duplicate dropdown UI sources.

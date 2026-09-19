@@ -4251,12 +4251,6 @@
 		A6F9821F2CA775E200229070 /* RoundedRectView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D085F9D16F137D900B7FCE9 /* RoundedRectView.m */; };
 		A6F9EF3720850C41005530F7 /* iTermCompetentTableRowView.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F9EF3520850C41005530F7 /* iTermCompetentTableRowView.h */; };
 		A6F9EF3820850C41005530F7 /* iTermCompetentTableRowView.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F9EF3620850C41005530F7 /* iTermCompetentTableRowView.m */; };
-		A6FB633123DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */; };
-		A6FB633223DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */; };
-		A6FB633323DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */; };
-		A6FB633423DE802900026D52 /* SearchableComboListView.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A6FB633523DE803100026D52 /* SearchableComboListView.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A6FB633623DE803A00026D52 /* SearchableComboListView.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A6FBEFC12C361BAA00FA73BD /* UserDefaultsUnsavedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FBEFC02C361BAA00FA73BD /* UserDefaultsUnsavedController.swift */; };
 		A6FC49861C3A31840061B3BA /* iTermSystemVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = A6FC49841C3A31840061B3BA /* iTermSystemVersion.h */; };
 		A6FC49871C3A31840061B3BA /* iTermSystemVersion.m in Sources */ = {isa = PBXBuildFile; fileRef = A6FC49851C3A31840061B3BA /* iTermSystemVersion.m */; };
@@ -4389,6 +4383,13 @@
 		FB4CEC973C7E9235362E3F26 /* iTermRemotePreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = FB4CECF4AC4392B21E87A07B /* iTermRemotePreferences.h */; };
 		FB60940910A9EB96DC56E118 /* iTermScrollWheelStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BD12C80E79166CD60FAD156 /* iTermScrollWheelStateMachine.swift */; };
 		FC58829E571DF07C5902F3EB /* EnterWorkgroupTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B23866DFB3D15427C93C0849 /* EnterWorkgroupTrigger.swift */; };
+		5E550AB09FE841A1A4DB7E43 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = F6744A0497664780B2070082 /* SearchableComboListView */; };
+		615631B0C6A14BCF9A56941D /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */; };
+		1589502DFF0741D295229B81 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = 679529C1BF614B55B153B22A /* SearchableComboListView */; };
+		7705ED8763D04985B50F5E43 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = F46382FA75AB4361AF79CA07 /* SearchableComboListView */; };
+		1A2557C8B3384A6DAE05BB0D /* SearchableComboListView in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F6744A0497664780B2070082 /* SearchableComboListView */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A672F3DFF75C495E953BC9D8 /* SearchableComboListView in Embed Frameworks */ = {isa = PBXBuildFile; productRef = E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AB11B1195E0C4D9EBA48785A /* SearchableComboListView in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F46382FA75AB4361AF79CA07 /* SearchableComboListView */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -4555,11 +4556,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AB11B1195E0C4D9EBA48785A /* SearchableComboListView in Embed Frameworks */,
 				A6E180E723D2E2B2003C4EB1 /* CoreParse.framework in CopyFiles */,
 				A6184F8E1BAB3F090088EF3C /* ColorPicker.framework in CopyFiles */,
 				A6661312225CFF7A00840E89 /* BetterFontPicker.framework in CopyFiles */,
 				A605D4B419CF796F00D40343 /* NMSSH.framework in CopyFiles */,
-				A6FB633623DE803A00026D52 /* SearchableComboListView.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4569,11 +4570,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				1A2557C8B3384A6DAE05BB0D /* SearchableComboListView in Embed Frameworks */,
 				A6E180E623D2E182003C4EB1 /* CoreParse.framework in CopyFiles */,
 				A6184F8D1BAB3EFB0088EF3C /* ColorPicker.framework in CopyFiles */,
 				A6661310225CFF7200840E89 /* BetterFontPicker.framework in CopyFiles */,
 				A605D4B319CF796800D40343 /* NMSSH.framework in CopyFiles */,
-				A6FB633523DE803100026D52 /* SearchableComboListView.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4583,12 +4584,12 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				A672F3DFF75C495E953BC9D8 /* SearchableComboListView in Embed Frameworks */,
 				530AB89C20AFF23400D2AA08 /* CoreParse.framework in CopyFiles */,
 				A6184F8C1BAB3EF30088EF3C /* ColorPicker.framework in CopyFiles */,
 				A624232619CF70DF00182C08 /* NMSSH.framework in CopyFiles */,
 				A666130E225CFF6900840E89 /* BetterFontPicker.framework in CopyFiles */,
 				A69FEECE2E123B8700AFF7A8 /* iTermSwiftPackages.framework in CopyFiles */,
-				A6FB633423DE802900026D52 /* SearchableComboListView.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7753,7 +7754,6 @@
 		A6F981CB1C13783C00EE0B80 /* iTermCPS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermCPS.h; sourceTree = "<group>"; };
 		A6F9EF3520850C41005530F7 /* iTermCompetentTableRowView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermCompetentTableRowView.h; sourceTree = "<group>"; };
 		A6F9EF3620850C41005530F7 /* iTermCompetentTableRowView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermCompetentTableRowView.m; sourceTree = "<group>"; };
-		A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SearchableComboListView.framework; path = SearchableComboListView/SearchableComboListView.framework; sourceTree = "<group>"; };
 		A6FBEFC02C361BAA00FA73BD /* UserDefaultsUnsavedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsUnsavedController.swift; sourceTree = "<group>"; };
 		A6FC49841C3A31840061B3BA /* iTermSystemVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermSystemVersion.h; sourceTree = "<group>"; };
 		A6FC49851C3A31840061B3BA /* iTermSystemVersion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermSystemVersion.m; sourceTree = "<group>"; };
@@ -7947,6 +7947,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7705ED8763D04985B50F5E43 /* SearchableComboListView in Frameworks */,
 				BEEFCAFEDEADC0DE00000001 /* iTermSwiftPackages.framework in Frameworks */,
 				A667196A1DCE396A000CE608 /* libiTerm2SharedARC.a in Frameworks */,
 				A6661311225CFF7A00840E89 /* BetterFontPicker.framework in Frameworks */,
@@ -7956,7 +7957,6 @@
 				A67D19512237045C00BD0D4D /* libsixel.a in Frameworks */,
 				1D6EDAF519AEA20D005A7799 /* Security.framework in Frameworks */,
 				A6184F8B1BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */,
-				A6FB633323DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */,
 				1D6EDAF919AEA20D005A7799 /* AppKit.framework in Frameworks */,
 				1D6EDAFC19AEA20D005A7799 /* Carbon.framework in Frameworks */,
 				1D6EDAFD19AEA20D005A7799 /* Quartz.framework in Frameworks */,
@@ -7968,6 +7968,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E550AB09FE841A1A4DB7E43 /* SearchableComboListView in Frameworks */,
 				BEEFCAFEDEADC0DE00000004 /* iTermSwiftPackages.framework in Frameworks */,
 				A67D19502237045C00BD0D4D /* libsixel.a in Frameworks */,
 				A66719691DCE3965000CE608 /* libiTerm2SharedARC.a in Frameworks */,
@@ -7976,7 +7977,6 @@
 				A624232019CF6F2C00182C08 /* NMSSH.framework in Frameworks */,
 				A6184F8A1BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */,
 				530AB89A20AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
-				A6FB633223DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */,
 				1DFA7C9F1923F77C00DF1410 /* Security.framework in Frameworks */,
 				1D9A55B5180FA8F400B42CE9 /* AppKit.framework in Frameworks */,
 				1D9A5534180FA77F00B42CE9 /* Quartz.framework in Frameworks */,
@@ -8008,9 +8008,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				615631B0C6A14BCF9A56941D /* SearchableComboListView in Frameworks */,
 				A69FEECD2E123B8700AFF7A8 /* iTermSwiftPackages.framework in Frameworks */,
 				A666130D225CFF6900840E89 /* BetterFontPicker.framework in Frameworks */,
-				A6FB633123DE7DEC00026D52 /* SearchableComboListView.framework in Frameworks */,
 				A60BD9191B3F5D76007D7F11 /* OpenDirectory.framework in Frameworks */,
 				A624231F19CF6F2000182C08 /* NMSSH.framework in Frameworks */,
 				1DFA7C9E1923F77100DF1410 /* Security.framework in Frameworks */,
@@ -8052,6 +8052,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1589502DFF0741D295229B81 /* SearchableComboListView in Frameworks */,
 				A69FEF272E12417B00AFF7A8 /* iTermSwiftPackages.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8760,7 +8761,6 @@
 				1DD39AD8180B8118004E56D5 /* Other Frameworks */,
 				1DEB29301288885700B2CB9F /* Quartz.framework */,
 				1DEB29371288887100B2CB9F /* QuartzCore.framework */,
-				A6FB633023DE7DEB00026D52 /* SearchableComboListView.framework */,
 				1DFA7C9D1923F77100DF1410 /* Security.framework */,
 				A608CCF2214DE6E8007A7B87 /* XCTest.framework */,
 				A624231819CF6DE000182C08 /* NMSSH.framework */,
@@ -14428,6 +14428,7 @@
 			);
 			name = iTerm2ForApplescriptTesting;
 			packageProductDependencies = (
+				F46382FA75AB4361AF79CA07 /* SearchableComboListView */,
 			);
 			productName = "JTerminal (Application)";
 			productReference = 1D6EDB0A19AEA20D005A7799 /* iTerm2ForApplescriptTesting.app */;
@@ -14450,6 +14451,7 @@
 			);
 			name = iTerm2Tests;
 			packageProductDependencies = (
+				F6744A0497664780B2070082 /* SearchableComboListView */,
 			);
 			productName = iTermTests;
 			productReference = 1DD39AD4180B8117004E56D5 /* iTerm2Tests.app */;
@@ -14568,6 +14570,7 @@
 			);
 			name = iTerm2;
 			packageProductDependencies = (
+				E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */,
 			);
 			productName = "JTerminal (Application)";
 			productReference = 8742065A0564169600CFC3F1 /* Latterm.app */;
@@ -14625,6 +14628,7 @@
 			);
 			name = iTerm2SharedARC;
 			packageProductDependencies = (
+				679529C1BF614B55B153B22A /* SearchableComboListView */,
 			);
 			productName = SSKeychain;
 			productReference = A667195C1DCE36C3000CE608 /* libiTerm2SharedARC.a */;
@@ -14837,6 +14841,7 @@
 			);
 			mainGroup = 0464AB0D006CD2EC7F000001 /* JTerminal */;
 			packageReferences = (
+				78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */,
 				72DF701C2DF2DAABC006F100 /* XCLocalSwiftPackageReference "CompanionCore" */,
 				6AEB4F694FB62FA208F96240 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				8282BAE40915D8F2B8CC6B66 /* XCRemoteSwiftPackageReference "Yams" */,
@@ -18369,7 +18374,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -18401,7 +18405,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -18497,7 +18500,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -18605,7 +18607,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -18681,7 +18682,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -18753,7 +18753,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -18838,7 +18837,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -18928,7 +18926,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -19010,7 +19007,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -19830,7 +19826,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -19927,7 +19922,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -20032,7 +20026,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -20115,7 +20108,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20186,7 +20178,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/BetterFontPicker",
 					"$(PROJECT_DIR)/ColorPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -20250,7 +20241,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20267,7 +20257,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					ThirdParty,
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20289,12 +20278,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				SWIFT_INCLUDE_PATHS = $PROJECT_DIR/SearchableComboListView;
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
@@ -20587,7 +20574,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20610,7 +20596,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					ThirdParty,
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20636,13 +20621,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				SWIFT_INCLUDE_PATHS = $PROJECT_DIR/SearchableComboListView;
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
@@ -20681,7 +20664,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20698,7 +20680,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					ThirdParty,
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20717,12 +20698,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				SWIFT_INCLUDE_PATHS = $PROJECT_DIR/SearchableComboListView;
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
@@ -20761,7 +20740,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20777,7 +20755,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					ThirdParty,
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20799,12 +20776,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				SWIFT_INCLUDE_PATHS = $PROJECT_DIR/SearchableComboListView;
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/include",
 				);
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
@@ -21800,7 +21775,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -21887,7 +21861,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -21966,7 +21939,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -22045,7 +22017,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -22100,7 +22071,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -22178,7 +22148,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -22243,7 +22212,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/SearchableComboListView",
 					"$(PROJECT_DIR)/BetterFontPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -22312,7 +22280,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/BetterFontPicker",
 					"$(PROJECT_DIR)/ColorPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -22391,7 +22358,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/BetterFontPicker",
 					"$(PROJECT_DIR)/ColorPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -22460,7 +22426,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/BetterFontPicker",
 					"$(PROJECT_DIR)/ColorPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -22525,7 +22490,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -22626,7 +22590,6 @@
 					"$(PROJECT_DIR)/ThirdParty",
 					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/BetterFontPicker",
-					"$(PROJECT_DIR)/SearchableComboListView",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -22861,7 +22824,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -22893,7 +22855,6 @@
 					"$(SRCROOT)",
 					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
-					"$(SRCROOT)/SearchableComboListView",
 					"$(SRCROOT)/BetterFontPicker",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -23107,6 +23068,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Companion/CompanionCore;
 		};
+		78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = SearchableComboListView;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -23150,6 +23115,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6AEB4F694FB62FA208F96240 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
+		};
+		F6744A0497664780B2070082 /* SearchableComboListView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */;
+			productName = SearchableComboListView;
+		};
+		E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */;
+			productName = SearchableComboListView;
+		};
+		679529C1BF614B55B153B22A /* SearchableComboListView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */;
+			productName = SearchableComboListView;
+		};
+		F46382FA75AB4361AF79CA07 /* SearchableComboListView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */;
+			productName = SearchableComboListView;
 		};
 /* End XCSwiftPackageProductDependency section */
 

@@ -58,7 +58,13 @@ class SearchableComboListViewController: NSViewController {
 
     init(groups: [SearchableComboViewGroup]) {
         self.groups = groups
-        super.init(nibName: "SearchableComboView", bundle: Bundle(for: SearchableComboListViewController.self))
+        #if SWIFT_PACKAGE
+        let resourceBundle = Bundle.module
+        #else
+        // The standalone Xcode demo still builds this source as a framework.
+        let resourceBundle = Bundle(for: SearchableComboListViewController.self)
+        #endif
+        super.init(nibName: "SearchableComboView", bundle: resourceBundle)
     }
 
     override init(nibName nibNameOrNil: NSNib.Name?, bundle nibBundleOrNil: Bundle?) {

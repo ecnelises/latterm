@@ -60,6 +60,15 @@
 - (void)updateProfilesWithNames:(NSArray *)names identifiers:(NSArray *)identifiers selectedIdentifier:(NSString *)selectedIdentifier;
 @end
 
+// Load package resources independently to verify their custom view classes.
+@interface SettingsDropdownNibOwner : NSViewController
+@property(nonatomic, weak) IBOutlet NSSearchField *searchField;
+@property(nonatomic, weak) IBOutlet NSTableView *tableView;
+@property(nonatomic, weak) IBOutlet NSVisualEffectView *visualEffectView;
+@end
+@implementation SettingsDropdownNibOwner
+@end
+
 @interface SettingsNavigationTests : XCTestCase
 @end
 @implementation SettingsNavigationTests
@@ -638,6 +647,41 @@
     [controller importFromOpenPanel:url];
     XCTAssertEqual(delegate.importedKeys, 1);
     [[NSFileManager defaultManager] removeItemAtURL:url error:NULL];
+}
+
+- (void)testPackagedActionDropdownLoadsItsResourceBundle {
+    NSBundle *appBundle = NSBundle.mainBundle;
+    NSURL *resourceURL = [appBundle URLForResource:@"SearchableComboListView_SearchableComboListView"
+                                    withExtension:@"bundle"];
+    XCTAssertNotNil(resourceURL);
+    NSBundle *resources = resourceURL ? [NSBundle bundleWithURL:resourceURL] : nil;
+    XCTAssertNotNil([resources URLForResource:@"SearchableComboView" withExtension:@"nib"]);
+    Class dropdownClass = NSClassFromString(@"iTermSearchableComboView");
+    XCTAssertNotNil(dropdownClass);
+    NSURL *frameworkURL = [appBundle.privateFrameworksURL URLByAppendingPathComponent:@"SearchableComboListView.framework"];
+    NSBundle *framework = [NSBundle bundleWithURL:frameworkURL];
+    XCTAssertNotNil(framework.executableURL);
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:framework.executablePath]);
+
+    iTermEditKeyActionWindowController *controller = [[iTermEditKeyActionWindowController alloc]
+        initWithContext:iTermVariablesSuggestionContextSession
+                   mode:iTermEditKeyActionWindowControllerModeKeyboardShortcut];
+    [controller setAction:KEY_ACTION_IGNORE parameter:@"" applyMode:iTermActionApplyModeCurrentSession];
+    XCTAssertNotNil(controller.window);
+    NSPopUpButton *dropdown = [controller valueForKey:@"_comboView"];
+    XCTAssertTrue([dropdown isKindOfClass:dropdownClass]);
+    XCTAssertTrue([dropdown selectItemWithTag:KEY_ACTION_IGNORE]);
+    XCTAssertEqual(dropdown.selectedTag, KEY_ACTION_IGNORE);
+    XCTAssertFalse([dropdown selectItemWithTag:NSIntegerMax]);
+    XCTAssertEqual(dropdown.selectedTag, -1);
+    NSArray *nibObjects = nil;
+    SettingsDropdownNibOwner *owner = [[SettingsDropdownNibOwner alloc] initWithNibName:nil bundle:nil];
+    XCTAssertTrue([resources loadNibNamed:@"SearchableComboView" owner:owner topLevelObjects:&nibObjects]);
+    NSView *content = owner.view;
+    XCTAssertEqualObjects(NSStringFromClass(content.class), @"SearchableComboListView.SearchableComboContentView");
+    XCTAssertEqualObjects(NSStringFromClass(content.subviews.firstObject.class),
+                          @"SearchableComboListView.SearchableComboVibrantVisualEffectView");
+    [controller close];
 }
 
 - (void)testKeyboardActionEditorRequiresKeystrokeAndHidesActionTitle {

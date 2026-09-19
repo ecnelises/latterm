@@ -348,7 +348,6 @@ clean:
 	git -C submodules/NMSSH/ checkout NMSSH-OSX/Libraries/lib/
 	rm -rf BetterFontPicker/BetterFontPicker.framework && git checkout BetterFontPicker/BetterFontPicker.framework
 	rm -rf ColorPicker/ColorPicker.framework && git checkout ColorPicker/ColorPicker.framework
-	rm -rf SearchableComboListView/SearchableComboListView.framework && git checkout SearchableComboListView/SearchableComboListView.framework
 	rm -rf ThirdParty && git checkout ThirdParty
 	cd submodules/libsixel && make distclean || true
 	git checkout last-xcode-version
@@ -472,9 +471,6 @@ paranoid-libsixel: force
 paranoid-ColorPicker: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" ColorPicker
 
-paranoid-SearchableComboListView: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" SearchableComboListView
-
 paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
@@ -501,10 +497,6 @@ ColorPicker: force
 
 bindeps: BetterFontPicker
 	$(MAKE) ColorPicker
-	$(MAKE) SearchableComboListView
-
-SearchableComboListView: force
-	cd SearchableComboListView && $(MAKE)
 
 cleandeps: force
 	rm -rf ThirdParty/CoreParse/build
