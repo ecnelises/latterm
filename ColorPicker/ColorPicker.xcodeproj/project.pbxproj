@@ -18,7 +18,6 @@
 		A6184EBB1BA874020088EF3C /* ColorPickerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184EBA1BA874020088EF3C /* ColorPickerTests.m */; };
 		A6184ECE1BA874190088EF3C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184ECD1BA874190088EF3C /* AppDelegate.m */; };
 		A6184ED01BA874190088EF3C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184ECF1BA874190088EF3C /* main.m */; };
-		A6184ED21BA874190088EF3C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A6184ED11BA874190088EF3C /* Images.xcassets */; };
 		A6184ED51BA874190088EF3C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6184ED31BA874190088EF3C /* MainMenu.xib */; };
 		A6184EEA1BA8742F0088EF3C /* ColorPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6184EA81BA874020088EF3C /* ColorPicker.framework */; };
 		A6184EEB1BA8743B0088EF3C /* ColorPicker.framework in Resources */ = {isa = PBXBuildFile; fileRef = A6184EA81BA874020088EF3C /* ColorPicker.framework */; };
@@ -124,15 +123,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		1D3368841BCDB60700D3B564 /* EscapeHatch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = EscapeHatch.png; path = Images.xcassets/EscapeHatch/EscapeHatch.png; sourceTree = "<group>"; };
-		1D3368851BCDB60700D3B564 /* EscapeHatch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "EscapeHatch@2x.png"; path = "Images.xcassets/EscapeHatch/EscapeHatch@2x.png"; sourceTree = "<group>"; };
-		1D3368891BCDB62100D3B564 /* ActiveEscapeHatch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ActiveEscapeHatch.png; path = Images.xcassets/ActiveEscapeHatch/ActiveEscapeHatch.png; sourceTree = "<group>"; };
-		1D33688A1BCDB62100D3B564 /* ActiveEscapeHatch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ActiveEscapeHatch@2x.png"; path = "Images.xcassets/ActiveEscapeHatch/ActiveEscapeHatch@2x.png"; sourceTree = "<group>"; };
+		1D3368841BCDB60700D3B564 /* EscapeHatch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = EscapeHatch.png; path = Images/EscapeHatch/EscapeHatch.png; sourceTree = "<group>"; };
+		1D3368851BCDB60700D3B564 /* EscapeHatch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "EscapeHatch@2x.png"; path = "Images/EscapeHatch/EscapeHatch@2x.png"; sourceTree = "<group>"; };
+		1D3368891BCDB62100D3B564 /* ActiveEscapeHatch.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ActiveEscapeHatch.png; path = Images/ActiveEscapeHatch/ActiveEscapeHatch.png; sourceTree = "<group>"; };
+		1D33688A1BCDB62100D3B564 /* ActiveEscapeHatch@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "ActiveEscapeHatch@2x.png"; path = "Images/ActiveEscapeHatch/ActiveEscapeHatch@2x.png"; sourceTree = "<group>"; };
 		539804D22346F345009165A8 /* CPKColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPKColor.h; sourceTree = "<group>"; };
 		539804D32346F345009165A8 /* CPKColor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPKColor.m; sourceTree = "<group>"; };
 		A6184EA81BA874020088EF3C /* ColorPicker.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ColorPicker.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6184EAC1BA874020088EF3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A6184EAD1BA874020088EF3C /* ColorPicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorPicker.h; sourceTree = "<group>"; };
+		A6184EAD1BA874020088EF3C /* ColorPicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ColorPicker.h; path = include/ColorPicker/ColorPicker.h; sourceTree = "<group>"; };
 		A6184EB31BA874020088EF3C /* ColorPickerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ColorPickerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6184EB91BA874020088EF3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A6184EBA1BA874020088EF3C /* ColorPickerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ColorPickerTests.m; sourceTree = "<group>"; };
@@ -141,13 +140,12 @@
 		A6184ECC1BA874190088EF3C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		A6184ECD1BA874190088EF3C /* AppDelegate.m */ = {isa = PBXFileReference; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		A6184ECF1BA874190088EF3C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		A6184ED11BA874190088EF3C /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		A6184ED41BA874190088EF3C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		A6184EEC1BA876390088EF3C /* CPKMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKMainViewController.h; sourceTree = "<group>"; };
+		A6184EEC1BA876390088EF3C /* CPKMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPKMainViewController.h; path = include/ColorPicker/CPKMainViewController.h; sourceTree = "<group>"; };
 		A6184EED1BA876390088EF3C /* CPKMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = CPKMainViewController.m; sourceTree = "<group>"; };
 		A6184EF01BA876E50088EF3C /* CPKSelectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKSelectionView.h; sourceTree = "<group>"; };
 		A6184EF11BA876E50088EF3C /* CPKSelectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = CPKSelectionView.m; sourceTree = "<group>"; };
-		A6184EF41BA87A770088EF3C /* CPKPopover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKPopover.h; sourceTree = "<group>"; };
+		A6184EF41BA87A770088EF3C /* CPKPopover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPKPopover.h; path = include/ColorPicker/CPKPopover.h; sourceTree = "<group>"; };
 		A6184EF51BA87A770088EF3C /* CPKPopover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKPopover.m; sourceTree = "<group>"; };
 		A6184EF81BA8801D0088EF3C /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		A6184EFB1BA8814B0088EF3C /* CPKGradientView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKGradientView.h; sourceTree = "<group>"; };
@@ -164,7 +162,7 @@
 		A6184F151BA8E87B0088EF3C /* CPKFavorite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKFavorite.m; sourceTree = "<group>"; };
 		A6184F181BA8F40C0088EF3C /* CPKEyedropperWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKEyedropperWindow.h; sourceTree = "<group>"; };
 		A6184F191BA8F40C0088EF3C /* CPKEyedropperWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKEyedropperWindow.m; sourceTree = "<group>"; };
-		A6184F1C1BA90BB40088EF3C /* CPKColorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKColorWell.h; sourceTree = "<group>"; };
+		A6184F1C1BA90BB40088EF3C /* CPKColorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPKColorWell.h; path = include/ColorPicker/CPKColorWell.h; sourceTree = "<group>"; };
 		A6184F1D1BA90BB40088EF3C /* CPKColorWell.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = CPKColorWell.m; sourceTree = "<group>"; };
 		A6184F201BA911980088EF3C /* CPKEyedropperView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKEyedropperView.h; sourceTree = "<group>"; };
 		A6184F211BA911980088EF3C /* CPKEyedropperView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKEyedropperView.m; sourceTree = "<group>"; };
@@ -179,7 +177,7 @@
 		A6184F4E1BA9EA410088EF3C /* CPKKDTreeNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKKDTreeNode.m; sourceTree = "<group>"; };
 		A6184F511BA9EA7D0088EF3C /* CPKKDTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKKDTree.h; sourceTree = "<group>"; };
 		A6184F521BA9EA7D0088EF3C /* CPKKDTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKKDTree.m; sourceTree = "<group>"; };
-		A6184F551BAA06DC0088EF3C /* CPKSwatchView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKSwatchView.h; sourceTree = "<group>"; };
+		A6184F551BAA06DC0088EF3C /* CPKSwatchView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPKSwatchView.h; path = include/ColorPicker/CPKSwatchView.h; sourceTree = "<group>"; };
 		A6184F561BAA06DC0088EF3C /* CPKSwatchView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKSwatchView.m; sourceTree = "<group>"; };
 		A6184F5A1BAA083F0088EF3C /* SwatchCheckerboard.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SwatchCheckerboard.png; sourceTree = "<group>"; };
 		A6184F5B1BAA083F0088EF3C /* SwatchCheckerboard@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SwatchCheckerboard@2x.png"; sourceTree = "<group>"; };
@@ -199,12 +197,12 @@
 		A6184F801BAA928A0088EF3C /* Eyedropper@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Eyedropper@2x.png"; sourceTree = "<group>"; };
 		A6184F841BAA93F50088EF3C /* ActiveEyedropper.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ActiveEyedropper.png; sourceTree = "<group>"; };
 		A6184F851BAA93F50088EF3C /* ActiveEyedropper@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ActiveEyedropper@2x.png"; sourceTree = "<group>"; };
-		A628B00E1BF9A0D600B68248 /* NoColor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = NoColor.png; path = Images.xcassets/NoColor/NoColor.png; sourceTree = "<group>"; };
-		A628B00F1BF9A0D600B68248 /* NoColor@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "NoColor@2x.png"; path = "Images.xcassets/NoColor/NoColor@2x.png"; sourceTree = "<group>"; };
-		A662E78E1BD4932A00B79B8B /* HSB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = HSB.png; path = Images.xcassets/HSB/HSB.png; sourceTree = "<group>"; };
-		A662E78F1BD4932A00B79B8B /* HSB@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "HSB@2x.png"; path = "Images.xcassets/HSB/HSB@2x.png"; sourceTree = "<group>"; };
-		A662E7921BD4933A00B79B8B /* RGB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = RGB.png; path = Images.xcassets/RGB/RGB.png; sourceTree = "<group>"; };
-		A662E7931BD4933A00B79B8B /* RGB@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "RGB@2x.png"; path = "Images.xcassets/RGB/RGB@2x.png"; sourceTree = "<group>"; };
+		A628B00E1BF9A0D600B68248 /* NoColor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = NoColor.png; path = Images/NoColor/NoColor.png; sourceTree = "<group>"; };
+		A628B00F1BF9A0D600B68248 /* NoColor@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "NoColor@2x.png"; path = "Images/NoColor/NoColor@2x.png"; sourceTree = "<group>"; };
+		A662E78E1BD4932A00B79B8B /* HSB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = HSB.png; path = Images/HSB/HSB.png; sourceTree = "<group>"; };
+		A662E78F1BD4932A00B79B8B /* HSB@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "HSB@2x.png"; path = "Images/HSB/HSB@2x.png"; sourceTree = "<group>"; };
+		A662E7921BD4933A00B79B8B /* RGB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = RGB.png; path = Images/RGB/RGB.png; sourceTree = "<group>"; };
+		A662E7931BD4933A00B79B8B /* RGB@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "RGB@2x.png"; path = "Images/RGB/RGB@2x.png"; sourceTree = "<group>"; };
 		A667C230276A8A09006B4DEF /* NSColorSpace+CPK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSColorSpace+CPK.h"; sourceTree = "<group>"; };
 		A667C231276A8A09006B4DEF /* NSColorSpace+CPK.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSColorSpace+CPK.m"; sourceTree = "<group>"; };
 		A6D398592BD9A4A600C4C1AD /* CPKLogging.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPKLogging.h; sourceTree = "<group>"; };
@@ -367,7 +365,6 @@
 			children = (
 				A6184ECC1BA874190088EF3C /* AppDelegate.h */,
 				A6184ECD1BA874190088EF3C /* AppDelegate.m */,
-				A6184ED11BA874190088EF3C /* Images.xcassets */,
 				A6184ED31BA874190088EF3C /* MainMenu.xib */,
 				A6184ECA1BA874190088EF3C /* Supporting Files */,
 			);
@@ -410,7 +407,7 @@
 				A6184F301BA9D5700088EF3C /* Add@2x.png */,
 			);
 			name = Add;
-			path = Images.xcassets/Add;
+			path = Images/Add;
 			sourceTree = "<group>";
 		};
 		A6184F311BA9D5700088EF3C /* Remove */ = {
@@ -420,7 +417,7 @@
 				A6184F741BAA2AC60088EF3C /* Remove@2x.png */,
 			);
 			name = Remove;
-			path = Images.xcassets/Remove;
+			path = Images/Remove;
 			sourceTree = "<group>";
 		};
 		A6184F341BA9D5700088EF3C /* SelectedColorIndicator */ = {
@@ -430,7 +427,7 @@
 				A6184F361BA9D5700088EF3C /* SelectedColorIndicator@2x.png */,
 			);
 			name = SelectedColorIndicator;
-			path = Images.xcassets/SelectedColorIndicator;
+			path = Images/SelectedColorIndicator;
 			sourceTree = "<group>";
 		};
 		A6184F591BAA083F0088EF3C /* SwatchCheckerboard */ = {
@@ -440,7 +437,7 @@
 				A6184F5B1BAA083F0088EF3C /* SwatchCheckerboard@2x.png */,
 			);
 			name = SwatchCheckerboard;
-			path = Images.xcassets/SwatchCheckerboard;
+			path = Images/SwatchCheckerboard;
 			sourceTree = "<group>";
 		};
 		A6184F6A1BAA15B80088EF3C /* SelectionIndicator */ = {
@@ -450,7 +447,7 @@
 				A6184F6C1BAA15B80088EF3C /* SelectionIndicator@2x.png */,
 			);
 			name = SelectionIndicator;
-			path = Images.xcassets/SelectedAlphaIndicator;
+			path = Images/SelectedAlphaIndicator;
 			sourceTree = "<group>";
 		};
 		A6184F7E1BAA928A0088EF3C /* Eyedropper */ = {
@@ -460,7 +457,7 @@
 				A6184F801BAA928A0088EF3C /* Eyedropper@2x.png */,
 			);
 			name = Eyedropper;
-			path = Images.xcassets/Eyedropper;
+			path = Images/Eyedropper;
 			sourceTree = "<group>";
 		};
 		A6184F831BAA93F50088EF3C /* ActiveEyedropper */ = {
@@ -470,7 +467,7 @@
 				A6184F851BAA93F50088EF3C /* ActiveEyedropper@2x.png */,
 			);
 			name = ActiveEyedropper;
-			path = Images.xcassets/ActiveEyedropper;
+			path = Images/ActiveEyedropper;
 			sourceTree = "<group>";
 		};
 		A628B00D1BF9A0CC00B68248 /* NoColor */ = {
@@ -679,7 +676,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6184EEB1BA8743B0088EF3C /* ColorPicker.framework in Resources */,
-				A6184ED21BA874190088EF3C /* Images.xcassets in Resources */,
 				A6184ED51BA874190088EF3C /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -885,6 +881,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				FRAMEWORK_VERSION = A;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/ColorPicker/include/ColorPicker";
 				INFOPLIST_FILE = ColorPicker/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -912,6 +909,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				FRAMEWORK_VERSION = A;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/ColorPicker/include/ColorPicker";
 				INFOPLIST_FILE = ColorPicker/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (

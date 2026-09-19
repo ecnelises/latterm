@@ -1242,13 +1242,6 @@
 		A6180D7821A883860073F219 /* iTermBroadcastPasswordHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6180D7621A883860073F219 /* iTermBroadcastPasswordHelper.h */; };
 		A6180D7921A883860073F219 /* iTermBroadcastPasswordHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A6180D7721A883860073F219 /* iTermBroadcastPasswordHelper.m */; };
 		A6180D7A21B399AA0073F219 /* NSFileManager+iTerm.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D67ABAA14285D6000D5DA4E /* NSFileManager+iTerm.m */; };
-		A6184F891BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; };
-		A6184F8A1BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; };
-		A6184F8B1BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; };
-		A6184F8C1BAB3EF30088EF3C /* ColorPicker.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A6184F8D1BAB3EFB0088EF3C /* ColorPicker.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A6184F8E1BAB3F090088EF3C /* ColorPicker.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A6184F8F1BAB458B0088EF3C /* ColorPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A6184F881BAB3ED70088EF3C /* ColorPicker.framework */; };
 		A618692D2A0814C50052487D /* ImportingWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A618692C2A0814C40052487D /* ImportingWindowController.xib */; };
 		A618FFBD22409DF900B8FD88 /* iTermTheme.h in Headers */ = {isa = PBXBuildFile; fileRef = A618FFBB22409DF900B8FD88 /* iTermTheme.h */; };
 		A618FFBE22409DF900B8FD88 /* iTermTheme.m in Sources */ = {isa = PBXBuildFile; fileRef = A618FFBC22409DF900B8FD88 /* iTermTheme.m */; };
@@ -4363,12 +4356,15 @@
 		FC58829E571DF07C5902F3EB /* EnterWorkgroupTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B23866DFB3D15427C93C0849 /* EnterWorkgroupTrigger.swift */; };
 		5E550AB09FE841A1A4DB7E43 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = F6744A0497664780B2070082 /* SearchableComboListView */; };
 		E08A7E915DDA4B83A2807C37 /* BetterFontPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 46339FB3A2D04FBBAA39A165 /* BetterFontPicker */; };
+		0DAF93A2652E425988DF9CF0 /* ColorPicker in Frameworks */ = {isa = PBXBuildFile; productRef = F71AE86C58DC48D585749FCB /* ColorPicker */; };
 		615631B0C6A14BCF9A56941D /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */; };
 		061CEEDA1DB04EB29F58A2C4 /* BetterFontPicker in Frameworks */ = {isa = PBXBuildFile; productRef = B1BAACB783634C1E95E5F012 /* BetterFontPicker */; };
+		94245A3872B343A2B764B9E4 /* ColorPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 523E151CFA614C8AA1E47DBC /* ColorPicker */; };
 		1589502DFF0741D295229B81 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = 679529C1BF614B55B153B22A /* SearchableComboListView */; };
 		8C9C1CC3BE3240B2A1CA1FAE /* BetterFontPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 80857953AEB545D0BE07E9F4 /* BetterFontPicker */; };
 		7705ED8763D04985B50F5E43 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = F46382FA75AB4361AF79CA07 /* SearchableComboListView */; };
 		472C3FCF714D43D7BD9C44E0 /* BetterFontPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 0D67566F63894E77B880590B /* BetterFontPicker */; };
+		8A3C1CEF6D2D4C438E4C64FD /* ColorPicker in Frameworks */ = {isa = PBXBuildFile; productRef = E39D74F670234855A83296F6 /* ColorPicker */; };
 		1A2557C8B3384A6DAE05BB0D /* SearchableComboListView in Embed Frameworks */ = {isa = PBXBuildFile; productRef = F6744A0497664780B2070082 /* SearchableComboListView */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC6996E8E21E43B2B95C5ADA /* BetterFontPicker in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 46339FB3A2D04FBBAA39A165 /* BetterFontPicker */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A672F3DFF75C495E953BC9D8 /* SearchableComboListView in Embed Frameworks */ = {isa = PBXBuildFile; productRef = E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -4545,7 +4541,6 @@
 				AB11B1195E0C4D9EBA48785A /* SearchableComboListView in Embed Frameworks */,
 				61D5920DBBD04DAFB6262550 /* BetterFontPicker in Embed Frameworks */,
 				A6E180E723D2E2B2003C4EB1 /* CoreParse.framework in CopyFiles */,
-				A6184F8E1BAB3F090088EF3C /* ColorPicker.framework in CopyFiles */,
 				A605D4B419CF796F00D40343 /* NMSSH.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4559,7 +4554,6 @@
 				1A2557C8B3384A6DAE05BB0D /* SearchableComboListView in Embed Frameworks */,
 				AC6996E8E21E43B2B95C5ADA /* BetterFontPicker in Embed Frameworks */,
 				A6E180E623D2E182003C4EB1 /* CoreParse.framework in CopyFiles */,
-				A6184F8D1BAB3EFB0088EF3C /* ColorPicker.framework in CopyFiles */,
 				A605D4B319CF796800D40343 /* NMSSH.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4573,7 +4567,6 @@
 				A672F3DFF75C495E953BC9D8 /* SearchableComboListView in Embed Frameworks */,
 				5383AC1C9AFD4C8BA8B7A81C /* BetterFontPicker in Embed Frameworks */,
 				530AB89C20AFF23400D2AA08 /* CoreParse.framework in CopyFiles */,
-				A6184F8C1BAB3EF30088EF3C /* ColorPicker.framework in CopyFiles */,
 				A624232619CF70DF00182C08 /* NMSSH.framework in CopyFiles */,
 				A69FEECE2E123B8700AFF7A8 /* iTermSwiftPackages.framework in CopyFiles */,
 			);
@@ -5597,7 +5590,6 @@
 		A616E6632EA9544D000C0C18 /* PasswordManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordManagerProtocol.swift; sourceTree = "<group>"; };
 		A6180D7621A883860073F219 /* iTermBroadcastPasswordHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermBroadcastPasswordHelper.h; sourceTree = "<group>"; };
 		A6180D7721A883860073F219 /* iTermBroadcastPasswordHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermBroadcastPasswordHelper.m; sourceTree = "<group>"; };
-		A6184F881BAB3ED70088EF3C /* ColorPicker.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ColorPicker.framework; path = ColorPicker/ColorPicker.framework; sourceTree = "<group>"; };
 		A618692C2A0814C40052487D /* ImportingWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ImportingWindowController.xib; sourceTree = "<group>"; };
 		A618FFBB22409DF900B8FD88 /* iTermTheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermTheme.h; sourceTree = "<group>"; };
 		A618FFBC22409DF900B8FD88 /* iTermTheme.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermTheme.m; sourceTree = "<group>"; };
@@ -7926,6 +7918,7 @@
 			files = (
 				7705ED8763D04985B50F5E43 /* SearchableComboListView in Frameworks */,
 				472C3FCF714D43D7BD9C44E0 /* BetterFontPicker in Frameworks */,
+				8A3C1CEF6D2D4C438E4C64FD /* ColorPicker in Frameworks */,
 				BEEFCAFEDEADC0DE00000001 /* iTermSwiftPackages.framework in Frameworks */,
 				A667196A1DCE396A000CE608 /* libiTerm2SharedARC.a in Frameworks */,
 				A690F7041B424EF8009F76D8 /* OpenDirectory.framework in Frameworks */,
@@ -7933,7 +7926,6 @@
 				530AB89B20AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
 				A67D19512237045C00BD0D4D /* libsixel.a in Frameworks */,
 				1D6EDAF519AEA20D005A7799 /* Security.framework in Frameworks */,
-				A6184F8B1BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */,
 				1D6EDAF919AEA20D005A7799 /* AppKit.framework in Frameworks */,
 				1D6EDAFC19AEA20D005A7799 /* Carbon.framework in Frameworks */,
 				1D6EDAFD19AEA20D005A7799 /* Quartz.framework in Frameworks */,
@@ -7947,12 +7939,12 @@
 			files = (
 				5E550AB09FE841A1A4DB7E43 /* SearchableComboListView in Frameworks */,
 				E08A7E915DDA4B83A2807C37 /* BetterFontPicker in Frameworks */,
+				0DAF93A2652E425988DF9CF0 /* ColorPicker in Frameworks */,
 				BEEFCAFEDEADC0DE00000004 /* iTermSwiftPackages.framework in Frameworks */,
 				A67D19502237045C00BD0D4D /* libsixel.a in Frameworks */,
 				A66719691DCE3965000CE608 /* libiTerm2SharedARC.a in Frameworks */,
 				A690F7051B424F15009F76D8 /* OpenDirectory.framework in Frameworks */,
 				A624232019CF6F2C00182C08 /* NMSSH.framework in Frameworks */,
-				A6184F8A1BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */,
 				530AB89A20AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
 				1DFA7C9F1923F77C00DF1410 /* Security.framework in Frameworks */,
 				1D9A55B5180FA8F400B42CE9 /* AppKit.framework in Frameworks */,
@@ -7987,12 +7979,12 @@
 			files = (
 				615631B0C6A14BCF9A56941D /* SearchableComboListView in Frameworks */,
 				061CEEDA1DB04EB29F58A2C4 /* BetterFontPicker in Frameworks */,
+				94245A3872B343A2B764B9E4 /* ColorPicker in Frameworks */,
 				A69FEECD2E123B8700AFF7A8 /* iTermSwiftPackages.framework in Frameworks */,
 				A60BD9191B3F5D76007D7F11 /* OpenDirectory.framework in Frameworks */,
 				A624231F19CF6F2000182C08 /* NMSSH.framework in Frameworks */,
 				1DFA7C9E1923F77100DF1410 /* Security.framework in Frameworks */,
 				874206530564169600CFC3F1 /* AppKit.framework in Frameworks */,
-				A6184F891BAB3ED70088EF3C /* ColorPicker.framework in Frameworks */,
 				530AB89920AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
 				1D6C18BE12951A3C00937A4A /* Carbon.framework in Frameworks */,
 				1DF0897113DBAF4C00A52AD8 /* Quartz.framework in Frameworks */,
@@ -8073,7 +8065,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				25EA1D2052BE49EE9A6E3E16 /* BetterFontPicker in Frameworks */,
-				A6184F8F1BAB458B0088EF3C /* ColorPicker.framework in Frameworks */,
 				A6C764161B45C77100E3C992 /* libSSKeychain.a in Frameworks */,
 				A6C760451B45C4CF00E3C992 /* Cocoa.framework in Frameworks */,
 				A6C764171B45C7B200E3C992 /* NMSSH.framework in Frameworks */,
@@ -8706,7 +8697,6 @@
 				A60EAE7C23F9CEB3007536CE /* ApplicationServices.framework */,
 				1DEB293D1288899A00B2CB9F /* Carbon.framework */,
 				1DD39AD6180B8118004E56D5 /* Cocoa.framework */,
-				A6184F881BAB3ED70088EF3C /* ColorPicker.framework */,
 				530AB89820AFF21200D2AA08 /* CoreParse.framework */,
 				A6588821201708D8006F48DB /* IOKit.framework */,
 				756C32C12597AC9C0047B3A9 /* libaprutil-1.tbd */,
@@ -14385,6 +14375,7 @@
 			packageProductDependencies = (
 				F46382FA75AB4361AF79CA07 /* SearchableComboListView */,
 				0D67566F63894E77B880590B /* BetterFontPicker */,
+				E39D74F670234855A83296F6 /* ColorPicker */,
 			);
 			productName = "JTerminal (Application)";
 			productReference = 1D6EDB0A19AEA20D005A7799 /* iTerm2ForApplescriptTesting.app */;
@@ -14409,6 +14400,7 @@
 			packageProductDependencies = (
 				F6744A0497664780B2070082 /* SearchableComboListView */,
 				46339FB3A2D04FBBAA39A165 /* BetterFontPicker */,
+				F71AE86C58DC48D585749FCB /* ColorPicker */,
 			);
 			productName = iTermTests;
 			productReference = 1DD39AD4180B8117004E56D5 /* iTerm2Tests.app */;
@@ -14529,6 +14521,7 @@
 			packageProductDependencies = (
 				E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */,
 				B1BAACB783634C1E95E5F012 /* BetterFontPicker */,
+				523E151CFA614C8AA1E47DBC /* ColorPicker */,
 			);
 			productName = "JTerminal (Application)";
 			productReference = 8742065A0564169600CFC3F1 /* Latterm.app */;
@@ -14805,6 +14798,7 @@
 			packageReferences = (
 				78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */,
 				15FD8640077F4FD4850928DF /* XCLocalSwiftPackageReference "BetterFontPicker" */,
+				F79AC6EEEC70421BBF6D73F0 /* XCLocalSwiftPackageReference "ColorPicker" */,
 				72DF701C2DF2DAABC006F100 /* XCLocalSwiftPackageReference "CompanionCore" */,
 				6AEB4F694FB62FA208F96240 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				8282BAE40915D8F2B8CC6B66 /* XCRemoteSwiftPackageReference "Yams" */,
@@ -18326,7 +18320,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -18356,7 +18349,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -18450,7 +18442,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -18556,7 +18547,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -18630,7 +18620,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -18700,7 +18689,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -18783,7 +18771,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -18871,7 +18858,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -18951,7 +18937,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -19769,7 +19754,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -19864,7 +19848,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -19967,7 +19950,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -20048,7 +20030,6 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20063,7 +20044,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty;
+				HEADER_SEARCH_PATHS = (
+					"ThirdParty",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				"OTHER_CFLAGS[arch=*]" = "-DBETA=1";
 				OTHER_LDFLAGS = "";
@@ -20117,7 +20101,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -20179,7 +20162,6 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20195,7 +20177,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					ThirdParty,
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+					"ThirdParty",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20511,7 +20494,6 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20533,7 +20515,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					ThirdParty,
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+					"ThirdParty",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20600,7 +20583,6 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20616,7 +20598,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					ThirdParty,
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+					"ThirdParty",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -20675,7 +20658,6 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -20690,7 +20672,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					ThirdParty,
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+					"ThirdParty",
 					"$(CONFIGURATION_TEMP_DIR)/it2core.build/DerivedSources",
 				);
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -21665,6 +21648,10 @@
 		A6A723B52DC04C2200A8115D /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -21709,7 +21696,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -21750,6 +21736,10 @@
 		A6A723B62DC04C2200A8115D /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -21794,7 +21784,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -21827,6 +21816,10 @@
 		A6A723B72DC04C2200A8115D /* Beta */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -21871,7 +21864,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -21904,6 +21896,10 @@
 		A6A723B82DC04C2200A8115D /* Nightly */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -21948,7 +21944,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -22001,7 +21996,6 @@
 				DEAD_CODE_STRIPPING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -22022,7 +22016,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty;
+				HEADER_SEARCH_PATHS = (
+					"ThirdParty",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
@@ -22077,7 +22074,6 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -22092,7 +22088,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty;
+				HEADER_SEARCH_PATHS = (
+					"ThirdParty",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
@@ -22140,7 +22139,6 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/ColorPicker",
 					"$(PROJECT_DIR)/ThirdParty",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -22154,7 +22152,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty;
+				HEADER_SEARCH_PATHS = (
+					"ThirdParty",
+					"$(SRCROOT)/ColorPicker/ColorPicker/include",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				OTHER_CFLAGS = "-DBETA=1";
 				OTHER_LDFLAGS = "";
@@ -22207,7 +22208,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -22284,7 +22284,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -22351,7 +22350,6 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -22414,7 +22412,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
@@ -22513,7 +22510,6 @@
 					"$(SRCROOT)",
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ThirdParty",
-					"$(PROJECT_DIR)/ColorPicker",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
@@ -22746,7 +22742,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -22776,7 +22771,6 @@
 					"$(inherited)",
 					"$(SRCROOT)/build/Development",
 					"$(SRCROOT)",
-					"$(SRCROOT)/ColorPicker",
 					"$(SRCROOT)/ThirdParty",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
@@ -22998,6 +22992,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = BetterFontPicker;
 		};
+		F79AC6EEEC70421BBF6D73F0 /* XCLocalSwiftPackageReference "ColorPicker" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ColorPicker;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -23052,6 +23050,11 @@
 			package = 15FD8640077F4FD4850928DF /* XCLocalSwiftPackageReference "BetterFontPicker" */;
 			productName = BetterFontPicker;
 		};
+		F71AE86C58DC48D585749FCB /* ColorPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F79AC6EEEC70421BBF6D73F0 /* XCLocalSwiftPackageReference "ColorPicker" */;
+			productName = ColorPicker;
+		};
 		E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 78EC8D84BF8B43D8BCAA02ED /* XCLocalSwiftPackageReference "SearchableComboListView" */;
@@ -23061,6 +23064,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 15FD8640077F4FD4850928DF /* XCLocalSwiftPackageReference "BetterFontPicker" */;
 			productName = BetterFontPicker;
+		};
+		523E151CFA614C8AA1E47DBC /* ColorPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F79AC6EEEC70421BBF6D73F0 /* XCLocalSwiftPackageReference "ColorPicker" */;
+			productName = ColorPicker;
 		};
 		679529C1BF614B55B153B22A /* SearchableComboListView */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -23081,6 +23089,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 15FD8640077F4FD4850928DF /* XCLocalSwiftPackageReference "BetterFontPicker" */;
 			productName = BetterFontPicker;
+		};
+		E39D74F670234855A83296F6 /* ColorPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F79AC6EEEC70421BBF6D73F0 /* XCLocalSwiftPackageReference "ColorPicker" */;
+			productName = ColorPicker;
 		};
 		326CB57389D24F7982078DB1 /* BetterFontPicker */ = {
 			isa = XCSwiftPackageProductDependency;

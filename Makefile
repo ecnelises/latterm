@@ -346,7 +346,6 @@ clean:
 	rm -rf submodules/libssh2/libssh2.a
 	rm -f *~
 	git -C submodules/NMSSH/ checkout NMSSH-OSX/Libraries/lib/
-	rm -rf ColorPicker/ColorPicker.framework && git checkout ColorPicker/ColorPicker.framework
 	rm -rf ThirdParty && git checkout ThirdParty
 	cd submodules/libsixel && make distclean || true
 	git checkout last-xcode-version
@@ -461,14 +460,11 @@ paranoid-libssh2: force
 paranoid-libsixel: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libsixel
 
-paranoid-ColorPicker: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" ColorPicker
-
 paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force libsixel CoreParse NMSSH bindeps pwmadapters
+deps: force libsixel CoreParse NMSSH pwmadapters
 
 # Regenerate NSCharacterSet+iTerm.m and iTermCharacterSets.m from latest Unicode data.
 # Run this when a new Unicode version is released.
@@ -478,12 +474,6 @@ unicode:
 
 DepsIfNeeded: force
 	tools/rebuild-deps-if-needed
-
-ColorPicker: force
-	cd ColorPicker && $(MAKE)
-
-bindeps: force
-	$(MAKE) ColorPicker
 
 cleandeps: force
 	rm -rf ThirdParty/CoreParse/build

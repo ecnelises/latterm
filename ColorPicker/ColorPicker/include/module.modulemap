@@ -1,0 +1,5 @@
+module ColorPicker {
+    umbrella header "ColorPicker/ColorPicker.h"
+    export *
+    module * { export * }
+}

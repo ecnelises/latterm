@@ -1,4 +1,5 @@
 #import "CPKColorNamer.h"
+#import "NSObject+CPK.h"
 #import "CPKKDTree.h"
 #import "NSColor+CPK.h"
 #import <math.h>
@@ -26,7 +27,7 @@ static const CGFloat kHueMultiplier = 5;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        NSString *filename = [[NSBundle bundleForClass:[self class]] pathForResource:@"colors"
+        NSString *filename = [CPKResourceBundle() pathForResource:@"colors"
                                                                               ofType:@"txt"];
         NSData *database = [NSData dataWithContentsOfFile:filename];
         NSString *asString = [[NSString alloc] initWithData:database
