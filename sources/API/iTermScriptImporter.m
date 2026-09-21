@@ -160,7 +160,7 @@ static BOOL sInstallingScript;
         return;
     }
     if (requireSignature) {
-        completion(nil, @"This is not a valid iTerm2 script archive.", NO, NO, NO);
+        completion(nil, @"This is not a valid Latterm script archive.", NO, NO, NO);
         return;
     }
     completion(url, nil, NO, NO, NO);
@@ -283,7 +283,7 @@ static BOOL sInstallingScript;
             completion(@"This archive was created by an older version of iTerm2. This kind of archive is no longer supported and cannot be installed.", NO, nil);
         } else {
             DLog(@"invalid");
-            completion(@"Archive does not contain a valid iTerm2 script", NO, nil);
+            completion(@"Archive does not contain a valid Latterm script", NO, nil);
         }
         return;
     }

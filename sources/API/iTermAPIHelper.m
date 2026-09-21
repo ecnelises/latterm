@@ -1548,7 +1548,7 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
     }
 
     NSString *message =
-        @"Another process is trying to use the iTerm2 API. The API allows a script to control iTerm2 and view and modify its contents. Allow the connection?";
+        @"Another process is trying to use the Latterm API. The API allows a script to control Latterm and view and modify its contents. Allow the connection?";
 
     if ([iTermAdvancedSettingsModel setCookie]) {
         message = [NSString stringWithFormat:@"%@\n\nAlthough you have chosen to allow connections automatically, this script has not presented a valid cookie.", message];

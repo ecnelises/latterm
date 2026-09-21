@@ -567,7 +567,7 @@ final class CompanionPairingWindowController: NSWindowController, NSWindowDelega
         } else {
             // Not listening at all: the phone cannot reach this Mac. The poll in
             // refreshGateState nudges a resume, so word it as transient.
-            instructionsLabel.stringValue = "A companion device is paired but iTerm2 isn’t listening for it yet. Reconnecting…"
+            instructionsLabel.stringValue = "A companion device is paired but Latterm isn’t listening for it yet. Reconnecting…"
             checkmarkImageView.contentTintColor = .systemYellow
         }
         updateRelayStatusLabel()

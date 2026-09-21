@@ -555,7 +555,7 @@ extension Conductor {
                         return
                     }
                     guard granted else {
-                        emitStderr("Permission denied: iTerm2 API access was not granted for this session.")
+                        emitStderr("Permission denied: Latterm API access was not granted for this session.")
                         finish(1)
                         return
                     }

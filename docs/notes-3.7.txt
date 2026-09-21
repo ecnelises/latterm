@@ -9,6 +9,11 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Use Latterm names in Finder services, file
+  types, system permission prompts, and API UI.
+- Localize Finder services in Simplified Chinese.
+- Remove obsolete HTML viewer and Help Book
+  registrations after browser removal.
 - Migrated version comparisons to Swift while
   preserving prerelease and numeric ordering.
 - Build the color picker and its resources from

@@ -76,11 +76,11 @@ final class CompanionPairingController: NSObject {
         case .peerMustUpgrade:
             alert.messageText = "Companion Device Needs an Update"
             alert.informativeText = "The iTerm2 Buddy app on your phone is too old to connect to "
-                + "this version of iTerm2. Update the iPhone app to continue."
+                + "this version of Latterm. Update the iPhone app to continue."
         case .selfMustUpgrade:
-            alert.messageText = "iTerm2 Needs an Update"
-            alert.informativeText = "This version of iTerm2 is too old to connect to the iTerm2 "
-                + "Buddy app on your phone. Update iTerm2 to continue."
+            alert.messageText = "Latterm Needs an Update"
+            alert.informativeText = "This version of Latterm is too old to connect to the iTerm2 "
+                + "Buddy app on your phone. Update Latterm to continue."
         case .compatible:
             return
         }
@@ -147,7 +147,7 @@ final class CompanionPairingController: NSObject {
             let alert = NSAlert()
             alert.messageText = "Re-pair Your Companion Device"
             alert.informativeText =
-                "The iTerm2 server has moved to a new address. Your paired "
+                "The Latterm server has moved to a new address. Your paired "
                 + "iPhone is still registered with the old server. The old "
                 + "server will go away soon. You should re-pair to avoid "
                 + "problems when that happens."
@@ -215,7 +215,7 @@ final class CompanionPairingController: NSObject {
             alert.informativeText =
                 "Your paired iPhone can’t connect because some pairing information "
                 + "stored on this Mac is missing (\(missing.joined(separator: ", "))). "
-                + "This can happen after reinstalling or rebuilding iTerm2, or after a "
+                + "This can happen after reinstalling or rebuilding Latterm, or after a "
                 + "keychain reset. Re-pair to fix it."
             alert.addButton(withTitle: "Re-pair…")
             alert.addButton(withTitle: "Later")
@@ -598,7 +598,7 @@ final class CompanionPairingController: NSObject {
         DispatchQueue.main.async {
             let alert = NSAlert()
             alert.messageText = "Update iTerm2 Buddy on your iPhone"
-            alert.informativeText = "iTerm2 has moved to the new relay. For your Mac and iPhone to keep connecting, "
+            alert.informativeText = "Latterm has moved to the new relay. For your Mac and iPhone to keep connecting, "
                 + "update the iTerm2 Buddy app on your iPhone to the latest version."
             alert.addButton(withTitle: "OK")
             alert.runModal()

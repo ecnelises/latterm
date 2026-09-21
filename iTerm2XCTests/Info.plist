@@ -19,7 +19,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>iTerm2 can control other applications with AppleScript.</string>
+	<string>Latterm can control other applications with AppleScript.</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 </dict>

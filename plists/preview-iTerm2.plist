@@ -4,8 +4,6 @@
 <dict>
         <key>NSAppTransportSecurity</key>
         <dict>
-            <key>NSAllowsArbitraryLoadsInWebContent</key>
-            <true/>
             <key>NSAllowsLocalNetworking</key>
             <true/>
             <key>NSExceptionDomains</key>  
@@ -36,7 +34,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTerm2.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>iTerm2 Triggers</string>
+                        <string>Latterm Triggers</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                 </dict>
@@ -48,7 +46,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTerm2.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>iTerm2 Arrangement</string>
+                        <string>Latterm Arrangement</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                 </dict>
@@ -60,7 +58,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTerm2.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>Create iTerm2 Tab</string>
+                        <string>Create Latterm Tab</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                 </dict>
@@ -72,7 +70,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTermRecordingIcon.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>iTerm2 Recording</string>
+                        <string>Latterm Recording</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                 </dict>
@@ -84,7 +82,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTerm2Script.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>iTerm2 Script</string>
+                        <string>Latterm Script</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                 </dict>
@@ -123,7 +121,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTerm2.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>iTerm2 Color Presets</string>
+                        <string>Latterm Color Presets</string>
                         <key>CFBundleTypeRole</key>
                         <string>Editor</string>
                 </dict>
@@ -135,7 +133,7 @@
                         <key>CFBundleTypeIconFile</key>
                         <string>iTerm2Script.icns</string>
                         <key>CFBundleTypeName</key>
-                        <string>iTerm2 Script</string>
+                        <string>Latterm Script</string>
                         <key>CFBundleTypeRole</key>
                         <string>Viewer</string>
                         <key>LSItemContentTypes</key>
@@ -153,43 +151,35 @@
                                 <string>public.unix-executable</string>
                         </array>
                 </dict>
-                <dict>
-                        <key>CFBundleTypeRole</key>
-                        <string>Viewer</string>
-                        <key>LSItemContentTypes</key>
-                        <array>
-                                <string>public.html</string>
-                        </array>
-                </dict>
         </array>
         <key>NSSystemAdministrationUsageDescription</key>
-        <string>The operation being performed by a program in iTerm2 requires elevated permission.</string>
+        <string>The operation being performed by a program in Latterm requires elevated permission.</string>
         <key>NSAppleEventsUsageDescription</key>
-        <string>An application in iTerm2 wants to use AppleScript.</string>
+        <string>An application in Latterm wants to use AppleScript.</string>
         <key>NSBluetoothAlwaysUsageDescription</key>
-        <string>An application in iTerm2 wants to use Bluetooth.</string>
+        <string>An application in Latterm wants to use Bluetooth.</string>
         <key>NSCalendarsUsageDescription</key>
-        <string>An application in iTerm2 wants to use Calendar data.</string>
+        <string>An application in Latterm wants to use Calendar data.</string>
         <key>NSCameraUsageDescription</key>
-        <string>An application in iTerm2 wants to use the camera.</string>
+        <string>An application in Latterm wants to use the camera.</string>
         <key>NSContactsUsageDescription</key>
-        <string>An application in iTerm2 wants to use your contacts.</string>
+        <string>An application in Latterm wants to use your contacts.</string>
         <key>NSLocationAlwaysUsageDescription</key>
-        <string>An application in iTerm2 wants to use your location information, even in the background.</string>
+        <string>An application in Latterm wants to use your location information, even in the background.</string>
         <key>NSLocationUsageDescription</key>
-        <string>An application in iTerm2 wants to use your location information.</string>
+        <string>An application in Latterm wants to use your location information.</string>
         <key>NSLocationWhenInUseUsageDescription</key>
-        <string>An application in iTerm2 wants to use your location information while active.</string>
+        <string>An application in Latterm wants to use your location information while active.</string>
         <key>NSMicrophoneUsageDescription</key>
-        <string>An application in iTerm2 wants to use your microphone.</string>
+        <string>An application in Latterm wants to use your microphone.</string>
         <key>NSSpeechRecognitionUsageDescription</key>
-        <string>An application in iTerm2 wants to use speech recognition.</string>
+        <string>An application in Latterm wants to use speech recognition.</string>
         <key>NSRemindersUsageDescription</key>
-        <string>An application in iTerm2 wants to use your reminders.</string>
+        <string>An application in Latterm wants to use your reminders.</string>
         <key>NSPhotoLibraryUsageDescription</key>
-        <string>An application in iTerm2 wants to use the photo library.</string>
+        <string>An application in Latterm wants to use the photo library.</string>
         <key>NSLocalNetworkUsageDescription</key>
-        <string>An application in iTerm2 wants to access the local network.</string>
+        <string>An application in Latterm wants to access the local network.</string>
         <key>NSBonjourServices</key>
         <array>
           <string>_ssh._tcp.</string>
@@ -202,7 +192,7 @@
                         <key>NSMenuItem</key>
                         <dict>
                                 <key>default</key>
-                                <string>New iTerm2 Tab Here</string>
+                                <string>New Latterm Tab Here</string>
                         </dict>
                         <key>NSMessage</key>
                         <string>openTab</string>
@@ -221,7 +211,7 @@
                         <key>NSMenuItem</key>
                         <dict>
                                 <key>default</key>
-                                <string>New iTerm2 Window Here</string>
+                                <string>New Latterm Window Here</string>
                         </dict>
                         <key>NSMessage</key>
                         <string>openWindow</string>
@@ -241,10 +231,6 @@
         <string>$(EXECUTABLE_NAME)</string>
         <key>CFBundleGetInfoString</key>
         <string>unknown</string>
-        <key>CFBundleHelpBookFolder</key>
-        <string>iTerm2 Help</string>
-        <key>CFBundleHelpBookName</key>
-        <string>iTerm2 Help</string>
 	<key>CFBundleIconName</key>
 	<string>iTerm2 App Icon for Beta</string>
         <key>CFBundleIconFile</key>
@@ -372,7 +358,7 @@
                 </dict>
                 <dict>
                         <key>CFBundleURLName</key>
-                        <string>iTerm2</string>
+                        <string>Latterm</string>
                         <key>CFBundleURLSchemes</key>
                         <array>
                                 <string>iterm2</string>

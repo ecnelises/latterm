@@ -123,7 +123,7 @@
         } else {
             *error = [NSError errorWithDomain:IT2ChannelDisconnect.domain
                                          code:IT2ChannelDisconnect.abortCode
-                                     userInfo:@{ NSLocalizedDescriptionKey: @"the iTerm2 API connection was closed" }];
+                                     userInfo:@{ NSLocalizedDescriptionKey: @"the Latterm API connection was closed" }];
         }
     }
     return message;
