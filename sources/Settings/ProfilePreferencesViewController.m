@@ -1239,9 +1239,15 @@ andEditComponentWithIdentifier:(NSString *)identifier
 #pragma mark - iTermSearchableViewController
 
 - (NSArray<iTermPreferencesSearchDocument *> *)searchableViewControllerDocuments {
-    return [[[self tabViewControllers] mapWithBlock:^id(id<iTermSearchableViewController> vc) {
-        return [vc searchableViewControllerDocuments];
-    }] flattenedArray];
+    return [[self tabViewControllerTuples] flatMapWithBlock:^NSArray *(NSArray *tuple) {
+        NSTabViewItem *item = tuple[0];
+        id<iTermSearchableViewController> controller = tuple[1];
+        NSArray *documents = [controller searchableViewControllerDocuments];
+        for (iTermPreferencesSearchDocument *document in documents) {
+            document.pathComponents = [@[item.label] arrayByAddingObjectsFromArray:document.pathComponents];
+        }
+        return documents;
+    }];
 }
 
 - (void)revealControl:(NSControl *)control {

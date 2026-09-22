@@ -32,6 +32,8 @@
         _docid = @(nextDocId++);
         _displayName = [NSLocalizedString(displayName, @"Settings search result") copy];
         _identifier = [identifier copy];
+        _pathComponents = @[];
+        _scope = @"";
         NSMutableOrderedSet<NSString *> *phrases = [NSMutableOrderedSet orderedSetWithArray:keywordPhrases ?: @[]];
         [phrases addObject:displayName];
         [phrases addObject:identifier];
@@ -48,7 +50,7 @@
 }
 
 - (NSArray<NSString *> *)indexablePhrases {
-    return [_keywordPhrases ?: @[] arrayByAddingObject:_displayName];
+    return [[_keywordPhrases ?: @[] arrayByAddingObject:_displayName] arrayByAddingObjectsFromArray:self.pathComponents];
 }
 
 - (NSArray<NSString *> *)allKeywords {
@@ -82,7 +84,14 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    return self;
+    iTermPreferencesSearchDocument *copy = [iTermPreferencesSearchDocument documentWithDisplayName:self.displayName
+        identifier:self.identifier keywordPhrases:self.keywordPhrases];
+    copy->_docid = _docid;
+    copy.ownerIdentifier = self.ownerIdentifier;
+    copy.queryIndependentScore = self.queryIndependentScore;
+    copy.pathComponents = self.pathComponents;
+    copy.scope = self.scope;
+    return copy;
 }
 
 // Phrases are arrays of normalized tokens.
@@ -279,8 +288,14 @@
 
 - (NSArray<iTermPreferencesSearchDocument *> *)documentsMatchingQuery:(NSString *)query {
     NSString *trimmedQuery = [query stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (trimmedQuery.length == 0) {
+        return @[];
+    }
     iTermTuple<NSArray<NSString *> *, NSString *> *tuple = [trimmedQuery queryBySplittingLiteralPhrases];
     NSArray<NSString *> *rawTokens = [trimmedQuery it_normalizedTokens];
+    if (rawTokens.count == 0) {
+        return @[];
+    }
     NSArray<NSString *> *stemmedTokens = [rawTokens mapWithBlock:^id _Nullable(NSString *token) {
         return token.it_stem;
     }];
@@ -295,7 +310,7 @@
         return [[iTermPreferencesSearchCursor alloc] initWithCursors:@[tuple.firstObject, tuple.secondObject]];
     }];
 
-    NSSet<NSNumber *> *docIDs = [self intersectCursorDocIDs:cursors];
+    NSSet<NSNumber *> *docIDs = [self commonDocIDsAmongCursors:cursors];
     // Word boundaries in Chinese depend on the surrounding phrase: a short
     // query such as 字体 need not be a prefix of the indexed word. Supplement
     // the token index with literal substring matches for non-ASCII queries.
@@ -316,7 +331,7 @@
     if (tuple.firstObject.count) {
         docIDs = [self documentsWithLiteralPhrases:tuple.firstObject fromDocIDs:docIDs];
     }
-    return [self documentsSortedByDisplayNameWithDocIDs:docIDs];
+    return [self documentsSortedByRelevanceWithDocIDs:docIDs query:trimmedQuery];
 }
 
 - (NSSet<NSNumber *> *)documentsWithLiteralPhrases:(NSArray<NSString *> *)phrases fromDocIDs:(NSSet<NSNumber *> *)docIDs {
@@ -350,25 +365,47 @@
     return cursors;
 }
 
-- (NSSet<NSNumber *> *)intersectCursorDocIDs:(NSArray<iTermPreferencesSearchCursor *> *)cursors {
-    NSSet<NSNumber *> *docids = [self commonDocIDsAmongCursors:cursors];
-    NSDictionary<NSString *, NSArray<NSNumber *> *> *identifierToDocids = [docids.allObjects classifyWithBlock:^id(NSNumber *docid) {
-        return self->_docs[docid].identifier;
-    }];
-    docids = [NSSet setWithArray:[identifierToDocids.allValues mapWithBlock:^id(NSArray<NSNumber *> *docids) {
-        return docids.firstObject;
-    }]];
-    return docids;
+- (NSInteger)relevanceOfDocument:(iTermPreferencesSearchDocument *)document query:(NSString *)query {
+    const NSStringCompareOptions options = NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch;
+    if ([document.identifier compare:query options:options] == NSOrderedSame) {
+        return 4;
+    }
+    if ([document.displayName compare:query options:options] == NSOrderedSame) {
+        return 3;
+    }
+    NSRange range = [document.displayName rangeOfString:query options:options];
+    if (range.location == 0) {
+        return 2;
+    }
+    return range.location == NSNotFound ? 0 : 1;
 }
 
-- (NSArray<iTermPreferencesSearchDocument *> *)documentsSortedByDisplayNameWithDocIDs:(NSSet<NSNumber *> *)docids {
-    return [[docids.allObjects mapWithBlock:^id(NSNumber *docid) {
+- (NSArray<iTermPreferencesSearchDocument *> *)documentsSortedByRelevanceWithDocIDs:(NSSet<NSNumber *> *)docids
+                                                                             query:(NSString *)query {
+    NSArray *sorted = [[docids.allObjects mapWithBlock:^id(NSNumber *docid) {
         return self->_docs[docid];
-    }] sortedArrayUsingComparator:^NSComparisonResult(iTermPreferencesSearchDocument * _Nonnull doc1, iTermPreferencesSearchDocument * _Nonnull doc2) {
+    }] sortedArrayUsingComparator:^NSComparisonResult(iTermPreferencesSearchDocument *doc1, iTermPreferencesSearchDocument *doc2) {
+        NSInteger rank1 = [self relevanceOfDocument:doc1 query:query];
+        NSInteger rank2 = [self relevanceOfDocument:doc2 query:query];
+        if (rank1 != rank2) {
+            return [@(rank2) compare:@(rank1)];
+        }
         if (doc1.queryIndependentScore != doc2.queryIndependentScore) {
             return [@(doc2.queryIndependentScore) compare:@(doc1.queryIndependentScore)];
         }
-        return [doc1.displayName localizedCaseInsensitiveCompare:doc2.displayName];
+        NSComparisonResult result = [doc1.displayName localizedCaseInsensitiveCompare:doc2.displayName];
+        return result == NSOrderedSame ? [doc1.docid compare:doc2.docid] : result;
+    }];
+    // A global preference and a profile preference can share a storage key.
+    // Deduplicate only within an owner, after ranking and substring matching.
+    NSMutableSet *seen = [NSMutableSet set];
+    return [sorted filteredArrayUsingBlock:^BOOL(iTermPreferencesSearchDocument *document) {
+        NSArray *identity = @[document.ownerIdentifier ?: @"", document.identifier];
+        if ([seen containsObject:identity]) {
+            return NO;
+        }
+        [seen addObject:identity];
+        return YES;
     }];
 }
 

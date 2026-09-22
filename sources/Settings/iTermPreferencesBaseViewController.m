@@ -1324,6 +1324,13 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
 }
 
 - (NSArray<iTermPreferencesSearchDocument *> *)searchableViewControllerDocuments {
+    NSMutableDictionary *paths = [NSMutableDictionary dictionary];
+    for (iTermSetting *setting in [self allSettingsWithPathComponents:@[]]) {
+        paths[setting.info.key] = setting.pathComponents;
+    }
+    for (iTermPreferencesSearchDocument *document in _docs) {
+        document.pathComponents = paths[document.identifier] ?: @[];
+    }
     return _docs;
 }
 

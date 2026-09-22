@@ -47,7 +47,8 @@ class SettingsLocalizationTests(unittest.TestCase):
                      "iTermActionsEditingViewController.m", "iTermSnippetsEditingViewController.m",
                      "SpecialExceptionsWindowController.swift", "SettingsSidebarView.swift",
                      "ProfilesGeneralPreferencesViewController.m", "SettingsPage.swift",
-                     "SettingsProfilesView.swift", "GeneralPreferencesViewController.m"):
+                     "SettingsProfilesView.swift", "GeneralPreferencesViewController.m",
+                     "iTermPreferencesSearchEngineResultsWindowController.m"):
             source = (ROOT / "sources/Settings" / name).read_text()
             for key in re.findall(r'NSLocalizedString\(@?"((?:[^"\\]|\\.)*)"', source):
                 key = json.loads('"' + key + '"')

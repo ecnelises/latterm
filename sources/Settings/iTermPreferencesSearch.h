@@ -16,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSNumber *docid;
 @property (nonatomic, strong) NSString *ownerIdentifier;
 @property (nonatomic) double queryIndependentScore;
+// Assigned before indexing, from the same navigation tree used by Settings.
+@property (nonatomic, copy) NSArray<NSString *> *pathComponents;
+@property (nonatomic, copy) NSString *scope;
 + (instancetype)documentWithDisplayName:(NSString *)displayName
                              identifier:(NSString *)identifier
                          keywordPhrases:(NSArray<NSString *> *)keywordPhrases;

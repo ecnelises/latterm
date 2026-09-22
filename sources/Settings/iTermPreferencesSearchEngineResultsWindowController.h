@@ -20,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) id<iTermPreferencesSearchEngineResultsWindowControllerDelegate> delegate;
 @property (nullable, nonatomic, readonly) iTermPreferencesSearchDocument *selectedDocument;
 
+// Screen coordinates. Prefer below the field, falling back above near the screen edge.
+- (void)positionRelativeToSearchRect:(NSRect)searchRect visibleFrame:(NSRect)visibleFrame;
+
 - (void)moveDown:(nullable id)sender;
 - (void)moveUp:(nullable id)sender;
 - (void)insertNewline:(nullable id)sender;

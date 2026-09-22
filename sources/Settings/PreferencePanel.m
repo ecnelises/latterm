@@ -885,10 +885,12 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)updateSERPOrigin {
-    NSPoint point = [self.window convertPointToScreen:[self.searchField convertPoint:NSMakePoint(0, NSHeight(self.searchField.bounds))
-                                                                              toView:nil]];
-    point.y -= 1;
-    [_serpWindowController.window setFrameTopLeftPoint:point];
+    if (!_serpWindowController) {
+        return;
+    }
+    NSRect searchRect = [self.window convertRectToScreen:[self.searchField convertRect:self.searchField.bounds toView:nil]];
+    NSRect visible = (self.window.screen ?: NSScreen.mainScreen).visibleFrame;
+    [_serpWindowController positionRelativeToSearchRect:searchRect visibleFrame:visible];
 }
 
 #pragma mark - Handle calls to current first responder
@@ -1076,12 +1078,12 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (void)controlTextDidChange:(NSNotification *)obj {
     NSSearchField *searchField = self.searchField;
-    if (searchField.stringValue.length == 0) {
+    if ([searchField.stringValue stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].length == 0) {
         [self hideScrimAndSERP];
-    } else {
-        [self showScrimAndSERP];
+        return;
     }
-    _serpWindowController.documents = [self searchResults];
+    [self showScrimAndSERP];
+    _scrim.cutoutView = nil;
 }
 
 - (NSArray<id<iTermSearchableViewController>> *)searchableViewControllers {
@@ -1100,8 +1102,15 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
     gSearchEngine = [[iTermPreferencesSearchEngine alloc] init];
 
-    for (id<iTermSearchableViewController> viewController in self.searchableViewControllers) {
-        for (iTermPreferencesSearchDocument *doc in [viewController searchableViewControllerDocuments]) {
+    for (iTermSettingsPage *page in _settingsPages) {
+        if (![page.controller conformsToProtocol:@protocol(iTermSearchableViewController)]) {
+            continue;
+        }
+        id<iTermSearchableViewController> controller = (id<iTermSearchableViewController>)page.controller;
+        for (iTermPreferencesSearchDocument *source in [controller searchableViewControllerDocuments]) {
+            iTermPreferencesSearchDocument *doc = [source copy];
+            doc.pathComponents = [@[page.title] arrayByAddingObjectsFromArray:doc.pathComponents];
+            doc.scope = page.scope;
             [gSearchEngine addDocumentToIndex:doc];
         }
     }
@@ -1117,7 +1126,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)controlTextDidBeginEditing:(NSNotification *)obj {
-    [self showScrimAndSERP];
+    [self controlTextDidChange:obj];
 }
 
 - (void)hideScrimAndSERP {
@@ -1128,17 +1137,20 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)showScrimAndSERP {
-    [self showScrimIfNeeded];
-    if (_serpWindowController) {
+    if ([self.searchField.stringValue stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].length == 0) {
+        [self hideScrimAndSERP];
         return;
     }
-    [_serpWindowController close];
-    _serpWindowController = [[iTermPreferencesSearchEngineResultsWindowController alloc] initWithWindowNibName:@"iTermPreferencesSearchEngineResultsWindowController"];
-    _serpWindowController.delegate = self;
-    [self updateSERPOrigin];
-    [self.window addChildWindow:_serpWindowController.window
-                        ordered:NSWindowAbove];
+    [self showScrimIfNeeded];
+    if (!_serpWindowController) {
+        _serpWindowController = [[iTermPreferencesSearchEngineResultsWindowController alloc] initWithWindowNibName:@"iTermPreferencesSearchEngineResultsWindowController"];
+        _serpWindowController.delegate = self;
+    }
     _serpWindowController.documents = [self searchResults];
+    [self updateSERPOrigin];
+    if (!_serpWindowController.window.parentWindow) {
+        [self.window addChildWindow:_serpWindowController.window ordered:NSWindowAbove];
+    }
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector {
@@ -1147,6 +1159,10 @@ andEditComponentWithIdentifier:(NSString *)identifier
         return YES;
     } else if (commandSelector == @selector(moveUp:)) {
         [_serpWindowController moveUp:nil];
+        return YES;
+    } else if (commandSelector == @selector(cancelOperation:)) {
+        [self hideScrimAndSERP];
+        [self.window makeFirstResponder:nil];
         return YES;
     } else if (commandSelector == @selector(insertNewline:)) {
         [_serpWindowController insertNewline:nil];

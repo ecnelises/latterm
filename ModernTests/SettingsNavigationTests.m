@@ -4,6 +4,7 @@
 #import "ProfilePreferencesViewController.h"
 #import "iTermSizeRememberingView.h"
 #import "iTermPreferencesSearch.h"
+#import "iTermPreferencesSearchEngineResultsWindowController.h"
 #import "iTermUserDefaults.h"
 #import "iTermAdvancedSettingsViewController.h"
 #import "iTermAdvancedSettingsModel.h"
@@ -11,6 +12,7 @@
 #import "iTermEditSnippetWindowController.h"
 #import "iTermEditKeyActionWindowController.h"
 #import "iTermActionsModel.h"
+#import "iTermDynamicProfileManager.h"
 
 @interface PreferencePanel (NavigationTests)
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)item animated:(BOOL)animated;
@@ -35,6 +37,10 @@
 @interface iTermEditKeyActionWindowController (SettingsTests)
 - (BOOL)shouldEnableOK;
 - (void)ok:(id)sender;
+@end
+
+@interface iTermDynamicProfileManager (SettingsTests)
+- (void)writeModifiedProfile:(Profile *)profile toFile:(NSString *)filename;
 @end
 
 @interface SettingsKeyMappingDelegate : NSObject <iTermKeyMappingViewControllerDelegate>
@@ -69,6 +75,15 @@
 @implementation SettingsDropdownNibOwner
 @end
 
+@interface SettingsSearchDelegate : NSObject<iTermPreferencesSearchEngineResultsWindowControllerDelegate>
+@property(nonatomic, strong) iTermPreferencesSearchDocument *previewed;
+@property(nonatomic, strong) iTermPreferencesSearchDocument *activated;
+@end
+@implementation SettingsSearchDelegate
+- (void)preferencesSearchEngineResultsDidSelectDocument:(iTermPreferencesSearchDocument *)document { self.previewed = document; }
+- (void)preferencesSearchEngineResultsDidActivateDocument:(iTermPreferencesSearchDocument *)document { self.activated = document; }
+@end
+
 @interface SettingsNavigationTests : XCTestCase
 @end
 @implementation SettingsNavigationTests
@@ -81,6 +96,61 @@
     }
     XCTFail(@"Missing settings category table");
     return nil;
+}
+
+- (void)testPageHeadingsFitNarrowAndWideWindowsInBothAppearances {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    NSRect originalFrame = window.frame;
+    NSAppearance *originalAppearance = window.appearance;
+    NSTabView *tabs = [panel valueForKey:@"_tabView"];
+    NSTabViewItem *originalSelection = tabs.selectedTabViewItem;
+    NSArray *pages = [panel valueForKey:@"_settingsPages"];
+    @try {
+        for (NSString *appearance in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
+            window.appearance = [NSAppearance appearanceNamed:appearance];
+            for (NSNumber *width in @[@820, @1280]) {
+                [window setContentSize:NSMakeSize(width.doubleValue, 780)];
+                for (id page in pages) {
+                    [tabs selectTabViewItem:[page valueForKey:@"tabViewItem"]];
+                    [window.contentView layoutSubtreeIfNeeded];
+                    NSView *header = [panel valueForKey:@"_settingsHeader"];
+                    NSTextField *title = header.subviews[0];
+                    NSTextField *scope = header.subviews[2];
+                    XCTAssertGreaterThanOrEqual(NSWidth(title.frame), title.intrinsicContentSize.width, @"%@", title.stringValue);
+                    XCTAssertGreaterThanOrEqual(NSWidth(scope.frame), scope.intrinsicContentSize.width + 8, @"%@", scope.stringValue);
+                    XCTAssertFalse(NSIntersectsRect(title.frame, scope.frame));
+                    XCTAssertTrue(NSContainsRect(header.bounds, title.frame));
+                    XCTAssertTrue(NSContainsRect(header.bounds, scope.frame));
+                    if (page == pages[0] || page == pages[2]) {
+                        // Include the theme frame so AppKit draws the window backing
+                        // as well as the transparent content and vibrant sidebar.
+                        [window displayIfNeeded];
+                        NSView *content = window.contentView.superview;
+                        [window.effectiveAppearance performAsCurrentDrawingAppearance:^{
+                            NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc]
+                                initWithBitmapDataPlanes:NULL pixelsWide:NSWidth(content.bounds) * 2
+                                pixelsHigh:NSHeight(content.bounds) * 2 bitsPerSample:8 samplesPerPixel:4
+                                hasAlpha:YES isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace
+                                bytesPerRow:0 bitsPerPixel:0];
+                            bitmap.size = content.bounds.size;
+                            [content cacheDisplayInRect:content.bounds toBitmapImageRep:bitmap];
+                            NSImage *image = [[NSImage alloc] initWithCGImage:bitmap.CGImage size:content.bounds.size];
+                            XCTAttachment *attachment = [XCTAttachment attachmentWithImage:image];
+                            attachment.name = [NSString stringWithFormat:@"Settings %@ %@ %@", title.stringValue, width, appearance];
+                            attachment.lifetime = XCTAttachmentLifetimeKeepAlways;
+                            [self addAttachment:attachment];
+                        }];
+                    }
+                }
+            }
+        }
+    } @finally {
+        window.appearance = originalAppearance;
+        [tabs selectTabViewItem:originalSelection];
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
 }
 
 - (void)verifyProfilePagesFitInWindow:(PreferencePanel *)panel {
@@ -350,6 +420,186 @@
         if (option.state != originalState) {
             [NSApp sendAction:option.action to:option.target from:option];
         }
+        [panel close];
+    }
+}
+
+- (void)testDynamicProfileWriteSkipsMissingOrReadOnlyProfiles {
+    iTermDynamicProfileManager *manager = [iTermDynamicProfileManager sharedInstance];
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:NSUUID.UUID.UUIDString];
+    NSData *original = [@"original contents" dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertTrue([original writeToFile:path atomically:YES]);
+    @try {
+        [manager writeModifiedProfile:nil toFile:path];
+        [manager writeModifiedProfile:@{KEY_GUID: @"gone"} toFile:path];
+        XCTAssertEqualObjects([NSData dataWithContentsOfFile:path], original);
+    } @finally {
+        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    }
+}
+
+- (void)testMainScreenPickerNeverSelectsSeparator {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    id profiles = [panel valueForKey:@"_profilesViewController"];
+    id controller = [profiles valueForKey:@"_windowViewController"];
+    NSPopUpButton *screen = [controller valueForKey:@"_screen"];
+    NSInteger original = screen.selectedTag;
+    @try {
+        XCTAssertTrue([screen selectItemWithTag:0]);
+        XCTAssertFalse(screen.selectedItem.separatorItem);
+        XCTAssertGreaterThan(screen.title.length, 0);
+    } @finally {
+        [screen selectItemWithTag:original];
+        [panel close];
+    }
+}
+
+- (void)testSearchResultsShowEmptyStateAndReturnActivatesFirstMatch {
+    iTermPreferencesSearchEngineResultsWindowController *results = [[iTermPreferencesSearchEngineResultsWindowController alloc]
+        initWithWindowNibName:@"iTermPreferencesSearchEngineResultsWindowController"];
+    SettingsSearchDelegate *delegate = [[SettingsSearchDelegate alloc] init];
+    results.delegate = delegate;
+    (void)results.window;
+    NSTableView *table = [results valueForKey:@"_tableView"];
+    @try {
+        results.documents = @[];
+        XCTAssertEqual(results.window.alphaValue, 1);
+        XCTAssertEqual(table.numberOfRows, 1);
+        XCTAssertFalse([table.delegate tableView:table shouldSelectRow:0]);
+        [results insertNewline:nil];
+        XCTAssertNil(delegate.activated);
+        iTermPreferencesSearchDocument *document = [iTermPreferencesSearchDocument
+            documentWithDisplayName:@"Font" identifier:@"Font" keywordPhrases:@[]];
+        document.pathComponents = @[@"Profiles", @"Text"];
+        document.scope = @"Selected profile";
+        results.documents = @[document];
+        NSTableCellView *cell = [table viewAtColumn:0 row:0 makeIfNecessary:YES];
+        XCTAssertTrue([cell.toolTip containsString:@"Profiles › Text"]);
+        for (NSView *label in cell.subviews) {
+            XCTAssertTrue(NSContainsRect(cell.bounds, label.frame));
+        }
+        [results.window.contentView layoutSubtreeIfNeeded];
+        NSView *content = results.window.contentView;
+        NSBitmapImageRep *bitmap = [content bitmapImageRepForCachingDisplayInRect:content.bounds];
+        [content cacheDisplayInRect:content.bounds toBitmapImageRep:bitmap];
+        NSImage *image = [[NSImage alloc] initWithCGImage:bitmap.CGImage size:content.bounds.size];
+        XCTAttachment *attachment = [XCTAttachment attachmentWithImage:image];
+        attachment.name = @"Settings search result layout";
+        attachment.lifetime = XCTAttachmentLifetimeKeepAlways;
+        [self addAttachment:attachment];
+        [results insertNewline:nil];
+        XCTAssertEqual(delegate.previewed, document);
+        XCTAssertEqual(delegate.activated, document);
+        results.documents = @[];
+        XCTAssertNil(results.selectedDocument);
+        [results moveDown:nil];
+        XCTAssertNil(results.selectedDocument);
+    } @finally {
+        [results close];
+    }
+}
+
+- (void)testSearchRanksTitlesAndPreservesDifferentScopes {
+    iTermPreferencesSearchEngine *engine = [[iTermPreferencesSearchEngine alloc] init];
+    iTermPreferencesSearchDocument *keyword = [iTermPreferencesSearchDocument
+        documentWithDisplayName:@"A rendering option" identifier:@"Other" keywordPhrases:@[@"font"]];
+    iTermPreferencesSearchDocument *app = [iTermPreferencesSearchDocument
+        documentWithDisplayName:@"Font" identifier:@"SharedFont" keywordPhrases:@[]];
+    app.ownerIdentifier = @"App";
+    iTermPreferencesSearchDocument *profile = [iTermPreferencesSearchDocument
+        documentWithDisplayName:@"Font" identifier:@"SharedFont" keywordPhrases:@[]];
+    profile.ownerIdentifier = @"Profile";
+    profile.pathComponents = @[@"Profiles", @"Text"];
+    iTermPreferencesSearchDocument *duplicate = [iTermPreferencesSearchDocument
+        documentWithDisplayName:@"Font" identifier:@"SharedFont" keywordPhrases:@[]];
+    duplicate.ownerIdentifier = profile.ownerIdentifier;
+    duplicate.pathComponents = profile.pathComponents;
+    XCTAssertNotEqualObjects(duplicate.docid, profile.docid);
+    for (iTermPreferencesSearchDocument *document in @[keyword, app, profile, duplicate]) {
+        [engine addDocumentToIndex:document];
+    }
+    NSArray *results = [engine documentsMatchingQuery:@"font"];
+    XCTAssertEqual(results.count, 3);
+    XCTAssertEqualObjects([[results valueForKey:@"ownerIdentifier"] firstObject], @"App");
+    XCTAssertEqual(results.lastObject, keyword);
+    XCTAssertEqualObjects([engine documentsMatchingQuery:@"profiles font"], (@[profile]));
+    XCTAssertEqual([engine documentsMatchingQuery:@"  \n"].count, 0);
+    XCTAssertEqual([engine documentsMatchingQuery:@"\"\""].count, 0);
+}
+
+- (void)testSearchIndexSnapshotKeepsItsPathWhenControllerMetadataChanges {
+    iTermPreferencesSearchDocument *source = [iTermPreferencesSearchDocument
+        documentWithDisplayName:@"Font" identifier:@"Font" keywordPhrases:@[]];
+    source.pathComponents = @[@"Profiles", @"Text"];
+    iTermPreferencesSearchDocument *snapshot = [source copy];
+    XCTAssertEqualObjects(snapshot, source);
+    XCTAssertFalse(snapshot == source);
+    iTermPreferencesSearchEngine *engine = [[iTermPreferencesSearchEngine alloc] init];
+    [engine addDocumentToIndex:snapshot];
+    source.pathComponents = @[@"Other"];
+    XCTAssertEqualObjects(snapshot.pathComponents, (@[@"Profiles", @"Text"]));
+    XCTAssertEqualObjects([engine documentsMatchingQuery:@"profiles font"], (@[snapshot]));
+    XCTAssertEqual([engine documentsMatchingQuery:@"other font"].count, 0);
+}
+
+- (void)testSearchResultsFitScreenEdgesAndRecoverTheirHeightAndScrollPosition {
+    iTermPreferencesSearchEngineResultsWindowController *results = [[iTermPreferencesSearchEngineResultsWindowController alloc]
+        initWithWindowNibName:@"iTermPreferencesSearchEngineResultsWindowController"];
+    iTermPreferencesSearchDocument *document = [iTermPreferencesSearchDocument
+        documentWithDisplayName:@"Font" identifier:@"Font" keywordPhrases:@[]];
+    NSMutableArray *documents = [NSMutableArray array];
+    for (NSInteger i = 0; i < 40; i++) {
+        [documents addObject:document];
+    }
+    @try {
+        // Exercise loading via the data setter, without loading the window first.
+        results.documents = documents;
+        const NSRect smallScreen = NSMakeRect(-700, 100, 600, 400);
+        const NSRect middle = NSMakeRect(-160, 300, 200, 28);
+        [results positionRelativeToSearchRect:middle visibleFrame:smallScreen];
+        XCTAssertTrue(NSContainsRect(smallScreen, results.window.frame));
+        XCTAssertLessThan(NSMaxY(results.window.frame), NSMinY(middle));
+        const CGFloat shortHeight = NSHeight(results.window.frame);
+
+        const NSRect largeScreen = NSMakeRect(-700, 100, 1200, 900);
+        const NSRect high = NSMakeRect(-650, 900, 200, 28);
+        [results positionRelativeToSearchRect:high visibleFrame:largeScreen];
+        XCTAssertGreaterThan(NSHeight(results.window.frame), shortHeight);
+        XCTAssertTrue(NSContainsRect(largeScreen, results.window.frame));
+
+        const NSRect low = NSMakeRect(-160, 120, 200, 28);
+        [results positionRelativeToSearchRect:low visibleFrame:smallScreen];
+        XCTAssertGreaterThan(NSMinY(results.window.frame), NSMaxY(low));
+        XCTAssertTrue(NSContainsRect(smallScreen, results.window.frame));
+
+        [results.window.contentView layoutSubtreeIfNeeded];
+        NSTableView *table = [results valueForKey:@"_tableView"];
+        [table scrollRowToVisible:39];
+        XCTAssertFalse(NSIntersectsRect(table.visibleRect, [table rectOfRow:0]));
+        results.documents = documents;
+        XCTAssertTrue(NSIntersectsRect(table.visibleRect, [table rectOfRow:0]));
+    } @finally {
+        [results close];
+    }
+}
+
+- (void)testSearchPathsFollowRegroupedNavigation {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    NSSearchField *field = [panel valueForKey:@"searchField"];
+    NSString *original = field.stringValue;
+    @try {
+        field.stringValue = @"PromptOnQuit";
+        NSArray<iTermPreferencesSearchDocument *> *results = [panel searchResults];
+        iTermPreferencesSearchDocument *document = results.firstObject;
+        XCTAssertEqualObjects(document.identifier, @"PromptOnQuit");
+        XCTAssertTrue([document.pathComponents containsObject:NSLocalizedString(@"Startup & Exit", @"")]);
+        XCTAssertEqualObjects(document.scope, NSLocalizedString(@"Application-wide", @""));
+        field.stringValue = [NSString stringWithFormat:@"%@ PromptOnQuit", document.pathComponents.firstObject];
+        XCTAssertTrue([[panel searchResults] containsObject:document]);
+    } @finally {
+        field.stringValue = original;
         [panel close];
     }
 }
@@ -709,8 +959,11 @@
     XCTAssertTrue([dropdown isKindOfClass:dropdownClass]);
     XCTAssertTrue([dropdown selectItemWithTag:KEY_ACTION_IGNORE]);
     XCTAssertEqual(dropdown.selectedTag, KEY_ACTION_IGNORE);
+    XCTAssertNotNil(dropdown.selectedItem);
+    XCTAssertEqualObjects(dropdown.selectedItem.title, dropdown.title);
     XCTAssertFalse([dropdown selectItemWithTag:NSIntegerMax]);
     XCTAssertEqual(dropdown.selectedTag, -1);
+    XCTAssertNil(dropdown.selectedItem);
     NSArray *nibObjects = nil;
     SettingsDropdownNibOwner *owner = [[SettingsDropdownNibOwner alloc] initWithNibName:nil bundle:nil];
     XCTAssertTrue([resources loadNibNamed:@"SearchableComboView" owner:owner topLevelObjects:&nibObjects]);

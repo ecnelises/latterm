@@ -793,6 +793,10 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
             iTermPreferencesSearchDocument *doc = [iTermPreferencesSearchDocument
                 documentWithDisplayName:title identifier:dict[kAdvancedSettingIdentifier]
                 keywordPhrases:@[[self.class searchTextForSetting:dict]]];
+            if (separator.location != NSNotFound) {
+                NSString *category = [description substringToIndex:separator.location];
+                doc.pathComponents = @[NSLocalizedString(category, @"Advanced setting category")];
+            }
             doc.queryIndependentScore = -1;
             doc.ownerIdentifier = self.documentOwnerIdentifier;
             return doc;

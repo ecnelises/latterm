@@ -17,14 +17,14 @@ final class SettingsTabView: NSTabView {
     }
 
     private func sectionFrames() -> [NSRect] {
-        let available = max(1, bounds.width - 24)
-        var x: CGFloat = 12
+        let available = max(1, bounds.width - 32)
+        var x: CGFloat = 16
         var y: CGFloat = 12
         return tabViewItems.map { item in
             let titleWidth = (item.label as NSString).size(withAttributes: [.font: sectionFont]).width
             let width = min(available, ceil(titleWidth) + 24)
-            if x > 12 && x + width > bounds.width - 12 {
-                x = 12
+            if x > 16 && x + width > bounds.width - 16 {
+                x = 16
                 y += 36
             }
             let frame = NSRect(x: x, y: isFlipped ? y : bounds.height - y - 30, width: width, height: 30)

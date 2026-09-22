@@ -871,3 +871,7 @@
 "Closing & Confirmation" = "关闭与确认";
 
 "Startup & Exit" = "启动与退出";
+
+"Settings search results" = "设置搜索结果";
+"No matching settings" = "未找到匹配的设置";
+"Try a shorter word or a different setting name." = "试试更短的关键词，或换一个设置名称。";

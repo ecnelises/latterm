@@ -9,6 +9,29 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Refine Settings headings, scope badges, section
+  alignment, and card spacing in light and dark
+  appearances.
+- Show Settings search paths and setting scopes.
+- Rank matching setting names ahead of keywords.
+- Search by category and keep app and profile
+  settings with the same key separate.
+- Add an empty search state and Return/Escape
+  navigation; fit results to the visible screen.
+- Preserve menu actions when editing shortcuts.
+- Refresh edited actions and fix Main Screen
+  appearing blank in profile settings.
+- Avoid crashes editing changed dynamic profiles.
+- Handle empty and malformed tmux layouts safely.
+- Restore extended key reporting and older RTL
+  scrollback across application restarts.
+- Configure Metal drawable timeouts on the main
+  thread to avoid macOS 26 crashes.
+- Keep refined terminal filters on the new query.
+- Avoid profile reloads for tmux title changes.
+- Fix emoji hyperlinks and missing-directory
+  notices that could crash the terminal.
+- Omit typed key codes from retrospective logs.
 - Use Latterm names in Finder services, file
   types, system permission prompts, and API UI.
 - Localize Finder services in Simplified Chinese.

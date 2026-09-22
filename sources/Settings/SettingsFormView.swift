@@ -12,9 +12,9 @@ final class SettingsFormView: NSView {
         init(title: String, body: NSView) {
             self.body = body
             heading = NSTextField(labelWithString: title)
-            preferredHeight = body.frame.height + 56
+            preferredHeight = body.frame.height + 60
             super.init(frame: .zero)
-            heading.font = .systemFont(ofSize: 12, weight: .semibold)
+            heading.font = .systemFont(ofSize: 13, weight: .semibold)
             addSubview(heading)
             addSubview(body)
         }
@@ -26,12 +26,13 @@ final class SettingsFormView: NSView {
         override func layout() {
             super.layout()
             heading.frame = NSRect(x: 16, y: bounds.height - 32, width: max(0, bounds.width - 32), height: 18)
-            body.frame = NSRect(x: 16, y: 12, width: max(0, bounds.width - 32), height: preferredHeight - 56)
+            body.frame = NSRect(x: 16, y: 16, width: max(0, bounds.width - 32), height: preferredHeight - 60)
         }
 
         override func draw(_ dirtyRect: NSRect) {
             let shape = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: 10, yRadius: 10)
-            NSColor.controlBackgroundColor.setFill()
+            let fill = NSColor.controlBackgroundColor.blended(withFraction: 0.025, of: .labelColor) ?? .controlBackgroundColor
+            fill.setFill()
             shape.fill()
             NSColor.separatorColor.withAlphaComponent(0.25).setStroke()
             shape.stroke()
