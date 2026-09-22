@@ -1025,7 +1025,10 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     [_screen addItemWithTitle:@"Screen with Cursor"];
     [[_screen lastItem] setTag:-2];
     NSArray<NSScreen *> *screens = [NSScreen screens];
-    [_screen.menu addItem:[NSMenuItem separatorItem]];
+    NSMenuItem *separator = [NSMenuItem separatorItem];
+    // Tag zero belongs to the main screen; selecting a separator hides its title.
+    separator.tag = -1000;
+    [_screen.menu addItem:separator];
     const int numScreens = [screens count];
     for (i = 0; i < numScreens; i++) {
         if (i == 0) {

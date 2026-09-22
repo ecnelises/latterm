@@ -15,6 +15,30 @@ import XCTest
 
 final class iTermSessionRestorationTests: XCTestCase {
 
+    func testTerminalRestoresModifierLevelWithoutOverwritingKittyFlags() {
+        let terminal = VT100Terminal()
+        var state = terminal.stateDictionary!
+        state["Send Modifiers"] = [-1, -1, -1, -1, 2]
+        state["Key Reporting Flags"] = 1
+        terminal.setStateFrom(state)
+        XCTAssertEqual(terminal.sendModifiers[4] as? Int, 2)
+        XCTAssertEqual(terminal.keyReportingFlags.rawValue, 1)
+        let restored = VT100Terminal()
+        restored.setStateFrom(terminal.stateDictionary)
+        XCTAssertEqual(restored.sendModifiers[4] as? Int, 2)
+        XCTAssertEqual(restored.keyReportingFlags.rawValue, 1)
+    }
+
+    func testTerminalPadsLegacyModifierState() {
+        let terminal = VT100Terminal()
+        var state = terminal.stateDictionary!
+        state["Send Modifiers"] = [1, 2]
+        terminal.setStateFrom(state)
+        XCTAssertEqual(terminal.sendModifiers.count, 5)
+        XCTAssertEqual(terminal.sendModifiers[0] as? Int, 1)
+        XCTAssertEqual(terminal.sendModifiers[4] as? Int, -1)
+    }
+
     // The reader fix: a node POD that nests an NSSet must survive the exact archive/unarchive
     // round trip the graph store uses (-[iTermEncoderGraphRecord data] to write,
     // it_unarchivedObjectOfBasicClasses to read). Before adding NSSet to the decode allowlist,
