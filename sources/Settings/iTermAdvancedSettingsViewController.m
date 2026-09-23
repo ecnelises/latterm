@@ -239,6 +239,7 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)awakeFromNib {
+    _tableView.columnAutoresizingStyle = NSTableViewUniformColumnAutoresizingStyle;
     [_tableView setFloatsGroupRows:YES];
     [_tableView setGridColor:[NSColor clearColor]];
     [_tableView setGridStyleMask:NSTableViewGridNone];

@@ -9,6 +9,16 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Align Settings titles and sections, use larger
+  titles, and remove page subtitles.
+- Narrow the default Settings window and keep
+  short settings forms aligned to the left.
+- Fit workspaces and expert settings within the
+  default window without horizontal scrolling.
+- Keep keyboard settings sections left aligned
+  when the Settings window is resized.
+- Keep Development data separate from Release
+  when launching through make.
 - Refine Settings headings, scope badges, section
   alignment, and card spacing in light and dark
   appearances.

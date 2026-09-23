@@ -597,8 +597,9 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     }
     self.window.contentMinSize = NSMakeSize(820, 560);
     NSRect visible = (self.window.screen ?: NSScreen.mainScreen).visibleFrame;
-    [self.window setContentSize:NSMakeSize(MIN(1280, visible.size.width - 40),
-                                           MIN(780, visible.size.height - 80))];
+    const NSSize preferredSize = _editCurrentSessionMode ? NSMakeSize(1280, 780) : NSMakeSize(1040, 720);
+    [self.window setContentSize:NSMakeSize(MIN(preferredSize.width, visible.size.width - 40),
+                                           MIN(preferredSize.height, visible.size.height - 80))];
     _settingsContent = [[iTermSettingsContentView alloc] initWithContent:_tabView];
     const CGFloat width = self.preferencePanelNavigationWidth;
     NSRect frame = self.window.contentView.bounds;
@@ -1312,6 +1313,11 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)preferencePanelSetContentSize:(NSSize)size {
+    if (!_editCurrentSessionMode) {
+        // Legacy panes remember their old wide NIB size, but resize cleanly
+        // at the page minimum. Keep horizontal scrolling for smaller windows.
+        size.width = MIN(size.width, iTermSettingsContentView.minimumPageWidth);
+    }
     [_settingsContent setMinimumContentSize:size];
 }
 

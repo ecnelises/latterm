@@ -32,7 +32,6 @@ enum SettingsCategory: Int {
 final class SettingsPage: NSObject {
     @objc let identifier: String
     @objc let title: String
-    @objc let subtitle: String
     @objc let image: NSImage?
     @objc let tabViewItem: NSTabViewItem
     @objc weak var controller: NSViewController?
@@ -49,36 +48,27 @@ final class SettingsPage: NSObject {
         scope = category == .profiles ?
             NSLocalizedString("Selected profile", comment: "Settings scope") :
             NSLocalizedString("Application-wide", comment: "Settings scope")
-        let metadata: (identifier: String, title: String, subtitle: String, symbol: SFSymbol)
+        let metadata: (identifier: String, title: String, symbol: SFSymbol)
         switch category {
         case .general:
-            metadata = ("general", NSLocalizedString("App Behavior", comment: "Settings category"),
-                        NSLocalizedString("Startup, windows, and everyday behavior", comment: "Settings category description"), .gearshape)
+            metadata = ("general", NSLocalizedString("App Behavior", comment: "Settings category"), .gearshape)
         case .appearance:
-            metadata = ("appearance", NSLocalizedString("Appearance", comment: "Settings category"),
-                        NSLocalizedString("Tabs, panes, and window appearance", comment: "Settings category description"), .eye)
+            metadata = ("appearance", NSLocalizedString("Appearance", comment: "Settings category"), .eye)
         case .profiles:
-            metadata = ("profiles", NSLocalizedString("Profiles", comment: "Settings category"),
-                        NSLocalizedString("Appearance, shell, and behavior for each terminal profile", comment: "Settings category description"), .person)
+            metadata = ("profiles", NSLocalizedString("Profiles", comment: "Settings category"), .person)
         case .keys:
-            metadata = ("keys", NSLocalizedString("Keyboard", comment: "Settings category"),
-                        NSLocalizedString("Key bindings and keyboard behavior", comment: "Settings category description"), .keyboard)
+            metadata = ("keys", NSLocalizedString("Keyboard", comment: "Settings category"), .keyboard)
         case .arrangements:
-            metadata = ("arrangements", NSLocalizedString("Workspaces", comment: "Settings category"),
-                        NSLocalizedString("Save and restore your workspace", comment: "Settings category description"), .macwindowOnRectangle)
+            metadata = ("arrangements", NSLocalizedString("Workspaces", comment: "Settings category"), .macwindowOnRectangle)
         case .pointer:
-            metadata = ("pointer", NSLocalizedString("Mouse & Trackpad", comment: "Settings category"),
-                        NSLocalizedString("Mouse, trackpad, and selection gestures", comment: "Settings category description"), .cursorarrowMotionlines)
+            metadata = ("pointer", NSLocalizedString("Mouse & Trackpad", comment: "Settings category"), .cursorarrowMotionlines)
         case .shortcuts:
-            metadata = ("shortcuts", NSLocalizedString("Actions & Snippets", comment: "Settings category"),
-                        NSLocalizedString("Reusable actions and text snippets", comment: "Settings category description"), .boltCircle)
+            metadata = ("shortcuts", NSLocalizedString("Actions & Snippets", comment: "Settings category"), .boltCircle)
         case .advanced:
-            metadata = ("advanced", NSLocalizedString("Expert Settings", comment: "Settings category"),
-                        NSLocalizedString("Terminal compatibility, performance, and diagnostics", comment: "Settings category description"), .gearshape2)
+            metadata = ("advanced", NSLocalizedString("Expert Settings", comment: "Settings category"), .gearshape2)
         }
         identifier = metadata.identifier
         title = metadata.title
-        subtitle = metadata.subtitle
         image = NSImage(systemSymbolName: metadata.symbol.rawValue, accessibilityDescription: nil)
         self.tabViewItem = tabViewItem
         self.controller = controller

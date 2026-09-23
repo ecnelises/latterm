@@ -116,12 +116,11 @@
                     [window.contentView layoutSubtreeIfNeeded];
                     NSView *header = [panel valueForKey:@"_settingsHeader"];
                     NSTextField *title = header.subviews[0];
-                    NSTextField *scope = header.subviews[2];
+                    XCTAssertEqual(header.subviews.count, 1);
+                    XCTAssertEqualWithAccuracy(NSMinX(title.frame), 32, 1);
+                    XCTAssertGreaterThanOrEqual(title.font.pointSize, 28);
                     XCTAssertGreaterThanOrEqual(NSWidth(title.frame), title.intrinsicContentSize.width, @"%@", title.stringValue);
-                    XCTAssertGreaterThanOrEqual(NSWidth(scope.frame), scope.intrinsicContentSize.width + 8, @"%@", scope.stringValue);
-                    XCTAssertFalse(NSIntersectsRect(title.frame, scope.frame));
                     XCTAssertTrue(NSContainsRect(header.bounds, title.frame));
-                    XCTAssertTrue(NSContainsRect(header.bounds, scope.frame));
                     if (page == pages[0] || page == pages[2]) {
                         // Include the theme frame so AppKit draws the window backing
                         // as well as the transparent content and vibrant sidebar.
@@ -148,6 +147,122 @@
     } @finally {
         window.appearance = originalAppearance;
         [tabs selectTabViewItem:originalSelection];
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+}
+
+- (void)testAppBehaviorSectionsStayLeftAlignedInWideWindow {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    const NSRect originalFrame = window.frame;
+    id general = [panel valueForKey:@"_generalPreferencesViewController"];
+    NSTabView *tabs = [general valueForKey:@"_tabView"];
+    @try {
+        [panel showGlobalTabView:nil];
+        [window setContentSize:NSMakeSize(1280, 780)];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSButton *sectionButton = nil;
+        for (NSView *view in tabs.subviews) {
+            if ([view.accessibilityIdentifier isEqualToString:@"SettingsSection.0"]) {
+                sectionButton = (NSButton *)view;
+                break;
+            }
+        }
+        XCTAssertNotNil(sectionButton);
+        XCTAssertEqualWithAccuracy(NSMinX(sectionButton.frame), 32, 1);
+        NSScrollView *scroll = (NSScrollView *)tabs.selectedTabViewItem.view;
+        NSView *form = scroll.documentView.subviews.firstObject;
+        NSView *card = form.subviews.firstObject;
+        XCTAssertNotNil(card);
+        XCTAssertEqualWithAccuracy(NSMinX(card.frame), 16, 1);
+        XCTAssertLessThanOrEqual(NSWidth(card.frame), 720);
+        XCTAssertGreaterThan(NSWidth(form.frame) - NSMaxX(card.frame), 100);
+        NSTextField *sectionHeading = card.subviews.firstObject;
+        XCTAssertEqualWithAccuracy(NSMinX(card.frame) + NSMinX(sectionHeading.frame), 32, 1);
+    } @finally {
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+}
+
+- (void)testSettingsPagesFitDefaultWindowSize {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    const NSRect originalFrame = window.frame;
+    NSTabView *tabs = [panel valueForKey:@"_tabView"];
+    NSTabViewItem *originalSelection = tabs.selectedTabViewItem;
+    NSArray *pages = [panel valueForKey:@"_settingsPages"];
+    NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
+    @try {
+        [window setContentSize:NSMakeSize(1040, 720)];
+        for (id page in pages) {
+            [tabs selectTabViewItem:[page valueForKey:@"tabViewItem"]];
+            [window.contentView layoutSubtreeIfNeeded];
+            XCTAssertLessThanOrEqual(NSWidth(viewport.documentView.bounds),
+                                     NSWidth(viewport.contentView.bounds) + 1, @"%@", [page valueForKey:@"title"]);
+            NSString *identifier = [page valueForKey:@"identifier"];
+            if ([identifier isEqualToString:@"arrangements"]) {
+                NSView *preview = [[panel arrangements] valueForKey:@"previewView_"];
+                NSRect frame = [preview convertRect:preview.bounds toView:viewport.documentView];
+                XCTAssertLessThanOrEqual(NSMaxX(frame), NSWidth(viewport.documentView.bounds) + 1);
+            } else if ([identifier isEqualToString:@"advanced"]) {
+                NSTableView *table = [[panel valueForKey:@"_advancedViewController"] valueForKey:@"_tableView"];
+                CGFloat columnsWidth = 0;
+                for (NSTableColumn *column in table.tableColumns) {
+                    columnsWidth += column.width;
+                }
+                XCTAssertLessThanOrEqual(columnsWidth, NSWidth(table.bounds) + 1);
+            }
+            [window displayIfNeeded];
+            NSView *content = window.contentView.superview;
+            [window.effectiveAppearance performAsCurrentDrawingAppearance:^{
+                NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc]
+                    initWithBitmapDataPlanes:NULL pixelsWide:NSWidth(content.bounds) * 2
+                    pixelsHigh:NSHeight(content.bounds) * 2 bitsPerSample:8 samplesPerPixel:4
+                    hasAlpha:YES isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace
+                    bytesPerRow:0 bitsPerPixel:0];
+                bitmap.size = content.bounds.size;
+                [content cacheDisplayInRect:content.bounds toBitmapImageRep:bitmap];
+                NSImage *image = [[NSImage alloc] initWithCGImage:bitmap.CGImage size:content.bounds.size];
+                XCTAttachment *attachment = [XCTAttachment attachmentWithImage:image];
+                attachment.name = [NSString stringWithFormat:@"Default Settings %@", [page valueForKey:@"title"]];
+                attachment.lifetime = XCTAttachmentLifetimeKeepAlways;
+                [self addAttachment:attachment];
+            }];
+        }
+    } @finally {
+        [tabs selectTabViewItem:originalSelection];
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+}
+
+- (void)testKeyboardSectionsStayLeftAligned {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    const NSRect originalFrame = window.frame;
+    NSTabView *pages = [panel valueForKey:@"_tabView"];
+    NSTabViewItem *originalPage = pages.selectedTabViewItem;
+    NSTabView *sections = [[panel valueForKey:@"_keysViewController"] tabView];
+    NSTabViewItem *originalSection = sections.selectedTabViewItem;
+    @try {
+        [window setContentSize:NSMakeSize(1040, 720)];
+        [panel showKeyboardTabView:nil];
+        for (NSTabViewItem *section in sections.tabViewItems) {
+            [sections selectTabViewItem:section];
+            [window.contentView layoutSubtreeIfNeeded];
+            NSView *page = section.view;
+            NSView *group = page.subviews.firstObject;
+            XCTAssertNotNil(group, @"%@", section.label);
+            XCTAssertGreaterThanOrEqual(NSMinX(group.frame), 0, @"%@", section.label);
+            XCTAssertLessThanOrEqual(NSMinX(group.frame), 40, @"%@", section.label);
+            XCTAssertLessThanOrEqual(NSMaxX(group.frame), NSWidth(page.bounds) + 1,
+                                     @"%@", section.label);
+        }
+    } @finally {
+        [sections selectTabViewItem:originalSection];
+        [pages selectTabViewItem:originalPage];
         [window setFrame:originalFrame display:NO];
         [panel close];
     }
@@ -221,9 +336,8 @@
         XCTAssertGreaterThan([[pages[index] valueForKey:@"title"] length], 0);
         NSView *header = [panel valueForKey:@"_settingsHeader"];
         NSTextField *heading = (NSTextField *)header.subviews.firstObject;
-        NSTextField *description = (NSTextField *)header.subviews[1];
         XCTAssertEqualObjects(heading.stringValue, [pages[index] valueForKey:@"title"]);
-        XCTAssertEqualObjects(description.stringValue, [pages[index] valueForKey:@"subtitle"]);
+        XCTAssertEqual(header.subviews.count, 1);
         XCTAssertTrue(NSEqualRects(window.frame, stableFrame));
     }
     [panel showGlobalTabView:nil];

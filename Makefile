@@ -8,7 +8,8 @@ APPS := /Applications
 ITERM_CONF_PLIST = $(HOME)/Library/Preferences/com.googlecode.iterm2.plist
 # Local checkout of the iterm2-website repo, where built plugins are published.
 ITERM2_WEBSITE ?= $(HOME)/iterm2-website
-SUITE ?= $(notdir $(CURDIR))
+# Release uses Latterm as its Application Support directory. Keep dev data separate.
+SUITE ?= $(notdir $(CURDIR))-Development
 VERSION = $(shell cat version.txt)
 NAME=$(shell echo $(VERSION) | sed -e "s/\\./_/g")
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
@@ -21,6 +22,7 @@ XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme iTerm2
 # Build products live in a repo-local directory by default so make does not
 # depend on Xcode's derived settings or user cache directories.
 BUILD_DIR ?= $(CURDIR)/Build
+RUN_DIR = $(BUILD_DIR)/$(SUITE)
 DERIVED_DATA_DIR ?= $(BUILD_DIR)/DerivedData
 BUILD_HOME ?= $(BUILD_DIR)/Home
 _NEEDS_BUILD_DIR := $(if $(filter-out setup dangerous-setup _setup-main help doctor,$(MAKECMDGOALS)),yes,$(if $(MAKECMDGOALS),,yes))
@@ -281,10 +283,12 @@ companion-iphone: force
 	Companion/tools/run_on_iphone.sh $(COMPANION_DEVICE)
 
 open: Development
-	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite $(SUITE)
+	mkdir -p "$(RUN_DIR)"
+	cd "$(RUN_DIR)" && open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite "$(SUITE)"
 
 run: Development
-	"$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" -suite $(SUITE) & \
+	mkdir -p "$(RUN_DIR)"
+	( cd "$(RUN_DIR)" && exec "$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" -suite "$(SUITE)" ) & \
 	pid=$$!; \
 	trap 'kill $$pid 2>/dev/null' INT TERM; \
 	( sleep 1 && osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $$pid) to true" >/dev/null 2>&1 ) & \
@@ -309,7 +313,8 @@ run: Development
 # below to test real companion pairing.
 run-keychain: Development
 	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)"
-	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite $(SUITE)
+	mkdir -p "$(RUN_DIR)"
+	cd "$(RUN_DIR)" && open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite "$(SUITE)"
 
 # Reset the data-protection keychain between migration tests. Those items are
 # entitlement-gated, so the `security` CLI can't reach them; this signs the app (same as
@@ -318,17 +323,20 @@ run-keychain: Development
 purge-keychain-test: Development
 	tools/codesign_keychain_test.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)"
 	rm -f /tmp/iterm2-keychain-purge-result.txt
-	open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite $(SUITE) --iterm2-purge-data-protection-keychain-for-testing
+	mkdir -p "$(RUN_DIR)"
+	cd "$(RUN_DIR)" && open -W -n "$(BUILD_DIR)/Development/$(APP_BUNDLE)" --args -suite "$(SUITE)" --iterm2-purge-data-protection-keychain-for-testing
 	@cat /tmp/iterm2-keychain-purge-result.txt 2>/dev/null || echo "no purge result written (build may lack the entitlement)"
 
 runbg: Development
-	"$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" -suite $(SUITE) & \
+	mkdir -p "$(RUN_DIR)"
+	( cd "$(RUN_DIR)" && exec "$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" -suite "$(SUITE)" ) & \
 	pid=$$!; \
 	trap 'kill $$pid 2>/dev/null' INT TERM; \
 	( sleep 1 && osascript -e "tell application \"System Events\" to set frontmost of (first process whose unix id is $$pid) to true" >/dev/null 2>&1 ) & \
 
 watch: Development
-	tools/run.sh "$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" "$(BUILD_DIR)" -suite $(SUITE)
+	mkdir -p "$(RUN_DIR)"
+	cd "$(RUN_DIR)" && "$(CURDIR)/tools/run.sh" "$(BUILD_DIR)/Development/$(APP_BUNDLE)/Contents/MacOS/$(APP_EXECUTABLE)" "$(BUILD_DIR)" -suite "$(SUITE)"
 
 devzip: Development
 	cd $(BUILD_DIR)/Development && \

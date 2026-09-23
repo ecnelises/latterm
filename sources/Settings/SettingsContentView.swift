@@ -1,15 +1,16 @@
 import AppKit
 
-/// Keeps preference pages at their required size without resizing the window.
-/// On small screens the viewport scrolls; on larger ones it fills the space.
+/// Fits preference pages to the window above a readable minimum width.
+/// Smaller viewports scroll while the window keeps its chosen size.
 @objc(iTermSettingsContentView)
 final class SettingsContentView: NSScrollView {
+    @objc static let minimumPageWidth: CGFloat = 760
     private final class Document: NSView {
         override var isFlipped: Bool { true }
     }
     private let content: NSView
     private let document = Document()
-    private var minimumContentSize = NSSize(width: 760, height: 600)
+    private var minimumContentSize = NSSize(width: minimumPageWidth, height: 600)
 
     @objc init(content: NSView) {
         self.content = content

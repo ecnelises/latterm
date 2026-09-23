@@ -72,7 +72,8 @@ final class SettingsFormView: NSView {
         var top = bounds.height - 16
         for section in sections {
             section.frame = NSRect(x: 16, y: top - section.preferredHeight,
-                                   width: max(0, bounds.width - 32), height: section.preferredHeight)
+                                   width: min(720, max(0, bounds.width - 32)),
+                                   height: section.preferredHeight)
             top -= section.preferredHeight + 16
         }
     }
