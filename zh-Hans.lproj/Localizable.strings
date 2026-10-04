@@ -1652,3 +1652,28 @@
 "Compatibility fallback" = "兼容回退值";
 "Default fallback" = "默认回退值";
 "Inspect Profile Settings…" = "检查配置方案设置…";
+
+/* Responsive settings and snippet editor */
+"No saved actions" = "还没有保存的操作";
+"Save terminal actions here to reuse them from menus and shortcuts." = "在这里保存终端操作，之后可从菜单或快捷键重复使用。";
+"Add Action…" = "添加操作…";
+"No matching snippets" = "没有匹配的文本片段";
+"No saved snippets" = "还没有保存的文本片段";
+"Try another title, text, or tag, or clear the search." = "尝试其他标题、文本或标签，或清除搜索。";
+"Save commands and text you send often, then insert them from the Snippets menu." = "保存常用命令和文本，之后可从“文本片段”菜单插入。";
+"Clear Search" = "清除搜索";
+"Add Snippet…" = "添加文本片段…";
+"This profile was removed. Close the inspector to select another profile." = "此配置方案已被删除。请关闭检查器，选择其他配置方案。";
+"Try another setting name or key, or clear the search." = "尝试其他设置名称或键名，或清除搜索。";
+"No differences from factory" = "与出厂配置没有差异";
+"Show all settings to inspect unchanged values too." = "显示所有设置，也可检查未修改的值。";
+"Show All Settings" = "显示所有设置";
+"Already at the factory value." = "已经是出厂值。";
+"Profile settings" = "配置方案设置";
+"Full profile value" = "完整配置方案值";
+"Escaping:" = "转义：";
+"Save" = "保存";
+"Save with Command-Return" = "按 Command-Return 保存";
+"Learn about text escaping" = "了解文本转义";
+"Snippet Text Escaping" = "文本片段转义";
+"C-style backslash escaping interprets \\a (bell), \\b (backspace), \\e (escape), \\n (newline), \\r (carriage return), \\t (tab), \\\\ (backslash), and \\x followed by two hexadecimal digits for a UTF-8 byte.\n\nLiteral text sends every character exactly as entered.\n\nLegacy escaping supports only \\n, \\e, \\a, and \\t. Choose C-style escaping for new snippets that need escape sequences." = "C 风格反斜杠转义支持 \\a（响铃）、\\b（退格）、\\e（转义）、\\n（换行）、\\r（回车）、\\t（制表符）、\\\\（反斜杠），以及 \\x 后接两位十六进制数字表示一个 UTF-8 字节。\n\n原样文本会按输入内容发送每个字符。\n\n旧版转义仅支持 \\n、\\e、\\a 和 \\t。新建需要转义序列的文本片段时，请选择 C 风格转义。";

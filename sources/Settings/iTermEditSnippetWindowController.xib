@@ -12,12 +12,20 @@
                 <outlet property="_titleView" destination="JF6-pc-vTg" id="fEZ-q4-8HG"/>
                 <outlet property="_tokenView" destination="jIS-Xa-uKb" id="meH-tJ-moG"/>
                 <outlet property="_valueView" destination="RYC-Fx-alf" id="Q6f-Cu-Ixd"/>
+                <outlet property="_titleLabel" destination="e9K-iQ-WHi" id="Snippet-titleLabel-Outlet"/>
+                <outlet property="_tagsLabel" destination="7QQ-nf-ggu" id="Snippet-tagsLabel-Outlet"/>
+                <outlet property="_valueLabel" destination="pjl-7C-lDk" id="Snippet-valueLabel-Outlet"/>
+                <outlet property="_tagsHelp" destination="Qbi-CU-vYq" id="Snippet-tagsHelp-Outlet"/>
+                <outlet property="_helpButton" destination="zTU-4k-14B" id="Snippet-helpButton-Outlet"/>
+                <outlet property="_saveButton" destination="WoX-Ce-6DQ" id="Snippet-saveButton-Outlet"/>
+                <outlet property="_cancelButton" destination="vWt-RK-DVg" id="Snippet-cancelButton-Outlet"/>
+                <outlet property="_valueScrollView" destination="9ST-EC-FuZ" id="Snippet-valueScrollView-Outlet"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <window title="Edit Snippet" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" visibleAtLaunch="NO" animationBehavior="default" id="F0z-JX-Cv5" customClass="NSPanel">
+        <window title="Edit Snippet" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" visibleAtLaunch="NO" animationBehavior="default" id="F0z-JX-Cv5" customClass="iTermSnippetEditorPanel">
             <windowStyleMask key="styleMask" titled="YES" resizable="YES" documentModal="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="196" y="240" width="480" height="322"/>

@@ -43,6 +43,7 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
     IBOutlet NSButton *_exportButton;
     IBOutlet NSButton *_importButton;
     IBOutlet NSSearchField *_searchField;
+    iTermSettingsEmptyStateView *_emptyState;
 
     NSArray<iTermSnippet *> *_allSnippets;
     NSArray<iTermSnippet *> *_filteredSnippets;
@@ -187,11 +188,24 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
     containerView.autoresizesSubviews = YES;
     self.view.frame = containerView.bounds;
     [self load];
+    _emptyState = [[iTermSettingsEmptyStateView alloc] initWithScrollView:_tableView.enclosingScrollView];
+    __weak typeof(self) weakSelf = self;
+    _emptyState.onAction = ^{
+        typeof(self) strongSelf = weakSelf;
+        if (!strongSelf) { return; }
+        if (strongSelf.query.length) {
+            strongSelf->_searchField.stringValue = @"";
+            [strongSelf controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification
+                                                                           object:strongSelf->_searchField]];
+        } else {
+            [strongSelf add:nil];
+        }
+    };
+    [self updateEmptyState];
     [_tableView setDoubleAction:@selector(doubleClickOnTableView:)];
     [self updateEnabled];
     [_tableView registerForDraggedTypes:@[ iTermSnippetsEditingPasteboardType ]];
     [_tableView reloadData];
-    __weak __typeof(self) weakSelf = self;
     [iTermSnippetsDidChangeNotification subscribe:self
                                             block:^(iTermSnippetsDidChangeNotification * _Nonnull notification) {
         [weakSelf snippetsDidChange:notification];
@@ -303,6 +317,7 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
                     }
                 }];
             }
+            break;
         }
         case iTermSnippetsDidChangeMutationTypeDeletion: {
             NSIndexSet *indexes = [self filteredIndexSet:notif.indexSet];
@@ -347,19 +362,27 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
             [_tableView reloadData];
             break;
     }
+    [self updateEmptyState];
+    [self updateEnabled];
+}
+
+- (void)updateEmptyState {
+    _emptyState.hidden = _filteredSnippets.count > 0;
+    if (_emptyState.hidden) { return; }
+    const BOOL filtering = self.query.length > 0;
+    [_emptyState showWithTitle:filtering ? NSLocalizedString(@"No matching snippets", @"Snippets empty state") :
+                                         NSLocalizedString(@"No saved snippets", @"Snippets empty state")
+                      message:filtering ? NSLocalizedString(@"Try another title, text, or tag, or clear the search.", @"Snippets empty state") :
+                                         NSLocalizedString(@"Save commands and text you send often, then insert them from the Snippets menu.", @"Snippets empty state")
+                  actionTitle:filtering ? NSLocalizedString(@"Clear Search", @"Snippets empty state action") :
+                                         NSLocalizedString(@"Add Snippet…", @"Snippets empty state action")];
 }
 
 - (void)updateEnabled {
     const NSInteger numberOfRows = [[self selectedSnippets] count];
     _removeButton.enabled = numberOfRows > 0;
     _editButton.enabled = numberOfRows == 1;
-    if (@available(macOS 10.16, *)) {
-        _exportButton.enabled = numberOfRows > 0;
-    } else {
-        // This is just because we don't have SF Symbols and I don't have a nice asset to use here.
-        _importButton.hidden = YES;
-        _exportButton.hidden = YES;
-    }
+    _exportButton.enabled = numberOfRows > 0;
 }
 
 #pragma mark - Actions
@@ -709,6 +732,8 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
 - (void)controlTextDidChange:(NSNotification *)obj {
     [self load];
     [_tableView reloadData];
+    [self updateEmptyState];
+    [self updateEnabled];
 }
 
 @end

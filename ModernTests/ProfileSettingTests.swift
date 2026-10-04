@@ -90,4 +90,24 @@ final class ProfileSettingTests: XCTestCase {
         XCTAssertNil(iTermProfilePreferences.object(forKey: "No Such Profile Setting", inProfile: [:]))
         XCTAssertEqual(iTermProfilePreferences.factoryObject(forKey: KEY_SHORTCUT) as? String, "")
     }
+
+    func testColorSummaryAndFullValuePreserveTheStoredComponents() throws {
+        let owner = iTermProfilePreferencesBaseViewController(nibName: nil, bundle: nil)
+        let info = PreferenceInfo()
+        info.key = KEY_FOREGROUND_COLOR
+        info.control = NSColorWell()
+        let document = iTermPreferencesSearchDocument(displayName: "Color", identifier: info.key, keywordPhrases: [])
+        let entry = ProfileSettingEntry(setting: iTermSetting(info: info, isProfile: true, pathComponents: []),
+                                        owner: owner, document: document)
+        let color: [String: Any] = ["Red Component": 1.0, "Green Component": 0.5,
+                                   "Blue Component": 0.0, "Alpha Component": 0.75, "Color Space": "sRGB"]
+        let profile: [AnyHashable: Any] = [KEY_FOREGROUND_COLOR: color]
+        XCTAssertEqual(entry.displayValue(in: profile), "#FF8000 · sRGB · 75%")
+        let detail = entry.detailValue(in: profile)
+        XCTAssertTrue(detail.contains("\n"))
+        let decoded = try JSONSerialization.jsonObject(with: XCTUnwrap(detail.data(using: .utf8))) as? NSDictionary
+        XCTAssertEqual(decoded, NSDictionary(dictionary: color))
+        info.type = .passwordTextField
+        XCTAssertEqual(entry.detailValue(in: profile), NSLocalizedString("Hidden", comment: ""))
+    }
 }

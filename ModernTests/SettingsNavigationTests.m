@@ -21,6 +21,16 @@
 #import "iTermOpenQuicklyWindowController.h"
 #import "iTermProfilePreferences.h"
 #import "iTermProfilePreferencesBaseViewController.h"
+#import "iTermSnippetsEditingViewController.h"
+
+@interface iTermSnippetsEditingViewController (LayoutTests)
+- (void)controlTextDidChange:(NSNotification *)notification;
+@end
+
+@interface iTermEditSnippetWindowController (LayoutTests)
+- (void)ok:(id)sender;
+- (NSString *)escapingHelpText;
+@end
 
 @interface ProfilePreferencesViewController (InspectorTests)
 - (void)inspectProfileSettings:(id)sender;
@@ -144,6 +154,11 @@
     profile[KEY_SCROLLBACK_LINES] = @54321;
     profile[KEY_UNLIMITED_SCROLLBACK] = @NO;
     profile[KEY_BINDINGS] = @{};
+    NSMutableString *longValue = [NSMutableString string];
+    for (NSInteger line = 0; line < 40; line++) {
+        [longValue appendFormat:@"line %ld: 中文 and literal \\n\n", (long)line];
+    }
+    profile[KEY_INITIAL_TEXT] = longValue;
     [profile removeObjectForKey:KEY_DYNAMIC_PROFILE_FILENAME];
     [model addBookmark:profile];
     NSMutableDictionary *other = [profile mutableCopy];
@@ -175,18 +190,58 @@
         }
         XCTAssertNotNil(search);
         XCTAssertNotNil(restore);
+        search.stringValue = KEY_INITIAL_TEXT;
+        [search.delegate controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+        XCTAssertEqual(table.numberOfRows, 1);
+        [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        NSTextView *fullValue = nil;
+        for (NSView *view in inspector.window.contentView.subviews) {
+            if ([view isKindOfClass:NSScrollView.class] &&
+                [[(NSScrollView *)view documentView] isKindOfClass:NSTextView.class]) {
+                fullValue = (NSTextView *)[(NSScrollView *)view documentView];
+            }
+        }
+        XCTAssertNotNil(fullValue);
+        XCTAssertTrue(fullValue.selectable);
+        XCTAssertFalse(fullValue.editable);
+        XCTAssertEqualObjects(fullValue.string, longValue);
+        [fullValue.layoutManager ensureLayoutForTextContainer:fullValue.textContainer];
+        [fullValue scrollToEndOfDocument:nil];
+        XCTAssertGreaterThan(NSMinY(fullValue.enclosingScrollView.documentVisibleRect), 0);
+        [self attachSettingsWindow:inspector.window name:@"Inspector complete multiline value"];
         search.stringValue = KEY_SCROLLBACK_LINES;
         [search.delegate controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
         XCTAssertEqual(table.numberOfRows, 1);
         [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
         XCTAssertTrue(restore.enabled);
         [self attachSettingsWindow:inspector.window name:@"Profile settings inspector"];
+        for (NSString *appearance in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
+            inspector.window.appearance = [NSAppearance appearanceNamed:appearance];
+            for (NSValue *size in @[[NSValue valueWithSize:NSMakeSize(780, 560)],
+                                   [NSValue valueWithSize:NSMakeSize(1100, 780)]]) {
+                [inspector.window setContentSize:size.sizeValue];
+                [inspector.window.contentView layoutSubtreeIfNeeded];
+                for (NSView *view in inspector.window.contentView.subviews) {
+                    XCTAssertTrue(NSContainsRect(inspector.window.contentView.bounds, view.frame));
+                }
+                XCTAssertGreaterThan(table.enclosingScrollView.contentSize.height, 200);
+                [self attachSettingsWindow:inspector.window name:[NSString stringWithFormat:@"Inspector %@ %@", appearance, size]];
+            }
+        }
         [inspector restoreSelected];
         XCTAssertEqualObjects([model bookmarkWithGuid:guid][KEY_SCROLLBACK_LINES],
                               [iTermProfilePreferences factoryObjectForKey:KEY_SCROLLBACK_LINES]);
         XCTAssertEqualObjects([model bookmarkWithGuid:otherGuid][KEY_SCROLLBACK_LINES], @54321);
         XCTAssertEqual(table.numberOfRows, 0);
         XCTAssertFalse(restore.enabled);
+        NSView *guidance = nil;
+        for (NSView *view in table.enclosingScrollView.contentView.subviews) {
+            if ([view.accessibilityIdentifier isEqualToString:@"SettingsEmptyState"]) { guidance = view; }
+        }
+        XCTAssertNotNil(guidance);
+        XCTAssertFalse(guidance.hidden);
+        [inspector.window.contentView layoutSubtreeIfNeeded];
+        XCTAssertGreaterThan(NSWidth(guidance.bounds), 700);
 
         // A binding must remain visible as a difference even if the stored
         // value equals factory. It is edited through its specialized control.
@@ -231,6 +286,9 @@
         XCTAssertEqual(table.numberOfRows, 0);
         [inspector restoreSelected];
         XCTAssertNil([model bookmarkWithGuid:guid]);
+        [self attachSettingsWindow:inspector.window name:@"Inspector removed profile"];
+        [inspector cancelOperation:nil];
+        XCTAssertNil(inspector.window.sheetParent);
     } @finally {
         [profiles windowWillClose];
         [profiles selectGuid:originalGuid];
@@ -1772,6 +1830,165 @@
     XCTAssertEqualObjects([[controller valueForKey:@"_titleView"] stringValue], @"Title");
     XCTAssertEqualObjects([[controller valueForKey:@"_valueView"] string], @"Cancel");
     [controller close];
+}
+
+- (void)testSnippetEditorResizesAndSavesMultilineTextWithoutTransformation {
+    NSString *text = @"printf ‘hello’\nsecond line\\n\\x1b\t中文";
+    iTermSnippet *snippet = [[iTermSnippet alloc] initWithTitle:@"多行命令" value:text guid:NSUUID.UUID.UUIDString
+                                                        tags:@[@"工作", @"shell"] escaping:iTermSendTextEscapingNone
+                                                     version:[iTermSnippet currentVersion]];
+    __block iTermSnippet *saved = nil;
+    iTermEditSnippetWindowController *controller = [[iTermEditSnippetWindowController alloc]
+        initWithSnippet:snippet completion:^(iTermSnippet *result) { saved = result; }];
+    NSWindow *window = controller.window;
+    NSTextView *value = [controller valueForKey:@"_valueView"];
+    NSButton *save = [controller valueForKey:@"_saveButton"];
+    [window orderFront:nil];
+    @try {
+        XCTAssertEqualObjects(save.title, NSLocalizedString(@"Save", @""));
+        XCTAssertEqualObjects(save.keyEquivalent, @"\n");
+        XCTAssertEqual(save.keyEquivalentModifierMask, NSEventModifierFlagCommand);
+        XCTAssertFalse(value.automaticQuoteSubstitutionEnabled);
+        XCTAssertFalse(value.automaticDashSubstitutionEnabled);
+        XCTAssertTrue([[controller escapingHelpText] containsString:@"\\x"]);
+        XCTAssertTrue([[controller escapingHelpText] containsString:@"\\n"]);
+        for (NSString *appearance in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
+            window.appearance = [NSAppearance appearanceNamed:appearance];
+            for (NSValue *size in @[[NSValue valueWithSize:NSMakeSize(560, 440)],
+                                   [NSValue valueWithSize:NSMakeSize(900, 700)]]) {
+                [window setContentSize:size.sizeValue];
+                [window.contentView layoutSubtreeIfNeeded];
+                for (NSView *view in window.contentView.subviews) {
+                    XCTAssertTrue(NSContainsRect(window.contentView.bounds, view.frame), @"%@", view);
+                }
+                XCTAssertGreaterThan(value.enclosingScrollView.contentSize.height, 100);
+                XCTAssertEqualWithAccuracy(NSWidth(value.frame), value.enclosingScrollView.contentSize.width, 1);
+                XCTAssertTrue(value.textContainer.widthTracksTextView);
+                XCTAssertEqualObjects(value.string, text);
+                [self attachSettingsWindow:window name:[NSString stringWithFormat:@"Snippet editor %@ %@", appearance, size]];
+            }
+        }
+        XCTAssertTrue([window makeFirstResponder:value]);
+        [value setSelectedRange:NSMakeRange(value.string.length, 0)];
+        [value insertNewline:nil];
+        [value insertText:@"tail" replacementRange:value.selectedRange];
+        NSString *expectedText = [text stringByAppendingString:@"\ntail"];
+        XCTAssertEqualObjects(value.string, expectedText);
+        NSEvent *commandReturn = [NSEvent keyEventWithType:NSEventTypeKeyDown location:NSZeroPoint
+                                            modifierFlags:NSEventModifierFlagCommand timestamp:0
+                                             windowNumber:window.windowNumber context:nil characters:@"\r"
+                              charactersIgnoringModifiers:@"\r" isARepeat:NO keyCode:36];
+        XCTAssertTrue([window performKeyEquivalent:commandReturn]);
+        XCTAssertEqualObjects(saved.title, snippet.title);
+        XCTAssertEqualObjects(saved.value, expectedText);
+        XCTAssertEqualObjects(saved.tags, snippet.tags);
+        XCTAssertEqualObjects(saved.guid, snippet.guid);
+        XCTAssertEqual(saved.escaping, snippet.escaping);
+    } @finally {
+        [controller close];
+    }
+}
+
+- (void)testEmptyListsAndFilteredSnippetEditsOfferWorkingGuidance {
+    iTermSnippetsModel *model = iTermSnippetsModel.sharedInstance;
+    NSArray *originalSnippets = model.snippets;
+    iTermActionsModel *actions = iTermActionsModel.sharedInstance;
+    NSArray *originalActions = actions.actions;
+    PreferencePanel *panel = PreferencePanel.sharedInstance;
+    NSWindow *window = panel.window;
+    NSRect originalFrame = window.frame;
+    NSAppearance *originalAppearance = window.appearance;
+    NSTabView *tabs = [panel valueForKey:@"_tabView"];
+    NSTabViewItem *originalTab = tabs.selectedTabViewItem;
+    id shortcuts = [panel valueForKey:@"_shortcutsViewController"];
+    iTermSnippetsEditingViewController *editor = [shortcuts valueForKey:@"_snippetsViewController"];
+    NSSearchField *search = [editor valueForKey:@"_searchField"];
+    NSString *originalSearch = search.stringValue;
+    NSTableView *table = [editor valueForKey:@"_tableView"];
+    NSView *empty = [editor valueForKey:@"_emptyState"];
+    NSView *emptyActions = [[shortcuts valueForKey:@"_actionsViewController"] valueForKey:@"_emptyState"];
+    @try {
+        for (id page in [panel valueForKey:@"_settingsPages"]) {
+            if ([[page valueForKey:@"identifier"] isEqualToString:@"shortcuts"]) {
+                [tabs selectTabViewItem:[page valueForKey:@"tabViewItem"]];
+            }
+        }
+        [panel showWindow:nil];
+        [window setContentSize:NSMakeSize(1040, 720)];
+        [model setSnippets:@[]];
+        [actions setActions:@[]];
+        search.stringValue = @"";
+        [editor controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+        XCTAssertFalse(empty.hidden);
+        XCTAssertFalse(emptyActions.hidden);
+        NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
+        for (NSValue *size in @[[NSValue valueWithSize:NSMakeSize(820, 560)],
+                               [NSValue valueWithSize:NSMakeSize(1040, 720)]]) {
+            [window setContentSize:size.sizeValue];
+            [window.contentView layoutSubtreeIfNeeded];
+            for (NSString *key in @[@"_actionsViewController", @"_snippetsViewController"]) {
+                NSView *view = [[shortcuts valueForKey:key] view];
+                for (NSView *child in view.subviews) {
+                    if ([child isKindOfClass:NSScrollView.class] || [child isKindOfClass:NSButton.class]) {
+                        XCTAssertLessThanOrEqual(NSMaxX(child.frame), NSWidth(view.bounds) + 1, @"%@ %@", key, child);
+                    }
+                }
+                NSRect frame = [view convertRect:view.bounds toView:viewport.documentView];
+                // The shared 760-point minimum may scroll in a narrow window,
+                // but both lists must fit at the default size.
+                if (size.sizeValue.width >= 1040) {
+                    XCTAssertLessThanOrEqual(NSMaxX(frame), NSWidth(viewport.contentView.bounds) + 1);
+                }
+            }
+        }
+        for (NSString *appearance in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
+            window.appearance = [NSAppearance appearanceNamed:appearance];
+            [window.contentView layoutSubtreeIfNeeded];
+            for (NSView *guidance in @[empty, emptyActions]) {
+                XCTAssertGreaterThan(NSWidth(guidance.bounds), 400);
+                for (NSView *child in guidance.subviews) {
+                    XCTAssertTrue(NSContainsRect(guidance.bounds, child.frame));
+                }
+            }
+            [self attachSettingsWindow:window name:[NSString stringWithFormat:@"Empty actions and snippets %@", appearance]];
+        }
+        iTermSnippet *first = [[iTermSnippet alloc] initWithTitle:@"visible-first" value:@"echo first" guid:NSUUID.UUID.UUIDString
+                                                          tags:@[] escaping:iTermSendTextEscapingCommon version:iTermSnippet.currentVersion];
+        iTermSnippet *second = [[iTermSnippet alloc] initWithTitle:@"visible-second" value:@"echo second" guid:NSUUID.UUID.UUIDString
+                                                           tags:@[] escaping:iTermSendTextEscapingCommon version:iTermSnippet.currentVersion];
+        [model setSnippets:@[first, second]];
+        XCTAssertTrue(empty.hidden);
+        search.stringValue = @"visible";
+        [editor controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+        [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        iTermSnippet *renamed = [[iTermSnippet alloc] initWithTitle:@"hidden" value:first.value guid:first.guid
+                                                            tags:first.tags escaping:first.escaping version:first.version];
+        [model replaceSnippet:first withSnippet:renamed];
+        XCTAssertEqual(table.numberOfRows, 1);
+        XCTAssertTrue(empty.hidden);
+        XCTAssertEqualObjects([[editor valueForKey:@"_filteredSnippets"] firstObject], second);
+        [model removeSnippets:@[second]];
+        XCTAssertEqual(table.numberOfRows, 0);
+        XCTAssertFalse(empty.hidden);
+        NSButton *clear = nil;
+        for (NSView *view in empty.subviews) {
+            if ([view isKindOfClass:NSButton.class]) { clear = (NSButton *)view; }
+        }
+        XCTAssertEqualObjects(clear.title, NSLocalizedString(@"Clear Search", @""));
+        [clear performClick:nil];
+        XCTAssertEqualObjects(search.stringValue, @"");
+        XCTAssertEqual(table.numberOfRows, 1);
+        XCTAssertTrue(empty.hidden);
+        XCTAssertEqualObjects(model.snippets.firstObject.guid, first.guid);
+    } @finally {
+        search.stringValue = originalSearch;
+        [model setSnippets:originalSnippets];
+        [actions setActions:originalActions];
+        [tabs selectTabViewItem:originalTab];
+        window.appearance = originalAppearance;
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
 }
 
 @end

@@ -9,6 +9,13 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Resize the profile inspector and copy full
+  values; show colors as readable hex values.
+- Enlarge the snippet editor, translate escaping
+  help, and save with Command-Return.
+- Fit action lists within the Settings page and
+  guide empty lists and searches.
+- Correct filtered snippet edit notifications.
 - Inspect profile values, sources, and factory
   differences; restore individual basic settings.
 - Compare profile defaults against the matching

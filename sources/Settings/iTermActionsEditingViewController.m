@@ -44,6 +44,7 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
     IBOutlet NSButton *_importButton;
     iTermEditKeyActionWindowController *_editActionWindowController;
     NSArray<iTermAction *> *_actions;
+    iTermSettingsEmptyStateView *_emptyState;
 }
 
 - (void)defineControlsInContainer:(iTermPreferencesBaseViewController *)container
@@ -60,11 +61,14 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
     containerView.autoresizesSubviews = YES;
     self.view.frame = containerView.bounds;
     _actions = [[[iTermActionsModel sharedInstance] actions] copy];
+    _emptyState = [[iTermSettingsEmptyStateView alloc] initWithScrollView:_tableView.enclosingScrollView];
+    __weak typeof(self) weakSelf = self;
+    _emptyState.onAction = ^{ [weakSelf add:nil]; };
+    [self updateEmptyState];
     [_tableView setDoubleAction:@selector(doubleClickOnTableView:)];
     [self updateEnabled];
     [_tableView registerForDraggedTypes:@[ iTermActionsEditingPasteboardType ]];
     [_tableView reloadData];
-    __weak __typeof(self) weakSelf = self;
     [iTermActionsDidChangeNotification subscribe:self
                                            block:^(iTermActionsDidChangeNotification * _Nonnull notification) {
                                                [weakSelf actionsDidChange:notification];
@@ -170,19 +174,24 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
             [_tableView reloadData];
             break;
     }
+    [self updateEmptyState];
+    [self updateEnabled];
+}
+
+- (void)updateEmptyState {
+    _emptyState.hidden = _actions.count > 0;
+    if (!_emptyState.hidden) {
+        [_emptyState showWithTitle:NSLocalizedString(@"No saved actions", @"Actions empty state")
+                          message:NSLocalizedString(@"Save terminal actions here to reuse them from menus and shortcuts.", @"Actions empty state")
+                      actionTitle:NSLocalizedString(@"Add Action…", @"Actions empty state action")];
+    }
 }
 
 - (void)updateEnabled {
     const NSInteger numberOfRows = [[self selectedActions] count];
     _removeButton.enabled = numberOfRows > 0;
     _editButton.enabled = numberOfRows == 1;
-    if (@available(macOS 10.16, *)) {
-        _exportButton.enabled = numberOfRows > 0;
-    } else {
-        // This is just because we don't have SF Symbols and I don't have a nice asset to use here.
-        _importButton.hidden = YES;
-        _exportButton.hidden = YES;
-    }
+    _exportButton.enabled = numberOfRows > 0;
 }
 
 #pragma mark - Actions

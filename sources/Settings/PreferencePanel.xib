@@ -1387,7 +1387,7 @@ CA
         </customObject>
         <customObject id="Go1-4j-VZ4" userLabel="Prefs&gt;Shortcuts View Controller" customClass="iTermShortcutsViewController">
             <connections>
-                <outlet property="_actionsView" destination="zEH-KM-w0R" id="bCh-ZU-O5a"/>
+                <outlet property="_actionsView" destination="CIm-Xk-Wex" id="bCh-ZU-O5a"/>
                 <outlet property="_actionsViewController" destination="NZL-jc-nXF" id="izj-9l-mbO"/>
                 <outlet property="_snippetsView" destination="9IY-Wm-Rgs" id="ZGB-Mp-UyI"/>
                 <outlet property="_snippetsViewController" destination="wEw-Xc-e6F" id="XHv-e1-wH2"/>

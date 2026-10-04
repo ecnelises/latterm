@@ -944,6 +944,7 @@
 		53FF9826209283D2008688D7 /* template_pyenv_daemon.py in Resources */ = {isa = PBXBuildFile; fileRef = 53FF9823209283D2008688D7 /* template_pyenv_daemon.py */; };
 		552A7C6A82E7B335CC24714E /* TabCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C435AB84B6BB5B7B2072B05F /* TabCommand.swift */; };
 		55C9E0DE76591DE74F41C987 /* iTermUpgradeSafeKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38540557B3E77547B71ED212 /* iTermUpgradeSafeKeychain.swift */; };
+		59A6171E8C7EE70BEC076B8C /* SettingsEmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21CA65CA25DE5DE0532A6FAE /* SettingsEmptyStateView.swift */; };
 		5A70B4826716B6F27711CADF /* WorkgroupToolbarBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7C79A0745E993B91C40235 /* WorkgroupToolbarBuilder.swift */; };
 		5A9B38999DE20ABF75B37873 /* WorkgroupNavigationToolbarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18CB4B106AA1AA4EFB180EB7 /* WorkgroupNavigationToolbarItem.swift */; };
 		5E289834DF953168C3404A78 /* iTermAttributedStringBuilderBenchmark.m in Sources */ = {isa = PBXBuildFile; fileRef = CB761DEB4DEEACD76A01D701 /* iTermAttributedStringBuilderBenchmark.m */; };
@@ -5058,6 +5059,7 @@
 		20D5CC6404E7AA0500000106 /* iTermApplicationDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = iTermApplicationDelegate.m; sourceTree = "<group>"; tabWidth = 4; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		20E74F4804E9089700000106 /* ITAddressBookMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = ITAddressBookMgr.h; sourceTree = "<group>"; tabWidth = 4; };
 		20E74F4904E9089700000106 /* ITAddressBookMgr.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = ITAddressBookMgr.m; sourceTree = "<group>"; tabWidth = 4; };
+		21CA65CA25DE5DE0532A6FAE /* SettingsEmptyStateView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsEmptyStateView.swift; sourceTree = "<group>"; };
 		21F8530D8EDE4464A3DC219F /* iTermInProcessIt2.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermInProcessIt2.h; sourceTree = "<group>"; };
 		2205C1FAE857001EC8A263E4 /* PerformanceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PerformanceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		234916CDB04523CFD1E0390B /* ClippingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClippingsView.swift; sourceTree = "<group>"; };
@@ -11358,6 +11360,7 @@
 				2A38927FC949FA545C4526F8 /* SettingsFormView.swift */,
 				7D3DFD4BA35B189A51AF37C6 /* SettingDefinition.swift */,
 				4C2BA956A6AF0CF3230962EB /* ProfileSettingsInspector.swift */,
+				21CA65CA25DE5DE0532A6FAE /* SettingsEmptyStateView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -17864,6 +17867,7 @@
 				3C9A285FEE6EA4443AC9A1DA /* iTermVersionComparator.swift in Sources */,
 				EAA30017F757F52E49AEDCA0 /* SettingDefinition.swift in Sources */,
 				05A4420DA08B339064C4EF8F /* ProfileSettingsInspector.swift in Sources */,
+				59A6171E8C7EE70BEC076B8C /* SettingsEmptyStateView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
