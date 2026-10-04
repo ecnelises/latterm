@@ -28,15 +28,18 @@ readonly PRENOTARIZED_ZIP="$WORK_DIR/Latterm-$VERSION-prenotarized.zip"
 readonly FINAL_ZIP_NAME="Latterm-$VERSION.zip"
 readonly FINAL_ZIP="$OUTPUT_DIR/$FINAL_ZIP_NAME"
 readonly VERIFY_DIR="$WORK_DIR/verify"
+RESTORE_INPUTS=0
 
 restore_files() {
-  if [[ -f "$VERSION_BACKUP" ]]; then
+  # An early preflight failure can happen before either backup exists. Only
+  # restore/remove generated inputs after the complete snapshot was captured.
+  if [[ "$RESTORE_INPUTS" == 1 ]]; then
     cp "$VERSION_BACKUP" "$ROOT/version.txt"
-  fi
-  if [[ -f "$PLIST_BACKUP" ]]; then
-    cp "$PLIST_BACKUP" "$ROOT/plists/iTerm2.plist"
-  else
-    rm -f "$ROOT/plists/iTerm2.plist"
+    if [[ -f "$PLIST_BACKUP" ]]; then
+      cp "$PLIST_BACKUP" "$ROOT/plists/iTerm2.plist"
+    else
+      rm -f "$ROOT/plists/iTerm2.plist"
+    fi
   fi
   rm -rf "$WORK_DIR"
 }
@@ -49,6 +52,7 @@ cp version.txt "$VERSION_BACKUP"
 if [[ -f plists/iTerm2.plist ]]; then
   cp plists/iTerm2.plist "$PLIST_BACKUP"
 fi
+RESTORE_INPUTS=1
 
 if ! security find-identity -v -p codesigning | grep -q 'Developer ID Application:'; then
   die "no Developer ID Application identity is installed in the login keychain"

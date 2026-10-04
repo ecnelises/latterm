@@ -13,6 +13,8 @@ Terminal-first fork changes:
   distinguish new-window and new-tab actions.
 - Keep wide profile controls reachable when
   settings sections share a scrolling page.
+- Preserve build inputs when release preparation
+  fails before backups are created.
 - Choose external file opening from a menu;
   preserve legacy choices and honor overrides.
 - Remove the obsolete Mojave window-shadow
