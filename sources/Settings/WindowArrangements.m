@@ -59,6 +59,17 @@ static NSString *const kSavedArrangementWillChangeNotification = @"kSavedArrange
 
 - (void)awakeFromNib {
     [self updateActionsEnabled];
+    NSView *container = tableView_.enclosingScrollView.superview;
+    NSView *previewBox = previewView_.superview.superview;
+    [previewView_ removeFromSuperview];
+    [previewBox removeFromSuperview];
+    [container addSubview:previewView_];
+    deleteButton_.title = NSLocalizedString(@"Remove", @"Remove a saved layout");
+    deleteButton_.imagePosition = NSNoImage;
+    [[iTermSettingsArrangementsView castFrom:container]
+        configureWithList:tableView_.enclosingScrollView preview:previewView_
+        actions:@[defaultButton_, deleteButton_]];
+    [self updatePreviewView];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(updateTableView:)
                                                  name:kSavedArrangementDidChangeNotification

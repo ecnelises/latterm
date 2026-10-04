@@ -8,11 +8,17 @@
 #import "iTermUserDefaults.h"
 #import "iTermAdvancedSettingsViewController.h"
 #import "iTermAdvancedSettingsModel.h"
+#import "iTermOpenStyle.h"
 #import "iTermKeyMappingViewController.h"
 #import "iTermEditSnippetWindowController.h"
 #import "iTermEditKeyActionWindowController.h"
 #import "iTermActionsModel.h"
 #import "iTermDynamicProfileManager.h"
+#import "PointerPrefsController.h"
+
+@interface PointerPrefsController (SettingsTests)
++ (NSDictionary *)localizedActionMap;
+@end
 
 @interface PreferencePanel (NavigationTests)
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)item animated:(BOOL)animated;
@@ -27,6 +33,9 @@
 
 @interface iTermAdvancedSettingsViewController (SettingsTests)
 - (NSArray *)filteredAdvancedSettings;
+- (void)advancedSettingsDidChange:(NSNotification *)notification;
+- (void)controlTextDidChange:(NSNotification *)notification;
+- (void)controlTextDidEndEditing:(NSNotification *)notification;
 @end
 
 @interface iTermKeyMappingViewController (SettingsTests)
@@ -87,6 +96,16 @@
 @interface SettingsNavigationTests : XCTestCase
 @end
 @implementation SettingsNavigationTests
+
+- (void)testPointerWindowAndTabActionsHaveDistinctLocalizedNames {
+    NSDictionary *names = [PointerPrefsController localizedActionMap];
+    XCTAssertEqualObjects(names[kNewWindowWithProfilePointerAction],
+                          NSLocalizedString(@"New Window With Profile…", @""));
+    XCTAssertEqualObjects(names[kNewTabWithProfilePointerAction],
+                          NSLocalizedString(@"New Tab With Profile…", @""));
+    // The action picker resolves its selection by display name.
+    XCTAssertEqual([NSSet setWithArray:names.allValues].count, names.count);
+}
 
 - (NSTableView *)tableInSidebar:(NSView *)sidebar {
     for (NSView *view in sidebar.subviews) {
@@ -156,35 +175,32 @@
     PreferencePanel *panel = [PreferencePanel sharedInstance];
     NSWindow *window = panel.window;
     const NSRect originalFrame = window.frame;
-    id general = [panel valueForKey:@"_generalPreferencesViewController"];
-    NSTabView *tabs = [general valueForKey:@"_tabView"];
+    NSTabView *tabs = [[panel valueForKey:@"_generalPreferencesViewController"] tabView];
     @try {
         [panel showGlobalTabView:nil];
         [window setContentSize:NSMakeSize(1280, 780)];
         [window.contentView layoutSubtreeIfNeeded];
-        NSButton *sectionButton = nil;
-        for (NSView *view in tabs.subviews) {
-            if ([view.accessibilityIdentifier isEqualToString:@"SettingsSection.0"]) {
-                sectionButton = (NSButton *)view;
-                break;
+        NSView *document = tabs.tabViewItems.firstObject.view.superview;
+        NSInteger headings = 0;
+        for (NSView *view in document.subviews) {
+            if ([view.accessibilityIdentifier hasPrefix:@"SettingsSection."]) {
+                XCTAssertEqualWithAccuracy(NSMinX(view.frame), 32, 1);
+                headings++;
             }
         }
-        XCTAssertNotNil(sectionButton);
-        XCTAssertEqualWithAccuracy(NSMinX(sectionButton.frame), 32, 1);
-        NSScrollView *scroll = (NSScrollView *)tabs.selectedTabViewItem.view;
+        XCTAssertEqual(headings, tabs.numberOfTabViewItems);
+        NSScrollView *scroll = (NSScrollView *)tabs.tabViewItems.firstObject.view;
         NSView *form = scroll.documentView.subviews.firstObject;
         NSView *card = form.subviews.firstObject;
         XCTAssertNotNil(card);
-        XCTAssertEqualWithAccuracy(NSMinX(card.frame), 16, 1);
         XCTAssertLessThanOrEqual(NSWidth(card.frame), 720);
         XCTAssertGreaterThan(NSWidth(form.frame) - NSMaxX(card.frame), 100);
-        NSTextField *sectionHeading = card.subviews.firstObject;
-        XCTAssertEqualWithAccuracy(NSMinX(card.frame) + NSMinX(sectionHeading.frame), 32, 1);
     } @finally {
         [window setFrame:originalFrame display:NO];
         [panel close];
     }
 }
+
 
 - (void)testSettingsPagesFitDefaultWindowSize {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
@@ -206,6 +222,44 @@
                 NSView *preview = [[panel arrangements] valueForKey:@"previewView_"];
                 NSRect frame = [preview convertRect:preview.bounds toView:viewport.documentView];
                 XCTAssertLessThanOrEqual(NSMaxX(frame), NSWidth(viewport.documentView.bounds) + 1);
+            } else if ([identifier isEqualToString:@"pointer"]) {
+                NSTabView *pointerTabs = [[panel valueForKey:@"_pointerViewController"] valueForKey:@"_tabView"];
+                [pointerTabs selectTabViewItem:pointerTabs.tabViewItems.lastObject];
+                [window.contentView layoutSubtreeIfNeeded];
+                NSView *bindings = pointerTabs.tabViewItems.lastObject.view.subviews.firstObject;
+                NSUInteger titledActions = 0;
+                for (NSView *child in bindings.subviews) {
+                    if ([child isKindOfClass:NSScrollView.class]) {
+                        XCTAssertLessThanOrEqual(NSMaxX(child.frame), NSWidth(bindings.bounds));
+                    } else if ([child isKindOfClass:NSButton.class]) {
+                        NSButton *button = (NSButton *)child;
+                        if (button.action == @selector(add:) || button.action == @selector(remove:)) {
+                            XCTAssertGreaterThan(button.title.length, 0);
+                            XCTAssertEqual(button.imagePosition, NSNoImage);
+                            titledActions++;
+                        }
+                    }
+                }
+                XCTAssertEqual(titledActions, 2);
+            } else if ([identifier isEqualToString:@"shortcuts"]) {
+                id shortcuts = [panel valueForKey:@"_shortcutsViewController"];
+                NSRect previous = NSZeroRect;
+                for (NSString *key in @[@"_actionsViewController", @"_snippetsViewController"]) {
+                    NSView *editor = [[shortcuts valueForKey:key] view];
+                    for (NSView *child in editor.subviews) {
+                        if ([child isKindOfClass:NSScrollView.class]) {
+                            NSRect rect = [child convertRect:child.bounds toView:viewport.documentView];
+                            if (!NSEqualRects(previous, NSZeroRect)) {
+                                XCTAssertEqualWithAccuracy(NSMinX(rect), NSMinX(previous), 1);
+                                XCTAssertEqualWithAccuracy(NSWidth(rect), NSWidth(previous), 1);
+                            }
+                            previous = rect;
+                        }
+                        if ([child isKindOfClass:NSSearchField.class]) {
+                            XCTAssertLessThanOrEqual(NSMaxX(child.frame), NSWidth(editor.bounds));
+                        }
+                    }
+                }
             } else if ([identifier isEqualToString:@"advanced"]) {
                 NSTableView *table = [[panel valueForKey:@"_advancedViewController"] valueForKey:@"_tableView"];
                 CGFloat columnsWidth = 0;
@@ -233,6 +287,74 @@
         }
     } @finally {
         [tabs selectTabViewItem:originalSelection];
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+}
+
+- (void)checkControlsInSettingsView:(NSView *)view document:(NSView *)document {
+    if (view.isHidden) { return; }
+    if ([view isKindOfClass:NSScrollView.class]) {
+        NSScrollView *scroll = (NSScrollView *)view;
+        if ([NSStringFromClass(scroll.class) isEqualToString:@"iTermSettingsContentView"] ||
+            [scroll.accessibilityIdentifier isEqualToString:@"SettingsSections"] ||
+            [scroll.accessibilityIdentifier isEqualToString:@"ExpertSettingsPage"]) {
+            [self checkControlsInSettingsView:scroll.documentView document:scroll.documentView];
+        }
+        return;  // Tables and other bounded list editors scroll independently.
+    }
+    if ([view isKindOfClass:NSControl.class]) {
+        if ([view isKindOfClass:NSTextField.class] && ![(NSTextField *)view isEditable]) { return; }
+        const NSRect rect = [view convertRect:view.bounds toView:document];
+        XCTAssertGreaterThanOrEqual(NSMinX(rect), -1, @"%@ %@", view, NSStringFromRect(rect));
+        XCTAssertLessThanOrEqual(NSMaxX(rect), NSWidth(document.bounds) + 1,
+                                 @"%@ %@ in %@", view, NSStringFromRect(rect), NSStringFromRect(document.bounds));
+        return;
+    }
+    for (NSView *child in view.subviews) { [self checkControlsInSettingsView:child document:document]; }
+}
+
+- (void)testSettingsControlsRemainReachableAtNarrowAndWideWidths {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    NSRect originalFrame = window.frame;
+    NSTabView *tabs = [panel valueForKey:@"_tabView"];
+    NSTabViewItem *originalSelection = tabs.selectedTabViewItem;
+    @try {
+        for (NSNumber *width in @[@820, @1040, @1280]) {
+            [window setContentSize:NSMakeSize(width.doubleValue, 720)];
+            for (NSTabViewItem *page in tabs.tabViewItems) {
+                [tabs selectTabViewItem:page];
+                [window.contentView layoutSubtreeIfNeeded];
+                [self checkControlsInSettingsView:page.view document:page.view];
+            }
+        }
+    } @finally {
+        [tabs selectTabViewItem:originalSelection];
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+}
+
+- (void)testAppearanceControlsStayLeftAlignedWhenWindowWidens {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    const NSRect originalFrame = window.frame;
+    id appearance = [panel valueForKey:@"_appearancePreferencesViewController"];
+    NSTabView *tabs = [appearance tabView];
+    NSView *theme = [appearance valueForKey:@"_tabStyle"];
+    @try {
+        [[panel valueForKey:@"_tabView"] selectTabViewItem:[panel valueForKey:@"_appearanceTabViewItem"]];
+        [window setContentSize:NSMakeSize(1040, 720)];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSRect initial = [theme convertRect:theme.bounds toView:tabs.tabViewItems.firstObject.view];
+        [window setContentSize:NSMakeSize(1400, 720)];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSRect widened = [theme convertRect:theme.bounds toView:tabs.tabViewItems.firstObject.view];
+        XCTAssertEqualWithAccuracy(NSMinX(initial), NSMinX(widened), 1);
+        XCTAssertEqualWithAccuracy(NSWidth(initial), NSWidth(widened), 1);
+        XCTAssertLessThan(NSHeight(tabs.tabViewItems.firstObject.view.frame), 300);
+    } @finally {
         [window setFrame:originalFrame display:NO];
         [panel close];
     }
@@ -284,7 +406,7 @@
         [panel.window.contentView layoutSubtreeIfNeeded];
         XCTAssertTrue(NSEqualRects(panel.window.frame, stableFrame));
         iTermSizeRememberingView *page = (iTermSizeRememberingView *)item.view;
-        XCTAssertTrue(NSEqualRects(page.frame, tabs.contentRect), @"%@", item.label);
+        XCTAssertTrue(NSContainsRect(page.superview.bounds, page.frame), @"%@", item.label);
         for (NSView *child in page.subviews) {
             if ([child isKindOfClass:NSScrollView.class]) {
                 NSScrollView *scroll = (NSScrollView *)child;
@@ -292,7 +414,7 @@
                 NSView *detail = scroll.documentView.subviews.firstObject;
                 XCTAssertNotNil(detail);
                 XCTAssertTrue(NSContainsRect(scroll.documentView.bounds, detail.frame), @"%@", item.label);
-                XCTAssertGreaterThanOrEqual(NSWidth(detail.bounds), page.originalSize.width);
+                XCTAssertGreaterThan(NSWidth(detail.bounds), 500);
                 XCTAssertGreaterThanOrEqual(NSHeight(scroll.documentView.bounds), NSHeight(scroll.contentView.bounds));
             }
         }
@@ -351,7 +473,7 @@
     [window.contentView layoutSubtreeIfNeeded];
     NSTabView *profileTabs = [profiles valueForKey:@"_tabView"];
     iTermSizeRememberingView *profilePage = (iTermSizeRememberingView *)profileTabs.selectedTabViewItem.view;
-    XCTAssertTrue(NSEqualRects(profilePage.frame, profileTabs.contentRect));
+    XCTAssertTrue(NSContainsRect(profilePage.superview.bounds, profilePage.frame));
     NSRect profileFrame = [profileTabs convertRect:profileTabs.bounds toView:window.contentView];
     XCTAssertGreaterThan(NSMinX(profileFrame), NSMaxX(sidebar.frame));
     XCTAssertLessThanOrEqual(NSMaxX(profileFrame), NSWidth(tabs.bounds) + panel.preferencePanelNavigationWidth);
@@ -362,58 +484,37 @@
     [panel close];
 }
 
-- (void)testSectionNavigationWrapsAboveContentAndTracksDeepLinks {
+- (void)testSectionsShareOneDocumentAndDeepLinksScrollWithoutHidingSiblings {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
-    (void)panel.window;
-    [panel showProfilesTabView:nil];
-    id profiles = [panel valueForKey:@"_profilesViewController"];
-    NSTabView *tabs = [profiles valueForKey:@"_tabView"];
-    const NSRect originalFrame = tabs.frame;
-    NSTabViewItem *originalSelection = tabs.selectedTabViewItem;
-    @try {
-        for (NSNumber *width in @[@520, @900]) {
-            for (NSTabViewItem *item in tabs.tabViewItems) {
-                [tabs selectTabViewItem:item];
-                [tabs setFrameSize:NSMakeSize(width.doubleValue, 420)];
-                [tabs layoutSubtreeIfNeeded];
-                NSInteger count = 0;
-                NSInteger selectedCount = 0;
-                for (NSView *view in tabs.subviews) {
-                    if (![view.accessibilityIdentifier hasPrefix:@"SettingsSection."]) {
-                        continue;
-                    }
-                    NSButton *button = (NSButton *)view;
-                    count++;
-                    selectedCount += button.state == NSControlStateValueOn;
-                    XCTAssertTrue(NSContainsRect(tabs.bounds, button.frame));
-                    XCTAssertFalse(NSIntersectsRect(tabs.contentRect, button.frame));
-                    if (tabs.isFlipped) {
-                        XCTAssertLessThan(NSMaxY(button.frame), NSMinY(tabs.contentRect));
-                    } else {
-                        XCTAssertGreaterThan(NSMinY(button.frame), NSMaxY(tabs.contentRect));
-                    }
-                    XCTAssertEqual(button.state == NSControlStateValueOn,
-                                   [tabs indexOfTabViewItem:item] == button.tag);
-                }
-                XCTAssertEqual(count, tabs.numberOfTabViewItems);
-                XCTAssertEqual(selectedCount, 1);
+    NSWindow *window = panel.window;
+    NSArray *pages = [panel valueForKey:@"_settingsPages"];
+    for (id page in pages) {
+        id controller = [page valueForKey:@"controller"];
+        if (![controller respondsToSelector:@selector(tabView)]) { continue; }
+        NSTabView *tabs = [controller tabView];
+        if (!tabs) { continue; }
+        [[panel valueForKey:@"_tabView"] selectTabViewItem:[page valueForKey:@"tabViewItem"]];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSView *document = tabs.tabViewItems.firstObject.view.superview;
+        XCTAssertTrue(document.isFlipped);
+        for (NSTabViewItem *item in tabs.tabViewItems) {
+            [tabs selectTabViewItem:item];
+            [window.contentView layoutSubtreeIfNeeded];
+            CGFloat bottom = 0;
+            for (NSTabViewItem *sibling in tabs.tabViewItems) {
+                XCTAssertEqual(sibling.view.superview, document);
+                XCTAssertFalse(sibling.view.hidden);
+                XCTAssertGreaterThan(NSMinY(sibling.view.frame), bottom);
+                XCTAssertTrue(NSContainsRect(document.bounds, sibling.view.frame));
+                bottom = NSMaxY(sibling.view.frame);
             }
+            NSScrollView *scroll = document.enclosingScrollView;
+            XCTAssertTrue(NSIntersectsRect(scroll.documentVisibleRect, item.view.frame));
         }
-        NSButton *first = nil;
-        for (NSView *view in tabs.subviews) {
-            if ([view.accessibilityIdentifier isEqualToString:@"SettingsSection.0"]) {
-                first = (NSButton *)view;
-            }
-        }
-        XCTAssertNotNil(first);
-        [first performClick:nil];
-        XCTAssertEqual(tabs.selectedTabViewItem, tabs.tabViewItems.firstObject);
-    } @finally {
-        [tabs selectTabViewItem:originalSelection];
-        tabs.frame = originalFrame;
-        [panel close];
     }
+    [panel close];
 }
+
 
 - (void)testProgrammaticNavigationDoesNotReenterUserSelection {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
@@ -500,7 +601,10 @@
         XCTAssertNotNil(scroll);
         NSRect visibleTarget = [target convertRect:target.bounds toView:scroll.documentView];
         XCTAssertTrue(NSContainsRect(scroll.documentVisibleRect, visibleTarget));
-        XCTAssertGreaterThan(NSMinY(scroll.documentVisibleRect), 0);
+        NSTabView *profileSections = [profiles valueForKey:@"_tabView"];
+        NSScrollView *sections = profileSections.tabViewItems.firstObject.view.enclosingScrollView;
+        NSRect targetInSections = [target convertRect:target.bounds toView:sections.documentView];
+        XCTAssertTrue(NSContainsRect(sections.documentVisibleRect, targetInSections));
         XCTAssertEqualObjects([[panel valueForKey:@"_settingsSidebar"] valueForKey:@"selectedIndex"], @2);
     } @finally {
         [panel showGlobalTabView:nil];
@@ -739,7 +843,7 @@
     XCTAssertTrue(NSEqualRects(resizedFrame, window.frame));
     NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
     [window.contentView layoutSubtreeIfNeeded];
-    XCTAssertEqualWithAccuracy(NSWidth(viewport.documentView.bounds), NSWidth(viewport.contentView.bounds), 1);
+    XCTAssertGreaterThanOrEqual(NSWidth(viewport.documentView.bounds), 800);
     XCTAssertEqualWithAccuracy(NSHeight(viewport.documentView.bounds), NSHeight(viewport.contentView.bounds), 1);
 
     NSString *frameName = @"SettingsSizeRegression";
@@ -759,14 +863,21 @@
     ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
     NSTabView *tabs = [profiles valueForKey:@"_tabView"];
     [tabs selectTabViewItem:[profiles valueForKey:@"_generalTab"]];
-    [profiles.view setValue:@YES forKey:@"managingProfiles"];
     NSView *list = [profiles valueForKey:@"_profilesListView"];
     NSView *wrapper = [profiles valueForKey:@"_tabViewWrapperView"];
     NSViewController *general = [profiles valueForKey:@"_generalViewController"];
     NSTextField *name = [general valueForKey:@"_profileNameField"];
     NSString *selectedGuid = [panel.currentProfileGuid copy];
     CGFloat wideFieldWidth = 0;
-    NSScrollView *scroll = (NSScrollView *)tabs.selectedTabViewItem.view.subviews.firstObject;
+    NSScrollView *sectionContent = (NSScrollView *)tabs.selectedTabViewItem.view.subviews.firstObject;
+    NSScrollView *scroll = nil;
+    for (NSView *child in tabs.subviews) {
+        if ([child.accessibilityIdentifier isEqualToString:@"SettingsSections"]) {
+            scroll = (NSScrollView *)child;
+            break;
+        }
+    }
+    XCTAssertNotNil(scroll);
     const NSScrollerStyle originalScrollerStyle = scroll.scrollerStyle;
     @try {
         // Also exercise always-visible scrollbars, which consume content width.
@@ -783,11 +894,14 @@
                 XCTAssertGreaterThan(NSMinX(wrapper.frame), NSMaxX(list.frame));
                 wideFieldWidth = NSWidth(name.bounds);
             } else {
-                XCTAssertLessThan(NSMaxY(wrapper.frame), NSMinY(list.frame));
+                XCTAssertGreaterThan(NSMinX(wrapper.frame), NSMaxX(list.frame));
                 XCTAssertLessThan(NSWidth(name.bounds), wideFieldWidth);
+                XCTAssertGreaterThan(NSWidth(scroll.documentView.bounds), NSWidth(scroll.contentView.bounds));
             }
             XCTAssertEqualObjects(panel.currentProfileGuid, selectedGuid);
-            XCTAssertEqualWithAccuracy(NSWidth(scroll.documentView.bounds), NSWidth(scroll.contentView.bounds), 1);
+            XCTAssertEqualWithAccuracy(NSWidth(sectionContent.documentView.bounds), NSWidth(sectionContent.contentView.bounds), 1);
+            XCTAssertFalse(sectionContent.hasHorizontalScroller);
+            XCTAssertTrue(scroll.hasHorizontalScroller);
             for (NSString *key in @[@"_profileNameField", @"_tagsTokenField", @"_badgeText", @"_editBadgeButton",
                                      @"_customCommand", @"_sendTextAtStart", @"_customDirectory", @"_urlSchemes"]) {
                 NSView *control = [general valueForKey:key];
@@ -798,86 +912,66 @@
             }
         }
     } @finally {
-        [profiles.view setValue:@NO forKey:@"managingProfiles"];
         scroll.scrollerStyle = originalScrollerStyle;
         [window setFrame:originalFrame display:NO];
         [panel close];
     }
 }
 
-- (void)testProfileManagementIsOptionalAndPreservesSelection {
+- (void)testProfileLibraryStaysVisibleAndPreservesSelection {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
     NSWindow *window = panel.window;
     const NSRect originalFrame = window.frame;
     [panel showProfilesTabView:nil];
     id profiles = [panel valueForKey:@"_profilesViewController"];
-    NSView *root = [profiles view];
     NSView *list = [profiles valueForKey:@"_profilesListView"];
     NSView *details = [profiles valueForKey:@"_tabViewWrapperView"];
-    NSButton *manage = nil;
-    NSPopUpButton *picker = nil;
-    for (NSView *child in root.subviews) {
-        if ([child.accessibilityIdentifier isEqualToString:@"SettingsManageProfiles"]) { manage = (NSButton *)child; }
-        if ([child.accessibilityIdentifier isEqualToString:@"SettingsProfilePicker"]) { picker = (NSPopUpButton *)child; }
-    }
-    XCTAssertNotNil(manage);
-    XCTAssertNotNil(picker);
     NSString *guid = [panel.currentProfileGuid copy];
     @try {
-        [root setValue:@NO forKey:@"managingProfiles"];
-        for (NSNumber *width in @[@1400, @820]) {
+        for (NSNumber *width in @[@1400, @820, @1040]) {
             [window setContentSize:NSMakeSize(width.doubleValue, 680)];
-            [window.contentView layoutSubtreeIfNeeded];
-            XCTAssertTrue(list.hidden);
-            XCTAssertFalse(picker.hidden);
-            XCTAssertFalse(manage.hidden);
-            XCTAssertEqualObjects(picker.selectedItem.representedObject, guid);
-            XCTAssertEqualWithAccuracy(NSWidth(details.frame), NSWidth(root.bounds) - 32, 1);
-            XCTAssertFalse(NSIntersectsRect(picker.frame, manage.frame));
-            [manage performClick:nil];
             [window.contentView layoutSubtreeIfNeeded];
             XCTAssertFalse(list.hidden);
             XCTAssertFalse(NSIntersectsRect(list.frame, details.frame));
-            NSSplitView *split = [list valueForKey:@"splitView_"];
-            XCTAssertEqual(split.dividerStyle, NSSplitViewDividerStyleThin);
-            XCTAssertTrue([split.delegate splitView:split shouldHideDividerAtIndex:0]);
-            [manage performClick:nil];
-            [window.contentView layoutSubtreeIfNeeded];
-            XCTAssertTrue(list.hidden);
+            XCTAssertLessThan(NSMaxX(list.frame), NSMinX(details.frame));
+            for (NSString *key in @[@"_addProfileButton", @"_removeProfileButton", @"_otherActionsPopup", @"_toggleTagsButton"]) {
+                NSView *action = [profiles valueForKey:key];
+                XCTAssertFalse(action.hidden);
+                XCTAssertLessThanOrEqual(NSMaxY(action.frame), NSMinY(list.frame));
+                XCTAssertFalse(NSIntersectsRect(action.frame, details.frame));
+            }
             XCTAssertEqualObjects(panel.currentProfileGuid, guid);
         }
     } @finally {
-        [root setValue:@NO forKey:@"managingProfiles"];
         [window setFrame:originalFrame display:NO];
         [panel close];
     }
 }
 
-- (void)testProfilePickerDistinguishesIdenticalNames {
+
+- (void)testProfileHeadingUsesIdentityWhenNamesMatch {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
     (void)panel.window;
     id profiles = [panel valueForKey:@"_profilesViewController"];
     NSView *root = [profiles view];
-    NSPopUpButton *picker = nil;
+    NSTextField *title = nil;
     for (NSView *child in root.subviews) {
-        if ([child.accessibilityIdentifier isEqualToString:@"SettingsProfilePicker"]) { picker = (NSPopUpButton *)child; }
+        if ([child.accessibilityIdentifier isEqualToString:@"SettingsSelectedProfile"]) { title = (NSTextField *)child; }
     }
-    XCTAssertNotNil(picker);
-    id originalCallback = [root valueForKey:@"onSelectProfile"];
-    __block NSString *selectedIdentifier = nil;
+    XCTAssertNotNil(title);
     @try {
-        [root setValue:[^(NSString *identifier) { selectedIdentifier = identifier; } copy] forKey:@"onSelectProfile"];
-        [root updateProfilesWithNames:@[@"Same Name", @"Same Name"] identifiers:@[@"first", @"second"] selectedIdentifier:@"first"];
-        XCTAssertEqual(picker.numberOfItems, 2);
-        [picker selectItemAtIndex:1];
-        [picker sendAction:picker.action to:picker.target];
-        XCTAssertEqualObjects(selectedIdentifier, @"second");
+        [root updateProfilesWithNames:@[@"Same Name", @"Same Name"] identifiers:@[@"first", @"second"] selectedIdentifier:@"second"];
+        XCTAssertEqualObjects(title.stringValue, @"Same Name");
+        [root updateProfilesWithNames:@[@"Renamed", @"Same Name"] identifiers:@[@"first", @"second"] selectedIdentifier:@"second"];
+        XCTAssertEqualObjects(title.stringValue, @"Same Name");
+        [root updateProfilesWithNames:@[] identifiers:@[] selectedIdentifier:nil];
+        XCTAssertEqualObjects(title.stringValue, @"");
     } @finally {
-        [root setValue:originalCallback forKey:@"onSelectProfile"];
         [profiles reloadData];
         [panel close];
     }
 }
+
 
 - (void)testStartupAndClosingShareSearchableResponsivePage {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
@@ -937,11 +1031,11 @@
                     id advanced = [panel valueForKey:@"_advancedViewController"];
                     NSTableView *settings = [advanced valueForKey:@"_tableView"];
                     NSScrollView *scroll = settings.enclosingScrollView;
-                    // The page can fill its tab while the actual list remains
-                    // at its old NIB height. Check the visible list itself.
-                    XCTAssertEqualWithAccuracy(NSMinY(scroll.frame), 20, 1);
+                    // The scrolling document includes the filter and help,
+                    // and fills the page after every navigation and resize.
+                    XCTAssertEqualWithAccuracy(NSMinY(scroll.frame), 0, 1);
                     XCTAssertEqualWithAccuracy(NSMaxY(scroll.frame),
-                                               NSHeight(scroll.superview.bounds) - 32, 1);
+                                               NSHeight(scroll.superview.bounds), 1);
                 }
                 id controller = [panel valueForKey:@"_shortcutsViewController"];
                 XCTAssertEqual([controller valueForKey:@"preferencePanel"], panel);
@@ -976,14 +1070,231 @@
     XCTAssertNotNil(revealed);
     XCTAssertEqualObjects(localSearch.stringValue, @"");
     NSTableView *table = [advanced valueForKey:@"_tableView"];
-    XCTAssertGreaterThanOrEqual(table.selectedRow, 0);
-    NSDictionary *setting = [advanced filteredAdvancedSettings][table.selectedRow];
-    XCTAssertEqualObjects(setting[kAdvancedSettingIdentifier], target.identifier);
+    XCTAssertEqual(table.selectedRow, -1);
+    XCTAssertEqualObjects(revealed.accessibilityIdentifier, target.identifier);
     NSSearchField *search = [panel valueForKey:@"searchField"];
     search.stringValue = NSLocalizedString(@"Uneven tab widths allowed.", @"Advanced setting");
     XCTAssertTrue([[panel searchResults] containsObject:target]);
     search.stringValue = @"";
     [panel close];
+}
+
+
+- (void)testExpertSettingsScrollAsAWholePageAndResizeAfterFiltering {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    NSRect originalFrame = window.frame;
+    NSTabView *tabs = [panel valueForKey:@"_tabView"];
+    NSTabViewItem *originalSelection = tabs.selectedTabViewItem;
+    iTermAdvancedSettingsViewController *advanced = [panel valueForKey:@"_advancedViewController"];
+    NSTableView *table = [advanced valueForKey:@"_tableView"];
+    NSSearchField *search = [advanced valueForKey:@"_searchField"];
+    NSButton *exclude = [advanced valueForKey:@"_excludeDefaults"];
+    NSString *originalQuery = search.stringValue;
+    NSControlStateValue originalState = exclude.state;
+    @try {
+        [tabs selectTabViewItem:[panel valueForKey:@"_advancedTabViewItem"]];
+        exclude.state = NSControlStateValueOff;
+        search.stringValue = @"";
+        [advanced advancedSettingsDidChange:nil];
+        for (NSNumber *width in @[@1040, @1280]) {
+            [window setContentSize:NSMakeSize(width.doubleValue, 720)];
+            [window.contentView layoutSubtreeIfNeeded];
+            NSScrollView *scroll = table.enclosingScrollView;
+            XCTAssertEqual(search.enclosingScrollView, scroll);
+            XCTAssertEqual(exclude.enclosingScrollView, scroll);
+            XCTAssertEqual(table.superview, scroll.documentView);
+            XCTAssertEqualWithAccuracy(NSWidth(scroll.frame), NSWidth(advanced.view.bounds), 1);
+            XCTAssertGreaterThan(NSHeight(scroll.documentView.frame), NSHeight(scroll.contentView.bounds) * 2);
+            XCTAssertEqualWithAccuracy(NSHeight(table.frame), NSMaxY([table rectOfRow:table.numberOfRows - 1]), 1);
+            const CGFloat before = [search convertPoint:NSZeroPoint toView:advanced.view].y;
+            [scroll.contentView scrollToPoint:NSMakePoint(0, 240)];
+            [scroll reflectScrolledClipView:scroll.contentView];
+            const CGFloat after = [search convertPoint:NSZeroPoint toView:advanced.view].y;
+            XCTAssertEqualWithAccuracy(fabs(after - before), 240, 1);
+            XCTAssertFalse(NSIntersectsRect(search.frame, scroll.documentVisibleRect));
+
+            iTermPreferencesSearchDocument *last = advanced.searchableViewControllerDocuments.lastObject;
+            BOOL switched = NO;
+            NSView *revealed = [advanced searchableViewControllerRevealItemForDocument:last forQuery:last.identifier willChangeTab:&switched];
+            XCTAssertNotNil(revealed);
+            XCTAssertTrue(NSIntersectsRect([revealed convertRect:revealed.bounds toView:scroll.documentView], scroll.documentVisibleRect));
+
+            search.stringValue = @"UseUnevenTabs";
+            [advanced controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+            XCTAssertEqual(table.numberOfRows, 2);
+            XCTAssertEqualWithAccuracy(NSHeight(scroll.documentView.frame), scroll.contentSize.height, 1);
+            XCTAssertEqualWithAccuracy(scroll.contentView.bounds.origin.y, 0, 1);
+            search.stringValue = @"not-a-setting";
+            [advanced controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+            XCTAssertEqual(table.numberOfRows, 0);
+            XCTAssertEqualWithAccuracy(NSHeight(table.frame), 0, 1);
+            search.stringValue = @"";
+            [advanced advancedSettingsDidChange:nil];
+        }
+    } @finally {
+        search.stringValue = originalQuery;
+        exclude.state = originalState;
+        [advanced advancedSettingsDidChange:nil];
+        [tabs selectTabViewItem:originalSelection];
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+}
+
+- (void)testExternalFileOpenStylePreservesLegacyChoicesAndExplicitOverrides {
+    NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+    NSArray<NSString *> *keys = @[@"OpenFileInNewWindows", @"OpenFileInSplitPanes",
+                                  @"OpenFileInVerticalSplitPane", @"NewInstanceOpenStyle"];
+    NSMutableDictionary *original = [NSMutableDictionary dictionary];
+    for (NSString *key in keys) { original[key] = [defaults objectForKey:key] ?: NSNull.null; }
+    @try {
+        for (NSString *key in keys) { [defaults removeObjectForKey:key]; }
+        XCTAssertEqual([iTermAdvancedSettingsModel newInstanceOpenStyle], iTermOpenStyleTab);
+        XCTAssertNil([defaults objectForKey:keys.lastObject]);
+        // New-window takes precedence over split; missing orientation means
+        // vertical. Cover the old -1 sentinel and out-of-range imported values.
+        NSArray<NSArray *> *cases = @[
+            @[@NO, @NO, @NO, @(iTermOpenStyleTab)],
+            @[@NO, @NO, @YES, @(iTermOpenStyleTab)],
+            @[@NO, @YES, @NO, @(iTermOpenStyleHorizontalSplit)],
+            @[@NO, @YES, @YES, @(iTermOpenStyleVerticalSplit)],
+            @[@NO, @YES, NSNull.null, @(iTermOpenStyleVerticalSplit)],
+            @[@YES, @NO, @NO, @(iTermOpenStyleWindow)],
+            @[@YES, @NO, @YES, @(iTermOpenStyleWindow)],
+            @[@YES, @YES, @NO, @(iTermOpenStyleWindow)],
+            @[@YES, @YES, @YES, @(iTermOpenStyleWindow)]
+        ];
+        for (NSArray *values in cases) {
+            for (NSUInteger index = 0; index < 3; index++) {
+                if (values[index] == NSNull.null) { [defaults removeObjectForKey:keys[index]]; }
+                else { [defaults setObject:values[index] forKey:keys[index]]; }
+            }
+            for (id raw in @[NSNull.null, @(-1), @(-2), @99]) {
+                if (raw == NSNull.null) { [defaults removeObjectForKey:keys.lastObject]; }
+                else { [defaults setObject:raw forKey:keys.lastObject]; }
+                XCTAssertEqual([iTermAdvancedSettingsModel newInstanceOpenStyle], [values[3] intValue]);
+                XCTAssertEqualObjects([defaults objectForKey:keys.lastObject] ?: NSNull.null, raw);
+            }
+            for (NSNumber *explicit in @[@0, @1, @2, @3]) {
+                [defaults setObject:explicit forKey:keys.lastObject];
+                XCTAssertEqual([iTermAdvancedSettingsModel newInstanceOpenStyle], explicit.intValue);
+            }
+        }
+    } @finally {
+        for (NSString *key in keys) {
+            if (original[key] == NSNull.null) { [defaults removeObjectForKey:key]; }
+            else { [defaults setObject:original[key] forKey:key]; }
+        }
+    }
+}
+
+- (void)testExternalFileOpenStyleEditorShowsResolvedChoiceAndSavesOnlyNewKey {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    iTermAdvancedSettingsViewController *advanced = [panel valueForKey:@"_advancedViewController"];
+    NSTableView *table = [advanced valueForKey:@"_tableView"];
+    NSSearchField *search = [advanced valueForKey:@"_searchField"];
+    NSButton *exclude = [advanced valueForKey:@"_excludeDefaults"];
+    NSString *originalQuery = search.stringValue;
+    NSControlStateValue originalState = exclude.state;
+    NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+    NSArray<NSString *> *keys = @[@"NewInstanceOpenStyle", @"OpenFileInNewWindows"];
+    NSMutableDictionary *original = [NSMutableDictionary dictionary];
+    for (NSString *key in keys) { original[key] = [defaults objectForKey:key] ?: NSNull.null; }
+    @try {
+        [defaults setInteger:-1 forKey:keys[0]];
+        [defaults setBool:YES forKey:keys[1]];
+        exclude.state = NSControlStateValueOn;
+        search.stringValue = @"NewInstanceOpenStyle";
+        [advanced advancedSettingsDidChange:nil];
+        XCTAssertEqual(table.numberOfRows, 2);
+        NSDictionary *setting = [advanced filteredAdvancedSettings][1];
+        XCTAssertEqual([setting[kAdvancedSettingDefaultValue] intValue], iTermOpenStyleTab);
+        NSPopUpButton *popup = (NSPopUpButton *)[table.delegate tableView:table viewForTableColumn:table.tableColumns[1] row:1];
+        XCTAssertTrue([popup isKindOfClass:NSPopUpButton.class]);
+        XCTAssertEqual(popup.numberOfItems, 4);
+        XCTAssertEqual(popup.indexOfSelectedItem, iTermOpenStyleWindow);
+        XCTAssertEqualObjects(popup.selectedItem.title, NSLocalizedString(@"New window", @"Open style"));
+        [popup selectItemAtIndex:iTermOpenStyleTab];
+        [NSApp sendAction:popup.action to:popup.target from:popup];
+        XCTAssertEqual([defaults integerForKey:keys[0]], iTermOpenStyleTab);
+        XCTAssertTrue([defaults boolForKey:keys[1]]);
+        XCTAssertEqual([iTermAdvancedSettingsModel newInstanceOpenStyle], iTermOpenStyleTab);
+        XCTAssertEqual(table.numberOfRows, 0);  // The resolved value is now the default.
+        NSSet *retired = [NSSet setWithArray:@[@"OpenFileInNewWindows", @"OpenFileInSplitPanes",
+                                              @"OpenFileInVerticalSplitPane", @"DisableWindowShadowWhenTransparencyOnMojave"]];
+        for (iTermPreferencesSearchDocument *doc in advanced.searchableViewControllerDocuments) {
+            XCTAssertFalse([retired containsObject:doc.identifier]);
+        }
+    } @finally {
+        for (NSString *key in keys) {
+            if (original[key] == NSNull.null) { [defaults removeObjectForKey:key]; }
+            else { [defaults setObject:original[key] forKey:key]; }
+        }
+        search.stringValue = originalQuery;
+        exclude.state = originalState;
+        [advanced advancedSettingsDidChange:nil];
+        [panel close];
+    }
+}
+
+- (void)testExpertEditorsPreserveNumericValuesAndMarkChangedBooleans {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    iTermAdvancedSettingsViewController *advanced = [panel valueForKey:@"_advancedViewController"];
+    NSTableView *table = [advanced valueForKey:@"_tableView"];
+    NSSearchField *search = [advanced valueForKey:@"_searchField"];
+    NSButton *exclude = [advanced valueForKey:@"_excludeDefaults"];
+    NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+    id originalBool = [defaults objectForKey:@"UseUnevenTabs"];
+    id originalInt = [defaults objectForKey:@"MinTabWidth"];
+    @try {
+        exclude.state = NSControlStateValueOff;
+        search.stringValue = @"UseUnevenTabs";
+        [advanced advancedSettingsDidChange:nil];
+        NSDictionary *setting = [advanced filteredAdvancedSettings][1];
+        const BOOL defaultValue = [setting[kAdvancedSettingDefaultValue] boolValue];
+        [defaults setBool:defaultValue forKey:@"UseUnevenTabs"];
+        NSButton *checkbox = (NSButton *)[table.delegate tableView:table viewForTableColumn:table.tableColumns[1] row:1];
+        XCTAssertTrue([checkbox isKindOfClass:NSButton.class]);
+        XCTAssertFalse([checkbox isKindOfClass:NSPopUpButton.class]);
+        [checkbox performClick:nil];
+        XCTAssertEqual([defaults boolForKey:@"UseUnevenTabs"], !defaultValue);
+        NSTextField *name = (NSTextField *)[table.delegate tableView:table viewForTableColumn:table.tableColumns[0] row:1];
+        NSFont *font = [name.attributedStringValue attribute:NSFontAttributeName atIndex:1 effectiveRange:NULL];
+        XCTAssertTrue(([NSFontManager.sharedFontManager traitsOfFont:font] & NSBoldFontMask) != 0);
+        XCTAssertFalse([table.delegate tableView:table shouldSelectRow:1]);
+        XCTAssertEqual(table.selectionHighlightStyle, NSTableViewSelectionHighlightStyleNone);
+        [defaults setBool:defaultValue forKey:@"UseUnevenTabs"];
+        name = (NSTextField *)[table.delegate tableView:table viewForTableColumn:table.tableColumns[0] row:1];
+        font = [name.attributedStringValue attribute:NSFontAttributeName atIndex:1 effectiveRange:NULL];
+        XCTAssertEqual([NSFontManager.sharedFontManager traitsOfFont:font] & NSBoldFontMask, 0);
+
+        search.stringValue = @"MinTabWidth";
+        [advanced advancedSettingsDidChange:nil];
+        [defaults setInteger:72 forKey:@"MinTabWidth"];
+        NSView *wrapper = [table.delegate tableView:table viewForTableColumn:table.tableColumns[1] row:1];
+        NSTextField *input = (NSTextField *)wrapper.subviews.firstObject;
+        for (NSString *invalid in @[@"", @"-", @"wrong", @"12px", @"4.5"]) {
+            input.stringValue = invalid;
+            [advanced controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:input]];
+            XCTAssertEqual([defaults integerForKey:@"MinTabWidth"], 72);
+        }
+        [advanced controlTextDidEndEditing:[NSNotification notificationWithName:NSControlTextDidEndEditingNotification object:input]];
+        XCTAssertEqualObjects(input.stringValue, @"72");
+        input.stringValue = @"84";
+        [advanced controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:input]];
+        XCTAssertEqual([defaults integerForKey:@"MinTabWidth"], 84);
+    } @finally {
+        if (originalBool) { [defaults setObject:originalBool forKey:@"UseUnevenTabs"]; }
+        else { [defaults removeObjectForKey:@"UseUnevenTabs"]; }
+        if (originalInt) { [defaults setObject:originalInt forKey:@"MinTabWidth"]; }
+        else { [defaults removeObjectForKey:@"MinTabWidth"]; }
+        search.stringValue = @"";
+        [advanced advancedSettingsDidChange:nil];
+        [panel close];
+    }
 }
 
 - (void)testLocalizedKeyPresetsKeepTheirStorageNamesAndImportIgnoresRetiredTouchBarItems {

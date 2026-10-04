@@ -11,6 +11,7 @@ final class SettingsContentView: NSScrollView {
     private let content: NSView
     private let document = Document()
     private var minimumContentSize = NSSize(width: minimumPageWidth, height: 600)
+    var requiredWidth: CGFloat { minimumContentSize.width }
 
     @objc init(content: NSView) {
         self.content = content
@@ -35,6 +36,15 @@ final class SettingsContentView: NSScrollView {
         minimumContentSize = size
         needsLayout = true
         layoutSubtreeIfNeeded()
+    }
+
+    func expandForSection() -> CGFloat {
+        hasVerticalScroller = false
+        hasHorizontalScroller = false
+        let height = SettingsTabView.expandSections(in: content)
+        minimumContentSize.width = max(minimumContentSize.width, SettingsTabView.minimumWidth(in: content))
+        minimumContentSize.height = max(minimumContentSize.height, height)
+        return minimumContentSize.height
     }
 
     @objc func scrollToTop() {

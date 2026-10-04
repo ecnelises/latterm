@@ -18,8 +18,6 @@
 #import "iTermUserDefaults.h"
 #import <objc/runtime.h>
 
-static char iTermAdvancedSettingsTableKey;
-
 @interface iTermTableViewTextField : NSTextField
 @property (nonatomic, strong) NSAttributedString *regularAttributedString;
 @property (nonatomic, strong) NSAttributedString *selectedAttributedString;
@@ -51,7 +49,7 @@ static char iTermAdvancedSettingsTableKey;
 
 - (BOOL)becomeFirstResponder {
     self.textColor = [NSColor labelColor];
-    return YES;
+    return [super becomeFirstResponder];
 }
 
 - (void)setBackgroundStyle:(NSBackgroundStyle)backgroundStyle {
@@ -146,6 +144,13 @@ static NSDictionary *gIntrospection;
 
 @end
 
+@interface iTermAdvancedSettingsDocumentView : NSView
+@end
+
+@implementation iTermAdvancedSettingsDocumentView
+- (BOOL)isFlipped { return YES; }
+@end
+
 @implementation iTermAdvancedSettingsViewController {
     IBOutlet NSTableColumn *_settingColumn;
     IBOutlet NSTableColumn *_valueColumn;
@@ -153,6 +158,9 @@ static NSDictionary *gIntrospection;
     IBOutlet NSTableView *_tableView;
     IBOutlet NSButton *_excludeDefaults;
 
+    NSTextField *_editingHelp;
+    NSScrollView *_pageScrollView;
+    NSView *_pageDocument;
     NSArray *_filteredAdvancedSettings;
     NSArray<iTermPreferencesSearchDocument *> *_docs;
 }
@@ -183,6 +191,8 @@ static NSDictionary *gIntrospection;
 // Localize presentation only. Model descriptions and preference identifiers
 // remain stable for storage, grouping, and English search.
 + (NSString *)localizedDescription:(NSString *)description {
+    NSString *localized = NSLocalizedString(description, @"Advanced setting description");
+    if (![localized isEqualToString:description]) { return localized; }
     return [[[description componentsSeparatedByString:@"\n"] mapWithBlock:^id(NSString *line) {
         return NSLocalizedString(line, @"Advanced setting description");
     }] componentsJoinedByString:@"\n"];
@@ -239,8 +249,35 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)awakeFromNib {
-    _tableView.columnAutoresizingStyle = NSTableViewUniformColumnAutoresizingStyle;
-    [_tableView setFloatsGroupRows:YES];
+    _tableView.style = NSTableViewStylePlain;
+    _tableView.columnAutoresizingStyle = NSTableViewNoColumnAutoresizing;
+    _tableView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
+    _tableView.usesAlternatingRowBackgroundColors = NO;
+    _tableView.backgroundColor = NSColor.windowBackgroundColor;
+    // Scroll the complete page, including its filter and instructions. Keep
+    // the table as a document child so AppKit still recycles visible rows.
+    _pageScrollView = _tableView.enclosingScrollView;
+    _pageScrollView.borderType = NSNoBorder;
+    _pageScrollView.drawsBackground = NO;
+    _pageScrollView.hasVerticalScroller = YES;
+    _pageScrollView.hasHorizontalScroller = NO;
+    _pageScrollView.accessibilityIdentifier = @"ExpertSettingsPage";
+    _pageDocument = [[iTermAdvancedSettingsDocumentView alloc] init];
+    [_tableView removeFromSuperview];
+    _pageScrollView.documentView = _pageDocument;
+    for (NSView *control in @[_searchField, _excludeDefaults, _tableView]) {
+        [control removeFromSuperview];
+        control.autoresizingMask = NSViewNotSizable;
+        [_pageDocument addSubview:control];
+    }
+    _searchField.placeholderString = NSLocalizedString(@"Filter expert settings", @"Expert settings search");
+    _editingHelp = [NSTextField wrappingLabelWithString:NSLocalizedString(
+        @"Changes are saved when edited. Some settings require a restart. Check a box to enable a Boolean setting; enter numbers or text in the value field. Bold names indicate values changed from their defaults.",
+        @"Expert settings editing instructions")];
+    _editingHelp.font = [NSFont systemFontOfSize:12];
+    _editingHelp.textColor = NSColor.secondaryLabelColor;
+    [_pageDocument addSubview:_editingHelp];
+    [_tableView setFloatsGroupRows:NO];
     [_tableView setGridColor:[NSColor clearColor]];
     [_tableView setGridStyleMask:NSTableViewGridNone];
     [_tableView setIntercellSpacing:NSMakeSize(0, 0)];
@@ -249,6 +286,40 @@ static NSDictionary *gIntrospection;
                                              selector:@selector(advancedSettingsDidChange:)
                                                  name:iTermAdvancedSettingsDidChange
                                                object:nil];
+}
+
+- (void)viewDidLayout {
+    [super viewDidLayout];
+    [self layoutSettingsPage];
+}
+
+- (void)layoutSettingsPage {
+    _pageScrollView.frame = self.view.bounds;
+    const CGFloat pageWidth = _pageScrollView.contentSize.width;
+    const CGFloat width = MAX(0, pageWidth - 64);
+    const CGFloat checkboxWidth = MAX(192, _excludeDefaults.intrinsicContentSize.width);
+    _searchField.frame = NSMakeRect(32, 6, MAX(160, width - checkboxWidth - 12), 26);
+    _excludeDefaults.frame = NSMakeRect(32 + width - checkboxWidth, 8, checkboxWidth, 22);
+    const CGFloat helpHeight = ceil([_editingHelp.cell cellSizeForBounds:NSMakeRect(0, 0, width, CGFLOAT_MAX)].height);
+    _editingHelp.frame = NSMakeRect(32, 44, width, helpHeight);
+    _valueColumn.width = 180;
+    const CGFloat settingWidth = MAX(200, width - _valueColumn.width);
+    if (_settingColumn.width != settingWidth) {
+        _settingColumn.width = settingWidth;
+        [_tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _tableView.numberOfRows)]];
+    }
+    const NSInteger rows = _tableView.numberOfRows;
+    const CGFloat tableHeight = rows ? NSMaxY([_tableView rectOfRow:rows - 1]) : 0;
+    _tableView.frame = NSMakeRect(32, NSMaxY(_editingHelp.frame) + 16, width, tableHeight);
+    _pageDocument.frame = NSMakeRect(0, 0, pageWidth,
+                                    MAX(_pageScrollView.contentSize.height, NSMaxY(_tableView.frame) + 20));
+    [_pageScrollView reflectScrolledClipView:_pageScrollView.contentView];
+}
+
+- (void)reloadSettings {
+    _filteredAdvancedSettings = nil;
+    [_tableView reloadData];
+    [self layoutSettingsPage];
 }
 
 - (NSMutableAttributedString *)attributedStringForString:(NSString *)string
@@ -277,7 +348,7 @@ static NSDictionary *gIntrospection;
 }
 
 - (NSAttributedString *)attributedStringForGroupNamed:(NSString *)groupName {
-    return [self attributedStringForString:groupName size:20 topMargin:8 selected:NO bold:YES];
+    return [self attributedStringForString:groupName size:17 topMargin:16 selected:NO bold:YES];
 }
 
 - (iTermTableViewTextField *)viewForImmutableAttributedString:(NSAttributedString *)attributedString
@@ -287,7 +358,8 @@ static NSDictionary *gIntrospection;
     textField.identifier = @"attributedstring";
     textField.usesSingleLineMode = NO;
     textField.regularAttributedString = attributedString;
-    textField.selectedAttributedString = selectedAttributedString;
+    textField.selectedAttributedString = attributedString;
+    textField.attributedStringValue = attributedString;
     textField.bezeled = NO;
     textField.editable = NO;
     textField.selectable = NO;
@@ -296,34 +368,29 @@ static NSDictionary *gIntrospection;
 }
 
 - (NSView *)onOffViewWithValue:(BOOL)on row:(int)row {
-    NSPopUpButton *button = [_tableView makeViewWithIdentifier:@"onoff" owner:self] ?: [[NSPopUpButton alloc] init];
-    [button it_setAssociatedObject:@(row) forKey:&iTermAdvancedSettingsTableKey];
-    [button setTarget:self];
-    [button setAction:@selector(toggleOnOff:)];
+    NSButton *button = [_tableView makeViewWithIdentifier:@"onoff" owner:self] ?:
+        [NSButton checkboxWithTitle:@"" target:self action:@selector(toggleOnOff:)];
+    button.tag = row;
+    button.target = self;
+    button.action = @selector(toggleOnOff:);
     button.identifier = @"onoff";
-    [button.menu removeAllItems];
-    [button.menu addItemWithTitle:NSLocalizedString(@"No", @"Advanced setting value") action:nil keyEquivalent:@""];
-    [button.menu addItemWithTitle:NSLocalizedString(@"Yes", @"Advanced setting value") action:nil keyEquivalent:@""];
-    [button selectItemAtIndex:on ? 1 : 0];
+    button.state = on ? NSControlStateValueOn : NSControlStateValueOff;
+    NSDictionary *setting = [self filteredAdvancedSettings][row];
+    button.accessibilityLabel = [setting[kAdvancedSettingDescription] componentsSeparatedByString:@"\n"].firstObject;
+    button.accessibilityIdentifier = setting[kAdvancedSettingIdentifier];
     return button;
 }
 
-- (void)toggleOnOff:(NSPopUpButton *)sender {
-    const int row = [[sender it_associatedObjectForKey:&iTermAdvancedSettingsTableKey] intValue];
-    const NSInteger index = sender.indexOfSelectedItem;
-    const BOOL value = index == 0 ? NO : YES;
-    NSArray *settings = [self filteredAdvancedSettings];
-    NSDictionary *dict = settings[row];
-    NSString *identifier = dict[kAdvancedSettingIdentifier];
+- (void)toggleOnOff:(NSButton *)sender {
+    const BOOL value = sender.state == NSControlStateValueOn;
+    NSDictionary *dict = [self filteredAdvancedSettings][sender.tag];
     NSString *selectorName = dict[kAdvancedSettingSetter];
     if (selectorName) {
-        SEL selector = NSSelectorFromString(selectorName);
-        id newValue = [iTermAdvancedSettingsModel performSelector:selector withObject:@(value)];
-        [sender selectItemAtIndex:[newValue boolValue] ? 1 : 0];
+        [iTermAdvancedSettingsModel performSelector:NSSelectorFromString(selectorName) withObject:@(value)];
     } else {
-        [[iTermUserDefaults userDefaults] setBool:value
-                                                forKey:identifier];
+        [[iTermUserDefaults userDefaults] setBool:value forKey:dict[kAdvancedSettingIdentifier]];
     }
+    [self advancedSettingsDidChange:nil];
 }
 
 - (id)objectForRow:(int)row {
@@ -337,7 +404,7 @@ static NSDictionary *gIntrospection;
 // 0 = unknown, 1 = off, 2 = on
 - (NSView *)tristateViewWithValue:(int)tristate row:(int)row {
     NSPopUpButton *button = [_tableView makeViewWithIdentifier:@"tristate" owner:self] ?: [[NSPopUpButton alloc] init];
-    [button it_setAssociatedObject:@(row) forKey:&iTermAdvancedSettingsTableKey];
+    button.tag = row;
     [button setTarget:self];
     [button setAction:@selector(toggleTristate:)];
     button.identifier = @"tristate";
@@ -356,7 +423,7 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)toggleTristate:(NSPopUpButton *)sender {
-    const int row = [[sender it_associatedObjectForKey:&iTermAdvancedSettingsTableKey] intValue];
+    const int row = (int)sender.tag;
     const NSInteger value = sender.indexOfSelectedItem;
     NSArray *settings = [self filteredAdvancedSettings];
     NSDictionary *dict = settings[row];
@@ -368,11 +435,12 @@ static NSDictionary *gIntrospection;
         [[iTermUserDefaults userDefaults] setBool:value == 2
                                                 forKey:identifier];
     }
+    [self advancedSettingsDidChange:nil];
 }
 
 - (NSView *)enumViewWithValue:(int)value options:(NSArray<NSString *> *)options row:(int)row {
     NSPopUpButton *button = [_tableView makeViewWithIdentifier:@"enum" owner:self] ?: [[NSPopUpButton alloc] init];
-    [button it_setAssociatedObject:@(row) forKey:&iTermAdvancedSettingsTableKey];
+    button.tag = row;
     [button setTarget:self];
     [button setAction:@selector(changeEnum:)];
     button.identifier = @"enum";
@@ -387,26 +455,36 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)changeEnum:(NSPopUpButton *)sender {
-    const int row = [[sender it_associatedObjectForKey:&iTermAdvancedSettingsTableKey] intValue];
+    const int row = (int)sender.tag;
     const NSInteger index = sender.indexOfSelectedItem;
     NSArray *settings = [self filteredAdvancedSettings];
     NSDictionary *dict = settings[row];
     NSString *identifier = dict[kAdvancedSettingIdentifier];
     [[iTermUserDefaults userDefaults] setInteger:index forKey:identifier];
+    [self advancedSettingsDidChange:nil];
 }
 
 - (iTermTableViewTextFieldWrapper *)viewForMutableString:(NSString *)string row:(int)row {
     iTermTableViewTextFieldWrapper *wrapper = [_tableView makeViewWithIdentifier:@"mutablestring" owner:self] ?: [[iTermTableViewTextFieldWrapper alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
     wrapper.ignoreBackgroundStyle = YES;
+    wrapper.onEndEditing = nil;
     wrapper.frame = NSMakeRect(0, 0, 100, 100);
     iTermTableViewTextField *textField = wrapper.subviews.firstObject ?: [[iTermTableViewTextField alloc] init];
     [wrapper addSubview:textField];
-    [textField it_setAssociatedObject:@(row) forKey:&iTermAdvancedSettingsTableKey];
+    textField.tag = row;
     textField.delegate = self;
     textField.identifier = @"mutablestring";
     textField.editable = YES;
     textField.selectable = YES;
     textField.stringValue = string;
+    NSDictionary *setting = [self filteredAdvancedSettings][row];
+    NSString *type = setting.advancedSettingType == kiTermAdvancedSettingTypeInteger ? NSLocalizedString(@"Integer", @"Setting type") :
+        setting.advancedSettingType == kiTermAdvancedSettingTypeFloat ? NSLocalizedString(@"Number", @"Setting type") :
+        NSLocalizedString(@"Text", @"Setting type");
+    textField.placeholderString = type;
+    textField.accessibilityLabel = [NSString stringWithFormat:@"%@ — %@", setting[kAdvancedSettingIdentifier], type];
+    textField.toolTip = [NSString stringWithFormat:NSLocalizedString(@"Type: %@ · Default: %@", @"Setting type and default"),
+                        type, setting[kAdvancedSettingDefaultValue]];
     textField.bezeled = YES;
     textField.drawsBackground = YES;
     textField.backgroundColor = [NSColor textBackgroundColor];
@@ -483,15 +561,13 @@ static NSDictionary *gIntrospection;
             return;
         }
     }
-    _filteredAdvancedSettings = nil;
-    [_tableView reloadData];
+    [self reloadSettings];
 }
 
 #pragma mark - Actions
 
 - (IBAction)toggleExcludeDefaults:(id)sender {
-    _filteredAdvancedSettings = nil;
-    [_tableView reloadData];
+    [self reloadSettings];
 }
 
 #pragma mark - NSTableViewDelegate
@@ -514,20 +590,15 @@ static NSDictionary *gIntrospection;
 
 - (NSAttributedString *)attributedStringForSettingWithName:(NSString *)description
                                                   subtitle:(NSString *)subtitle
-                                                  selected:(BOOL)selected {
+                                                  modified:(BOOL)modified {
     NSMutableAttributedString *attributedDescription =
     [self attributedStringForString:description
                                size:[NSFont systemFontSize]
                           topMargin:2
-                           selected:selected
-                               bold:NO];
+                           selected:NO
+                               bold:modified];
     if (subtitle) {
-        NSColor *color;
-        if (selected) {
-            color = [[NSColor selectedMenuItemTextColor] colorWithAlphaComponent:0.5];
-        } else {
-            color = [NSColor secondaryLabelColor];
-        }
+        NSColor *color = NSColor.secondaryLabelColor;
         NSDictionary *attributes = @{ NSForegroundColorAttributeName: color,
                                       NSFontAttributeName: [NSFont systemFontOfSize:11] };
         NSAttributedString *attributedSubtitle =
@@ -547,7 +618,17 @@ static NSDictionary *gIntrospection;
         subtitle = [description substringFromIndex:newline];
         description = [description substringToIndex:newline];
     }
-    return [self attributedStringForSettingWithName:description subtitle:subtitle selected:selected];
+    return [self attributedStringForSettingWithName:description subtitle:subtitle
+                                           modified:[self isModifiedSetting:settings[row]]];
+}
+
+- (BOOL)isModifiedSetting:(NSDictionary *)setting {
+    id value = [self valueInDictionary:setting] ?: setting[kAdvancedSettingDefaultValue];
+    return ![NSObject object:value isApproximatelyEqualToObject:setting[kAdvancedSettingDefaultValue] epsilon:0.0001];
+}
+
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row {
+    return NO;
 }
 
 - (id)valueInDictionary:(NSDictionary *)dict {
@@ -581,15 +662,8 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
 
         iTermTableViewTextField *textField = [self viewForImmutableAttributedString:[self attributedStringForSettingAtRow:row selected:NO]
                                                                            selected:[self attributedStringForSettingAtRow:row selected:YES]];
-        NSTableRowView *rowView = [tableView rowViewAtRow:row makeIfNecessary:NO];
-        if (rowView) {
-            // An explicit call to rowViewAtRow:makeIfNecessary:YES as in
-            // -selectRowIndex: is needed for this to be initialized correctly
-            // if the background style is not default. If there's no rowView at
-            // the time this is called, the backgroundStyle never gets initialized.
-            // I think I'm going to become a farmer.
-            textField.backgroundStyle = [rowView interiorBackgroundStyle];
-        }
+        textField.accessibilityIdentifier = obj[kAdvancedSettingIdentifier];
+        textField.toolTip = obj[kAdvancedSettingIdentifier];
         return textField;
     } else if (tableColumn == _valueColumn) {
         NSDictionary *dict = settings[row];
@@ -680,15 +754,11 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
 
 - (void)controlTextDidChange:(NSNotification *)aNotification {
     if ([aNotification object] == _searchField) {
-        _filteredAdvancedSettings = nil;
-        [_tableView reloadData];
+        [self reloadSettings];
     } else {
         NSTextField *textField = aNotification.object;
-        NSNumber *associatedObject = [textField it_associatedObjectForKey:&iTermAdvancedSettingsTableKey];
-        if (!associatedObject) {
-            return;
-        }
-        const int row = [associatedObject intValue];
+        const NSInteger row = textField.tag;
+        if (row < 0 || row >= [self filteredAdvancedSettings].count) { return; }
         NSString *string = textField.stringValue;
         NSArray *settings = [self filteredAdvancedSettings];
         NSDictionary *dict = settings[row];
@@ -701,15 +771,21 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
                 assert(NO);
                 break;
 
-            case kiTermAdvancedSettingTypeFloat:
-                [[iTermUserDefaults userDefaults] setFloat:string.floatValue
-                                                         forKey:identifier];
+            case kiTermAdvancedSettingTypeFloat: {
+                NSScanner *scanner = [NSScanner scannerWithString:string];
+                double value;
+                if (![scanner scanDouble:&value] || !scanner.isAtEnd || !isfinite(value)) { return; }
+                [[iTermUserDefaults userDefaults] setDouble:value forKey:identifier];
                 break;
+            }
 
-            case kiTermAdvancedSettingTypeInteger:
-                [[iTermUserDefaults userDefaults] setInteger:string.integerValue
-                                                           forKey:identifier];
+            case kiTermAdvancedSettingTypeInteger: {
+                NSScanner *scanner = [NSScanner scannerWithString:string];
+                NSInteger value;
+                if (![scanner scanInteger:&value] || !scanner.isAtEnd) { return; }
+                [[iTermUserDefaults userDefaults] setInteger:value forKey:identifier];
                 break;
+            }
 
             case kiTermAdvancedSettingTypeString: {
                 NSString *selectorName = dict[kAdvancedSettingSetter];
@@ -720,15 +796,13 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
                 break;
             }
         }
+        [_tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:row]
+                             columnIndexes:[NSIndexSet indexSetWithIndex:0]];
     }
 }
 
 - (void)controlTextDidBeginEditing:(NSNotification *)obj {
     iTermTableViewTextField *textField = [iTermTableViewTextField castFrom:obj.object];
-    NSNumber *associatedObject = [textField it_associatedObjectForKey:&iTermAdvancedSettingsTableKey];
-    if (!associatedObject) {
-        return;
-    }
     [textField setEditing:YES];
 }
 
@@ -737,12 +811,7 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
         return;
     }
     iTermTableViewTextField *textField = obj.object;
-    NSNumber *associatedObject = [textField it_associatedObjectForKey:&iTermAdvancedSettingsTableKey];
-    if (!associatedObject) {
-        return;
-    }
-    const int row = [associatedObject intValue];
-    NSString *string = textField.stringValue;
+    const NSInteger row = textField.tag;
     NSArray *settings = [self filteredAdvancedSettings];
     if (row < 0 || row >= settings.count) {
         return;
@@ -756,11 +825,11 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
             break;
 
         case kiTermAdvancedSettingTypeFloat:
-            textField.stringValue = [NSString stringWithFormat:@"%@", @([string doubleValue])];
+            textField.stringValue = [[self valueInDictionary:dict] description] ?: [dict[kAdvancedSettingDefaultValue] description];
             break;
 
         case kiTermAdvancedSettingTypeInteger:
-            textField.integerValue = string.integerValue;
+            textField.stringValue = [[self valueInDictionary:dict] description] ?: [dict[kAdvancedSettingDefaultValue] description];
             break;
 
         case kiTermAdvancedSettingTypeString:
@@ -773,8 +842,7 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
         textField.backgroundStyle = [rowView interiorBackgroundStyle];
     }
     if (_excludeDefaults.state == NSControlStateValueOn) {
-        _filteredAdvancedSettings = nil;
-        [_tableView reloadData];
+        [self reloadSettings];
     }
 }
 
@@ -823,20 +891,19 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
     if (index == NSNotFound) {
         // A global search result must not be hidden by the local filter.
         _searchField.stringValue = @"";
-        _filteredAdvancedSettings = nil;
         _excludeDefaults.state = NSControlStateValueOff;
-        [_tableView reloadData];
+        [self reloadSettings];
         index = [self indexOfIdentifier:document.identifier];
         
         if (index == NSNotFound) {
             // Pull the query from the prefs search engine and try again
             _searchField.stringValue = query;
-            _filteredAdvancedSettings = nil;
-            [_tableView reloadData];
+            [self reloadSettings];
             return _tableView.enclosingScrollView;
         }
     }
-    [_tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:index] byExtendingSelection:NO];
+    [self layoutSettingsPage];
+    [_tableView deselectAll:nil];
     [_tableView scrollRowToVisible:index];
     return [_tableView viewAtColumn:0 row:index makeIfNecessary:YES];
 }

@@ -233,16 +233,6 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
                          details:_tabViewWrapperView
                          actions:@[_toggleTagsButton, _addProfileButton, _removeProfileButton, _otherActionsPopup]];
 
-    __weak __typeof(self) weakSelf = self;
-    [iTermSettingsProfilesView castFrom:self.view].onSelectProfile = ^(NSString *guid) {
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        [strongSelf->_profilesListView clearSearchField];
-        [strongSelf->_profilesListView selectRowByGuid:guid];
-    };
-
     Profile *profile = [self selectedProfile];
     if (profile) {
         _tabView.hidden = NO;
@@ -264,8 +254,8 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
         NSTabViewItem *tabViewItem = tuple[0];
         NSView *view = tuple[1];
 
-        // Every detail page scrolls independently, including the shorter pages
-        // when the profile selector moves above them in a narrow window.
+        // Preserve each page's required size. The section presenter expands
+        // these wrappers into the shared scrolling document after NIB loading.
         NSSize requiredSize = view.frame.size;
         if (tabViewItem == _generalTab) {
             requiredSize.width = 540;
@@ -519,7 +509,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)updateSubviewsForProfile:(Profile *)profile {
-    [self updateProfilePicker];
+    [self updateProfileHeading];
     ProfileModel *model = [_delegate profilePreferencesModel];
     if ([model numberOfBookmarks] < 2 || !profile) {
         _removeProfileButton.enabled = NO;
@@ -557,7 +547,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 }
 
-- (void)updateProfilePicker {
+- (void)updateProfileHeading {
     NSArray<Profile *> *profiles = [[_delegate profilePreferencesModel] bookmarks];
     [[iTermSettingsProfilesView castFrom:self.view] updateProfilesWithNames:[profiles valueForKey:KEY_NAME]
                                                                identifiers:[profiles valueForKey:KEY_GUID]
@@ -566,7 +556,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (void)reloadData {
     [_profilesListView reloadData];
-    [self updateProfilePicker];
+    [self updateProfileHeading];
 }
 
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)tabViewItem animated:(BOOL)animated {
@@ -579,9 +569,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)resizeWindowForView:(iTermSizeRememberingView *)theView animated:(BOOL)animated {
-    if (self.preferencePanel && ![iTermSettingsProfilesView castFrom:self.view].editingSession) {
-        // The outer page follows the window. Each inner viewport owns its own
-        // minimum content size instead of forcing both columns offscreen.
+    if (self.preferencePanel && [iTermSettingsTabView castFrom:_tabView].presentsSections) {
+        // The profile library stays fixed while the section document scrolls.
         [self.preferencePanel preferencePanelSetContentSize:NSZeroSize];
         return;
     }
@@ -1213,7 +1202,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (void)profilesGeneralPreferencesNameDidChange {
     [_profilesListView selectLockedSelection];
-    [self updateProfilePicker];
+    [self updateProfileHeading];
 }
 
 - (void)profilesGeneralPreferencesNameDidEndEditing {

@@ -23,8 +23,7 @@
 
 - (void)layoutTabView {
     _tabView.frame = self.bounds;
-    NSTabView *tabs = (NSTabView *)_tabView;
-    tabs.selectedTabViewItem.view.frame = tabs.contentRect;
+    [_tabView setNeedsLayout:YES];
 }
 
 @end

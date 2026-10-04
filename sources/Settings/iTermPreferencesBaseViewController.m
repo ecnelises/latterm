@@ -1268,6 +1268,10 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
 }
 
 - (void)resizeWindowForView:(NSView *)theView tabView:(NSTabView *)tabView animated:(BOOL)animated {
+    if ([iTermSettingsTabView castFrom:tabView].presentsSections && self.preferencePanel) {
+        [self.preferencePanel preferencePanelSetContentSize:NSMakeSize(iTermSettingsContentView.minimumPageWidth, 0)];
+        return;
+    }
     const CGFloat minimumWidthForOuterTabView = 644;  // Reserve space for general, appearance, profiles, etc. buttons
     const CGFloat kTabViewMinWidth = MAX(minimumWidthForOuterTabView, self.minimumWidth);
     const CGFloat inset = NSWidth(tabView.bounds) - NSWidth(theView.superview.bounds);

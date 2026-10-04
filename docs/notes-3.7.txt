@@ -9,6 +9,26 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Translate pointer bindings and workgroup help;
+  distinguish new-window and new-tab actions.
+- Keep wide profile controls reachable when
+  settings sections share a scrolling page.
+- Choose external file opening from a menu;
+  preserve legacy choices and honor overrides.
+- Remove the obsolete Mojave window-shadow
+  setting and its unreachable workaround.
+- Scroll the whole Expert Settings page and
+  resize its content when filtering settings.
+- Complete Chinese expert-setting translations
+  and remove ten unused legacy settings.
+- Unify Settings alignment and saved layout
+  previews; repair profile and pointer controls.
+- Translate expert settings and use checkboxes,
+  typed values, and bold modified setting names.
+- Combine Settings subtabs into scrolling
+  sections.
+- Keep profile search and management beside the
+  profile editor.
 - Align Settings titles and sections, use larger
   titles, and remove page subtitles.
 - Narrow the default Settings window and keep

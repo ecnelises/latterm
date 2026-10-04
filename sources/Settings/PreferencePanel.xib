@@ -8994,7 +8994,7 @@ instead of the system keyboard.</string>
                     <font key="font" metaFont="system"/>
                     <tabViewItems>
                         <tabViewItem label="Arrangements" identifier="1" id="Wih-En-NiJ">
-                            <view key="view" id="53t-Ls-j00">
+                            <view key="view" id="53t-Ls-j00" customClass="iTermSettingsArrangementsView">
                                 <rect key="frame" x="10" y="33" width="938" height="401"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>

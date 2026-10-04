@@ -1,86 +1,158 @@
 import AppKit
 
-/// A flat, wrapping section picker over the existing tab items. Keeping the
-/// NSTabView and its delegate preserves deep links and preference bindings.
+/// Keeps tab identities for controller routing and search, while presenting
+/// every item as a section in one document. Selection becomes a scroll target.
 @objc(iTermSettingsTabView)
 final class SettingsTabView: NSTabView {
-    private var ready = false
-    private var buttons: [NSButton] = []
-    private let sectionFont = NSFont.systemFont(ofSize: 12, weight: .medium)
+    private final class Document: NSView {
+        override var isFlipped: Bool { true }
+    }
+
+    private struct Section {
+        let item: NSTabViewItem
+        let heading: NSTextField
+        let height: CGFloat
+        let compactBody: NSView?
+        let preferredBodyWidth: CGFloat
+        let minimumWidth: CGFloat
+    }
+
+    private let scrollView = NSScrollView()
+    private let document = Document()
+    private var sections: [Section] = []
+    @objc private(set) var presentsSections = false
 
     override func awakeFromNib() {
         super.awakeFromNib()
         tabViewType = .noTabsNoBorder
         drawsBackground = false
-        ready = true
+    }
+
+    @objc static func presentSections(in root: NSView) {
+        if let tabs = root as? SettingsTabView {
+            tabs.presentSections()
+            return
+        }
+        for child in root.subviews { presentSections(in: child) }
+    }
+
+    /// Run after controllers finish installing their forms and scroll wrappers.
+    @objc func presentSections() {
+        guard !presentsSections else { return }
+        presentsSections = true
+        if let parent = superview, parent.subviews.count == 1 {
+            frame = parent.bounds
+            autoresizingMask = [.width, .height]
+        }
+        scrollView.borderType = .noBorder
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.documentView = document
+        scrollView.setAccessibilityIdentifier("SettingsSections")
+        addSubview(scrollView)
         rebuildSections()
     }
 
-    private func sectionFrames() -> [NSRect] {
-        let inset: CGFloat = 32
-        let available = max(1, bounds.width - inset * 2)
-        var x = inset
-        var y: CGFloat = 12
-        return tabViewItems.map { item in
-            let titleWidth = (item.label as NSString).size(withAttributes: [.font: sectionFont]).width
-            let width = min(available, ceil(titleWidth) + 24)
-            if x > inset && x + width > bounds.width - inset {
-                x = inset
-                y += 36
-            }
-            let frame = NSRect(x: x, y: isFlipped ? y : bounds.height - y - 30, width: width, height: 30)
-            x += width + 4
-            return frame
+    static func expandSections(in view: NSView) -> CGFloat {
+        if let layouts = view as? SettingsArrangementsView { return layouts.preferredHeight }
+        if let scroll = view as? SettingsContentView {
+            return scroll.expandForSection()
         }
+        if let tabs = view as? SettingsTabView {
+            tabs.presentSections()
+            return tabs.preferredHeight
+        }
+        var extra: CGFloat = 0
+        for child in view.subviews {
+            let height = expandSections(in: child)
+            extra = max(extra, height - child.frame.height)
+        }
+        return view.frame.height + extra
     }
 
-    override var contentRect: NSRect {
-        guard ready else { return super.contentRect }
-        let last = sectionFrames().last
-        let inset = last.map { isFlipped ? $0.maxY + 12 : bounds.height - $0.minY + 12 } ?? 0
-        return NSRect(x: 0, y: isFlipped ? inset : 0, width: bounds.width, height: max(0, bounds.height - inset))
+    private var preferredHeight: CGFloat {
+        sections.reduce(16) { $0 + $1.height + 64 }
+    }
+
+    private var preferredWidth: CGFloat {
+        (sections.map(\.minimumWidth).max() ?? 0) + 64
+    }
+
+    /// Expanded legacy forms must contribute their minimum width to the one
+    /// enclosing document. Hiding their own scrollers must not clip controls.
+    static func minimumWidth(in view: NSView) -> CGFloat {
+        if let scroll = view as? SettingsContentView { return scroll.requiredWidth }
+        if let tabs = view as? SettingsTabView { return tabs.preferredWidth }
+        return view.subviews.map { $0.frame.minX + minimumWidth(in: $0) }.max() ?? 0
     }
 
     private func rebuildSections() {
-        guard ready else { return }
-        buttons.forEach { $0.removeFromSuperview() }
-        buttons = tabViewItems.enumerated().map { index, item in
-            let button = NSButton(title: item.label, target: self, action: #selector(selectSection(_:)))
-            button.tag = index
-            button.setButtonType(.pushOnPushOff)
-            button.isBordered = false
-            button.wantsLayer = true
-            button.layer?.cornerRadius = 7
-            button.toolTip = item.label
-            button.setAccessibilityLabel(item.label)
-            button.setAccessibilityRole(.radioButton)
-            button.setAccessibilityIdentifier("SettingsSection.\(index)")
-            addSubview(button)
-            return button
+        guard presentsSections else { return }
+        let previous = sections
+        sections = tabViewItems.compactMap { item in
+            guard let view = item.view else { return nil }
+            let existing = previous.first { $0.item === item }
+            let heading = existing?.heading ?? NSTextField(labelWithString: item.label)
+            heading.stringValue = item.label
+            heading.font = .systemFont(ofSize: 17, weight: .semibold)
+            heading.setAccessibilityIdentifier("SettingsSection.\(indexOfTabViewItem(item))")
+            let body = existing?.compactBody ?? compactBody(in: view)
+            let height = existing?.height ?? body.map { $0.frame.height + 16 } ?? Self.expandSections(in: view)
+            view.autoresizingMask = []
+            if let body, existing == nil { SettingsFormView.alignControls(in: body) }
+            body?.autoresizingMask = []
+            document.addSubview(heading)
+            document.addSubview(view)
+            let fillsWidth = ["ActionCustomView", "SnippetCustomView"].contains(body?.identifier?.rawValue ?? "")
+            let bodyWidth = fillsWidth ? CGFloat.greatestFiniteMagnitude : (body?.frame.width ?? 0)
+            let minimumWidth = fillsWidth ? 0 : (body?.frame.width ?? Self.minimumWidth(in: view))
+            return Section(item: item, heading: heading, height: height, compactBody: body,
+                           preferredBodyWidth: existing?.preferredBodyWidth ?? bodyWidth,
+                           minimumWidth: existing?.minimumWidth ?? minimumWidth)
         }
-        updateSelection()
+        for old in previous where !tabViewItems.contains(where: { $0 === old.item }) {
+            old.heading.removeFromSuperview()
+            old.item.view?.removeFromSuperview()
+        }
         needsLayout = true
     }
 
-    @objc private func selectSection(_ sender: NSButton) {
-        selectTabViewItem(at: sender.tag)
+    private func compactBody(in view: NSView) -> NSView? {
+        guard view.subviews.count == 1, let body = view.subviews.first else { return nil }
+        // These NIB canvases only center a fixed-height group at the top of
+        // a full tab page. Drop the unused page padding, keeping every control.
+        guard body.isMember(of: NSView.self) ||
+                NSStringFromClass(type(of: body)) == "iTermPreferencesInnerTabContainerView" else { return nil }
+        return body
     }
 
-    private func updateSelection() {
-        for (index, button) in buttons.enumerated() where tabViewItems.indices.contains(index) {
-            let selected = tabViewItems[index] === selectedTabViewItem
-            button.state = selected ? .on : .off
-            button.attributedTitle = NSAttributedString(string: tabViewItems[index].label, attributes: [
-                .font: sectionFont,
-                .foregroundColor: selected ? NSColor.controlAccentColor : NSColor.secondaryLabelColor
-            ])
-            button.layer?.backgroundColor = selected ? NSColor.controlAccentColor.withAlphaComponent(0.1).cgColor : nil
-        }
+    override var contentRect: NSRect {
+        presentsSections ? bounds : super.contentRect
     }
 
     override func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
+        // NSTabView expects to detach its previous item from itself.
+        if presentsSections, let previous = selectedTabViewItem?.view,
+           previous.superview !== self {
+            addSubview(previous)
+        }
         super.selectTabViewItem(tabViewItem)
-        if ready { updateSelection(); needsLayout = true }
+        guard presentsSections else { return }
+        // AppKit moves the selected item's view back into the tab view.
+        // Restore all sections before laying out or revealing a search target.
+        for section in sections {
+            if let view = section.item.view, view.superview !== document {
+                document.addSubview(view)
+            }
+        }
+        needsLayout = true
+        layoutSubtreeIfNeeded()
+        if let heading = sections.first(where: { $0.item === tabViewItem })?.heading {
+            scrollView.contentView.scroll(to: NSPoint(x: 0, y: max(0, heading.frame.minY - 16)))
+            scrollView.reflectScrolledClipView(scrollView.contentView)
+        }
     }
 
     override func insertTabViewItem(_ tabViewItem: NSTabViewItem, at index: Int) {
@@ -100,12 +172,26 @@ final class SettingsTabView: NSTabView {
 
     override func layout() {
         super.layout()
-        for (button, frame) in zip(buttons, sectionFrames()) { button.frame = frame }
-        selectedTabViewItem?.view?.frame = contentRect
-    }
-
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        if ready { updateSelection() }
+        guard presentsSections else { return }
+        scrollView.frame = bounds
+        document.frame = NSRect(x: 0, y: 0, width: max(scrollView.contentSize.width, preferredWidth),
+                                height: max(scrollView.contentSize.height, preferredHeight))
+        var top: CGFloat = 16
+        for section in sections {
+            // A wide legacy section may require horizontal scrolling, but it
+            // must not stretch responsive sibling forms beyond the viewport.
+            let resizesToViewport = section.item.view?.subviews.first is SettingsContentView
+            let sectionWidth = resizesToViewport ? max(section.minimumWidth, scrollView.contentSize.width - 64) :
+                max(0, document.bounds.width - 64)
+            section.heading.frame = NSRect(x: 32, y: top, width: sectionWidth, height: 24)
+            section.item.view?.frame = NSRect(x: 32, y: top + 36,
+                                              width: sectionWidth, height: section.height)
+            if let body = section.compactBody, let page = section.item.view {
+                body.frame = NSRect(x: 0, y: 8,
+                                    width: min(section.preferredBodyWidth, page.bounds.width),
+                                    height: section.height - 16)
+            }
+            top += section.height + 64
+        }
     }
 }

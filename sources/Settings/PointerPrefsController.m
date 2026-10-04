@@ -300,15 +300,15 @@ typedef enum {
 {
     switch (n) {
         case 1:
-            return @"single click";
+            return NSLocalizedString(@"single click", @"Mouse button or gesture");
         case 2:
-            return @"double click";
+            return NSLocalizedString(@"double click", @"Mouse button or gesture");
         case 3:
-            return @"triple click";
+            return NSLocalizedString(@"triple click", @"Mouse button or gesture");
         case 4:
-            return @"quad click";
+            return NSLocalizedString(@"quad click", @"Mouse button or gesture");
         default:
-            return @"(error)";  // shouldn't happen
+            return NSLocalizedString(@"(error)", @"Mouse button or gesture");  // shouldn't happen
     }
 }
 
@@ -316,26 +316,26 @@ typedef enum {
 {
     switch (n) {
         case -1:
-            return @"Unknown button";
+            return NSLocalizedString(@"Unknown button", @"Mouse button or gesture");
         case kLeftButton:
-            return @"Left button";
+            return NSLocalizedString(@"Left button", @"Mouse button or gesture");
         case kRightButton:
-            return @"Right button";
+            return NSLocalizedString(@"Right button", @"Mouse button or gesture");
         case kMiddleButton:
-            return @"Middle button";
+            return NSLocalizedString(@"Middle button", @"Mouse button or gesture");
         default:
-            return [NSString stringWithFormat:@"Button #%d", n+1];
+            return [NSString stringWithFormat:NSLocalizedString(@"Button #%d", @"Mouse button or gesture"), n+1];
     }
 }
 
 + (NSDictionary *)gestureNamesDict
 {
-    NSDictionary *names = @{ kThreeFingerClickGesture: @"Three-finger Tap",
-                             kThreeFingerSwipeRight: @"Three-finger Swipe Right",
-                             kThreeFingerSwipeLeft: @"Three-finger Swipe Left",
-                             kThreeFingerSwipeUp: @"Three-finger Swipe Up",
-                             kThreeFingerSwipeDown: @"Three-finger Swipe Down",
-                             kForceTouchSingleClick: @"Force Touch Single Click" };
+    NSDictionary *names = @{ kThreeFingerClickGesture: NSLocalizedString(@"Three-finger Tap", @"Mouse button or gesture"),
+                             kThreeFingerSwipeRight: NSLocalizedString(@"Three-finger Swipe Right", @"Mouse button or gesture"),
+                             kThreeFingerSwipeLeft: NSLocalizedString(@"Three-finger Swipe Left", @"Mouse button or gesture"),
+                             kThreeFingerSwipeUp: NSLocalizedString(@"Three-finger Swipe Up", @"Mouse button or gesture"),
+                             kThreeFingerSwipeDown: NSLocalizedString(@"Three-finger Swipe Down", @"Mouse button or gesture"),
+                             kForceTouchSingleClick: NSLocalizedString(@"Force Touch Single Click", @"Mouse button or gesture") };
     return names;
 }
 
@@ -406,39 +406,38 @@ typedef enum {
 + (NSDictionary *)localizedActionMap
 {
     NSDictionary *names = [NSDictionary dictionaryWithObjectsAndKeys:
-                           @"Ignore", kIgnoreAction,
-                           @"Invoke Script Function…", kInvokeScriptFunction,
-                           @"Paste from Clipboard…", kPasteFromClipboardPointerAction,
-                           @"Paste from Selection…", kPasteFromSelectionPointerAction,
-                           @"Extend Selection", kExtendSelectionPointerAction,
-                           @"Open URL/Semantic History", kOpenTargetPointerAction,
-                           @"Open URL in background", kOpenTargetInBackgroundPointerAction,
-                           @"Smart Selection", kSmartSelectionPointerAction,
-                           @"Smart Selection Ignoring Newlines", kSmartSelectionIgnoringNewlinesPointerAction,
-                           @"Open Context Menu", kContextMenuPointerAction,
-                           @"Next Tab", kNextTabPointerAction,
-                           @"Previous Tab", kPrevTabPointerAction,
-                           @"Next Window", kNextWindowPointerAction,
-                           @"Previous Window", kPrevWindowPointerAction,
-                           @"Move Pane", kMovePanePointerAction,
-                           @"Send Escape Sequence…", kSendEscapeSequencePointerAction,
-                           @"Send Hex Code…", kSendHexCodePointerAction,
-                           @"Send Text…", kSendTextPointerAction,
-                           @"Select Pane Left", kSelectPaneLeftPointerAction,
-                           @"Select Pane Right", kSelectPaneRightPointerAction,
-                           @"Select Pane Above", kSelectPaneAbovePointerAction,
-                           @"Select Pane Below", kSelectPaneBelowPointerAction,
-                           @"New Window With Profile…", kNewWindowWithProfilePointerAction,
-                           @"New Tab With Profile…", kNewWindowWithProfilePointerAction,
-                           @"New Tab With Profile…", kNewTabWithProfilePointerAction,
-                           @"New Vertical Split With Profile…", kNewVerticalSplitWithProfilePointerAction,
-                           @"New Horizontal Split With Profile…", kNewHorizontalSplitWithProfilePointerAction,
-                           @"QuickLook", kQuickLookAction,
-                           @"Select Menu Item", kSelectMenuItemPointerAction,
-                           @"Copy Link Address", kCopyLinkAddressPointerAction,
-                           @"Select Next Pane", kSelectNextPanePointerAction,
-                           @"Select Previous Pane", kSelectPreviousPanePointerAction,
-                           @"Copy or Paste", kCopyOrPastePointerAction,
+                           NSLocalizedString(@"Ignore", @"Pointer action"), kIgnoreAction,
+                           NSLocalizedString(@"Invoke Script Function…", @"Pointer action"), kInvokeScriptFunction,
+                           NSLocalizedString(@"Paste from Clipboard…", @"Pointer action"), kPasteFromClipboardPointerAction,
+                           NSLocalizedString(@"Paste from Selection…", @"Pointer action"), kPasteFromSelectionPointerAction,
+                           NSLocalizedString(@"Extend Selection", @"Pointer action"), kExtendSelectionPointerAction,
+                           NSLocalizedString(@"Open URL/Semantic History", @"Pointer action"), kOpenTargetPointerAction,
+                           NSLocalizedString(@"Open URL in background", @"Pointer action"), kOpenTargetInBackgroundPointerAction,
+                           NSLocalizedString(@"Smart Selection", @"Pointer action"), kSmartSelectionPointerAction,
+                           NSLocalizedString(@"Smart Selection Ignoring Newlines", @"Pointer action"), kSmartSelectionIgnoringNewlinesPointerAction,
+                           NSLocalizedString(@"Open Context Menu", @"Pointer action"), kContextMenuPointerAction,
+                           NSLocalizedString(@"Next Tab", @"Pointer action"), kNextTabPointerAction,
+                           NSLocalizedString(@"Previous Tab", @"Pointer action"), kPrevTabPointerAction,
+                           NSLocalizedString(@"Next Window", @"Pointer action"), kNextWindowPointerAction,
+                           NSLocalizedString(@"Previous Window", @"Pointer action"), kPrevWindowPointerAction,
+                           NSLocalizedString(@"Move Pane", @"Pointer action"), kMovePanePointerAction,
+                           NSLocalizedString(@"Send Escape Sequence…", @"Pointer action"), kSendEscapeSequencePointerAction,
+                           NSLocalizedString(@"Send Hex Code…", @"Pointer action"), kSendHexCodePointerAction,
+                           NSLocalizedString(@"Send Text…", @"Pointer action"), kSendTextPointerAction,
+                           NSLocalizedString(@"Select Pane Left", @"Pointer action"), kSelectPaneLeftPointerAction,
+                           NSLocalizedString(@"Select Pane Right", @"Pointer action"), kSelectPaneRightPointerAction,
+                           NSLocalizedString(@"Select Pane Above", @"Pointer action"), kSelectPaneAbovePointerAction,
+                           NSLocalizedString(@"Select Pane Below", @"Pointer action"), kSelectPaneBelowPointerAction,
+                           NSLocalizedString(@"New Window With Profile…", @"Pointer action"), kNewWindowWithProfilePointerAction,
+                           NSLocalizedString(@"New Tab With Profile…", @"Pointer action"), kNewTabWithProfilePointerAction,
+                           NSLocalizedString(@"New Vertical Split With Profile…", @"Pointer action"), kNewVerticalSplitWithProfilePointerAction,
+                           NSLocalizedString(@"New Horizontal Split With Profile…", @"Pointer action"), kNewHorizontalSplitWithProfilePointerAction,
+                           NSLocalizedString(@"QuickLook", @"Pointer action"), kQuickLookAction,
+                           NSLocalizedString(@"Select Menu Item", @"Pointer action"), kSelectMenuItemPointerAction,
+                           NSLocalizedString(@"Copy Link Address", @"Pointer action"), kCopyLinkAddressPointerAction,
+                           NSLocalizedString(@"Select Next Pane", @"Pointer action"), kSelectNextPanePointerAction,
+                           NSLocalizedString(@"Select Previous Pane", @"Pointer action"), kSelectPreviousPanePointerAction,
+                           NSLocalizedString(@"Copy or Paste", @"Pointer action"), kCopyOrPastePointerAction,
                            nil];
     return names;
 }
@@ -475,7 +474,7 @@ typedef enum {
         name = [names objectForKey:action];
     }
     if (!name) {
-        name = @"(Unknown)";
+        name = NSLocalizedString(@"(Unknown)", @"Unknown pointer action");
     }
     return name;
 }
@@ -489,7 +488,7 @@ typedef enum {
         name = [names objectForKey:action];
     }
     if (!name) {
-        name = @"(Unknown)";
+        name = NSLocalizedString(@"(Unknown)", @"Unknown pointer action");
     }
     if (action) {
         switch ([PointerPrefsController argumentTypeForAction:action]) {
@@ -648,6 +647,22 @@ typedef enum {
 {
     [tableView_ setDoubleAction:@selector(tableViewRowDoubleClicked:)];
     [tableView_ setTarget:self];
+    NSView *container = tableView_.enclosingScrollView.superview;
+    for (NSView *view in container.subviews) {
+        if (![view isKindOfClass:NSButton.class]) { continue; }
+        NSButton *button = (NSButton *)view;
+        const BOOL add = button.action == @selector(add:);
+        const BOOL remove = button.action == @selector(remove:);
+        if (add || remove) {
+            button.image = nil;
+            button.imagePosition = NSNoImage;
+            button.title = add ? NSLocalizedString(@"Add", @"Mouse binding action") : NSLocalizedString(@"Remove", @"Mouse binding action");
+            button.bezelStyle = NSBezelStyleRounded;
+            button.frame = NSMakeRect(add ? 20 : 96, 14, 72, 28);
+        } else if (button.action == @selector(loadDefaults:)) {
+            button.frame = NSMakeRect(184, 14, 140, 28);
+        }
+    }
     NSArray *actions = [[[PointerPrefsController localizedActionMap] allValues] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     [editAction_ addItemsWithTitles:actions];
 }

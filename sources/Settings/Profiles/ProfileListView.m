@@ -552,11 +552,9 @@ const CGFloat kDefaultTagsWidth = 80;
     splitView_.dividerStyle = NSSplitViewDividerStyleThin;
     searchField_.placeholderString = NSLocalizedString(@"Filter Profiles", @"Search within Settings profiles");
     searchField_.focusRingType = NSFocusRingTypeNone;
-    scrollView_.borderType = NSNoBorder;
+    scrollView_.borderType = NSBezelBorder;
     scrollView_.autohidesScrollers = YES;
-    scrollView_.wantsLayer = YES;
-    scrollView_.layer.cornerRadius = 8;
-    scrollView_.layer.masksToBounds = YES;
+    scrollView_.hasHorizontalScroller = NO;
     tableView_.backgroundColor = NSColor.controlBackgroundColor;
     // The header remains interactive so alphabetical sorting stays available.
     tableColumn_.title = NSLocalizedString(@"Name", @"Profile list column");
@@ -1053,6 +1051,14 @@ const CGFloat kDefaultTagsWidth = 80;
                                        frame.size.width,
                                        frame.size.height - kSearchWidgetHeight - margin_);
     splitView_.frame = splitViewFrame;
+    if (_settingsAppearance && tagsView_.isHidden) {
+        scrollView_.frame = splitView_.bounds;
+        [scrollView_ tile];
+        NSRect tableFrame = tableView_.frame;
+        tableFrame.size.width = scrollView_.contentSize.width;
+        tableView_.frame = tableFrame;
+        tableColumn_.width = tableFrame.size.width;
+    }
 
     if (tableView_.delegate && frame.size.width != oldBoundsSize.width) {
         NSMutableIndexSet *rowsWithHeightChange = [NSMutableIndexSet indexSet];

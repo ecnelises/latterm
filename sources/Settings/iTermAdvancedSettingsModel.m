@@ -16,6 +16,7 @@
 #import "NSApplication+iTerm.h"
 #import "NSStringITerm.h"
 #import "iTermAdvancedSettingsModel.h"
+#import "iTermOpenStyle.h"
 #import "iTermUserDefaultsObserver.h"
 #import <objc/runtime.h>
 
@@ -29,6 +30,11 @@ NSString *const kAdvancedSettingGetter = @"kAdvancedSettingGetter";
 NSString *const kAdvancedSettingOptions = @"kAdvancedSettingOptions";
 
 NSString *const iTermAdvancedSettingsDidChange = @"iTermAdvancedSettingsDidChange";
+
+// Read-only compatibility keys. New choices are stored in NewInstanceOpenStyle.
+static NSString *const kLegacyOpenFileInNewWindows = @"OpenFileInNewWindows";
+static NSString *const kLegacyOpenFileInSplitPanes = @"OpenFileInSplitPanes";
+static NSString *const kLegacyOpenFileInVerticalSplitPane = @"OpenFileInVerticalSplitPane";
 
 static inline BOOL iTermAdvancedSettingsModelTransformBool(id object) {
     return [object boolValue];
@@ -235,6 +241,24 @@ static id sAdvancedSetting_##name; \
 
 #define DEFINE_FLOAT(name, theDefault, theDescription) \
 DEFINE_BOILERPLATE(name, double, kiTermAdvancedSettingTypeFloat, theDefault, theDescription, iTermAdvancedSettingsModelTransformFloat, iTermAdvancedSettingsModelInverseTransformFloat)
+
+// For a choice resolved from multiple preferences. Its separately implemented
+// accessor supplies both the runtime value and the value shown in Settings.
+#define DEFINE_COMPUTED_INT_ENUM(name, theDefault, theOptions, theDescription) \
++ (NSDictionary *)advancedSettingsModelDictionary_##name { \
+    return @{ kAdvancedSettingIdentifier: [@#name stringByCapitalizingFirstLetter], \
+              kAdvancedSettingType: @(kiTermAdvancedSettingTypeIntEnum), \
+              kAdvancedSettingDefaultValue: @(theDefault), \
+              kAdvancedSettingDescription: theDescription, \
+              kAdvancedSettingOptions: theOptions, \
+              kAdvancedSettingGetter: @"object_" @#name }; \
+} \
++ (NSString *)load_##name { \
+    return [@#name stringByCapitalizingFirstLetter]; \
+} \
++ (NSNumber *)object_##name { \
+    return @([self name]); \
+}
 
 #define DEFINE_SETTABLE_FLOAT(name, capitalizedName, theDefault, theDescription) \
 DEFINE_SETTABLE_BOILERPLATE(name, capitalizedName, double, kiTermAdvancedSettingTypeFloat, theDefault, theDescription, iTermAdvancedSettingsModelTransformFloat, iTermAdvancedSettingsModelInverseTransformFloat)
@@ -468,7 +492,6 @@ DEFINE_INT(bufferDepth, 40, SECTION_TERMINAL @"Maximum number of chunks to buffe
 DEFINE_FLOAT(hotkeyTermAnimationDuration, 0.25, SECTION_HOTKEY @"Duration in seconds of the hotkey window animation.\nWarning: reducing this value may cause problems if you have multiple displays.");
 DEFINE_FLOAT(openQuicklyAnimationDuration, 0.12, SECTION_HOTKEY @"Duration in seconds of the Open Quickly window height animation.\nSet to 0 to disable the animation.");
 DEFINE_BOOL(dockIconTogglesWindow, NO, SECTION_HOTKEY @"If the only window is a hotkey window, then clicking the dock icon shows or hides it.");
-DEFINE_BOOL(hotkeyWindowFloatsAboveOtherWindows, NO, SECTION_HOTKEY @"The hotkey window floats above other windows even when another application is active.\nYou must disable “Settings > Keys > Hotkey window hides when focus is lost” for this setting to be effective.");
 DEFINE_FLOAT(hotKeyDoubleTapMaxDelay, 0.3, SECTION_HOTKEY @"The maximum amount of time allowed between presses of a modifier key when performing a modifier double-tap.");
 DEFINE_FLOAT(hotKeyDoubleTapMinDelay, 0.01, SECTION_HOTKEY @"The minimum amount of time required between presses of a modifier key when performing a modifier double-tap.");
 DEFINE_BOOL(showPinnedIndicator, NO, SECTION_HOTKEY @"Show indicator for pinned hotkey windows.");
@@ -478,7 +501,6 @@ DEFINE_BOOL(showPinnedIndicator, NO, SECTION_HOTKEY @"Show indicator for pinned 
 #define SECTION_GENERAL @"General: "
 
 DEFINE_SETTABLE_STRING(searchCommand, SearchCommand, @"https://google.com/search?q=%@", SECTION_GENERAL @"Template for URL of search engine.\nLatterm replaces the string “%@” with the text to search for. Query parameter percent escaping is used.");
-DEFINE_SETTABLE_STRING(searchSuggestURL, SearchSuggestURL, @"https://suggestqueries.google.com/complete/search?client=firefox&q=%@", SECTION_GENERAL @"Template of URL for typeahead search suggestions.\niTerm replaces the string “%@” with the text to search for. Query parameter percent escaping is used.");
 DEFINE_INT(autocompleteMaxOptions, 20, SECTION_GENERAL @"Number of autocomplete options to present.\nA value less than 100 is recommended.");
 DEFINE_FLOAT(minRunningTime, 10, SECTION_GENERAL @"Grace period for automatic quitting after the last window is closed.\nIf Latterm is configured to quit automatically when the last window is closed, this setting gives a grace period (in seconds) after startup where that feature is disabled. Set to 0 to have no grace period.");
 DEFINE_FLOAT(updateScreenParamsDelay, 1, SECTION_GENERAL @"Delay after changing number of screens/resolution until refresh (seconds).\nThis works around OS bugs where it takes some time after a screen change before it is safe to resize windows.");
@@ -507,7 +529,6 @@ DEFINE_BOOL(wrapFocus, YES, SECTION_GENERAL @"Should split pane navigation by di
 DEFINE_BOOL(openUntitledFile, YES, SECTION_GENERAL @"Open a new window when you click the dock icon and no windows are already open, and also on app launch when no other windows are open?");
 DEFINE_BOOL(openNewWindowAtStartup, YES, SECTION_GENERAL @"Open a window at startup?\nThis is useful if you wish to use the system window restoration settings but not create a new window if none would be restored.");
 DEFINE_FLOAT(timeToWaitForEmojiPanel, 1, SECTION_GENERAL @"How long to wait for the emoji panel to open in seconds?\nFloating hotkey windows adjust their level when the emoji panel is open. If it’s really slow you might need to increase this value to prevent it from appearing beneath a floating hotkey window.");
-DEFINE_FLOAT(timeoutForStringEvaluation, 10, SECTION_GENERAL @"Timeout (seconds) for evaluating RPCs.\nThis applies to invoking functions registered by scripts when using the Swift syntax for inline expressions.");
 DEFINE_STRING(pathToFTP, @"ftp", SECTION_GENERAL @"Path to ftp for opening ftp: URLs.\nYou may want to set this to /usr/local/bin/ftp to use the Homebrew install.");
 DEFINE_STRING(pathToTelnet, @"telnet", SECTION_GENERAL @"Path to telnet for opening telnet: URLs.\nYou may want to set this to /usr/local/bin/telnet to use the Homebrew install.");
 DEFINE_STRING(fallbackLCCType, @"", SECTION_GENERAL @"Value to set LC_CTYPE to if the machine‘s combination of country and language are not supported.\nIf unset, the encoding (e.g., UTF-8) will be used.");
@@ -531,7 +552,6 @@ DEFINE_SETTABLE_FLOAT(gitTimeout, GitTimeout, 4, SECTION_GENERAL @"Timeout in se
 DEFINE_STRING(preferredBaseDir, @"", SECTION_GENERAL @"Folder for config files. There must not be a space in the path.\nIf empty, then ~/.config/iterm2 will be the default location.");
 DEFINE_INT(maximumNumberOfTriggerCommands, 16, SECTION_GENERAL @"Maximum number of trigger-launched commands that can run at once.\nIf too many “Run Command…” triggers fire their commands will be queued. You must restart Latterm for changes to this setting to take effect.");
 DEFINE_INT(smartSelectionRadius, 2, SECTION_GENERAL @"Maximum number of lines before and after the click location to include in smart selection.");
-DEFINE_INT(wordSelectionRegexRadius, 500, SECTION_GENERAL @"Maximum number of characters before and after the click location to search when applying word selection regex patterns.");
 DEFINE_FLOAT(alertTriggerRateLimit, 1, SECTION_GENERAL @"Rate limit for Alert triggers.\nIf the same trigger fires with less than this time interval (in seconds) between firings, it will be suppressed.")
 DEFINE_FLOAT(userNotificationTriggerRateLimit, 0, SECTION_GENERAL @"Rate limit for Notification triggers.\nIf the same trigger fires with less than this time interval (in seconds) between firings, it will be suppressed.")
 DEFINE_BOOL(silentUserNotifications, NO, SECTION_GENERAL @"System notifications should be silent.");
@@ -672,18 +692,14 @@ DEFINE_STRING(sessionFinishedMessageText, @"Finished", SECTION_SESSION @"Text di
 
 #define SECTION_WINDOWS @"Windows: "
 
-DEFINE_BOOL(openFileInNewWindows, NO, SECTION_WINDOWS @"DEPRECATED: Use “How should new instances be opened” instead.\nOpen files in new windows, not new tabs or split panes.\nThis affects shell scripts opened from Finder, for example. See also “Open files in split panes”.");
-DEFINE_BOOL(openFileInSplitPanes, NO, SECTION_WINDOWS @"DEPRECATED: Use “How should new instances be opened” instead.\nOpen files in split panes.\nThis affects shell scripts opened from Finder, for example. You must set “Open files in new windows, not new tabs” to “No” for this to take effect. See also “When opening a file in a split pane, should it be a vertical split?”");
-DEFINE_BOOL(openFileInVerticalSplitPane, YES, SECTION_WINDOWS @"DEPRECATED: Use “How should new instances be opened” instead.\nWhen opening a file in a split pane, should it be a vertical split?")
-DEFINE_INT(newInstanceOpenStyle, -1, SECTION_WINDOWS @"How should new instances be opened when triggered by scripts or external applications?\n-1: Use legacy settings (default)\n0: New Window\n1: New Tab\n2: Vertical Split Pane\n3: Horizontal Split Pane\nThis provides a unified setting for controlling external instance creation.")
+DEFINE_COMPUTED_INT_ENUM(newInstanceOpenStyle, iTermOpenStyleTab,
+                        (@[ @"New window", @"New tab", @"Vertical split pane", @"Horizontal split pane" ]),
+                        SECTION_WINDOWS @"Where should files opened from Finder or other applications open?\nChoose a new window, tab, or split pane.");
 DEFINE_BOOL(disableWindowSizeSnap, NO, SECTION_WINDOWS @"Terminal windows resize smoothly.\nDisables snapping to character grid. Holding Control will temporarily disable snap-to-grid.");
 DEFINE_BOOL(profilesWindowJoinsActiveSpace, NO, SECTION_WINDOWS @"If the Profiles window is open, it always moves to join the active Space.\nYou must restart Latterm for a change in this setting to take effect.");
-DEFINE_BOOL(darkThemeHasBlackTitlebar, YES, SECTION_WINDOWS @"Dark themes give terminal windows black title bars by default.");
 DEFINE_BOOL(fontChangeAffectsBroadcastingSessions, NO, SECTION_WINDOWS @"Should growing or shrinking the font in a session that's broadcasting input affect all session that broadcast input?\nThis only applies to changing the font size with Make Text Bigger, Make Text Normal Size, and Make Text Smaller");
 DEFINE_BOOL(serializeOpeningMultipleFullScreenWindows, YES, SECTION_WINDOWS @"When opening multiple fullscreen windows, enter fullscreen one window at a time.");
 DEFINE_BOOL(trackingRunloopForLiveResize, YES, SECTION_WINDOWS @"Use a tracking runloop for live resizing.\nThis allows the terminal to redraw during a resizing drag.");
-DEFINE_BOOL(disableWindowShadowWhenTransparencyOnMojave, YES, SECTION_WINDOWS @"Disable the window shadow on Mojave when the window has a transparent session to improve performance.");
-DEFINE_BOOL(disableWindowShadowWhenTransparencyPreMojave, YES, SECTION_WINDOWS @"Disable the window shadow on High Sierra and earlier when the window has a transparent session to prevent text shadows.");
 DEFINE_BOOL(restoreWindowsWithinScreens, YES, SECTION_WINDOWS @"When restoring a window arrangement, ensure windows are entirely within the bounds of the current displays.")
 DEFINE_FLOAT(extraSpaceBeforeCompactTopTabBar, 0, SECTION_WINDOWS @"Amount of extra space (in points) between stoplight buttons and inline tab bar.\nThis only takes effect for the Compact and Minimal themes when the tab bar is visible and located at the top of the window.");
 DEFINE_BOOL(workAroundMultiDisplayOSBug, YES, SECTION_WINDOWS @"Work around a macOS bug where the OS moves windows to the first display for no good reason.");
@@ -738,7 +754,6 @@ DEFINE_BOOL(neverWarnAboutMeta, NO, SECTION_WARNINGS @"Suppress a warning when �
 DEFINE_BOOL(neverWarnAboutSpaces, NO, SECTION_WARNINGS @"Suppress a warning about how to configure Spaces when setting a window's Space.");
 DEFINE_BOOL(neverWarnAboutOverrides, NO, SECTION_WARNINGS @"Suppress a warning about a change to a Profile key setting that overrides a global setting.");
 DEFINE_BOOL(neverWarnAboutPossibleOverrides, NO, SECTION_WARNINGS @"Suppress a warning about a change to a global key that's overridden by a Profile.");
-DEFINE_BOOL(noSyncNeverRemindPrefsChangesLostForUrl, NO, SECTION_WARNINGS @"Suppress changed-setting warning when settings are loaded from a URL.");
 DEFINE_BOOL(noSyncNeverRemindPrefsChangesLostForFile, NO, SECTION_WARNINGS @"Suppress changed-setting warning when settings are loaded from a custom folder.");
 DEFINE_BOOL(noSyncSuppressAnnyoingBellOffer, NO, SECTION_WARNINGS @"Suppress offer to silence bell when it rings too much.");
 
@@ -764,8 +779,6 @@ DEFINE_SETTABLE_BOOL(noSyncSuppressBadPWDInArrangementWarning,
                      NoSyncSuppressBadPWDInArrangementWarning, NO, SECTION_WARNINGS @"Suppress the notification that a saved arrangement has a bad initial working directory.");
 DEFINE_SETTABLE_BOOL(noSyncNeverAskAboutMouseReportingFrustration, NoSyncNeverAskAboutMouseReportingFrustration, NO, SECTION_WARNINGS @"Suppress the notification asking if you want to disable mouse reporting that is shown after a drag followed by Cmd-C when mouse reporting is on?");
 DEFINE_SETTABLE_BOOL(noSyncNeverAskAboutDEC2048Frustration, NoSyncNeverAskAboutDEC2048Frustration, NO, SECTION_WARNINGS @"Suppress the notification asking if you want to disable resize reporting");
-DEFINE_SETTABLE_BOOL(noSyncDontWarnAboutTmuxPause, NoSyncDontWarnAboutTmuxPause, NO, SECTION_WARNINGS @"Suppress announcement that tmux will pause a session.");
-DEFINE_OPTIONAL_BOOL(noSyncClearAllBroadcast, nil, SECTION_WARNINGS @"Send Clear Session to all broadcasted-to sessions?");
 DEFINE_BOOL(noSyncSuppressSendSignal, NO, SECTION_WARNINGS @"Suppress warning about sending a signal to terminate a job.\nThis is used in the process tree, which you can find the toolbelt or by clicking the Jobs status bar component.");
 DEFINE_BOOL(noSyncConfirmRemoveAnnotation, NO, SECTION_WARNINGS @"Suppress confirmation to remove annotation?");
 DEFINE_SETTABLE_BOOL(noSyncDisableOpenURL, NoSyncDisableOpenURL, NO, SECTION_WARNINGS @"Disable control sequence to open URLs?");
@@ -897,7 +910,6 @@ DEFINE_BOOL(companionStreamFrameNumbers, NO, SECTION_EXPERIMENTAL @"Stamp frame 
 DEFINE_INT(companionStreamMaxLeadMilliseconds, 500, SECTION_EXPERIMENTAL @"iTerm2 Buddy live stream: maximum capture-time lead, in milliseconds.\nThe host stops sending new frames once it is more than this far ahead of the last frame the phone acknowledged, then resumes when the phone catches up. Larger values tolerate more link latency at the cost of a live view that can lag further behind. Only the frame rate is affected; per-frame quality is unchanged.");
 DEFINE_INT(companionStreamMaxQueueDepth, 4, SECTION_EXPERIMENTAL @"iTerm2 Buddy live stream: maximum phone decode-queue depth.\nThe host stops sending new frames once the phone reports more than this many frames queued for decode/display, then resumes as the queue drains. Larger values let more frames pile up on the phone before backing off. Only the frame rate is affected; per-frame quality is unchanged.");
 DEFINE_FLOAT(companionStreamBitrateMultiplier, 1.0, SECTION_EXPERIMENTAL @"iTerm2 Buddy live stream: video bitrate multiplier.\nScales the resolution-derived encoder bitrate. Values above 1 make streamed text sharper at the cost of bandwidth; values below 1 save bandwidth at the cost of sharpness. The result is still clamped to the stream’s minimum and ceiling bitrates.");
-DEFINE_FLOAT(companionWakeupCoalesceInterval, 5.0, SECTION_EXPERIMENTAL @"iTerm2 Buddy push notifications: minimum seconds between wakeup pushes.\nA wakeup push tells the paired phone to fetch every new message and alert at once, so several in quick succession are wasteful and can leave a later one with nothing to show (the generic “Your agent has an update.” placeholder). The host sends the first wakeup immediately, then coalesces any that follow within this interval into a single trailing wakeup. Lower values notify sooner but coalesce less; higher values coalesce bursts more aggressively.");
 #pragma mark - Scripting
 #define SECTION_SCRIPTING @"Scripting: "
 
@@ -931,8 +943,37 @@ DEFINE_SETTABLE_BOOL(setIT2AppPath, SetIT2AppPath, NO, SECTION_SCRIPTING @"Set I
                 }];
             }
         }];
+        // Imported or externally edited legacy preferences still update the
+        // resolved choice, without writing a migration into synced settings.
+        for (NSString *key in @[kLegacyOpenFileInNewWindows, kLegacyOpenFileInSplitPanes,
+                                kLegacyOpenFileInVerticalSplitPane]) {
+            [observer observeKey:key block:^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:iTermAdvancedSettingsDidChange object:nil];
+            }];
+        }
         [self updateSettingsForUnitTestsIfNeeded];
     }
+}
+
++ (int)newInstanceOpenStyle {
+    NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+    id stored = [defaults objectForKey:@"NewInstanceOpenStyle"];
+    if ([stored respondsToSelector:@selector(integerValue)]) {
+        const NSInteger value = [stored integerValue];
+        if (value >= 0 && value <= (NSInteger)iTermOpenStyleHorizontalSplit) {
+            return (int)value;
+        }
+    }
+    // Missing, -1, and other invalid values historically use the legacy keys.
+    // Preserve their precedence and defaults, including vertical splits.
+    if ([defaults boolForKey:kLegacyOpenFileInNewWindows]) {
+        return iTermOpenStyleWindow;
+    }
+    if ([defaults boolForKey:kLegacyOpenFileInSplitPanes]) {
+        id vertical = [defaults objectForKey:kLegacyOpenFileInVerticalSplitPane];
+        return (!vertical || [vertical boolValue]) ? iTermOpenStyleVerticalSplit : iTermOpenStyleHorizontalSplit;
+    }
+    return iTermOpenStyleTab;
 }
 
 + (void)updateSettingsForUnitTestsIfNeeded {

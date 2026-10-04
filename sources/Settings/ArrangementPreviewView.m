@@ -14,12 +14,23 @@
 
 - (void)setArrangement:(NSArray*)arrangement {
     arrangement_ = [arrangement copy];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
     dirtyRect = NSIntersectionRect(dirtyRect, self.bounds);
-    [[NSColor lightGrayColor] set];
+    [NSColor.controlBackgroundColor setFill];
     NSRectFill(dirtyRect);
+    if (arrangement_.count == 0) {
+        NSString *message = NSLocalizedString(@"Select a saved window layout to see its preview.", @"Empty layout preview");
+        NSDictionary *attributes = @{NSFontAttributeName: [NSFont systemFontOfSize:13],
+                                     NSForegroundColorAttributeName: NSColor.secondaryLabelColor};
+        NSRect textRect = NSInsetRect(self.bounds, 20, 20);
+        textRect.origin.y = MAX(20, (NSHeight(self.bounds) - 40) / 2);
+        textRect.size.height = 40;
+        [message drawInRect:textRect withAttributes:attributes];
+        return;
+    }
 
     NSArray *screens = [NSScreen screens];
     CGFloat xMax = 0, yMax = 0;

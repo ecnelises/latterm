@@ -907,27 +907,13 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
             }
         }
 
-        PseudoTerminal *windowController = [self terminalToOpenFileIn];
+        const iTermOpenStyle style = (iTermOpenStyle)[iTermAdvancedSettingsModel newInstanceOpenStyle];
+        PseudoTerminal *windowController = style == iTermOpenStyleWindow ? nil : [self currentTerminal];
         if (!windowController) {
             bookmark[KEY_DISABLE_AUTO_FRAME] = @YES;
             DLog(@"Disable auto frame. Profile is:\n%@", bookmark);
         }
-        RLog(@"application:openFile: launching new session in window %@", windowController);
-        iTermOpenStyle style = iTermOpenStyleTab;
-        NSInteger stylePreference = [iTermAdvancedSettingsModel newInstanceOpenStyle];
-        if (stylePreference >= 0 && stylePreference <= 3) {
-            style = (iTermOpenStyle)stylePreference;
-        } else if ([iTermAdvancedSettingsModel openFileInNewWindows]) {
-            style = iTermOpenStyleWindow;
-        } else if ([iTermAdvancedSettingsModel openFileInSplitPanes]) {
-            if ([iTermAdvancedSettingsModel openFileInVerticalSplitPane]) {
-                style = iTermOpenStyleVerticalSplit;
-            } else {
-                style = iTermOpenStyleHorizontalSplit;
-            }
-        } else {
-            style = iTermOpenStyleTab;
-        }
+        RLog(@"application:openFile: launching new session in window %@ with style %lu", windowController, (unsigned long)style);
         [iTermSessionLauncher launchBookmark:bookmark
                                   inTerminal:windowController
                                        style:style
@@ -3254,14 +3240,6 @@ static iTermKeyEventReplayer *gReplayer;
     }
     
     [[iTermApplication sharedApplication] setIsUIElement:enableLSUI];
-}
-
-- (PseudoTerminal *)terminalToOpenFileIn {
-    if ([iTermAdvancedSettingsModel openFileInNewWindows]) {
-        return nil;
-    } else {
-        return [self currentTerminal];
-    }
 }
 
 - (void)updateScreenParametersInAllTerminals {

@@ -569,6 +569,11 @@ static iTermPreferencesSearchEngine *gSearchEngine;
         }
     }
 
+    for (iTermSettingsPage *page in _settingsPages) {
+        [iTermSettingsTabView presentSectionsIn:page.tabViewItem.view];
+    }
+    [self resizeWindowForTabViewItem:_tabView.selectedTabViewItem animated:NO];
+
     iTermPrefsPanel *panel = (iTermPrefsPanel *)self.window;
     panel.prefsPanelDelegate = self;
 
@@ -1062,6 +1067,10 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)tabViewItem animated:(BOOL)animated {
+    if (tabViewItem == _profilesTabViewItem) {
+        [_profilesViewController resizeWindowForCurrentTabAnimated:animated];
+        return;
+    }
     iTermPreferencesBaseViewController *viewController = [self viewControllerForTabViewItem:tabViewItem];
     if (viewController.tabView != nil) {
         [viewController resizeWindowForCurrentTabAnimated:animated];
@@ -1317,6 +1326,9 @@ andEditComponentWithIdentifier:(NSString *)identifier
         // Legacy panes remember their old wide NIB size, but resize cleanly
         // at the page minimum. Keep horizontal scrolling for smaller windows.
         size.width = MIN(size.width, iTermSettingsContentView.minimumPageWidth);
+    }
+    if (_tabView.selectedTabViewItem == _profilesTabViewItem) {
+        size.width = MAX(size.width, 800);
     }
     [_settingsContent setMinimumContentSize:size];
 }

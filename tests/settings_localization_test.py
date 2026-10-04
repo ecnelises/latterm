@@ -34,6 +34,25 @@ class SettingsLocalizationTests(unittest.TestCase):
                     translated = collections.Counter(re.findall(pattern, value))
                     self.assertEqual(original, translated, key)
 
+    def test_all_expert_setting_descriptions_are_translated(self):
+        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
+        source = (ROOT / "sources/Settings/iTermAdvancedSettingsModel.m").read_text()
+        source = source.split("#pragma mark Tabs", 1)[1]
+        definitions = re.findall(r'^DEFINE_\w+\(\w+,[\s\S]*?(?=^DEFINE_|^#|^\+|\Z)', source, re.M)
+        self.assertGreater(len(definitions), 400)
+        for definition in definitions:
+            match = re.search(r'SECTION_\w+\s*((?:@?"(?:[^"\\]|\\.)*"\s*)+)\);?', definition)
+            self.assertIsNotNone(match, definition)
+            literals = match.group(1)
+            description = "".join(json.loads(value) for value in re.findall(r'"(?:[^"\\]|\\.)*"', literals))
+            self.assertIn(description, localized)
+            self.assertNotEqual(localized[description], description)
+            if re.match(r'DEFINE_(?:COMPUTED_)?INT_ENUM\(', definition):
+                for literal in re.findall(r'@("(?:[^"\\]|\\.)*")', definition[:match.start()]):
+                    self.assertIn(json.loads(literal), localized)
+        for category in re.findall(r'^#define SECTION_\w+ @"(.*): "', source, re.M):
+            self.assertIn(category, localized)
+
     def test_settings_nib_translations_reference_existing_objects(self):
         for name in ("PreferencePanel", "SpecialExceptionsWindowController", "iTermEditSnippetWindowController"):
             root = ET.parse(ROOT / "sources/Settings" / f"{name}.xib").getroot()
@@ -48,6 +67,9 @@ class SettingsLocalizationTests(unittest.TestCase):
                      "SpecialExceptionsWindowController.swift", "SettingsSidebarView.swift",
                      "ProfilesGeneralPreferencesViewController.m", "SettingsPage.swift",
                      "SettingsProfilesView.swift", "GeneralPreferencesViewController.m",
+                     "SettingsFormView.swift", "ArrangementPreviewView.m", "PointerPrefsController.m",
+                     "../Workgroups/iTermWorkgroupDetailViewController.swift",
+                     "iTermAdvancedSettingsViewController.m",
                      "iTermPreferencesSearchEngineResultsWindowController.m"):
             source = (ROOT / "sources/Settings" / name).read_text()
             for key in re.findall(r'NSLocalizedString\(@?"((?:[^"\\]|\\.)*)"', source):

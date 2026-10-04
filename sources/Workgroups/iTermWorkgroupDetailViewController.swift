@@ -45,12 +45,12 @@ class iTermWorkgroupDetailViewController: NSViewController {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 640, height: 420))
 
         emptyLabel = NSTextField(labelWithString:
-            "Select a workgroup on the left or click + to create one.")
+            NSLocalizedString("Select a workgroup on the left or click + to create one.", comment: "Workgroup empty state"))
         emptyLabel.textColor = .secondaryLabelColor
         emptyLabel.alignment = .center
         root.addSubview(emptyLabel)
 
-        whatIsButton = NSButton(title: "What is a Workgroup?",
+        whatIsButton = NSButton(title: NSLocalizedString("What is a Workgroup?", comment: "Workgroup help"),
                                 target: self,
                                 action: #selector(whatIsAWorkgroupClicked(_:)))
         whatIsButton.bezelStyle = .rounded
