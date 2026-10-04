@@ -1340,6 +1340,96 @@ typedef struct {
 
 #pragma mark - Computed values
 
++ (id)factoryObjectForKey:(NSString *)key {
+    static NSDictionary *preset;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *path = [[NSBundle bundleForClass:self] pathForResource:@"DefaultBookmark" ofType:@"plist"];
+        preset = [NSDictionary dictionaryWithContentsOfFile:path];
+    });
+    if (preset[key]) {
+        return preset[key];
+    }
+    // New profiles omit this key and resolve to Unicode 9, not the old
+    // defaultValueMap value of 8. Keep the compatibility resolver unchanged.
+    if ([key isEqualToString:KEY_UNICODE_VERSION]) {
+        return [self unicodeVersion:@{}];
+    }
+    if ([key isEqualToString:KEY_TIMESTAMPS_VISIBLE]) {
+        return @NO;
+    }
+    if ([key isEqualToString:KEY_STATUS_BAR_LAYOUT]) {
+        return [self statusBarLayout:@{}];
+    }
+    NSDictionary *badgeKeys = @{ KEY_BADGE_TOP_MARGIN: @"BadgeTopMargin",
+                                 KEY_BADGE_RIGHT_MARGIN: @"BadgeRightMargin",
+                                 KEY_BADGE_MAX_WIDTH: @"BadgeMaxWidthFraction",
+                                 KEY_BADGE_MAX_HEIGHT: @"BadgeMaxHeightFraction",
+                                 KEY_BADGE_FONT: @"BadgeFont" };
+    NSString *identifier = badgeKeys[key];
+    if (identifier) {
+        __block id value;
+        __block BOOL bold;
+        [iTermAdvancedSettingsModel enumerateDictionaries:^(NSDictionary *dictionary) {
+            if ([dictionary[kAdvancedSettingIdentifier] isEqual:identifier]) {
+                value = dictionary[kAdvancedSettingDefaultValue];
+            }
+            if ([dictionary[kAdvancedSettingIdentifier] isEqual:@"BadgeFontIsBold"]) {
+                bold = [dictionary[kAdvancedSettingDefaultValue] boolValue];
+            }
+        }];
+        return [key isEqualToString:KEY_BADGE_FONT] ? [self badgeFontWithName:value bold:bold] : value;
+    }
+    return [self defaultObjectForKey:key];
+}
+
++ (id)resolvedFactoryObjectForKey:(NSString *)key {
+    id factory = [self factoryObjectForKey:key];
+    return factory ? [self objectForKey:key inProfile:@{ key: factory }] : nil;
+}
+
++ (NSString *)valueSourceForKey:(NSString *)key inProfile:(Profile *)profile {
+    const BOOL requiresNumber = [key isEqualToString:KEY_TREAT_OPTION_AS_ALT] ||
+                                [key isEqualToString:KEY_TIMESTAMPS_VISIBLE];
+    if (profile[key] && (!requiresNumber ||
+                         [profile[key] isKindOfClass:NSNumber.class])) {
+        return NSLocalizedString(@"Saved profile value", @"Profile setting source");
+    }
+    NSDictionary *legacyKeys = @{ KEY_UNICODE_NORMALIZATION: KEY_USE_HFS_PLUS_MAPPING,
+                                  KEY_BACKGROUND_IMAGE_MODE: KEY_BACKGROUND_IMAGE_TILED_DEPRECATED,
+                                  KEY_TIMESTAMPS_STYLE: KEY_SHOW_TIMESTAMPS,
+                                  KEY_TIMESTAMPS_VISIBLE: KEY_SHOW_TIMESTAMPS,
+                                  KEY_BRIGHTEN_BOLD_TEXT: KEY_USE_BOLD_COLOR,
+                                  KEY_BRIGHTEN_BOLD_TEXT COLORS_LIGHT_MODE_SUFFIX: KEY_USE_BOLD_COLOR,
+                                  KEY_BRIGHTEN_BOLD_TEXT COLORS_DARK_MODE_SUFFIX: KEY_USE_BOLD_COLOR };
+    NSString *legacy = legacyKeys[key];
+    if (legacy && profile[legacy]) {
+        return [NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"Compatible profile value", @"Profile setting source"), legacy];
+    }
+    NSString *globalKey = [key isEqualToString:KEY_IDLE_PERIOD] ? @"AntiIdleTimerPeriod" :
+                         [key isEqualToString:KEY_TREAT_OPTION_AS_ALT] ? @"OptionIsMetaForSpecialChars" : nil;
+    id globalValue = globalKey ? [[iTermUserDefaults userDefaults] objectForKey:globalKey] : nil;
+    if (globalValue && (![key isEqualToString:KEY_TREAT_OPTION_AS_ALT] || [globalValue isKindOfClass:NSNumber.class])) {
+        return [NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"Legacy app setting", @"Profile setting source"), globalKey];
+    }
+    if ([key isEqualToString:KEY_TITLE_COMPONENTS] && ![profile[KEY_NAME] isEqual:@"tmux"]) {
+        for (NSString *titleKey in @[ KEY_SYNC_TITLE_DEPRECATED, kPreferenceKeyShowJobName_Deprecated,
+                                     kPreferenceKeyShowProfileName_Deprecated ]) {
+            if ([[iTermUserDefaults userDefaults] objectForKey:titleKey]) {
+                return NSLocalizedString(@"Legacy app setting", @"Profile setting source");
+            }
+        }
+    }
+    if ([@[ KEY_BADGE_TOP_MARGIN, KEY_BADGE_RIGHT_MARGIN, KEY_BADGE_MAX_WIDTH,
+            KEY_BADGE_MAX_HEIGHT, KEY_BADGE_FONT ] containsObject:key]) {
+        return NSLocalizedString(@"Expert setting fallback", @"Profile setting source");
+    }
+    if ([self computedObjectDictionary][key]) {
+        return NSLocalizedString(@"Compatibility fallback", @"Profile setting source");
+    }
+    return NSLocalizedString(@"Default fallback", @"Profile setting source");
+}
+
 // Returns a dictionary from key to a ^id() block. The block will return an object value for the
 // preference or nil if the normal path (of taking the NSUserDefaults value or +defaultObjectForKey)
 // should be used.
@@ -1586,8 +1676,12 @@ typedef struct {
         return value;
     }
 
-    NSString *baseFontName = [iTermAdvancedSettingsModel badgeFont];
-    if ([iTermAdvancedSettingsModel badgeFontIsBold]) {
+    return [self badgeFontWithName:[iTermAdvancedSettingsModel badgeFont]
+                             bold:[iTermAdvancedSettingsModel badgeFontIsBold]];
+}
+
++ (NSString *)badgeFontWithName:(NSString *)baseFontName bold:(BOOL)bold {
+    if (bold) {
         NSFont *font = [NSFont fontWithName:baseFontName size:12] ?: [NSFont fontWithName:@"Helvetica" size:12] ?: [NSFont systemFontOfSize:[NSFont systemFontSize]];
         NSFont *boldFont = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSBoldFontMask];
         if (boldFont) {

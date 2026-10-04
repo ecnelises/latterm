@@ -69,6 +69,7 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 
     // Other actions… under list of profiles in prefs>profiles.
     IBOutlet NSPopUpButton *_otherActionsPopup;
+    iTermProfileSettingsInspector *_settingsInspector;
 
     // Tab view for profiles (general/colors/text/window/terminal/session/keys/advanced)
     IBOutlet NSTabView *_tabView;
@@ -183,6 +184,11 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
 }
 
 - (void)windowWillClose {
+    if (_settingsInspector.window.sheetParent) {
+        [_settingsInspector.window.sheetParent endSheet:_settingsInspector.window];
+    }
+    [_settingsInspector close];
+    _settingsInspector = nil;
     [_profilesListView unlockSelection];
 }
 
@@ -232,6 +238,12 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
         configureWithProfileList:_profilesListView
                          details:_tabViewWrapperView
                          actions:@[_toggleTagsButton, _addProfileButton, _removeProfileButton, _otherActionsPopup]];
+    [_otherActionsPopup.menu addItem:NSMenuItem.separatorItem];
+    NSMenuItem *inspect = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Inspect Profile Settings…", @"Profile action")
+                                                  action:@selector(inspectProfileSettings:)
+                                           keyEquivalent:@""];
+    inspect.target = self;
+    [_otherActionsPopup.menu addItem:inspect];
 
     Profile *profile = [self selectedProfile];
     if (profile) {
@@ -467,6 +479,25 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 #pragma mark - Private
+
+- (IBAction)inspectProfileSettings:(id)sender {
+    Profile *profile = self.selectedProfile;
+    if (!profile || !self.view.window || _settingsInspector) {
+        return;
+    }
+    _settingsInspector = [[iTermProfileSettingsInspector alloc]
+        initWithSettings:[self allSettingsWithPathComponents:@[]]
+             controllers:[self tabViewControllers]
+                   model:[self.delegate profilePreferencesModel]
+                    guid:profile[KEY_GUID]];
+    __weak typeof(self) weakSelf = self;
+    [self.view.window beginSheet:_settingsInspector.window completionHandler:^(NSModalResponse response) {
+        typeof(self) strongSelf = weakSelf;
+        if (strongSelf) {
+            strongSelf->_settingsInspector = nil;
+        }
+    }];
+}
 
 - (BOOL)confirmProfileDeletion:(Profile *)profile {
     NSMutableString *question = [NSMutableString stringWithFormat:@"Delete profile %@?",

@@ -1626,3 +1626,29 @@
 "Open a setting directly by name or keyword." = "输入设置名称或关键词，直接打开对应选项。";
 "Settings: %@ · %@" = "设置：%@ · %@";
 "Changes are saved when edited. Some settings require a restart. Check a box to enable a Boolean setting; enter numbers or text in the value field. Bold names indicate values changed from their defaults. Reset restores the factory value; hover over a name to see its source and default." = "修改会自动保存，部分设置需重启后生效。勾选复选框开启选项，输入框可编辑数字或文本。偏离默认值的设置名称会加粗显示。点按“恢复默认”可还原出厂值；将指针停在名称上可查看来源和默认值。";
+
+/* Profile settings inspector */
+"Expression binding" = "表达式绑定";
+"Hidden" = "已隐藏";
+"Empty string" = "空字符串";
+"Only differences from factory" = "只看与出厂配置不同的项";
+"Profile values are shown before session expressions are evaluated. Restore writes the factory value only to this profile." = "此处显示计算会话表达式前的配置方案值。恢复操作只向当前配置方案写入出厂值。";
+"Restore Factory Value" = "恢复出厂值";
+"Show in Settings" = "在设置中显示";
+"Inspect Profile Settings" = "检查配置方案设置";
+"Search profile settings" = "搜索配置方案设置";
+"Profile Value" = "配置方案值";
+"Factory Value" = "出厂值";
+"Done" = "完成";
+"Profile unavailable" = "配置方案不可用";
+"%@ — %ld settings" = "%@ — %ld 项设置";
+"No matching profile settings" = "没有匹配的配置方案设置";
+"Select a setting to inspect its source and factory value." = "选择设置项，查看其来源和出厂值。";
+"Use the setting’s editor for bindings, dependent settings, and special actions." = "绑定、关联设置和特殊操作请使用对应的设置编辑器。";
+"Saved profile value" = "配置方案中保存的值";
+"Compatible profile value" = "兼容的配置方案值";
+"Legacy app setting" = "旧版应用设置";
+"Expert setting fallback" = "专业设置回退值";
+"Compatibility fallback" = "兼容回退值";
+"Default fallback" = "默认回退值";
+"Inspect Profile Settings…" = "检查配置方案设置…";

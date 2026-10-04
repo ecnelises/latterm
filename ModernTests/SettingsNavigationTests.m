@@ -19,6 +19,17 @@
 #import "iTermOpenQuicklyItem.h"
 #import "iTermOpenQuicklyCommands.h"
 #import "iTermOpenQuicklyWindowController.h"
+#import "iTermProfilePreferences.h"
+#import "iTermProfilePreferencesBaseViewController.h"
+
+@interface ProfilePreferencesViewController (InspectorTests)
+- (void)inspectProfileSettings:(id)sender;
+@end
+
+@interface NSWindowController (ProfileInspectorTests)
+- (void)restoreSelected;
+- (void)revealSelected;
+@end
 
 @interface iTermOpenQuicklyWindowController (SettingsTests)
 - (void)update;
@@ -117,6 +128,118 @@
 @interface SettingsNavigationTests : XCTestCase
 @end
 @implementation SettingsNavigationTests
+
+- (void)testProfileInspectorRestoresOnlyTheSelectedProfileAndRevealsItsEditor {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    [panel showProfilesTabView:nil];
+    ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
+    NSString *originalGuid = [profiles selectedProfile][KEY_GUID];
+    ProfileModel *model = [ProfileModel sharedInstance];
+    NSMutableDictionary *profile = [[profiles selectedProfile] mutableCopy];
+    NSString *guid = [ProfileModel freshGuid];
+    NSString *otherGuid = [ProfileModel freshGuid];
+    profile[KEY_GUID] = guid;
+    profile[KEY_NAME] = @"Settings Inspection Test";
+    profile[KEY_SCROLLBACK_LINES] = @54321;
+    profile[KEY_UNLIMITED_SCROLLBACK] = @NO;
+    profile[KEY_BINDINGS] = @{};
+    [profile removeObjectForKey:KEY_DYNAMIC_PROFILE_FILENAME];
+    [model addBookmark:profile];
+    NSMutableDictionary *other = [profile mutableCopy];
+    other[KEY_GUID] = otherGuid;
+    other[KEY_NAME] = @"Unchanged Profile";
+    [model addBookmark:other];
+    @try {
+        [iTermProfilePreferences commitModel:model];
+        [panel showWindow:nil];
+        [panel showProfilesTabView:nil];
+        [profiles openToProfileWithGuid:guid];
+        XCTAssertEqualObjects([profiles selectedProfile][KEY_GUID], guid);
+        XCTAssertNotNil(profiles.view.window);
+        NSPopUpButton *actions = [profiles valueForKey:@"_otherActionsPopup"];
+        XCTAssertNotEqual([actions.menu.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger index, BOOL *stop) {
+            return item.action == @selector(inspectProfileSettings:);
+        }], NSNotFound);
+        [profiles inspectProfileSettings:nil];
+        NSWindowController *inspector = [profiles valueForKey:@"_settingsInspector"];
+        XCTAssertNotNil(inspector);
+        XCTAssertEqual(inspector.window.sheetParent, panel.window);
+        NSTableView *table = [self tableInSidebar:inspector.window.contentView];
+        NSSearchField *search = nil;
+        NSButton *restore = nil;
+        for (NSView *view in inspector.window.contentView.subviews) {
+            if ([view isKindOfClass:NSSearchField.class]) { search = (NSSearchField *)view; }
+            if ([view isKindOfClass:NSButton.class] && [(NSButton *)view action] == @selector(restoreSelected)) { restore = (NSButton *)view; }
+            XCTAssertTrue(NSContainsRect(inspector.window.contentView.bounds, view.frame));
+        }
+        XCTAssertNotNil(search);
+        XCTAssertNotNil(restore);
+        search.stringValue = KEY_SCROLLBACK_LINES;
+        [search.delegate controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+        XCTAssertEqual(table.numberOfRows, 1);
+        [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        XCTAssertTrue(restore.enabled);
+        [self attachSettingsWindow:inspector.window name:@"Profile settings inspector"];
+        [inspector restoreSelected];
+        XCTAssertEqualObjects([model bookmarkWithGuid:guid][KEY_SCROLLBACK_LINES],
+                              [iTermProfilePreferences factoryObjectForKey:KEY_SCROLLBACK_LINES]);
+        XCTAssertEqualObjects([model bookmarkWithGuid:otherGuid][KEY_SCROLLBACK_LINES], @54321);
+        XCTAssertEqual(table.numberOfRows, 0);
+        XCTAssertFalse(restore.enabled);
+
+        // A binding must remain visible as a difference even if the stored
+        // value equals factory. It is edited through its specialized control.
+        [iTermProfilePreferences setObject:@{KEY_SCROLLBACK_LINES: @"session.name"}
+                                    forKey:KEY_BINDINGS inProfile:[model bookmarkWithGuid:guid] model:model];
+        XCTAssertEqual(table.numberOfRows, 1);
+        [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        XCTAssertFalse(restore.enabled);
+        [inspector restoreSelected];
+        XCTAssertEqualObjects([model bookmarkWithGuid:guid][KEY_BINDINGS][KEY_SCROLLBACK_LINES], @"session.name");
+        [inspector revealSelected];
+        XCTAssertNil(inspector.window.sheetParent);
+        XCTAssertFalse(inspector.window.visible);
+        NSTabView *tabs = [profiles valueForKey:@"_tabView"];
+        XCTAssertEqual(tabs.selectedTabViewItem, [profiles valueForKey:@"_terminalTab"]);
+
+        NSPredicate *closed = [NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+            return [profiles valueForKey:@"_settingsInspector"] == nil;
+        }];
+        [self expectationForPredicate:closed evaluatedWithObject:profiles handler:nil];
+        [self waitForExpectationsWithTimeout:10 handler:nil];
+        [iTermProfilePreferences setObjectsFromDictionary:@{ KEY_BINDINGS: @{}, KEY_SCROLLBACK_LINES: @54321 }
+                                               inProfile:[model bookmarkWithGuid:guid] model:model];
+        [profiles inspectProfileSettings:nil];
+        inspector = [profiles valueForKey:@"_settingsInspector"];
+        XCTAssertNotNil(inspector);
+        table = [self tableInSidebar:inspector.window.contentView];
+        for (NSView *view in inspector.window.contentView.subviews) {
+            if ([view isKindOfClass:NSSearchField.class]) { search = (NSSearchField *)view; }
+        }
+        search.stringValue = KEY_SCROLLBACK_LINES;
+        [search.delegate controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification object:search]];
+        [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        // Even a programmatic selection change while the sheet is open must
+        // not redirect its restore action to a different profile.
+        [profiles openToProfileWithGuid:otherGuid];
+        [inspector restoreSelected];
+        XCTAssertEqualObjects([model bookmarkWithGuid:guid][KEY_SCROLLBACK_LINES], @54321);
+        XCTAssertEqualObjects([model bookmarkWithGuid:otherGuid][KEY_SCROLLBACK_LINES], @54321);
+        [model removeProfileWithGuid:guid];
+        [iTermProfilePreferences commitModel:model];
+        XCTAssertEqual(table.numberOfRows, 0);
+        [inspector restoreSelected];
+        XCTAssertNil([model bookmarkWithGuid:guid]);
+    } @finally {
+        [profiles windowWillClose];
+        [profiles selectGuid:originalGuid];
+        [model removeProfileWithGuid:guid];
+        [model removeProfileWithGuid:otherGuid];
+        [iTermProfilePreferences commitModel:model];
+        [panel close];
+    }
+}
 
 - (void)attachSettingsWindow:(NSWindow *)window name:(NSString *)name {
     [window displayIfNeeded];

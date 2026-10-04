@@ -34,4 +34,9 @@
 
 // Called just before selected profile changes.
 - (void)willReloadProfile;
+
+// Only independent, directly persisted controls can be reset without their
+// specialized editor. Uses the current profile and honors color-key variants.
+- (BOOL)canRestoreFactoryValueForInfo:(PreferenceInfo *)info;
+- (BOOL)restoreFactoryValueForInfo:(PreferenceInfo *)info;
 @end

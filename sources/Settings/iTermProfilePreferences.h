@@ -25,6 +25,13 @@ extern NSString *const kProfilePreferenceInitialDirectoryAdvancedValue;
 + (id _Nullable)defaultObjectForKey:(NSString *)key;
 + (NSDictionary *)defaultValueMap;
 
+// A new profile’s baseline, which can differ from a missing-key fallback.
++ (id _Nullable)factoryObjectForKey:(NSString *)key;
+// Applies the same runtime transformations as objectForKey:inProfile:.
++ (id _Nullable)resolvedFactoryObjectForKey:(NSString *)key;
+// Describes the profile resolver, without evaluating session expressions.
++ (NSString *)valueSourceForKey:(NSString *)key inProfile:(Profile *)profile;
+
 + (void)commitModel:(ProfileModel *)model;
 
 // Sets a bunch of values at once (just one notification posted).
@@ -74,7 +81,7 @@ extern NSString *const kProfilePreferenceInitialDirectoryAdvancedValue;
         inProfile:(Profile *)profile
             model:(ProfileModel *)model;
 
-+ (id)objectForKey:(NSString *)key inProfile:(Profile *)profile;
++ (id _Nullable)objectForKey:(NSString *)key inProfile:(Profile *)profile;
 + (void)setObject:(id)object
            forKey:(NSString *)key
         inProfile:(Profile *)profile

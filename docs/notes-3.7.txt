@@ -9,6 +9,10 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Inspect profile values, sources, and factory
+  differences; restore individual basic settings.
+- Compare profile defaults against the matching
+  color variant and the new-profile Unicode value.
 - Find settings in Open Quickly, with /, to
   search only settings and open their location.
 - Share expert-setting definitions across

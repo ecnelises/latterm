@@ -251,17 +251,46 @@
 }
 
 - (BOOL)valueOfKeyEqualsDefaultValue:(NSString *)key {
-    static NSDictionary *presetsDict;
-    static dispatch_once_t onceToken;
-    // See discussion in issue 11998 for why I do this.
-    dispatch_once(&onceToken, ^{
-        NSString *plistFile = [[NSBundle bundleForClass:[self class]]
-                                        pathForResource:@"DefaultBookmark"
-                                                 ofType:@"plist"];
-        presetsDict = [NSDictionary dictionaryWithContentsOfFile:plistFile];
-    });
-    id defaultValue = presetsDict[key] ?: [iTermProfilePreferences defaultObjectForKey:key];
+    id defaultValue = [iTermProfilePreferences resolvedFactoryObjectForKey:[self amendedKey:key]];
     return [NSObject object:defaultValue isNullablyEqualToObject:[self objectForKey:key] epsilon:0.001];
+}
+
+- (BOOL)canRestoreFactoryValueForInfo:(PreferenceInfo *)info {
+    if ([self safeInfoForControl:info.control] != info || info.syntheticGetter || info.syntheticSetter ||
+        info.customSettingChangedHandler || info.onChange || info.willChange || info.controlTextDidEndEditing ||
+        info.type == kPreferenceInfoTypePasswordTextField || [info.key isEqualToString:KEY_NAME]) {
+        return NO;
+    }
+    Profile *profile = [self.delegate profilePreferencesCurrentProfile];
+    NSString *key = [self amendedKey:info.key];
+    NSDictionary *bindings = [NSDictionary castFrom:profile[KEY_BINDINGS]];
+    id factory = [iTermProfilePreferences factoryObjectForKey:key];
+    if (!profile || bindings[key] || !factory || ![iTermProfilePreferences valueIsLegal:factory forKey:key]) {
+        return NO;
+    }
+    if ([info.control isKindOfClass:NSControl.class] && ![(NSControl *)info.control isEnabled]) {
+        return NO;
+    }
+    return ![self valueOfKeyEqualsDefaultValue:info.key];
+}
+
+- (BOOL)restoreFactoryValueForInfo:(PreferenceInfo *)info {
+    if (![self canRestoreFactoryValueForInfo:info]) {
+        return NO;
+    }
+    NSString *key = [self amendedKey:info.key];
+    id factory = [iTermProfilePreferences factoryObjectForKey:key];
+    DLog(@"Restoring factory profile setting %@", key);
+    // Removing the key could reactivate a legacy/global fallback. Persist the
+    // factory value explicitly, without changing other profiles or globals.
+    [self setObject:factory forKey:info.key];
+    if (info.observer) {
+        info.observer();
+    }
+    [self updateValueForInfo:info];
+    [self updateEnabledState];
+    [self postRefreshNotification];
+    return YES;
 }
 
 - (BOOL)valueIsExplicitlySetForKey:(NSString *)key {
