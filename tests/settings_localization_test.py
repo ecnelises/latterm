@@ -70,6 +70,8 @@ class SettingsLocalizationTests(unittest.TestCase):
                      "SettingsFormView.swift", "ArrangementPreviewView.m", "PointerPrefsController.m",
                      "../Workgroups/iTermWorkgroupDetailViewController.swift",
                      "iTermAdvancedSettingsViewController.m",
+                     "SettingDefinition.swift", "../OpenQuickly/iTermOpenQuicklyCommands.m",
+                     "../OpenQuickly/iTermOpenQuicklyModel.m",
                      "iTermPreferencesSearchEngineResultsWindowController.m"):
             source = (ROOT / "sources/Settings" / name).read_text()
             for key in re.findall(r'NSLocalizedString\(@?"((?:[^"\\]|\\.)*)"', source):

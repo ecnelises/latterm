@@ -27,6 +27,7 @@
 - (BOOL)supportsMenuItems;
 - (BOOL)supportsBookmarks;
 - (BOOL)supportsURLs;
+- (BOOL)supportsSettings;
 @end
 
 @interface iTermOpenQuicklyCommand : NSObject<iTermOpenQuicklyCommand>
@@ -67,4 +68,7 @@
 @end
 
 @interface iTermOpenQuicklyBookmarkCommand : iTermOpenQuicklyCommand
+@end
+
+@interface iTermOpenQuicklySettingsCommand : iTermOpenQuicklyCommand
 @end

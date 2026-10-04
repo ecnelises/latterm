@@ -7,6 +7,12 @@
 @implementation iTermOpenQuicklyItem
 @end
 
+@implementation iTermOpenQuicklySettingItem
+- (NSImage *)icon {
+    return [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolGearshape) accessibilityDescription:nil];
+}
+@end
+
 @implementation iTermOpenQuicklySessionItem
 
 - (instancetype)init {

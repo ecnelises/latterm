@@ -100,3 +100,7 @@ NS_AVAILABLE_MAC(11_0)
 @property(nonatomic, strong) NSURL *url;
 @end
 
+@class iTermPreferencesSearchDocument;
+@interface iTermOpenQuicklySettingItem : iTermOpenQuicklyItem
+@property(nonatomic, strong) iTermPreferencesSearchDocument *document;
+@end

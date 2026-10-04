@@ -60,6 +60,7 @@ CGFloat iTermPreferencePanelGetWindowMinimumWidth(BOOL session);
 @class iTermShortcutInputView;
 @protocol iTermSessionScope;
 @class iTermSetting;
+@class iTermPreferencesSearchDocument;
 @class PreferenceInfo;
 @class SmartSelectionController;
 @class TriggerController;
@@ -124,6 +125,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
                           key:(NSString *)key;
 
 - (void)openToPreferenceWithKey:(NSString *)key;
+- (NSArray<iTermPreferencesSearchDocument *> *)settingsDocumentsMatchingQuery:(NSString *)query;
+- (void)openToSearchDocument:(iTermPreferencesSearchDocument *)document;
 - (NSArray<iTermSetting *> *)allSettings;
 - (BOOL)toggleSetting:(NSString * _Nullable)key;
 - (BOOL)toggleProfileSetting:(NSString * _Nullable)key;

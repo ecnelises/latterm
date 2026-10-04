@@ -28,6 +28,7 @@
 #import "PTYTab.h"
 #import "SolidColorView.h"
 #import "VT100RemoteHost.h"
+#import "PreferencePanel.h"
 
 @interface iTermOpenQuicklyWindowController () <
     iTermOpenQuicklyTextFieldDelegate,
@@ -408,7 +409,12 @@
     if (row >= 0) {
         id object = [self.model objectAtIndex:row];
         DLog(@"%@", object);
-        if ([object isKindOfClass:[PTYSession class]]) {
+        if ([object isKindOfClass:iTermOpenQuicklySettingItem.class]) {
+            iTermOpenQuicklySettingItem *item = object;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[PreferencePanel sharedInstance] openToSearchDocument:item.document];
+            });
+        } else if ([object isKindOfClass:[PTYSession class]]) {
             // Switch to session
             PTYSession *session = object;
             [session reveal];

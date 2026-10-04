@@ -1612,3 +1612,17 @@
 "(Unknown)" = "（未知）";
 "Select a workgroup on the left or click + to create one." = "选择左侧的工作组，或点按 + 创建工作组。";
 "What is a Workgroup?" = "什么是工作组？";
+
+/* Shared setting definitions and Open Quickly */
+"Protected preference" = "受保护的偏好设置";
+"Saved preference" = "已保存的偏好设置";
+"Legacy preference" = "旧版偏好设置";
+"Factory default" = "出厂默认值";
+"Reset" = "恢复默认";
+"Reset %@ to its factory default" = "将 %@ 恢复为出厂默认值";
+"%@\nSource: %@ · Default: %@" = "%@\n来源：%@ · 默认值：%@";
+"settings" = "设置";
+"Search settings with /," = "用 /, 搜索设置";
+"Open a setting directly by name or keyword." = "输入设置名称或关键词，直接打开对应选项。";
+"Settings: %@ · %@" = "设置：%@ · %@";
+"Changes are saved when edited. Some settings require a restart. Check a box to enable a Boolean setting; enter numbers or text in the value field. Bold names indicate values changed from their defaults. Reset restores the factory value; hover over a name to see its source and default." = "修改会自动保存，部分设置需重启后生效。勾选复选框开启选项，输入框可编辑数字或文本。偏离默认值的设置名称会加粗显示。点按“恢复默认”可还原出厂值；将指针停在名称上可查看来源和默认值。";

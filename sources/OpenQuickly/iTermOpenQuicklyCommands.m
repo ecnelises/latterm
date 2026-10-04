@@ -85,6 +85,8 @@
     return NO;
 }
 
+- (BOOL)supportsSettings { return NO; }
+
 @end
 
 @implementation iTermOpenQuicklyInTabsWindowArrangementCommand
@@ -219,6 +221,8 @@
 
 @implementation iTermOpenQuicklyNoCommand
 
+- (BOOL)supportsSettings { return YES; }
+
 - (BOOL)supportsSessionLocation {
     return YES;
 }
@@ -320,4 +324,12 @@
     return YES;
 }
 
+@end
+
+@implementation iTermOpenQuicklySettingsCommand
++ (NSString *)command { return @","; }
++ (NSString *)restrictionDescription { return NSLocalizedString(@"settings", @"Open Quickly restriction"); }
++ (NSString *)tipTitle { return NSLocalizedString(@"Search settings with /,", @"Open Quickly settings tip"); }
++ (NSString *)tipDetail { return NSLocalizedString(@"Open a setting directly by name or keyword.", @"Open Quickly settings tip"); }
+- (BOOL)supportsSettings { return YES; }
 @end

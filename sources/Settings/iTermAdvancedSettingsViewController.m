@@ -16,6 +16,7 @@
 #import "NSTextField+iTerm.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermUserDefaults.h"
+#import "iTerm2SharedARC-Swift.h"
 #import <objc/runtime.h>
 
 @interface iTermTableViewTextField : NSTextField
@@ -154,6 +155,7 @@ static NSDictionary *gIntrospection;
 @implementation iTermAdvancedSettingsViewController {
     IBOutlet NSTableColumn *_settingColumn;
     IBOutlet NSTableColumn *_valueColumn;
+    NSTableColumn *_resetColumn;
     IBOutlet NSSearchField *_searchField;
     IBOutlet NSTableView *_tableView;
     IBOutlet NSButton *_excludeDefaults;
@@ -188,55 +190,36 @@ static NSDictionary *gIntrospection;
    return sortedAdvancedSettings;
 }
 
-// Localize presentation only. Model descriptions and preference identifiers
-// remain stable for storage, grouping, and English search.
-+ (NSString *)localizedDescription:(NSString *)description {
-    NSString *localized = NSLocalizedString(description, @"Advanced setting description");
-    if (![localized isEqualToString:description]) { return localized; }
-    return [[[description componentsSeparatedByString:@"\n"] mapWithBlock:^id(NSString *line) {
-        return NSLocalizedString(line, @"Advanced setting description");
-    }] componentsJoinedByString:@"\n"];
-}
-
+// All presentation and search text comes from the same definition as editing.
 + (NSString *)searchTextForSetting:(NSDictionary *)setting {
-    NSString *description = setting[kAdvancedSettingDescription];
-    NSRange separator = [description rangeOfString:@": "];
-    NSString *category = separator.location == NSNotFound ? @"" : [description substringToIndex:separator.location];
-    NSString *body = separator.location == NSNotFound ? description : [description substringFromIndex:NSMaxRange(separator)];
-    return [NSString stringWithFormat:@"%@ %@ %@ %@", setting[kAdvancedSettingIdentifier], description,
-            NSLocalizedString(category, @"Advanced setting category"), [self localizedDescription:body]];
+    return [iTermSettingDefinition definitionForIdentifier:setting[kAdvancedSettingIdentifier]].searchText;
 }
 
 + (NSArray *)groupedSettingsArrayFromSortedArray:(NSArray *)sorted {
     NSString *previousCategory = nil;
     NSMutableArray *result = [NSMutableArray array];
     for (NSDictionary *dict in sorted) {
-        NSString *description = dict[kAdvancedSettingDescription];
-        NSRange separator = [description rangeOfString:@": "];
-        NSString *thisCategory = separator.location == NSNotFound ? @"Advanced" : [description substringToIndex:separator.location];
-        NSString *remainder = separator.location == NSNotFound ? description : [description substringFromIndex:NSMaxRange(separator)];
+        iTermSettingDefinition *definition = [iTermSettingDefinition definitionForIdentifier:dict[kAdvancedSettingIdentifier]];
+        NSString *thisCategory = definition.category;
         if (![thisCategory isEqualToString:previousCategory]) {
-            previousCategory = [thisCategory copy];
-            [result addObject:NSLocalizedString(thisCategory, @"Advanced setting category")];
+            previousCategory = thisCategory;
+            [result addObject:thisCategory];
         }
         NSMutableDictionary *temp = [dict mutableCopy];
-        temp[kAdvancedSettingDescription] = [self localizedDescription:remainder];
+        temp[kAdvancedSettingDescription] = definition.localizedDescription;
         [result addObject:temp];
     }
     return result;
 }
 
 + (NSArray<NSDictionary *> *)advancedSettings {
-    static NSMutableArray *settings;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        settings = [NSMutableArray array];
-        [iTermAdvancedSettingsModel enumerateDictionaries:^(NSDictionary *dict) {
-            [settings addObject:dict];
-        }];
-    });
+    return [iTermSettingDefinition.all valueForKey:@"dictionary"];
+}
 
-    return settings;
+- (iTermSettingDefinition *)definitionForRow:(NSInteger)row {
+    NSArray *settings = self.filteredAdvancedSettings;
+    if (row < 0 || row >= settings.count || ![settings[row] isKindOfClass:NSDictionary.class]) { return nil; }
+    return [iTermSettingDefinition definitionForIdentifier:settings[row][kAdvancedSettingIdentifier]];
 }
 
 - (void)dealloc {
@@ -249,6 +232,8 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)awakeFromNib {
+    _resetColumn = [[NSTableColumn alloc] initWithIdentifier:@"reset"];
+    [_tableView addTableColumn:_resetColumn];
     _tableView.style = NSTableViewStylePlain;
     _tableView.columnAutoresizingStyle = NSTableViewNoColumnAutoresizing;
     _tableView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleNone;
@@ -272,7 +257,7 @@ static NSDictionary *gIntrospection;
     }
     _searchField.placeholderString = NSLocalizedString(@"Filter expert settings", @"Expert settings search");
     _editingHelp = [NSTextField wrappingLabelWithString:NSLocalizedString(
-        @"Changes are saved when edited. Some settings require a restart. Check a box to enable a Boolean setting; enter numbers or text in the value field. Bold names indicate values changed from their defaults.",
+        @"Changes are saved when edited. Some settings require a restart. Check a box to enable a Boolean setting; enter numbers or text in the value field. Bold names indicate values changed from their defaults. Reset restores the factory value; hover over a name to see its source and default.",
         @"Expert settings editing instructions")];
     _editingHelp.font = [NSFont systemFontOfSize:12];
     _editingHelp.textColor = NSColor.secondaryLabelColor;
@@ -303,7 +288,8 @@ static NSDictionary *gIntrospection;
     const CGFloat helpHeight = ceil([_editingHelp.cell cellSizeForBounds:NSMakeRect(0, 0, width, CGFLOAT_MAX)].height);
     _editingHelp.frame = NSMakeRect(32, 44, width, helpHeight);
     _valueColumn.width = 180;
-    const CGFloat settingWidth = MAX(200, width - _valueColumn.width);
+    _resetColumn.width = 80;
+    const CGFloat settingWidth = MAX(200, width - _valueColumn.width - _resetColumn.width);
     if (_settingColumn.width != settingWidth) {
         _settingColumn.width = settingWidth;
         [_tableView noteHeightOfRowsWithIndexesChanged:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, _tableView.numberOfRows)]];
@@ -382,23 +368,10 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)toggleOnOff:(NSButton *)sender {
-    const BOOL value = sender.state == NSControlStateValueOn;
-    NSDictionary *dict = [self filteredAdvancedSettings][sender.tag];
-    NSString *selectorName = dict[kAdvancedSettingSetter];
-    if (selectorName) {
-        [iTermAdvancedSettingsModel performSelector:NSSelectorFromString(selectorName) withObject:@(value)];
-    } else {
-        [[iTermUserDefaults userDefaults] setBool:value forKey:dict[kAdvancedSettingIdentifier]];
+    if (![[self definitionForRow:sender.tag] writeValue:@(sender.state == NSControlStateValueOn)]) {
+        DLog(@"Could not update protected expert setting");
     }
     [self advancedSettingsDidChange:nil];
-}
-
-- (id)objectForRow:(int)row {
-    NSArray *settings = [self filteredAdvancedSettings];
-    NSDictionary *dict = settings[row];
-    NSString *identifier = dict[kAdvancedSettingIdentifier];
-    // TODO: Update this when there are tristate secure defaults.
-    return [[iTermUserDefaults userDefaults] objectForKey:identifier];
 }
 
 // 0 = unknown, 1 = off, 2 = on
@@ -413,28 +386,13 @@ static NSDictionary *gIntrospection;
     [button.menu addItemWithTitle:NSLocalizedString(@"No", @"Advanced setting value") action:nil keyEquivalent:@""];
     [button.menu addItemWithTitle:NSLocalizedString(@"Yes", @"Advanced setting value") action:nil keyEquivalent:@""];
 
-    NSNumber *value = [self objectForRow:row];
-    if (!value) {
-        [button selectItemAtIndex:0];
-    } else {
-        [button selectItemAtIndex:value.boolValue ? 2 : 1];
-    }
+    [button selectItemAtIndex:tristate];
     return button;
 }
 
 - (void)toggleTristate:(NSPopUpButton *)sender {
-    const int row = (int)sender.tag;
-    const NSInteger value = sender.indexOfSelectedItem;
-    NSArray *settings = [self filteredAdvancedSettings];
-    NSDictionary *dict = settings[row];
-    NSString *identifier = dict[kAdvancedSettingIdentifier];
-    // TODO: Update this when there are tristate secure defaults.
-    if (value == 0) {
-        [[iTermUserDefaults userDefaults] removeObjectForKey:identifier];
-    } else {
-        [[iTermUserDefaults userDefaults] setBool:value == 2
-                                                forKey:identifier];
-    }
+    id value = sender.indexOfSelectedItem == 0 ? NSNull.null : @(sender.indexOfSelectedItem == 2);
+    if (![[self definitionForRow:sender.tag] writeValue:value]) { DLog(@"Could not update expert tristate"); }
     [self advancedSettingsDidChange:nil];
 }
 
@@ -446,7 +404,7 @@ static NSDictionary *gIntrospection;
     button.identifier = @"enum";
     [button.menu removeAllItems];
     for (NSString *title in options) {
-        [button.menu addItemWithTitle:NSLocalizedString(title, @"Advanced setting option") action:nil keyEquivalent:@""];
+        [button.menu addItemWithTitle:title action:nil keyEquivalent:@""];
     }
     if (value >= 0 && value < options.count) {
         [button selectItemAtIndex:value];
@@ -455,13 +413,17 @@ static NSDictionary *gIntrospection;
 }
 
 - (void)changeEnum:(NSPopUpButton *)sender {
-    const int row = (int)sender.tag;
-    const NSInteger index = sender.indexOfSelectedItem;
-    NSArray *settings = [self filteredAdvancedSettings];
-    NSDictionary *dict = settings[row];
-    NSString *identifier = dict[kAdvancedSettingIdentifier];
-    [[iTermUserDefaults userDefaults] setInteger:index forKey:identifier];
+    if (![[self definitionForRow:sender.tag] writeValue:@(sender.indexOfSelectedItem)]) {
+        DLog(@"Could not update expert setting choice");
+    }
     [self advancedSettingsDidChange:nil];
+}
+
+- (void)resetSetting:(NSButton *)sender {
+    iTermSettingDefinition *definition = [self definitionForRow:sender.tag];
+    [self.view.window makeFirstResponder:nil];
+    if (![definition reset]) { DLog(@"Could not reset protected expert setting %@", definition.identifier); }
+    [self reloadSettings];
 }
 
 - (iTermTableViewTextFieldWrapper *)viewForMutableString:(NSString *)string row:(int)row {
@@ -534,12 +496,7 @@ static NSDictionary *gIntrospection;
                 if (!dict) {
                     return YES;
                 }
-                id defaultValue = dict[kAdvancedSettingDefaultValue];
-                NSObject *value = [self valueInDictionary:dict];
-                if (value == nil || [NSObject object:defaultValue isApproximatelyEqualToObject:value epsilon:0.0001]) {
-                    return NO;
-                }
-                return YES;
+                return [self isModifiedSetting:dict];
             }];
         }
         _filteredAdvancedSettings = [[self class] groupedSettingsArrayFromSortedArray:settings];
@@ -623,37 +580,21 @@ static NSDictionary *gIntrospection;
 }
 
 - (BOOL)isModifiedSetting:(NSDictionary *)setting {
-    id value = [self valueInDictionary:setting] ?: setting[kAdvancedSettingDefaultValue];
-    return ![NSObject object:value isApproximatelyEqualToObject:setting[kAdvancedSettingDefaultValue] epsilon:0.0001];
+    return [iTermSettingDefinition definitionForIdentifier:setting[kAdvancedSettingIdentifier]].isModified;
 }
 
-- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row {
-    return NO;
-}
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)row { return NO; }
 
 - (id)valueInDictionary:(NSDictionary *)dict {
-    NSString *identifier = dict[kAdvancedSettingIdentifier];
-    NSString *getter = dict[kAdvancedSettingGetter];
-    if (getter) {
-        SEL selector = NSSelectorFromString(getter);
-        return [iTermAdvancedSettingsModel performSelector:selector];
-    } else {
-        return [[iTermUserDefaults userDefaults] objectForKey:identifier];
-    }
-}
-
-static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *value) {
-    NSString *selectorName = dict[kAdvancedSettingSetter];
-    assert(selectorName);
-    SEL selector = NSSelectorFromString(selectorName);
-    [iTermAdvancedSettingsModel performSelector:selector
-                                     withObject:value];
+    return [iTermSettingDefinition definitionForIdentifier:dict[kAdvancedSettingIdentifier]].currentValue;
 }
 
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
     NSArray *settings = [self filteredAdvancedSettings];
     id obj = settings[row];
     if ([obj isKindOfClass:[NSString class]]) {
+        // AppKit requests a spanning group header with no table column.
+        if (tableColumn && tableColumn != _settingColumn) { return nil; }
         return [self viewForImmutableAttributedString:[self attributedStringForGroupNamed:obj]
                                              selected:[self attributedStringForGroupNamed:obj]];
     }
@@ -663,8 +604,19 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
         iTermTableViewTextField *textField = [self viewForImmutableAttributedString:[self attributedStringForSettingAtRow:row selected:NO]
                                                                            selected:[self attributedStringForSettingAtRow:row selected:YES]];
         textField.accessibilityIdentifier = obj[kAdvancedSettingIdentifier];
-        textField.toolTip = obj[kAdvancedSettingIdentifier];
+        iTermSettingDefinition *definition = [self definitionForRow:row];
+        textField.toolTip = [NSString stringWithFormat:NSLocalizedString(@"%@\nSource: %@ · Default: %@", @"Setting value source"),
+                             definition.identifier, definition.valueOrigin, definition.defaultDisplayValue];
         return textField;
+    } else if (tableColumn == _resetColumn) {
+        NSButton *button = [_tableView makeViewWithIdentifier:@"reset" owner:self] ?:
+            [NSButton buttonWithTitle:NSLocalizedString(@"Reset", @"Reset one setting") target:self action:@selector(resetSetting:)];
+        button.identifier = @"reset";
+        button.tag = row;
+        button.hidden = ![self definitionForRow:row].canReset;
+        button.accessibilityLabel = [NSString stringWithFormat:NSLocalizedString(@"Reset %@ to its factory default", @"Reset setting accessibility"),
+                                     [self definitionForRow:row].title];
+        return button;
     } else if (tableColumn == _valueColumn) {
         NSDictionary *dict = settings[row];
         NSObject *value = [self valueInDictionary:dict];
@@ -691,7 +643,7 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
             case kiTermAdvancedSettingTypeIntEnum: {
                 NSNumber *n = (NSNumber *)value;
                 return [self enumViewWithValue:n.intValue
-                                       options:dict[kAdvancedSettingOptions]
+                                       options:[self definitionForRow:row].options
                                            row:row];
             }
 
@@ -712,8 +664,9 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
                     wrapper.backgroundStyle = [rowView interiorBackgroundStyle];
                 }
                 if (dict[kAdvancedSettingSetter]) {
+                    iTermSettingDefinition *definition = [self definitionForRow:row];
                     wrapper.onEndEditing = ^(NSString *value) {
-                        iTermAdvancedSettingsSaveSecureString(dict, value);
+                        if (![definition writeText:value]) { DLog(@"Could not update protected expert string %@", definition.identifier); }
                     };
                 }
 
@@ -759,45 +712,15 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
         NSTextField *textField = aNotification.object;
         const NSInteger row = textField.tag;
         if (row < 0 || row >= [self filteredAdvancedSettings].count) { return; }
-        NSString *string = textField.stringValue;
-        NSArray *settings = [self filteredAdvancedSettings];
-        NSDictionary *dict = settings[row];
-        NSString *identifier = dict[kAdvancedSettingIdentifier];
-        // TODO: Update this when there are string/numeric secure defaults.
-        switch ([dict advancedSettingType]) {
-            case kiTermAdvancedSettingTypeBoolean:
-            case kiTermAdvancedSettingTypeOptionalBoolean:
-            case kiTermAdvancedSettingTypeIntEnum:
-                assert(NO);
-                break;
-
-            case kiTermAdvancedSettingTypeFloat: {
-                NSScanner *scanner = [NSScanner scannerWithString:string];
-                double value;
-                if (![scanner scanDouble:&value] || !scanner.isAtEnd || !isfinite(value)) { return; }
-                [[iTermUserDefaults userDefaults] setDouble:value forKey:identifier];
-                break;
-            }
-
-            case kiTermAdvancedSettingTypeInteger: {
-                NSScanner *scanner = [NSScanner scannerWithString:string];
-                NSInteger value;
-                if (![scanner scanInteger:&value] || !scanner.isAtEnd) { return; }
-                [[iTermUserDefaults userDefaults] setInteger:value forKey:identifier];
-                break;
-            }
-
-            case kiTermAdvancedSettingTypeString: {
-                NSString *selectorName = dict[kAdvancedSettingSetter];
-                if (!selectorName) {
-                    [[iTermUserDefaults userDefaults] setObject:string
-                                                              forKey:identifier];
-                }
-                break;
-            }
-        }
+        iTermSettingDefinition *definition = [self definitionForRow:row];
+        if (definition.isSecure) { return; } // Protected strings commit on end editing.
+        const BOOL valid = [definition writeText:textField.stringValue];
+        textField.textColor = valid ? NSColor.labelColor : NSColor.systemRedColor;
+        if (!valid) { return; }
         [_tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:row]
-                             columnIndexes:[NSIndexSet indexSetWithIndex:0]];
+                             columnIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 1)]];
+        [_tableView reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:row]
+                             columnIndexes:[NSIndexSet indexSetWithIndex:2]];
     }
 }
 
@@ -817,6 +740,7 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
         return;
     }
     NSDictionary *dict = settings[row];
+    textField.textColor = NSColor.labelColor;
     switch ([dict advancedSettingType]) {
         case kiTermAdvancedSettingTypeBoolean:
         case kiTermAdvancedSettingTypeOptionalBoolean:
@@ -841,9 +765,8 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
     if (rowView) {
         textField.backgroundStyle = [rowView interiorBackgroundStyle];
     }
-    if (_excludeDefaults.state == NSControlStateValueOn) {
-        [self reloadSettings];
-    }
+    [textField setEditing:NO];
+    [self reloadSettings];
 }
 
 #pragma mark - iTermSearchableViewController
@@ -855,17 +778,11 @@ static void iTermAdvancedSettingsSaveSecureString(NSDictionary *dict, NSString *
 - (NSArray<iTermPreferencesSearchDocument *> *)searchableViewControllerDocuments {
     if (!_docs) {
         _docs = [[iTermAdvancedSettingsViewController sortedAdvancedSettings] mapWithBlock:^id(NSDictionary *dict) {
-            NSString *description = dict[kAdvancedSettingDescription];
-            NSRange separator = [description rangeOfString:@": "];
-            NSString *body = separator.location == NSNotFound ? description : [description substringFromIndex:NSMaxRange(separator)];
-            NSString *title = [[self.class localizedDescription:body] componentsSeparatedByString:@"\n"].firstObject;
+            iTermSettingDefinition *definition = [iTermSettingDefinition definitionForIdentifier:dict[kAdvancedSettingIdentifier]];
             iTermPreferencesSearchDocument *doc = [iTermPreferencesSearchDocument
-                documentWithDisplayName:title identifier:dict[kAdvancedSettingIdentifier]
-                keywordPhrases:@[[self.class searchTextForSetting:dict]]];
-            if (separator.location != NSNotFound) {
-                NSString *category = [description substringToIndex:separator.location];
-                doc.pathComponents = @[NSLocalizedString(category, @"Advanced setting category")];
-            }
+                documentWithDisplayName:definition.title identifier:definition.identifier
+                keywordPhrases:@[definition.searchText]];
+            doc.pathComponents = @[definition.category];
             doc.queryIndependentScore = -1;
             doc.ownerIdentifier = self.documentOwnerIdentifier;
             return doc;

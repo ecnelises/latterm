@@ -28,6 +28,7 @@ NSString *const kAdvancedSettingDescription = @"kAdvancedSettingDescription";
 NSString *const kAdvancedSettingSetter = @"kAdvancedSettingSetter";
 NSString *const kAdvancedSettingGetter = @"kAdvancedSettingGetter";
 NSString *const kAdvancedSettingOptions = @"kAdvancedSettingOptions";
+NSString *const kAdvancedSettingResetKeys = @"kAdvancedSettingResetKeys";
 
 NSString *const iTermAdvancedSettingsDidChange = @"iTermAdvancedSettingsDidChange";
 
@@ -181,9 +182,8 @@ DEFINE_SECURE_BOILERPLATE(name, capitalizedName, BOOL, kiTermAdvancedSettingType
 
 #define DEFINE_SECURE_STRING(name, capitalizedName, theDescription) \
 DEFINE_SECURE_BOILERPLATE(name, capitalizedName, NSString *, kiTermAdvancedSettingTypeString, theDescription, iTermAdvancedSettingsModelTransformString, iTermAdvancedSettingsModelInverseTransformString)
-// NOTE: To add more secure types, you'll need to modify iTermAdvancedSettingsViewController.m to
-// call the appropriate getter & setter and, afterwards, update the UI with the return value of the setter
-// since setting can fail.
+// Secure definitions carry their getter and setter into the shared editor
+// adapter. Always read the actual value back because setting can fail.
 #endif  // ITERM2_SHARED_ARC
 
 #define DEFINE_BOOL(name, theDefault, theDescription) \
@@ -244,13 +244,14 @@ DEFINE_BOILERPLATE(name, double, kiTermAdvancedSettingTypeFloat, theDefault, the
 
 // For a choice resolved from multiple preferences. Its separately implemented
 // accessor supplies both the runtime value and the value shown in Settings.
-#define DEFINE_COMPUTED_INT_ENUM(name, theDefault, theOptions, theDescription) \
+#define DEFINE_COMPUTED_INT_ENUM(name, theDefault, theOptions, theResetKeys, theDescription) \
 + (NSDictionary *)advancedSettingsModelDictionary_##name { \
     return @{ kAdvancedSettingIdentifier: [@#name stringByCapitalizingFirstLetter], \
               kAdvancedSettingType: @(kiTermAdvancedSettingTypeIntEnum), \
               kAdvancedSettingDefaultValue: @(theDefault), \
               kAdvancedSettingDescription: theDescription, \
               kAdvancedSettingOptions: theOptions, \
+              kAdvancedSettingResetKeys: theResetKeys, \
               kAdvancedSettingGetter: @"object_" @#name }; \
 } \
 + (NSString *)load_##name { \
@@ -694,6 +695,7 @@ DEFINE_STRING(sessionFinishedMessageText, @"Finished", SECTION_SESSION @"Text di
 
 DEFINE_COMPUTED_INT_ENUM(newInstanceOpenStyle, iTermOpenStyleTab,
                         (@[ @"New window", @"New tab", @"Vertical split pane", @"Horizontal split pane" ]),
+                        (@[kLegacyOpenFileInNewWindows, kLegacyOpenFileInSplitPanes, kLegacyOpenFileInVerticalSplitPane]),
                         SECTION_WINDOWS @"Where should files opened from Finder or other applications open?\nChoose a new window, tab, or split pane.");
 DEFINE_BOOL(disableWindowSizeSnap, NO, SECTION_WINDOWS @"Terminal windows resize smoothly.\nDisables snapping to character grid. Holding Control will temporarily disable snap-to-grid.");
 DEFINE_BOOL(profilesWindowJoinsActiveSpace, NO, SECTION_WINDOWS @"If the Profiles window is open, it always moves to join the active Space.\nYou must restart Latterm for a change in this setting to take effect.");
@@ -980,6 +982,51 @@ DEFINE_SETTABLE_BOOL(setIT2AppPath, SetIT2AppPath, NO, SECTION_SCRIPTING @"Set I
     if ([NSApp isRunningUnitTests]) {
         sAdvancedSetting_runJobsInServers = @NO;
     }
+}
+
++ (id)valueForSetting:(NSDictionary *)setting {
+    NSString *getter = setting[kAdvancedSettingGetter];
+    id value;
+    if (getter) {
+        SEL selector = NSSelectorFromString(getter);
+        id (*implementation)(id, SEL) = (id (*)(id, SEL))[self methodForSelector:selector];
+        value = implementation(self, selector);
+    } else {
+        value = [[iTermUserDefaults userDefaults] objectForKey:setting[kAdvancedSettingIdentifier]];
+    }
+    return value ?: setting[kAdvancedSettingDefaultValue];
+}
+
++ (BOOL)writeValue:(id)value forSetting:(NSDictionary *)setting {
+    NSString *setter = setting[kAdvancedSettingSetter];
+    if (setter) {
+        SEL selector = NSSelectorFromString(setter);
+        id (*implementation)(id, SEL, id) = (id (*)(id, SEL, id))[self methodForSelector:selector];
+        id actual = implementation(self, selector, value);
+        return actual == value || [actual isEqual:value];
+    }
+    NSString *key = setting[kAdvancedSettingIdentifier];
+    if (!value || value == NSNull.null) {
+        [[iTermUserDefaults userDefaults] removeObjectForKey:key];
+    } else {
+        [[iTermUserDefaults userDefaults] setObject:value forKey:key];
+    }
+    DLog(@"Updated expert setting %@", key);
+    return YES;
+}
+
++ (BOOL)resetSetting:(NSDictionary *)setting {
+    if (setting[kAdvancedSettingSetter]) {
+        return [self writeValue:setting[kAdvancedSettingDefaultValue] forSetting:setting];
+    }
+    // Clear fallback keys first, then the explicit choice, so observers never
+    // briefly resolve a reset choice through an old legacy override.
+    for (NSString *key in setting[kAdvancedSettingResetKeys]) {
+        [[iTermUserDefaults userDefaults] removeObjectForKey:key];
+    }
+    [[iTermUserDefaults userDefaults] removeObjectForKey:setting[kAdvancedSettingIdentifier]];
+    DLog(@"Restored factory value for expert setting %@", setting[kAdvancedSettingIdentifier]);
+    return YES;
 }
 
 + (void)loadAdvancedSettingsFromUserDefaults {

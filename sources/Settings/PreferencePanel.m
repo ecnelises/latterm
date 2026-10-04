@@ -761,8 +761,22 @@ andEditComponentWithIdentifier:(NSString *)identifier
     if (!document) {
         return;
     }
+    [self openToSearchDocument:document];
+}
+
+- (NSArray<iTermPreferencesSearchDocument *> *)settingsDocumentsMatchingQuery:(NSString *)query {
+    if (![[query stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] length]) {
+        return @[];
+    }
+    [self window];
+    [self buildSearchEngineIfNeeded];
+    return [gSearchEngine documentsMatchingQuery:query];
+}
+
+- (void)openToSearchDocument:(iTermPreferencesSearchDocument *)document {
     [self run];
-    // Let it become first responder. Then show the scrim. Becoming first responder hides the scrim.
+    // Preserve the owner and scope of the result. A key alone can refer to
+    // both an application setting and a profile setting.
     [self performSelector:@selector(revalDocument:) withObject:document afterDelay:0];
 }
 

@@ -15,6 +15,15 @@
 #import "iTermActionsModel.h"
 #import "iTermDynamicProfileManager.h"
 #import "PointerPrefsController.h"
+#import "iTermOpenQuicklyModel.h"
+#import "iTermOpenQuicklyItem.h"
+#import "iTermOpenQuicklyCommands.h"
+#import "iTermOpenQuicklyWindowController.h"
+
+@interface iTermOpenQuicklyWindowController (SettingsTests)
+- (void)update;
+- (void)openSelectedRow;
+@end
 
 @interface PointerPrefsController (SettingsTests)
 + (NSDictionary *)localizedActionMap;
@@ -93,9 +102,185 @@
 - (void)preferencesSearchEngineResultsDidActivateDocument:(iTermPreferencesSearchDocument *)document { self.activated = document; }
 @end
 
+@interface SettingsQuicklyDelegate : NSObject<iTermOpenQuicklyModelDelegate>
+@end
+@implementation SettingsQuicklyDelegate
+- (id)openQuicklyModelDisplayStringForFeatureNamed:(NSString *)name value:(NSString *)value
+                              highlightedIndexes:(NSIndexSet *)indexes {
+    return [[NSAttributedString alloc] initWithString:value];
+}
+- (NSAttributedString *)openQuicklyModelAttributedStringForDetail:(NSString *)detail featureName:(NSString *)name {
+    return [[NSAttributedString alloc] initWithString:detail];
+}
+@end
+
 @interface SettingsNavigationTests : XCTestCase
 @end
 @implementation SettingsNavigationTests
+
+- (void)attachSettingsWindow:(NSWindow *)window name:(NSString *)name {
+    [window displayIfNeeded];
+    NSView *view = window.contentView.superview;
+    [window.effectiveAppearance performAsCurrentDrawingAppearance:^{
+        NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc]
+            initWithBitmapDataPlanes:NULL pixelsWide:NSWidth(view.bounds) * 2
+            pixelsHigh:NSHeight(view.bounds) * 2 bitsPerSample:8 samplesPerPixel:4
+            hasAlpha:YES isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bytesPerRow:0 bitsPerPixel:0];
+        bitmap.size = view.bounds.size;
+        [view cacheDisplayInRect:view.bounds toBitmapImageRep:bitmap];
+        NSImage *image = [[NSImage alloc] initWithCGImage:bitmap.CGImage size:view.bounds.size];
+        XCTAttachment *attachment = [XCTAttachment attachmentWithImage:image];
+        attachment.name = name;
+        attachment.lifetime = XCTAttachmentLifetimeKeepAlways;
+        [self addAttachment:attachment];
+    }];
+}
+
+- (void)testOpenQuicklySelectionOpensAndRevealsTheExactSetting {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    [panel showGlobalTabView:nil];
+    NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+    id original = [defaults objectForKey:@"MinTabWidth"];
+    NSSearchField *sidebarSearch = [panel valueForKey:@"searchField"];
+    NSString *originalQuery = sidebarSearch.stringValue;
+    iTermOpenQuicklyWindowController *quickly = [[iTermOpenQuicklyWindowController alloc] init];
+    @try {
+        [defaults setInteger:123 forKey:@"MinTabWidth"];
+        sidebarSearch.stringValue = @"";
+        [quickly presentWindow];
+        NSTextField *input = [quickly valueForKey:@"_textField"];
+        input.stringValue = @"/, MinTabWidth";
+        [quickly update];
+        NSTableView *table = [quickly valueForKey:@"_table"];
+        XCTAssertEqual(table.numberOfRows, 1);
+        [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        NSPredicate *resultsVisible = [NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+            return NSContainsRect(quickly.window.contentView.bounds,
+                                  [table convertRect:[table rectOfRow:0] toView:quickly.window.contentView]);
+        }];
+        [self expectationForPredicate:resultsVisible evaluatedWithObject:quickly handler:nil];
+        [self waitForExpectationsWithTimeout:10 handler:nil];
+        [self attachSettingsWindow:quickly.window name:@"Open Quickly setting result"];
+        [quickly openSelectedRow];
+        iTermAdvancedSettingsViewController *advanced = [panel valueForKey:@"_advancedViewController"];
+        NSPredicate *revealed = [NSPredicate predicateWithBlock:^BOOL(id object, NSDictionary *bindings) {
+            // Activation immediately detaches _scrim while its view fades.
+            // Check durable navigation/scroll state rather than animation state.
+            NSTabView *tabs = [panel valueForKey:@"_tabView"];
+            return tabs.selectedTabViewItem == [panel valueForKey:@"_advancedTabViewItem"] && panel.window.visible;
+        }];
+        [self expectationForPredicate:revealed evaluatedWithObject:panel handler:nil];
+        [self waitForExpectationsWithTimeout:10 handler:nil];
+        XCTAssertFalse(quickly.window.visible);
+        NSTableView *expert = [advanced valueForKey:@"_tableView"];
+        NSArray *rows = [advanced filteredAdvancedSettings];
+        NSUInteger row = [rows indexOfObjectPassingTest:^BOOL(id object, NSUInteger idx, BOOL *stop) {
+            return [object isKindOfClass:NSDictionary.class] && [object[kAdvancedSettingIdentifier] isEqualToString:@"MinTabWidth"];
+        }];
+        XCTAssertNotEqual(row, NSNotFound);
+        if (row != NSNotFound) {
+            NSView *name = [expert viewAtColumn:0 row:row makeIfNecessary:YES];
+            XCTAssertEqualObjects(name.accessibilityIdentifier, @"MinTabWidth");
+            NSScrollView *scroll = [advanced valueForKey:@"_pageScrollView"];
+            const NSRect nameRect = [name convertRect:name.bounds toView:scroll.documentView];
+            // AppKit rounds the viewport to pixels while row heights are fractional.
+            XCTAssertTrue(NSContainsRect(NSInsetRect(scroll.documentVisibleRect, -1, -1), nameRect), @"Visible %@, name %@",
+                          NSStringFromRect(scroll.documentVisibleRect), NSStringFromRect(nameRect));
+            NSButton *reset = (NSButton *)[expert viewAtColumn:2 row:row makeIfNecessary:YES];
+            XCTAssertFalse(reset.hidden);
+            [self attachSettingsWindow:panel.window name:@"Expert setting source and reset"];
+        }
+    } @finally {
+        [NSObject cancelPreviousPerformRequestsWithTarget:quickly];
+        [quickly close];
+        if (original) { [defaults setObject:original forKey:@"MinTabWidth"]; }
+        else { [defaults removeObjectForKey:@"MinTabWidth"]; }
+        sidebarSearch.stringValue = originalQuery;
+        [panel close];
+    }
+}
+
+- (void)testExpertResetButtonHandlesFilteredRowRemoval {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    iTermAdvancedSettingsViewController *advanced = [panel valueForKey:@"_advancedViewController"];
+    NSTableView *table = [advanced valueForKey:@"_tableView"];
+    NSSearchField *search = [advanced valueForKey:@"_searchField"];
+    NSButton *exclude = [advanced valueForKey:@"_excludeDefaults"];
+    NSUserDefaults *defaults = [iTermUserDefaults userDefaults];
+    id original = [defaults objectForKey:@"MinTabWidth"];
+    NSString *originalQuery = search.stringValue;
+    NSControlStateValue originalState = exclude.state;
+    @try {
+        [defaults setInteger:123 forKey:@"MinTabWidth"];
+        search.stringValue = @"MinTabWidth";
+        exclude.state = NSControlStateValueOn;
+        [advanced advancedSettingsDidChange:nil];
+        XCTAssertEqual(table.numberOfRows, 2);
+        NSButton *reset = (NSButton *)[table.delegate tableView:table viewForTableColumn:table.tableColumns[2] row:1];
+        XCTAssertFalse(reset.hidden);
+        NSTextField *name = (NSTextField *)[table.delegate tableView:table viewForTableColumn:table.tableColumns[0] row:1];
+        XCTAssertTrue([name.toolTip containsString:NSLocalizedString(@"Saved preference", @"")]);
+        [reset performClick:nil];
+        XCTAssertNil([defaults objectForKey:@"MinTabWidth"]);
+        XCTAssertEqual(table.numberOfRows, 0);
+    } @finally {
+        if (original) { [defaults setObject:original forKey:@"MinTabWidth"]; }
+        else { [defaults removeObjectForKey:@"MinTabWidth"]; }
+        search.stringValue = originalQuery;
+        exclude.state = originalState;
+        [advanced advancedSettingsDidChange:nil];
+        [panel close];
+    }
+}
+
+- (void)testOpenQuicklySettingsResultsReuseIndexOrderAndKeepScopes {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    (void)panel.window;
+    NSSearchField *search = [panel valueForKey:@"searchField"];
+    NSString *originalQuery = search.stringValue;
+    SettingsQuicklyDelegate *delegate = [[SettingsQuicklyDelegate alloc] init];
+    iTermOpenQuicklyModel *model = [[iTermOpenQuicklyModel alloc] init];
+    model.delegate = delegate;
+    @try {
+        search.stringValue = @"an unrelated sidebar query";
+        for (NSString *query in @[@"UseUnevenTabs", @"font", @"profiles"]) {
+            NSArray *documents = [panel settingsDocumentsMatchingQuery:query];
+            XCTAssertGreaterThan(documents.count, 0);
+            [model updateWithQuery:[@"/, " stringByAppendingString:query]];
+            XCTAssertEqual(model.items.count, MIN(40, documents.count));
+            NSMutableSet *identifiers = [NSMutableSet set];
+            for (NSUInteger i = 0; i < model.items.count; i++) {
+                iTermOpenQuicklySettingItem *item = model.items[i];
+                XCTAssertTrue([item isKindOfClass:iTermOpenQuicklySettingItem.class]);
+                XCTAssertEqual([model objectAtIndex:i], item);
+                XCTAssertEqual(item.document, documents[i]);
+                XCTAssertEqualObjects(item.title.string, item.document.displayName);
+                XCTAssertTrue([item.detail.string containsString:item.document.scope]);
+                XCTAssertFalse([identifiers containsObject:item.identifier]);
+                [identifiers addObject:item.identifier];
+                XCTAssertNotNil(item.icon);
+            }
+            XCTAssertEqualObjects(search.stringValue, @"an unrelated sidebar query");
+        }
+        [model updateWithQuery:@"/,  "];
+        XCTAssertEqual(model.items.count, 0);
+        [model updateWithQuery:@"/"];
+        XCTAssertEqual([model.items indexesOfObjectsPassingTest:^BOOL(id item, NSUInteger idx, BOOL *stop) {
+            return [item isKindOfClass:iTermOpenQuicklySettingItem.class];
+        }].count, 0);
+        [model updateWithQuery:@"UseUnevenTabs"];
+        XCTAssertTrue([model.items indexesOfObjectsPassingTest:^BOOL(id item, NSUInteger idx, BOOL *stop) {
+            return [item isKindOfClass:iTermOpenQuicklySettingItem.class];
+        }].count > 0);
+        XCTAssertTrue([[[iTermOpenQuicklySettingsCommand alloc] init] supportsSettings]);
+        XCTAssertFalse([[[iTermOpenQuicklyScriptCommand alloc] init] supportsSettings]);
+    } @finally {
+        search.stringValue = originalQuery;
+        [panel close];
+    }
+}
 
 - (void)testPointerWindowAndTabActionsHaveDistinctLocalizedNames {
     NSDictionary *names = [PointerPrefsController localizedActionMap];
@@ -1097,6 +1282,9 @@
         exclude.state = NSControlStateValueOff;
         search.stringValue = @"";
         [advanced advancedSettingsDidChange:nil];
+        NSTextField *heading = (NSTextField *)[table.delegate tableView:table viewForTableColumn:nil row:0];
+        XCTAssertNotNil(heading);
+        XCTAssertTrue([heading.stringValue containsString:[advanced filteredAdvancedSettings].firstObject]);
         for (NSNumber *width in @[@1040, @1280]) {
             [window setContentSize:NSMakeSize(width.doubleValue, 720)];
             [window.contentView layoutSubtreeIfNeeded];

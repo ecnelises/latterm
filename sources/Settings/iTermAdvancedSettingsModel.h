@@ -42,12 +42,17 @@ extern NSString *const kAdvancedSettingGetter;
 // For kiTermAdvancedSettingTypeIntEnum: an NSArray<NSString *> of option titles,
 // indexed by the setting's integer value.
 extern NSString *const kAdvancedSettingOptions;
+// Extra compatibility keys cleared when restoring a setting's factory value.
+extern NSString *const kAdvancedSettingResetKeys;
 
 // The model posts this notification when it makes a change.
 extern NSString *const iTermAdvancedSettingsDidChange;
 
 + (void)enumerateDictionaries:(void (^)(NSDictionary *))block;
 + (void)loadAdvancedSettingsFromUserDefaults;
++ (id)valueForSetting:(NSDictionary *)setting;
++ (BOOL)writeValue:(id)value forSetting:(NSDictionary *)setting;
++ (BOOL)resetSetting:(NSDictionary *)setting;
 
 #pragma mark - Accessors
 

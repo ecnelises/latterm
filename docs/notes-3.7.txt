@@ -9,6 +9,12 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Find settings in Open Quickly, with /, to
+  search only settings and open their location.
+- Share expert-setting definitions across
+  editing, validation, and search.
+- Show expert value sources and factory values;
+  reset one setting, including legacy overrides.
 - Translate pointer bindings and workgroup help;
   distinguish new-window and new-tab actions.
 - Keep wide profile controls reachable when

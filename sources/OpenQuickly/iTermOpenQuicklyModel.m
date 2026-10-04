@@ -32,6 +32,8 @@
 #import "PTYSession+Scripting.h"
 #import "VT100RemoteHost.h"
 #import "WindowArrangements.h"
+#import "PreferencePanel.h"
+#import "iTermPreferencesSearch.h"
 
 // It's nice for each of these to be unique so in degenerate cases (e.g., empty query) the detail
 // uses the same feature for all items.
@@ -98,7 +100,8 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
                       [iTermOpenQuicklyScriptCommand class],
                       [iTermOpenQuicklyActionCommand class],
                       [iTermOpenQuicklySnippetCommand class],
-                      [iTermOpenQuicklyBookmarkCommand class]];
+                      [iTermOpenQuicklyBookmarkCommand class],
+                      [iTermOpenQuicklySettingsCommand class]];
     });
     return commands;
 }
@@ -757,6 +760,27 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 
 #pragma mark - APIs
 
+- (void)addSettingsToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items query:(NSString *)query {
+    NSArray<iTermPreferencesSearchDocument *> *documents =
+        [[PreferencePanel sharedInstance] settingsDocumentsMatchingQuery:query];
+    NSUInteger rank = 0;
+    for (iTermPreferencesSearchDocument *document in documents) {
+        iTermOpenQuicklySettingItem *item = [[iTermOpenQuicklySettingItem alloc] init];
+        item.document = document;
+        item.identifier = [NSString stringWithFormat:@"setting:%@:%@:%@", document.ownerIdentifier,
+                           document.scope, document.identifier];
+        item.title = [[NSAttributedString alloc] initWithString:document.displayName];
+        NSString *path = [document.pathComponents componentsJoinedByString:@" › "];
+        NSString *detail = [NSString stringWithFormat:NSLocalizedString(@"Settings: %@ · %@", @"Open Quickly setting path"),
+                            path, document.scope];
+        item.detail = [_delegate openQuicklyModelDisplayStringForFeatureNamed:nil value:detail highlightedIndexes:nil];
+        // Keep the Settings engine's title/keyword ranking within this group.
+        item.score = 0.14 / (1 + rank * 0.05);
+        [items addObject:item];
+        if (++rank == 40) { break; }
+    }
+}
+
 - (void)removeAllItems {
     [_items removeAllObjects];
 }
@@ -770,6 +794,10 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
         [[iTermMinimumSubsequenceMatcher alloc] initWithQuery:command.text];
 
     NSMutableArray *items = [NSMutableArray array];
+
+    if ([command supportsSettings] && ![queryString isEqualToString:@"/"]) {
+        [self addSettingsToItems:items query:command.text];
+    }
 
     if ([queryString isEqualToString:@"/"]) {
         [self addTipsToItems:items];
@@ -898,6 +926,7 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 }
 - (id)objectAtIndex:(NSInteger)index {
     iTermOpenQuicklyItem *item = _items[index];
+    if ([item isKindOfClass:iTermOpenQuicklySettingItem.class]) { return item; }
     if ([item isKindOfClass:[iTermOpenQuicklyProfileItem class]]) {
         return [[ProfileModel sharedInstance] bookmarkWithGuid:item.identifier];
     } else if ([item isKindOfClass:[iTermOpenQuicklyChangeProfileItem class]] ||
