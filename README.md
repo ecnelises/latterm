@@ -9,7 +9,7 @@ This fork currently removes or de-emphasizes AI, embedded browser, and shell-int
 Latterm is intended to become a clean, long-lived fork rather than a one-off patch set.
 
 - Base UI language is English and remains the default.
-- A first-pass Simplified Chinese localization is included in `zh-Hans.lproj`.
+- Simplified Chinese localization covers menus, Settings, and common dialogs in `zh-Hans.lproj`.
 - Some internal target names and filenames still use `iTerm2` during the transition, but the shipped app bundle and executable are now `Latterm`. Renaming the Xcode project, schemes, targets, product references, helper paths, and packaging scripts is tracked as a dedicated refactor phase so project-file churn stays separate from feature removal.
 
 ## What Stays
@@ -45,6 +45,8 @@ More strings can be moved into localization tables incrementally without changin
 
 ### Prerequisites
 
+Official builds require Apple silicon and macOS 12.4 or later.
+
 Use the existing setup flow from the upstream project:
 
 ```bash
@@ -64,12 +66,12 @@ make Development
 make run
 ```
 
-`make run` builds the Development configuration and launches `Latterm.app` with the `iterm2-dev` preferences suite.
+`make run` builds the Development configuration and launches `Latterm.app` with the `Latterm-Development` preferences suite when run from this checkout. Preferences and Application Support data stay separate from the installed release.
 
 ### Notes
 
 - Code signing is disabled by default for command-line builds.
-- `make` now resolves `BUILD_DIR` from the checked-in `iTerm2.xcodeproj`, which avoids the previous failure where `make run` could not determine the build output path.
+- Build products are written to the repository’s `Build/` directory by default. Set `BUILD_DIR=/absolute/path` to use another directory.
 - Contributor builds remain unsigned by default. Official releases use the
   `R7ZJJDMW42` Developer ID team, the `com.ecnelises.latterm` bundle identity,
   and a local notarytool keychain profile; no Apple credentials are stored in
@@ -89,7 +91,7 @@ xcrun notarytool store-credentials latterm-notary \
 Build, verify, notarize, staple, and package an exact version with:
 
 ```bash
-tools/release_latterm.sh 26.9.1
+tools/release_latterm.sh 26.10.1
 ```
 
 The final zip and SHA-256 file are written under `Build/Releases/<version>/`.

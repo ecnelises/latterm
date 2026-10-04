@@ -1,0 +1,29 @@
+Latterm 26.10.1 — October 4, 2026
+
+Changes since Latterm 26.9.2.
+
+New Features:
+- Inspect a profile’s values and their sources.
+  In Settings > Profiles, choose Other Actions >
+  Inspect Profile Settings to compare defaults
+  and restore individual settings.
+- Find Settings in Open Quickly. Type /, to
+  search only settings and open the right page.
+
+Improvements:
+- Read Settings sections in one scrolling page,
+  with profile selection beside the editor.
+- Keep controls and list actions reachable when
+  resizing Settings, including smaller windows.
+- Expand the Snippet editor, use monospaced
+  text, and save with Command-Return.
+- Add guidance to empty Action and Snippet lists
+  and searches with no matching results.
+- Complete Chinese Settings labels and help,
+  including pointer bindings and Snippet help.
+
+Bug Fixes:
+- Preserve filtered Snippet lists after editing
+  a matching snippet.
+- Honor the chosen window, tab, or split option
+  when opening files from other applications.
