@@ -2607,3 +2607,8 @@ Terminal-first maintenance:
   values without crashing.
 - Release removed Toolbelt tools and discard
   profile reorder undo actions on detachment.
+- Closing detached tmux windows no longer closes
+  unrelated terminal sessions.
+- Avoid repeated mouse-mode updates during tmux
+  navigation, and observe the current mode when
+  enabling mouse-motion reporting.

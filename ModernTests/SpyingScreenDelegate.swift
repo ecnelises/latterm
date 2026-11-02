@@ -49,7 +49,26 @@ class SpyingScreenDelegate: FakeSession {
     private(set) var promptDidEndCalls: [PromptDidEndCall] = []
     private(set) var commandDidChangeCalls: [CommandDidChangeCall] = []
 
+    private(set) var mouseModeDidChangeCount = 0
+    private(set) var mouseModesSeenOnChange: [MouseMode] = []
+    var restoresStateAfterJoin = false
+
+    override func screenMouseModeDidChange() {
+        mouseModeDidChangeCount += 1
+        if let screen {
+            mouseModesSeenOnChange.append(screen.terminalMouseMode)
+        }
+    }
+
+    override func screenRestore(_ state: VT100ScreenState) {
+        if restoresStateAfterJoin {
+            screen?.restore(state)
+        }
+    }
+
     func reset() {
+        mouseModeDidChangeCount = 0
+        mouseModesSeenOnChange.removeAll()
         getWorkingDirectoryCalls.removeAll()
         pollLocalDirectoryOnlyCalls.removeAll()
         logWorkingDirectoryCalls.removeAll()
