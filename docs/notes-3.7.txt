@@ -1,3 +1,9 @@
+Latterm 26.11.1
+
+Reviewed through upstream iTerm2 3.7.6.
+Applicable fixes are adapted to the terminal fork.
+Requires macOS 12.4 or later on Apple Silicon.
+
 Version 3.7.0beta1 was built on April 20, 2026
 
 A note to beta users:
