@@ -1419,8 +1419,6 @@
 "Allow function keys to be handled by macOS text input system." = "允许 macOS 文本输入系统处理功能键。";
 "Disable metal renderer when idle to save CPU utilization?\nRequires Metal renderer" = "空闲时禁用 Metal 渲染器以减少 CPU 占用。\n需要 Metal 渲染器。";
 "Disable metal renderer when idle to save CPU utilization?" = "空闲时禁用 Metal 渲染器以减少 CPU 占用。";
-"Dismember scroll view for better GPU performance?\nThis enables a dangerous hack that might improve drawing performance on macOS 10.14 only." = "拆分滚动视图以提高 GPU 性能。\n实验性的高风险变通方式，仅可能改善 macOS 10.14 的绘制性能。";
-"Dismember scroll view for better GPU performance?" = "拆分滚动视图以提高 GPU 性能。";
 "Extend background color into margins in alternate screen mode?" = "备用屏幕模式下将背景色延伸到边距区域。";
 "Enable support for REP (Repeat previous character) escape sequence?" = "支持 REP（重复前一个字符）转义序列。";
 "Report multiple mouse scroll events when scrolling quickly?" = "快速滚动时报告多个鼠标滚动事件。";

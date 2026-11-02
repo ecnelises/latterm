@@ -193,3 +193,40 @@ final class MutableScreenCharArrayTests: XCTestCase {
         XCTAssertNotNil(weakRefs[4](), "eaIndex[4] should still be retained by msca")
     }
 }
+
+final class ComplexCharExpansionTests: XCTestCase {
+    private func checkExpansion(_ input: String, expected: String,
+                                file: StaticString = #filePath, line: UInt = #line) {
+        let registry = ComplexCharRegistry()
+        let code = registry.lazilyCreatedCode(for: input as NSString,
+                                               isSpacingCombiningMark: iTermTriStateFromBool(false))
+        var cell = screen_char_t()
+        cell.code = code
+        cell.complexChar = 1
+        let capacity = Int(kMaxParts)
+        let sentinel = unichar(0xaaaa)
+        var buffer = [unichar](repeating: sentinel, count: capacity + 32)
+        let count = buffer.withUnsafeMutableBufferPointer {
+            registry.expand(screenChar: cell, to: $0.baseAddress!)
+        }
+        XCTAssertEqual(Int(count), expected.utf16.count, file: file, line: line)
+        XCTAssertEqual(Array(buffer.prefix(Int(count))), Array(expected.utf16), file: file, line: line)
+        XCTAssertTrue(buffer.dropFirst(Int(count)).allSatisfy { $0 == sentinel }, file: file, line: line)
+    }
+
+    func testOversizedComplexCharacterDoesNotOverwriteDestination() {
+        let limit = Int(kMaxParts)
+        checkExpansion(String(repeating: "a", count: limit + 8),
+                       expected: String(repeating: "a", count: limit))
+    }
+
+    func testClampingDoesNotSplitSurrogatePair() {
+        let prefix = String(repeating: "a", count: Int(kMaxParts) - 1)
+        checkExpansion(prefix + "😀z", expected: prefix)
+    }
+
+    func testSurrogatePairAtExactCapacityIsPreserved() {
+        let input = String(repeating: "a", count: Int(kMaxParts) - 2) + "😀"
+        checkExpansion(input, expected: input)
+    }
+}

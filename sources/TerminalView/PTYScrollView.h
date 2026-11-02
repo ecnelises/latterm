@@ -38,7 +38,6 @@ typedef NS_ENUM(NSUInteger, PTYScrollerState) {
 
 @protocol PTYScrollerDelegate<NSObject>
 - (void)userScrollDidChange:(BOOL)userScroll;
-- (NSScrollView *)ptyScrollerScrollView NS_AVAILABLE_MAC(10_14);
 - (void)ptyScrollerDidTransitionToState:(PTYScrollerState)state;
 - (void)ptyScrollerFrameDidChange;
 @end
@@ -53,7 +52,6 @@ typedef NS_ENUM(NSUInteger, PTYScrollerState) {
 
 @interface PTYScrollView : NSScrollView
 
-+ (BOOL)shouldDismember NS_AVAILABLE_MAC(10_14);
 
 // More specific type for the base class's method.
 - (PTYScroller *)ptyVerticalScroller;

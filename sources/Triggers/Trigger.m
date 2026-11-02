@@ -74,7 +74,7 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
         return nil;
     }
     Trigger *trigger = [[class alloc] init];
-    trigger.regex = [NSString castFrom:dict[kTriggerRegexKey]];
+    trigger.regex = [NSString castFrom:dict[kTriggerRegexKey]] ?: @"";
     trigger.param = dict[kTriggerParameterKey];
     trigger.partialLine = [[NSNumber coerceFrom:dict[kTriggerPartialLineKey]] boolValue];
     trigger.disabled = [[NSNumber coerceFrom:dict[kTriggerDisabledKey]] boolValue];

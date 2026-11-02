@@ -53,7 +53,6 @@ static const CGFloat iTermToolWrapperCollapsedHeight = 22.0;
                                                                frame.size.width - kButtonSize - kRightMargin - kCloseButtonLeftMargin,
                                                                kTitleHeight)];
         [_title setEditable:NO];
-        [_title bind:@"value" toObject:self withKeyPath:@"name" options:nil];
         _title.backgroundColor = [NSColor clearColor];
         [_title setAlignment:NSTextAlignmentCenter];
         [_title setBezeled:NO];
@@ -127,7 +126,6 @@ static const CGFloat iTermToolWrapperCollapsedHeight = 22.0;
 - (void)removeToolSubviews {
     [_container removeFromSuperview];
     _container = nil;
-    [_title unbind:@"value"];
 }
 
 - (BOOL)isFlipped {
@@ -144,11 +142,7 @@ static const CGFloat iTermToolWrapperCollapsedHeight = 22.0;
 
 - (void)setName:(NSString *)theName {
     _name = [theName copy];
-    [self performSelector:@selector(setTitleEditable) withObject:nil afterDelay:0];
-}
-
-- (void)setTitleEditable {
-    [_title setEditable:NO];
+    _title.stringValue = _name ?: @"";
 }
 
 - (id<ToolbeltTool>)tool {

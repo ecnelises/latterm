@@ -2596,3 +2596,14 @@ Bug Fixes:
   reprocessed to build each request, so the
   per-message work stays small no matter how
   long the conversation gets.
+
+Terminal-first maintenance:
+- Remove the obsolete macOS 10.14 scroll-view
+  workaround and its Expert Setting. Scrollbars
+  stay inside their scroll view.
+- Bound complex-character expansion to prevent
+  buffer overwrites during text extraction.
+- Load triggers with missing or invalid regex
+  values without crashing.
+- Release removed Toolbelt tools and discard
+  profile reorder undo actions on detachment.

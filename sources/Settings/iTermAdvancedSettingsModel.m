@@ -852,7 +852,6 @@ DEFINE_BOOL(experimentalKeyHandling, NO, SECTION_EXPERIMENTAL @"Improved support
 DEFINE_BOOL(allowSendingFunctionKeysToCocoa, YES_IF_BETA_ELSE_NO, SECTION_EXPERIMENTAL @"Allow function keys to be handled by macOS text input system.\nThis supports using function keys with modifiers as compose/dead keys in custom keyboard layouts.");
 // This is just a bad idea because of the latency it adds. It was also maybe related to crashes, but I never did figure it out.
 DEFINE_BOOL(disableMetalWhenIdle, NO, SECTION_EXPERIMENTAL @"Disable metal renderer when idle to save CPU utilization?\nRequires Metal renderer");
-DEFINE_BOOL(dismemberScrollView, NO, SECTION_EXPERIMENTAL @"Dismember scroll view for better GPU performance?\nThis enables a dangerous hack that might improve drawing performance on macOS 10.14 only.");
 DEFINE_BOOL(extendBackgroundColorIntoMargins, YES, SECTION_EXPERIMENTAL @"Extend background color into margins in alternate screen mode?");
 
 // Experimental features that have graduated:
