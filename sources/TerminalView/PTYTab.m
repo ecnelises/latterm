@@ -5147,7 +5147,7 @@ typedef struct {
     NSDictionary *arrangement = [PTYTab _recursiveArrangementForDecoratedTmuxParseTree:parseTree
                                                                               bookmark:bookmark
                                                                                 origin:NSZeroPoint
-                                                                      activeWindowPane:[activeSession_ tmuxPane]
+                                                                      activeWindowPane:[PTYTab tmuxLayoutPaneForSession:activeSession_]
                                                                         tmuxController:nil
                                                                                 window:self.tmuxWindow];
     ++tmuxOriginatedResizeInProgress_;
@@ -5300,6 +5300,11 @@ typedef struct {
     return dict;
 }
 
++ (int)tmuxLayoutPaneForSession:(PTYSession *)session {
+    PTYSession *real = session.liveSession ?: session;
+    return real.isTmuxClient ? real.tmuxPane : -1;
+}
+
 - (void)replaceViewHierarchyWithParseTree:(NSMutableDictionary *)parseTree
                            tmuxController:(TmuxController *)tmuxController {
     // This reads [self sessions] (idMap_-backed while maximized) and rebuilds
@@ -5322,7 +5327,7 @@ typedef struct {
     [arrangement setObject:[PTYTab _recursiveArrangementForDecoratedTmuxParseTree:parseTree
                                                                          bookmark:[self.tmuxController profileForWindow:self.tmuxWindow]
                                                                            origin:NSZeroPoint
-                                                                 activeWindowPane:[activeSession_ tmuxPane]
+                                                                 activeWindowPane:[PTYTab tmuxLayoutPaneForSession:activeSession_]
                                                                    tmuxController:tmuxController
                                                                            window:self.tmuxWindow]
                     forKey:TAB_ARRANGEMENT_ROOT];
@@ -5330,7 +5335,10 @@ typedef struct {
     // Create a map of window pane -> SessionView *
     NSMutableDictionary<NSNumber *, SessionView *> *idMap = [NSMutableDictionary dictionary];
     for (PTYSession *aSession in [self sessions]) {
-        idMap[@([aSession tmuxPane])] = aSession.view;
+        const int pane = [PTYTab tmuxLayoutPaneForSession:aSession];
+        if (pane >= 0) {
+            idMap[@(pane)] = aSession.view;
+        }
     }
     NSArray *preexistingPanes = [[idMap allKeys] copy];
     NSSplitView *newRoot = (NSSplitView *)[PTYTab _recursiveRestoreSplitters:[arrangement objectForKey:TAB_ARRANGEMENT_ROOT]
@@ -5390,7 +5398,7 @@ typedef struct {
     const BOOL hasScrollbar = [realParentWindow_ scrollbarShouldBeVisible];
     const NSScrollerStyle scrollerStyle = [realParentWindow_ scrollerStyle];
     for (PTYSession *aSession in [self sessions]) {
-        NSNumber *n = [NSNumber numberWithInt:[aSession tmuxPane]];
+        NSNumber *n = @([PTYTab tmuxLayoutPaneForSession:aSession]);
         if (![preexistingPanes containsObject:n]) {
             // This is a new pane so register it.
             [tmuxController_ registerSession:aSession

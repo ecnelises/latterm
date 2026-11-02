@@ -379,4 +379,7 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
 - (void)willDeselectTab;
 - (void)didSelectTab;
 
+// Resolve a filtered stand-in through its live tmux session. Native sessions return -1.
++ (int)tmuxLayoutPaneForSession:(PTYSession *)session;
+
 @end

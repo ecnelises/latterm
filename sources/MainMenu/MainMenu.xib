@@ -999,8 +999,8 @@ Gw
                                     <action selector="showHideNotes:" target="-1" id="bWx-ZS-6aE"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Show Clippings" keyEquivalent="=" identifier="Show Clippings" id="Clp-vw-ShC">
-                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                            <menuItem title="Show Clippings" keyEquivalent="G" identifier="Show Clippings" id="Clp-vw-ShC">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" option="YES" command="YES"/>
                                 <connections>
                                     <action selector="toggleShowClippings:" target="-1" id="Clp-ac-Tog"/>
                                 </connections>
@@ -1862,8 +1862,8 @@ CQ
                                     <action selector="toggleLayoutLocked:" target="-1" id="Lk2-Ly-Lt1"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Notify on Status Change" keyEquivalent="X" identifier="Notify on Status Change" id="Ns0-Ch-G01">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
+                            <menuItem title="Notify on Status Change" identifier="Notify on Status Change" id="Ns0-Ch-G01">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="toggleNotifyOnStatusChange:" target="-1" id="Ns0-Ch-A02"/>
                                 </connections>
