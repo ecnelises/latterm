@@ -9,11 +9,15 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Keep Companion connected through modal dialogs.
+- Reject delayed remote input during UI stalls.
+- Preserve RTL selection in Companion and cancel
+  abandoned relay reads during reconnect.
 - Keep filtered tmux panes focused during relayout.
 - Show Clippings now uses ⌘⇧⌥G, freeing ⌘⇧= for
   Make Text Bigger. Notify on Status Change no
   longer claims ⇧⌘X from system Services.
-- Recover updates from isolated application paths.
+- Recover launches from isolated application paths.
 - Handle new tabs without titles in Companion.
 - Keep pane fields focused under a resting mouse.
 - Focus follows mouse remembers each pane’s field;

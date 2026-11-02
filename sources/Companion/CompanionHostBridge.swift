@@ -21,12 +21,9 @@ import CompanionNoise
 
 @MainActor
 final class CompanionHostBridge {
-    private let transport: MessageTransport
+    let link: CompanionLink
     private var receiveTask: Task<Void, Never>?
-    /// Control frames drain ahead of media so input/replies never wait behind a
-    /// video backlog; media is never dropped (see CompanionPriorityOutbox).
     private var outbox: CompanionPriorityOutbox<HostEnvelope>?
-    private var outboxTask: Task<Void, Never>?
 
     /// One live video stream and the main-thread timer driving it.
     private final class StreamContext {
@@ -72,164 +69,67 @@ final class CompanionHostBridge {
     /// .peerMustUpgrade -> upgrade the phone app; .selfMustUpgrade -> upgrade
     /// iTerm2. Not called when compatible.
     var onVersionIncompatible: (@MainActor (_ verdict: CompanionProtocolVersion.Compatibility) -> Void)?
-    /// Set once an incompatible hello is seen: the bridge then serves nothing but
-    /// a re-hello, so a stale peer cannot drive an out-of-date protocol.
-    private var versionBlocked = false
+    init(link: CompanionLink) {
+        self.link = link
+    }
 
-    init(transport: MessageTransport) {
-        self.transport = transport
+    convenience init(transport: MessageTransport) {
+        self.init(link: CompanionLink.makeForProduction(transport: transport))
     }
 
     func start() {
-        RLog("bridge start (phone connected, bridge live)")
-
-        let outbox = CompanionPriorityOutbox<HostEnvelope>()
-        self.outbox = outbox
-        outboxTask = Task { [transport] in
-            // Diagnostic counters/heartbeat. If a send wedges
-            // (half-open splice), the heartbeat below stops logging while the
-            // bridge believes it is still connected -- the signal we need.
-            var mediaFrames = 0
-            var mediaBytes = 0
-            var controlFrames = 0
-            var lastHeartbeat = CACurrentMediaTime()
-            RLog("bridge outbox drain started")
-            drain: while true {
-                let data: Data
-                let isMedia: Bool
-                switch await outbox.next() {
-                case .finished:
-                    break drain
-                case .control(let envelope):
-                    isMedia = false
-                    do {
-                        data = try WireCoding.encode(envelope)
-                    } catch {
-                        RLog("Companion bridge: DROPPING unencodable envelope: \(error)")
-                        continue
-                    }
-                case .media(let payload):
-                    isMedia = true
-                    // Control frames stay bare JSON; media frames carry the marker.
-                    data = CompanionFrameChannel.frameMedia(payload)
-                }
-                do {
-                    try await transport.send(data)
-                } catch {
-                    RLog("bridge outbox send FAILED (outbox dead) after \(mediaFrames) media/\(controlFrames) control: \(error)")
-                    break drain
-                }
-                if isMedia {
-                    mediaFrames += 1
-                    mediaBytes += data.count
-                } else {
-                    controlFrames += 1
-                }
-                let now = CACurrentMediaTime()
-                if now - lastHeartbeat >= 5 {
-                    RLog("bridge outbox alive: sent \(mediaFrames) media (\(mediaBytes) B), \(controlFrames) control")
-                    lastHeartbeat = now
+        outbox = link.outbox
+        receiveTask = Task { [weak self, link] in
+            for await event in link.events {
+                guard let self, !Task.isCancelled else { break }
+                switch event {
+                case .envelope(let envelope, let handledByLink):
+                    if !handledByLink { self.handle(envelope) }
+                case .helloCompleted:
+                    break
+                case .versionIncompatible(let verdict):
+                    self.onVersionIncompatible?(verdict)
+                case .closed(let error):
+                    self.teardownStreams()
+                    self.onClose?(error)
                 }
             }
-            RLog("bridge outbox drained/exited: \(mediaFrames) media, \(controlFrames) control total")
         }
-
-        receiveTask = Task { [weak self] in
-            await self?.runReceiveLoop()
-        }
-
+        link.start()
     }
 
-    /// Tell the phone it has been unpaired, flush the outbox so the message
-    /// actually reaches the wire, then tear down. Used by unpair; a plain
-    /// stop() would race the farewell against the connection close.
     func announceUnpairedAndStop() async {
-        RLog("Companion bridge: announcing unpair")
         onClose = nil
+        link.stopStoringRoomSecret()
         endAllStreams(reason: .sessionClosed)
-        send(.unpaired, requestID: nil)
-        outbox?.finish()
         outbox = nil
-        // Drain: the outbox task exits once it has sent everything enqueued
-        // before finish(), including the farewell.
-        await outboxTask?.value
-        outboxTask = nil
-        DLog("Companion bridge: farewell flushed; closing transport")
-        // Tear down the receive side only AFTER the farewell is on the wire:
-        // cancelling the receive task cancels the underlying connection (its
-        // onCancel treats cancellation as abandoning the transport), which
-        // would kill the farewell if done first.
+        await link.sendFarewellAndClose()
         receiveTask?.cancel()
         receiveTask = nil
-        await transport.close()
     }
 
     func stop() {
-        // A user-initiated stop is not a remote disconnect; don't report one.
         onClose = nil
         receiveTask?.cancel()
         receiveTask = nil
         teardownStreams()
-        let transport = self.transport
-        Task { await transport.close() }
+        link.close()
     }
 
     private func teardownStreams() {
         endAllStreams(reason: .sessionClosed)
-        outbox?.finish()
         outbox = nil
-        outboxTask?.cancel()
-        outboxTask = nil
-    }
-
-    // MARK: Receive loop
-
-    private func runReceiveLoop() async {
-        // If the relay splice goes half-open during streaming, receive()
-        // can block forever -- we'd see "started" but never "receive FAILED" or
-        // "exited", confirming the wedge (no teardown, no re-park).
-        RLog("bridge receiveLoop started")
-        var dropError: Error?
-        while true {
-            let frame: Data
-            do {
-                frame = try await transport.receive()
-            } catch {
-                RLog("bridge receiveLoop receive() FAILED (drop detected): \(error)")
-                dropError = error
-                break
-            }
-            guard let envelope = try? WireCoding.decode(ClientEnvelope.self, from: frame) else {
-                // A frame we cannot decode (newer phone) is dropped, not fatal.
-                continue
-            }
-            handle(envelope)
-        }
-        RLog("bridge receiveLoop exited -> teardownStreams + onClose (will re-park)")
-        teardownStreams()
-        onClose?(dropError)
     }
 
     private func handle(_ envelope: ClientEnvelope) {
         let requestID = envelope.requestID
-        if versionBlocked {
-            if case .hello(let revision, let minimumPeer) = envelope.payload {
-                handleHello(peerRevision: revision, peerMinimumPeer: minimumPeer, requestID: requestID)
-            } else {
-                send(.error(CompanionError(code: .badRequest,
-                                           message: "Companion app upgrade required")),
-                     requestID: requestID)
-            }
-            return
-        }
-
         switch envelope.payload {
         case .unsupported:
             send(.error(CompanionError(code: .badRequest,
                                        message: "Unsupported request; app upgrade required")),
                  requestID: requestID)
-        case .hello(let revision, let minimumPeer):
-            handleHello(peerRevision: revision, peerMinimumPeer: minimumPeer, requestID: requestID)
+        case .hello, .ping, .relayRoomSecret, .streamAck:
+            break
         case .listSessions:
             send(.sessions(CompanionSessionLister.sessions()), requestID: requestID)
         case .fetchSessionScreenInfo(let sessionGuid):
@@ -247,16 +147,6 @@ final class CompanionHostBridge {
                                    requestID: requestID)
         case .fetchSessionTree:
             send(.sessionTree(CompanionSessionLister.tree()), requestID: requestID)
-        case .ping:
-            send(.pong, requestID: requestID)
-        case .relayRoomSecret(let secret):
-            do {
-                try CompanionMacIdentity.storePairedRoomSecret(secret)
-                send(.relayRoomSecretStored, requestID: requestID)
-            } catch {
-                send(.error(CompanionError(code: .internalError, message: "\(error)")),
-                     requestID: requestID)
-            }
         case .unpairing:
             onPeerUnpaired?()
         case .startSessionStream(let sessionGuid, let params):
@@ -267,9 +157,6 @@ final class CompanionHostBridge {
             streams[streamID]?.streamer.requestKeyframe()
         case .updateStreamParams(let streamID, let params):
             streams[streamID]?.streamer.updateFrameRateCap(params.maxFrameRate)
-        case .streamAck(let streamID, let lastPTSMilliseconds, let queueDepth):
-            streams[streamID]?.streamer.noteAck(ptsMilliseconds: lastPTSMilliseconds,
-                                                queueDepth: queueDepth)
         case .reportScrollWheel(let streamID, let up, let lines):
             handleReportScrollWheel(streamID: streamID, up: up, lines: lines)
         case .selectionGesture(let streamID, let phase, let mode, let point):
@@ -372,16 +259,26 @@ final class CompanionHostBridge {
         } else {
             // Word/line/smart selections snap to whole-token boundaries, so there is
             // no single-cell exclusivity to reconcile: drive iTermSelection's live
-            // selection directly.
+            // selection directly. But the phone's column is VISUAL, and these modes
+            // interpret the coordinate as LOGICAL (unlike character mode, whose live
+            // range is visual), so convert first (a no-op unless the line is
+            // bidi-reordered), matching the Mac mouse handler. Without this, a
+            // double-tap or smart select on a right-to-left line snaps to the wrong
+            // token.
+            let relLine = clampedAbsLine - session.screen.totalScrollbackOverflow()
+            let bidi = (relLine >= 0 && relLine < Int64(session.screen.numberOfLines()))
+                ? textview.dataSource?.bidiInfo(forLine: Int32(clamping: relLine)) : nil
+            let logicalCoord = VT100GridAbsCoordMake(Self.logicalColumn(forVisualColumn: coord.x, bidi: bidi),
+                                                     clampedAbsLine)
             var moved = true
             switch phase {
             case .begin:
-                textview.selection?.begin(at: coord, mode: mode.iTermSelectionMode,
+                textview.selection?.begin(at: logicalCoord, mode: mode.iTermSelectionMode,
                                           resume: false, append: false)
             case .move:
-                moved = textview.selection?.moveEndpoint(to: coord) ?? false
+                moved = textview.selection?.moveEndpoint(to: logicalCoord) ?? false
             case .end:
-                moved = textview.selection?.moveEndpoint(to: coord) ?? false
+                moved = textview.selection?.moveEndpoint(to: logicalCoord) ?? false
                 textview.selection?.endLive()
             }
             changed = (phase != .move) || moved
@@ -472,6 +369,51 @@ final class CompanionHostBridge {
 
     /// Report the session's current selection span (or nil) so the phone can draw
     /// and move handles.
+    /// The phone works entirely in VISUAL columns (it renders a streamed image and
+    /// touches at pixel positions), but iTermSelection is LOGICAL. These convert a
+    /// single column for one line. Identity when there is no bidi info or the column
+    /// is outside the mapped cells, so left-to-right text is untouched.
+    nonisolated static func logicalColumn(forVisualColumn visualX: Int32,
+                                          bidi: BidiDisplayInfoObjc?) -> Int32 {
+        return BidiDisplayInfoObjc.logicalColumn(forVisualColumn: visualX, info: bidi)
+    }
+
+    nonisolated static func visualColumn(forLogicalColumn logicalX: Int32,
+                                         bidi: BidiDisplayInfoObjc?) -> Int32 {
+        return BidiDisplayInfoObjc.visualColumn(forLogicalColumn: logicalX, info: bidi)
+    }
+
+    /// Visual [min, max] columns for the cells that `subs` select on `line`. iTermSelection
+    /// stores a selection running through the end of a line as (startX, line, 0, line+1),
+    /// so a sub whose end wrapped to the next line must sweep to the grid width, not to its
+    /// raw exclusive end.x (which is 0 and would make the loop select nothing and the phone
+    /// show no selection). Returns nil only when no cell on the line is selected.
+    nonisolated static func visualColumnSpan(forSelectedSubs subs: [iTermSubSelection],
+                                             onLine line: Int64,
+                                             gridWidth: Int32,
+                                             bidi: BidiDisplayInfoObjc?) -> (min: Int32, max: Int32)? {
+        var vmin = Int32.max
+        var vmax = Int32.min
+        for sub in subs where sub.absRange.coordRange.start.y == line {
+            let cr = sub.absRange.coordRange
+            let rawStop = (cr.end.y == line) ? cr.end.x : gridWidth
+            // On a reordered line, logical columns >= numberOfCells (the trailing
+            // padding of a select-through-EOL range) are not in the LUT and map to
+            // identity (large) visual columns, which would inflate the max even
+            // though they render on the visual left. Bound the sweep to the reordered
+            // cells for the bidi case.
+            let stop = bidi.map { min(rawStop, $0.numberOfCells) } ?? rawStop
+            var logical = cr.start.x
+            while logical < stop {
+                let v = visualColumn(forLogicalColumn: logical, bidi: bidi)
+                vmin = min(vmin, v)
+                vmax = max(vmax, v)
+                logical += 1
+            }
+        }
+        return vmin <= vmax ? (min: vmin, max: vmax) : nil
+    }
+
     /// iTermSelection's end x is EXCLUSIVE (one past the last selected cell; select
     /// all yields end.x == gridWidth). The phone treats the wire end as the
     /// inclusive last cell, so convert here. An exclusive end at column 0 means the
@@ -540,13 +482,63 @@ final class CompanionHostBridge {
 
     private func currentSelectionRange(_ textview: PTYTextView) -> CompanionSelectionRange? {
         guard let selection = textview.selection, selection.hasSelection else { return nil }
-        let span = selection.spanningAbsRange
+        // logicalSubSelections (not spanningAbsRange, which folds in the raw live
+        // range via allSubSelections) so an in-progress bidi character drag is
+        // decomposed to LOGICAL runs before we convert to visual. Otherwise mid-drag
+        // the live range already holds visual columns and we would map it a second
+        // time, so the handles land on the mirror side until finger-lift.
+        let subs = selection.logicalSubSelections
+        guard !subs.isEmpty else { return nil }
         let gridWidth = Int(textview.dataSource?.width() ?? 0)
-        let end = Self.inclusiveSelectionEnd(exclusiveColumn: Int(span.end.x), absLine: span.end.y,
+        let overflow = textview.dataSource?.totalScrollbackOverflow() ?? 0
+        let numLines = Int64(textview.dataSource?.numberOfLines() ?? 0)
+        let bidiFor: (Int64) -> BidiDisplayInfoObjc? = { absLine in
+            let rel = absLine - overflow
+            guard rel >= 0, rel < numLines else { return nil }
+            return textview.dataSource?.bidiInfo(forLine: Int32(clamping: rel))
+        }
+
+        // Document-order bounding endpoints over the logical subselections.
+        var startCoord = subs[0].absRange.coordRange.start
+        var endCoord = subs[0].absRange.coordRange.end
+        for sub in subs {
+            let cr = sub.absRange.coordRange
+            if cr.start.y < startCoord.y || (cr.start.y == startCoord.y && cr.start.x < startCoord.x) {
+                startCoord = cr.start
+            }
+            if cr.end.y > endCoord.y || (cr.end.y == endCoord.y && cr.end.x > endCoord.x) {
+                endCoord = cr.end
+            }
+        }
+        let end = Self.inclusiveSelectionEnd(exclusiveColumn: Int(endCoord.x), absLine: endCoord.y,
                                              gridWidth: gridWidth)
+
+        if startCoord.y == end.absLine {
+            // Single line: take the visual min/max over the ACTUALLY-selected logical
+            // cells. One visual sweep is contiguous in visual space, so this is exact.
+            // Using the bounding [start, end] would include unselected cells sitting
+            // between the logical runs of one sweep (RTL text with an embedded LTR
+            // number), and converting only the two endpoints would emit a backwards
+            // pair on an RTL line, where visualForLogical is monotonically decreasing.
+            guard let span = Self.visualColumnSpan(forSelectedSubs: subs,
+                                                   onLine: startCoord.y,
+                                                   gridWidth: Int32(clamping: gridWidth),
+                                                   bidi: bidiFor(startCoord.y)) else {
+                return nil
+            }
+            return CompanionSelectionRange(
+                start: CompanionSelectionPoint(absLine: startCoord.y, column: Int(span.min)),
+                end: CompanionSelectionPoint(absLine: end.absLine, column: Int(span.max)))
+        }
+        // Multi-line: a two-point range cannot bound bidi-reordered cells across
+        // lines (same limitation as accessibility bounds-for-range), so convert each
+        // endpoint on its own line as a best effort.
+        let startVisual = Self.visualColumn(forLogicalColumn: startCoord.x, bidi: bidiFor(startCoord.y))
+        let endVisual = Self.visualColumn(forLogicalColumn: Int32(clamping: end.column),
+                                          bidi: bidiFor(end.absLine))
         return CompanionSelectionRange(
-            start: CompanionSelectionPoint(absLine: span.start.y, column: Int(span.start.x)),
-            end: CompanionSelectionPoint(absLine: end.absLine, column: end.column))
+            start: CompanionSelectionPoint(absLine: startCoord.y, column: Int(startVisual)),
+            end: CompanionSelectionPoint(absLine: end.absLine, column: Int(endVisual)))
     }
 
     private func sendSelectionRange(streamID: UInt32, textview: PTYTextView) {
@@ -646,6 +638,9 @@ final class CompanionHostBridge {
                 self?.driveStream(streamID)
             }
         }
+        link.streamAcks.register(streamID: streamID) { [weak streamer] pts, depth in
+            streamer?.noteAck(ptsMilliseconds: pts, queueDepth: depth)
+        }
         streams[streamID] = StreamContext(streamer: streamer, guid: guid, timer: timer,
                                           lastChange: max(session.screenContentsLastChangedAt,
                                                           session.view?.lastRedrawRequestedAt ?? 0))
@@ -706,6 +701,7 @@ final class CompanionHostBridge {
 
     private func endStream(_ streamID: UInt32, reason: CompanionStreamEndReason) {
         guard let context = streams.removeValue(forKey: streamID) else { return }
+        link.streamAcks.unregister(streamID: streamID)
         RLog("stream \(streamID) END reason=\(reason)")
         context.timer.invalidate()
         context.streamer.stop()
@@ -722,18 +718,6 @@ final class CompanionHostBridge {
     }
 
     // MARK: Handlers
-
-    private func handleHello(peerRevision: Int, peerMinimumPeer: Int, requestID: UInt64?) {
-        send(.hello(revision: CompanionProtocolVersion.current,
-                    minimumPeer: CompanionProtocolVersion.minimumPeer),
-             requestID: requestID)
-        let verdict = CompanionProtocolVersion.evaluate(peerRevision: peerRevision,
-                                                        peerMinimumPeer: peerMinimumPeer)
-        versionBlocked = (verdict != .compatible)
-        RLog("Companion bridge: hello peer(rev=\(peerRevision), min=\(peerMinimumPeer)) -> \(verdict)")
-        guard verdict != .compatible else { return }
-        onVersionIncompatible?(verdict)
-    }
 
     /// Resolve a live terminal session for content and streaming requests.
     private func contentSession(guid: String, requestID: UInt64?) -> PTYSession? {

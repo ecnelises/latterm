@@ -1,6 +1,7 @@
 iTerm2 Buddy (Companion App) Release Notes
 
 Bug Fixes:
+- Fix canceled relay reads hanging reconnects.
 - Opening a session that has already closed now
   shows a “Stream Ended” message explaining the
   session is gone, instead of a blank black
