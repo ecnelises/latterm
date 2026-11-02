@@ -16671,18 +16671,10 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
     NSMutableDictionary *settings = [NSMutableDictionary dictionary];
 
-    // Retain baselines since setSessionSpecificProfileValues will remove them from
-    // _preEscapeSequenceColors, potentially deallocating them.
-    for (NSString *key in useTabColorKeys) {
-        id baseline = [[_preEscapeSequenceColors[key] retain] autorelease] ?: @([iTermProfilePreferences boolForKey:key inProfile:_profile]);
-        settings[key] = baseline;
-    }
-
-    for (NSString *key in tabColorKeys) {
-        id baseline = [[_preEscapeSequenceColors[key] retain] autorelease] ?: _profile[key];
-        if (baseline) {
-            settings[key] = baseline;
-        }
+    // Record absence as NSNull so repeated escape sequences cannot make their
+    // own colors become the baseline, and resets remove previously absent keys.
+    for (NSString *key in [useTabColorKeys arrayByAddingObjectsFromArray:tabColorKeys]) {
+        settings[key] = [[_preEscapeSequenceColors[key] retain] autorelease] ?: _profile[key] ?: [NSNull null];
     }
 
     return settings;
@@ -16694,17 +16686,9 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
     NSDictionary<NSString *, id> *savedBaselines = [self tabColorSettings];
     NSMutableDictionary *valuesToRestore = [NSMutableDictionary dictionary];
-    for (NSString *key in useTabColorKeys) {
-        if (savedBaselines[key]) {
-            valuesToRestore[key] = savedBaselines[key];
-            [_preEscapeSequenceColors removeObjectForKey:key];
-        }
-    }
-    for (NSString *key in tabColorKeys) {
-        if (savedBaselines[key]) {
-            valuesToRestore[key] = savedBaselines[key];
-            [_preEscapeSequenceColors removeObjectForKey:key];
-        }
+    for (NSString *key in [useTabColorKeys arrayByAddingObjectsFromArray:tabColorKeys]) {
+        valuesToRestore[key] = savedBaselines[key];
+        [_preEscapeSequenceColors removeObjectForKey:key];
     }
     if (valuesToRestore.count > 0) {
         [self setSessionSpecificProfileValues:valuesToRestore];

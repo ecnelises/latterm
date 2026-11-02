@@ -9,6 +9,15 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Enable WAL and checkpoint-based SQLite syncing
+  for frequently saved restorable state.
+- Reject malformed Dynamic Profiles values.
+- Restore absent tab colors after OSC resets.
+- Keep late-read variables observed during
+  asynchronous status and title evaluation.
+- Coalesce status reloads and reuse evaluators.
+- Fix command-bookmark clicks and clear stale
+  alternate-screen RTL metadata when disabled.
 - Fix Kitty alternate-key codes, Option-as-Meta,
   IME commit handling, and old physical bindings.
 - Let Voice Control replace selected text safely.

@@ -6233,6 +6233,12 @@ lengthExcludingInBandSignaling:data.length
         [prefix makeSafe];
     }
     VT100Grid *grid = self.currentGrid;
+    if (grid == self.altGrid && ![iTermAdvancedSettingsModel alternateScreenBidi]) {
+        for (int i = 0; i < grid.size.height; i++) {
+            [grid setBidiInfo:nil forLine:i];
+        }
+        return;
+    }
     const BOOL updateDirtyLinesOnly = ![grid eraseBidiInfoInDirtyLines];
     [grid enumerateParagraphs:^(int line, NSArray<MutableScreenCharArray *> *scas) {
         if (updateDirtyLinesOnly && ![grid anyLineDirtyInRange:NSMakeRange(line, scas.count)]) {
