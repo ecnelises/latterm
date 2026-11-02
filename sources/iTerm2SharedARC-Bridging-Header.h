@@ -273,3 +273,5 @@
 #import "iTermURLActionFactory+Testing.h"
 
 #import "iTermShellArguments.h"
+
+#import "iTermPythonArgumentParser.h"

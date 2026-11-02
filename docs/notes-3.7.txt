@@ -9,6 +9,10 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Keep editors’ undo history safe when panes close.
+- Let hidden window buttons slide clear of content.
+- Keep Composer scroll position correct on resize.
+- Handle absent Python command arguments safely.
 - Correct tmux pane sizes with border status rows
   and per-session toolbars.
 - Send focus reports only when pane apps request

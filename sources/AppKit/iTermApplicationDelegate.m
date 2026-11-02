@@ -534,13 +534,9 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     } else if ([menuItem action] == @selector(undoCloseSession:)) {
         return [[iTermController sharedInstance] hasRestorableSession];
     } else if ([menuItem action] == @selector(undo:)) {
-        NSResponder *undoResponder = [self responderForMenuItem:menuItem];
-        if (undoResponder) {
-            return YES;
-        } else {
-            menuItem.title = @"Undo Close Session";
-            return [[iTermController sharedInstance] hasRestorableSession];
-        }
+        return [self validateUndoRedoMenuItem:menuItem selector:@selector(undo:)];
+    } else if ([menuItem action] == @selector(redo:)) {
+        return [self validateUndoRedoMenuItem:menuItem selector:@selector(redo:)];
     } else if ([menuItem action] == @selector(enableMarkAlertShowsModalAlert:)) {
         [menuItem setState:[[self markAlertAction] isEqualToString:kMarkAlertActionModalAlert] ? NSControlStateValueOn : NSControlStateValueOff];
         return YES;
@@ -2769,16 +2765,101 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (IBAction)undo:(id)sender {
-    NSResponder *undoResponder = [self responderForMenuItem:sender];
-    if (undoResponder) {
+    [self performUndoRedoSelector:@selector(undo:) sender:sender];
+}
+
+- (IBAction)redo:(id)sender {
+    [self performUndoRedoSelector:@selector(redo:) sender:sender];
+}
+
+- (void)performUndoRedoSelector:(SEL)selector sender:(id)sender {
+    const BOOL isUndo = (selector == @selector(undo:));
+    NSResponder *firstResponder = [[NSApp keyWindow] firstResponder];
+    if ([firstResponder isKindOfClass:[NSText class]]) {
+        NSUndoManager *undoManager = firstResponder.undoManager;
+        if (isUndo ? undoManager.canUndo : undoManager.canRedo) {
+            // Guard against a throwing undo target / NSUndoManager inconsistency.
+            // (This never caught the dangling-target EXC_BAD_ACCESS -- the swizzle
+            // handles that -- but it does stop NSExceptions from escaping.)
+            @try {
+                if (isUndo) {
+                    [undoManager undo];
+                } else {
+                    [undoManager redo];
+                }
+            } @catch (NSException *exception) {
+                RLog(@"%@", exception);
+            }
+            return;
+        }
+        // Nothing to do in this editor; fall through so e.g. an empty settings
+        // text field still defers to its controller's undo.
+    }
+    NSResponder *responder = [self responderForUndoRedoSelector:selector menuItem:sender];
+    if (responder) {
         @try {
-            [undoResponder performSelector:@selector(undo:) withObject:sender];
+            [responder performSelector:selector withObject:sender];
         } @catch (NSException *exception) {
             RLog(@"%@", exception);
         }
-    } else {
-        [self undoCloseSession:nil];
+        return;
     }
+    if (isUndo && [[iTermController sharedInstance] hasRestorableSession]) {
+        [self undoCloseSession:nil];
+    } else {
+        NSBeep();
+    }
+}
+
+// The first responder in the key window's chain that can handle `selector` for
+// `menuItem`: it must implement the selector, conform to NSMenuItemValidation,
+// and validate the item. The validation requirement is what lets us skip an
+// NSWindow with an empty undo stack (NSWindow implements undo:/redo: and would
+// otherwise swallow the action into its unused default manager) and keep walking
+// to a window controller that owns a private undo manager -- e.g. the Smart
+// Selection or Context Menu Action prefs panels. The app delegate is not in any
+// window's responder chain, so there's no recursion risk. Text editors are
+// handled by the caller's NSText branch, not here (NSTextView doesn't implement
+// undo:/redo:).
+- (NSResponder *)responderForUndoRedoSelector:(SEL)selector menuItem:(NSMenuItem *)menuItem {
+    for (NSResponder *responder in [self allResponders]) {
+        if ([responder respondsToSelector:selector] &&
+            [responder conformsToProtocol:@protocol(NSMenuItemValidation)] &&
+            (!menuItem || [(id<NSMenuItemValidation>)responder validateMenuItem:menuItem])) {
+            return responder;
+        }
+    }
+    return nil;
+}
+
+// Enablement/title for the Undo or Redo menu item, matching the dispatch in
+// -performUndoRedoSelector:sender:.
+- (BOOL)validateUndoRedoMenuItem:(NSMenuItem *)menuItem
+                        selector:(SEL)selector {
+    const BOOL isUndo = (selector == @selector(undo:));
+    NSString *genericTitle = isUndo ? @"Undo" : @"Redo";
+
+    NSResponder *firstResponder = [[NSApp keyWindow] firstResponder];
+    if ([firstResponder isKindOfClass:[NSText class]]) {
+        NSUndoManager *undoManager = firstResponder.undoManager;
+        if (isUndo ? undoManager.canUndo : undoManager.canRedo) {
+            menuItem.title = isUndo ? undoManager.undoMenuItemTitle : undoManager.redoMenuItemTitle;
+            return YES;
+        }
+        // else fall through to the forwarded responder.
+    }
+    menuItem.title = genericTitle;
+    // A validating responder further down the chain (settings controller) enables
+    // the item; -responderForUndoRedoSelector:menuItem: already required its
+    // validateMenuItem: to pass.
+    if ([self responderForUndoRedoSelector:selector menuItem:menuItem]) {
+        return YES;
+    }
+    if (isUndo && [[iTermController sharedInstance] hasRestorableSession]) {
+        menuItem.title = @"Undo Close Session";
+        return YES;
+    }
+    return NO;
 }
 
 - (IBAction)undoCloseSession:(id)sender {
@@ -3359,17 +3440,6 @@ static iTermKeyEventReplayer *gReplayer;
     return responders;
 }
 
-- (NSResponder *)responderForMenuItem:(NSMenuItem *)menuItem {
-    for (NSResponder *responder in [self allResponders]) {
-        if ([responder respondsToSelector:@selector(undo:)] &&
-            [responder respondsToSelector:@selector(validateMenuItem:)] &&
-            [responder conformsToProtocol:@protocol(NSMenuItemValidation)] &&
-            [(id<NSMenuItemValidation>)responder validateMenuItem:menuItem]) {
-            return responder;
-        }
-    }
-    return nil;
-}
 
 - (void)newSessionInWindowAtIndex:(id)sender {
     [[iTermController sharedInstance] newSessionInWindowAtIndex:sender];

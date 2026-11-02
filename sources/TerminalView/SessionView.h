@@ -204,6 +204,8 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 @property(nonatomic, readonly) NSSize internalDecorationSize;
 // Space reserved for the per-session toolbar, or zero when absent.
 @property(nonatomic, readonly) CGFloat toolbarReservedHeight;
+// Clickable toolbar, title or status controls overlapping window coordinates.
+- (BOOL)clickableDecorationIntersectsWindowRect:(NSRect)rect;
 @property(nonatomic, readonly) iTermSessionViewFindDriver findDriverType;
 @property(nonatomic, weak, nullable) id<iTermSearchResultsMinimapViewDelegate> searchResultsMinimapViewDelegate NS_AVAILABLE_MAC(10_14);
 @property(nonatomic, strong, nullable) iTermImageWrapper *image;

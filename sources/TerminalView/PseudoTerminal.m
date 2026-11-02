@@ -5151,6 +5151,12 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     return NO;
 }
 
+- (BOOL)rootTerminalViewClickableSessionDecorationIntersectsRect:(NSRect)rect {
+    return [self.currentTab.sessions anyWithBlock:^BOOL(PTYSession *session) {
+        return [session.view clickableDecorationIntersectsWindowRect:rect];
+    }];
+}
+
 - (NSEdgeInsets)tabBarInsets {
     iTermWindowType effectiveWindowType = self.windowType;
     if (exitingLionFullscreen_) {

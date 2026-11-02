@@ -13,6 +13,8 @@
 
 #import "NSAppearance+iTerm.h"
 #import "NSColor+iTerm.h"
+#import "NSImage+iTerm.h"
+#import "SFSymbolEnum/SFSymbolEnum.h"
 #import "NSEvent+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"
@@ -42,6 +44,13 @@ const CGFloat iTermStandardButtonsViewHeight = 25;
 const CGFloat iTermStandardButtonsViewWidth = 69;
 const CGFloat iTermStoplightHotboxWidth = iTermStandardButtonsViewWidth + 28 + 24;
 const CGFloat iTermStoplightHotboxHeight = iTermStandardButtonsViewHeight + 8;
+static const CGFloat iTermStoplightHotboxToggleWidth = 12;
+static const CGFloat iTermRootTerminalViewWindowNumberLabelAlpha = 0.75;
+typedef NS_ENUM(NSInteger, iTermStoplightHotboxSlidePosition) {
+    iTermStoplightHotboxSlidePositionOut,
+    iTermStoplightHotboxSlidePositionCollapsed,
+    iTermStoplightHotboxSlidePositionExpanded
+};
 const CGFloat kDivisionViewHeight = 1;
 
 const NSInteger iTermRootTerminalViewWindowNumberLabelMargin = 6;
@@ -66,6 +75,11 @@ static const CGFloat iTermCompactProxyIconRightMargin = 2;
 @property(nonatomic, strong) SolidColorView *divisionView;
 @property(nonatomic, strong) iTermToolbeltView *toolbelt;
 @property(nonatomic, strong) iTermDragHandleView *verticalTabBarDragHandle;
+// How far the stoplight hotbox and everything that moves with it is slid left.
+// A single property drives all the views so a slide always starts from where
+// they are. (Animating layer-backed views' frames with their animators would
+// start from their layers' stale positions after a frame set just before.)
+@property(nonatomic) CGFloat stoplightHotboxSlideOffset;
 
 @end
 
@@ -127,6 +141,18 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     BOOL _tabViewFrameReduced;
     BOOL _haveShownToolbelt;
     iTermStoplightHotbox *_stoplightHotbox;
+    // Shown in place of the hotbox's buttons when they would cover a toolbar
+    // or status bar. It expands and collapses the hotbox.
+    NSButton *_stoplightHotboxToggle;
+    // Whether the mouse entered the hotbox while it overlapped a toolbar or
+    // status bar, so the hotbox slides in and out via the toggle instead of
+    // fading in and out on hover.
+    BOOL _stoplightHotboxIsCollapsible;
+    // The slide in progress, if any. Stopped before anything else changes the
+    // slide offset so it can't overwrite that change.
+    iTermValueAnimation *_stoplightHotboxSlideAnimation;
+    // Where the most recent slide was headed.
+    iTermStoplightHotboxSlidePosition _stoplightHotboxSlidePosition;
     iTermStandardWindowButtonsView *_standardWindowButtonsView;
     NSMutableDictionary<NSNumber *, NSButton *> *_standardButtons;
     NSString *_windowTitle;
@@ -252,7 +278,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
         if (@available(macOS 10.16, *)) {
             _windowNumberLabel.font = [NSFont titleBarFontOfSize:[NSFont systemFontSize]];
         }
-        _windowNumberLabel.alphaValue = 0.75;
+        _windowNumberLabel.alphaValue = iTermRootTerminalViewWindowNumberLabelAlpha;
         _windowNumberLabel.hidden = YES;
         _windowNumberLabel.autoresizingMask = (NSViewMaxXMargin | NSViewMinYMargin);
         [self addSubview:_windowNumberLabel];
@@ -694,15 +720,19 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     if (!_compactProxyIconView) {
         return;
     }
+    _compactProxyIconView.frame = [self frameForCompactProxyIcon];
+}
+
+- (NSRect)frameForCompactProxyIcon {
     const NSRect stoplightFrame = [self frameForStandardWindowButtons];
     const CGFloat buttonSize = 12;
     const CGFloat buttonYInView = 4;
     const CGFloat buttonCenterY = NSMinY(stoplightFrame) + buttonYInView + buttonSize / 2.0;
     const CGFloat y = buttonCenterY - iTermCompactProxyIconSize / 2.0 + 1;
-    _compactProxyIconView.frame = NSMakeRect(NSMaxX(stoplightFrame) + iTermCompactProxyIconLeftMargin,
-                                               y,
-                                               iTermCompactProxyIconSize,
-                                               iTermCompactProxyIconSize);
+    return NSMakeRect(NSMaxX(stoplightFrame) + iTermCompactProxyIconLeftMargin,
+                      y,
+                      iTermCompactProxyIconSize,
+                      iTermCompactProxyIconSize);
 }
 
 - (void)flagsChanged:(NSEvent *)event {
@@ -1434,15 +1464,23 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
 
     [self updateWindowNumberFont];
 
-    if ([self.delegate enableStoplightHotbox]) {
+    const BOOL enableStoplightHotbox = [self.delegate enableStoplightHotbox];
+    if (enableStoplightHotbox) {
         _stoplightHotbox.hidden = NO;
-        _stoplightHotbox.alphaValue = 0;
-        _standardWindowButtonsView.alphaValue = 0;
         [_stoplightHotbox setFrameOrigin:NSMakePoint(0, self.frame.size.height - _stoplightHotbox.frame.size.height)];
+        // While the toggle is in use, the hotbox stays where it put it (see
+        // below) so an unrelated layout doesn't snap it shut.
+        if (!_stoplightHotboxIsCollapsible) {
+            _stoplightHotbox.revealed = NO;
+            [self resetStoplightHotboxSlide];
+        }
         if (_windowNumberLabel.superview != _stoplightHotbox) {
             [_stoplightHotbox addSubview:_windowNumberLabel];
         }
     } else {
+        _stoplightHotboxIsCollapsible = NO;
+        _stoplightHotbox.revealed = NO;
+        [self resetStoplightHotboxSlide];
         _stoplightHotbox.hidden = YES;
         _standardWindowButtonsView.alphaValue = 1;
         if (_windowNumberLabel.superview != self) {
@@ -1471,6 +1509,11 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     // disappear in lockstep with them (e.g., when the stoplight hotbox hides
     // the buttons in the minimal theme). Messaging a nil proxy icon is a no-op.
     _compactProxyIconView.alphaValue = _standardWindowButtonsView.alphaValue;
+    if (enableStoplightHotbox && _stoplightHotboxIsCollapsible) {
+        // Put back the frames and alphas the slide set, which the code above
+        // overwrote.
+        [self slideStoplightHotboxTo:_stoplightHotboxSlidePosition animated:NO];
+    }
     [self updateTitleAndBorderViews];
 }
 
@@ -1711,6 +1754,15 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
 #pragma mark - iTermStoplightHotboxDelegate
 
 - (void)stoplightHotboxMouseExit {
+    if (_stoplightHotboxIsCollapsible) {
+        _stoplightHotboxIsCollapsible = NO;
+        [self slideStoplightHotboxTo:iTermStoplightHotboxSlidePositionOut animated:YES];
+        return;
+    }
+    [self concealStoplightHotbox];
+}
+
+- (void)concealStoplightHotbox {
     [NSView animateWithDuration:0.25
                      animations:^{
                          self->_stoplightHotbox.animator.alphaValue = 0;
@@ -1758,11 +1810,178 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     if (![self shouldRevealHotbox]) {
         return NO;
     }
+    if ([self stoplightHotboxCoversClickableDecoration]) {
+        // Revealing the hotbox would make whatever is beneath it unclickable,
+        // so it stays collapsed until the toggle expands it.
+        DLog(@"Hotbox overlaps a toolbar or status bar. Show toggle instead of revealing.");
+        _stoplightHotboxIsCollapsible = YES;
+        [self showStoplightHotboxToggle];
+        return NO;
+    }
+    return [self revealStoplightHotbox];
+}
 
-    [_stoplightHotbox setNeedsDisplay:YES];
+// Whether a toolbar or status bar, which typically hold clickable controls,
+// lies beneath the hotbox.
+- (BOOL)stoplightHotboxCoversClickableDecoration {
+    const NSRect hotboxFrame = [_stoplightHotbox convertRect:_stoplightHotbox.bounds toView:nil];
+    if (_statusBarContainer &&
+        !_statusBarContainer.isHiddenOrHasHiddenAncestor &&
+        NSIntersectsRect([_statusBarContainer convertRect:_statusBarContainer.bounds toView:nil], hotboxFrame)) {
+        return YES;
+    }
+    return [self.delegate rootTerminalViewClickableSessionDecorationIntersectsRect:hotboxFrame];
+}
+
+- (NSRect)frameForStoplightHotboxToggle {
+    const NSRect hotboxFrame = _stoplightHotbox.frame;
+    return NSMakeRect(NSMinX(hotboxFrame),
+                      NSMinY(hotboxFrame),
+                      iTermStoplightHotboxToggleWidth,
+                      NSHeight(hotboxFrame));
+}
+
+- (void)showStoplightHotboxToggle {
+    if (!_stoplightHotboxToggle) {
+        _stoplightHotboxToggle = [[NSButton alloc] initWithFrame:[self frameForStoplightHotboxToggle]];
+        _stoplightHotboxToggle.bordered = NO;
+        _stoplightHotboxToggle.imagePosition = NSImageOnly;
+        _stoplightHotboxToggle.contentTintColor = [NSColor secondaryLabelColor];
+        _stoplightHotboxToggle.autoresizingMask = (NSViewMaxXMargin | NSViewMinYMargin);
+        _stoplightHotboxToggle.target = self;
+        _stoplightHotboxToggle.action = @selector(toggleStoplightHotbox:);
+        _stoplightHotboxToggle.hidden = YES;
+        [self addSubview:_stoplightHotboxToggle positioned:NSWindowAbove relativeTo:_stoplightHotbox];
+    }
+    [self updateStoplightHotboxToggle];
+    [self slideStoplightHotboxTo:iTermStoplightHotboxSlidePositionCollapsed animated:YES];
+}
+
+- (void)updateStoplightHotboxToggle {
+    NSString *description;
+    SFSymbol symbol;
+    if (_stoplightHotbox.revealed) {
+        symbol = SFSymbolChevronLeft;
+        description = NSLocalizedString(@"Hide Window Buttons", nil);
+    } else {
+        symbol = SFSymbolChevronRight;
+        description = NSLocalizedString(@"Show Window Buttons", nil);
+    }
+    _stoplightHotboxToggle.image = [NSImage it_imageForSymbolName:SFSymbolGetString(symbol)
+                                         accessibilityDescription:description];
+    _stoplightHotboxToggle.toolTip = description;
+}
+
+- (void)toggleStoplightHotbox:(id)sender {
+    if (_stoplightHotbox.revealed) {
+        _stoplightHotbox.revealed = NO;
+        [self slideStoplightHotboxTo:iTermStoplightHotboxSlidePositionCollapsed animated:YES];
+    } else if ([self shouldRevealHotbox]) {
+        _stoplightHotbox.revealed = YES;
+        [self slideStoplightHotboxTo:iTermStoplightHotboxSlidePositionExpanded animated:YES];
+    }
+    [self updateStoplightHotboxToggle];
+}
+
+- (void)setStoplightHotboxSlideOffset:(CGFloat)offset {
+    _stoplightHotboxSlideOffset = offset;
+    _stoplightHotbox.slideOffset = offset;
+    _standardWindowButtonsView.frame = NSOffsetRect([self frameForStandardWindowButtons], -offset, 0);
+    if (_compactProxyIconView) {
+        _compactProxyIconView.frame = NSOffsetRect([self frameForCompactProxyIcon], -offset, 0);
+    }
+    // The toggle rides on the hotbox's trailing edge until it reaches its
+    // usual place, where it stays while the hotbox expands beneath it.
+    const CGFloat width = NSMaxX(_stoplightHotbox.frame);
+    NSRect toggleFrame = [self frameForStoplightHotboxToggle];
+    toggleFrame.origin.x = MIN(NSMinX(toggleFrame), width - offset - NSWidth(toggleFrame));
+    _stoplightHotboxToggle.frame = toggleFrame;
+    // The window number and proxy icon would poke out of the collapsed sliver,
+    // so they fade in only as the hotbox expands past it.
+    const CGFloat collapsedOffset = width - iTermStoplightHotboxToggleWidth;
+    const CGFloat detailAlpha = MAX(0, MIN(1, 1 - offset / collapsedOffset));
+    _windowNumberLabel.alphaValue = iTermRootTerminalViewWindowNumberLabelAlpha * detailAlpha;
+    _compactProxyIconView.alphaValue = detailAlpha;
+}
+
+// Slides the hotbox, the views drawn over it, and the toggle between being
+// past the window's left edge, showing a sliver behind the toggle, and fully
+// in view.
+- (void)slideStoplightHotboxTo:(iTermStoplightHotboxSlidePosition)position animated:(BOOL)animated {
+    const BOOL wasOut = (_stoplightHotbox.alphaValue == 0);
+    if (wasOut && position == iTermStoplightHotboxSlidePositionOut) {
+        return;
+    }
+    _stoplightHotboxSlidePosition = position;
+    [_stoplightHotboxSlideAnimation stopAnimation];
+    _stoplightHotboxSlideAnimation = nil;
+    const CGFloat width = NSMaxX(_stoplightHotbox.frame);
+    CGFloat offset = 0;
+    switch (position) {
+        case iTermStoplightHotboxSlidePositionOut:
+            offset = width;
+            break;
+        case iTermStoplightHotboxSlidePositionCollapsed:
+            offset = width - iTermStoplightHotboxToggleWidth;
+            break;
+        case iTermStoplightHotboxSlidePositionExpanded:
+            offset = 0;
+            break;
+    }
+    if (wasOut) {
+        // Start all the way out. Otherwise a slide is underway, so continue
+        // from wherever it got to.
+        self.stoplightHotboxSlideOffset = width;
+        _stoplightHotboxToggle.hidden = NO;
+        [_stoplightHotbox setNeedsDisplay:YES];
+        _stoplightHotbox.alphaValue = 1;
+        _standardWindowButtonsView.alphaValue = 1;
+    }
+    if (!animated) {
+        self.stoplightHotboxSlideOffset = offset;
+        [self stoplightHotboxSlideDidFinishAt:position];
+        return;
+    }
+    __weak __typeof(self) weakSelf = self;
+    _stoplightHotboxSlideAnimation =
+    [[iTermValueAnimation alloc] initFrom:self.stoplightHotboxSlideOffset
+                                       to:offset
+                                 duration:0.25
+                                    apply:^(CGFloat value) {
+        weakSelf.stoplightHotboxSlideOffset = value;
+    }
+                               completion:^{
+        [weakSelf stoplightHotboxSlideDidFinishAt:position];
+    }];
+    [_stoplightHotboxSlideAnimation startAnimation];
+}
+
+- (void)stoplightHotboxSlideDidFinishAt:(iTermStoplightHotboxSlidePosition)position {
+    if (position == iTermStoplightHotboxSlidePositionOut) {
+        [self resetStoplightHotboxSlide];
+    }
+}
+
+// Leaves everything the slide moves invisible at its usual frame, as after the
+// fade, so layout code needn't know about sliding.
+- (void)resetStoplightHotboxSlide {
+    [_stoplightHotboxSlideAnimation stopAnimation];
+    _stoplightHotboxSlideAnimation = nil;
+    self.stoplightHotboxSlideOffset = 0;
     _stoplightHotbox.alphaValue = 0;
     _standardWindowButtonsView.alphaValue = 0;
     _compactProxyIconView.alphaValue = 0;
+    _stoplightHotboxToggle.hidden = YES;
+}
+
+- (BOOL)revealStoplightHotbox {
+    if (![self shouldRevealHotbox]) {
+        return NO;
+    }
+
+    // Fades in place, so cancel and undo any slide left over from the toggle.
+    [self resetStoplightHotboxSlide];
+    [_stoplightHotbox setNeedsDisplay:YES];
     [NSView animateWithDuration:0.25
                      animations:^{
                          self->_stoplightHotbox.animator.alphaValue = 1;

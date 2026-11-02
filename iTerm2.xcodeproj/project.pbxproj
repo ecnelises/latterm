@@ -705,6 +705,7 @@
 		449971BD58BB039299CB0D08 /* iTermLayoutEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA5AEB702F05430C1F1B793 /* iTermLayoutEnvironment.swift */; };
 		456E510EFA3B6DCD0F3665E5 /* Data+BigEndian.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB9BDAF96F842ABF40BB10B /* Data+BigEndian.swift */; };
 		462A8A491C3EAAF5E0805D7A /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18F980FAE3B782F42E7DBBDE /* APIClient.swift */; };
+		46680994644D109C76C208A2 /* iTermValueAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58091B793D6E3458A05EA23E /* iTermValueAnimation.swift */; };
 		4705C05130977E2C81FD75E8 /* iTermUnicodeNormalization.h in Sources */ = {isa = PBXBuildFile; fileRef = 3335AD96138BA74CC79D25A8 /* iTermUnicodeNormalization.h */; };
 		4887C7B3CAB5465296225860 /* MenuTips.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 904AE312A0E0489899D9ECB8 /* MenuTips.xcassets */; };
 		49A6E4091211CC6000D9AD6F /* Compatability.h in Headers */ = {isa = PBXBuildFile; fileRef = 49A6E4081211CC6000D9AD6F /* Compatability.h */; };
@@ -982,6 +983,7 @@
 		70F805A3A750CCB540F58C9A /* MovePaneController+API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D246CFCEDD7927D320BF51 /* MovePaneController+API.swift */; };
 		71875AF31A3CA68B7519DFD0 /* iTermBackgroundImageRotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C6497326253C17BB616E191 /* iTermBackgroundImageRotationManager.swift */; };
 		72375D4CDC81280431ED5BA1 /* CompanionVideoEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D98D4F4D522B88FB7F898D /* CompanionVideoEncoder.swift */; };
+		72E5B602EB6408B06CF63370 /* NSTextView+iTermUndoSafety.m in Sources */ = {isa = PBXBuildFile; fileRef = 773A478F2170FB25B09AD24B /* NSTextView+iTermUndoSafety.m */; };
 		72F96FAF9480758B4A2336E0 /* iTermAdapterSettingsRevealHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6373295DEB74E8DFC995A362 /* iTermAdapterSettingsRevealHelper.swift */; };
 		735B3770025197D62DB3DE9E /* MoveSessionBuiltInFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF831B875F22773855E32DA /* MoveSessionBuiltInFunctions.swift */; };
 		73696CD1DE6460A41D2A67E0 /* iTermCursorBlinkFadePreset.m in Sources */ = {isa = PBXBuildFile; fileRef = 698A89FD3A725D31E135A5A6 /* iTermCursorBlinkFadePreset.m */; };
@@ -4384,6 +4386,7 @@
 		94245A3872B343A2B764B9E4 /* ColorPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 523E151CFA614C8AA1E47DBC /* ColorPicker */; };
 		1589502DFF0741D295229B81 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = 679529C1BF614B55B153B22A /* SearchableComboListView */; };
 		8C9C1CC3BE3240B2A1CA1FAE /* BetterFontPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 80857953AEB545D0BE07E9F4 /* BetterFontPicker */; };
+		8CC791771826659671A3A1DD /* NSTextView+iTermUndoSafety.h in Sources */ = {isa = PBXBuildFile; fileRef = FBC5951FDE6F5011159D4A7E /* NSTextView+iTermUndoSafety.h */; };
 		7705ED8763D04985B50F5E43 /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = F46382FA75AB4361AF79CA07 /* SearchableComboListView */; };
 		472C3FCF714D43D7BD9C44E0 /* BetterFontPicker in Frameworks */ = {isa = PBXBuildFile; productRef = 0D67566F63894E77B880590B /* BetterFontPicker */; };
 		8A3C1CEF6D2D4C438E4C64FD /* ColorPicker in Frameworks */ = {isa = PBXBuildFile; productRef = E39D74F670234855A83296F6 /* ColorPicker */; };
@@ -5375,6 +5378,7 @@
 		551CEFF56A53034E3FC7598A /* CCGitBaseSelectorItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CCGitBaseSelectorItem.swift; sourceTree = "<group>"; };
 		55709E18A1109F8DFD044E17 /* CompanionPairingController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPairingController.swift; sourceTree = "<group>"; };
 		57EF08786C9D79C55CDAC970 /* iTermCharacterSets.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermCharacterSets.m; sourceTree = "<group>"; };
+		58091B793D6E3458A05EA23E /* iTermValueAnimation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermValueAnimation.swift; sourceTree = "<group>"; };
 		581A5EEA45904BD841D277FA /* VT100ScreenState+RCDataSource.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "VT100ScreenState+RCDataSource.h"; sourceTree = "<group>"; };
 		5B686BCDF76FA9118F116990 /* VT100ScreenMutableState+RCDataSource.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "VT100ScreenMutableState+RCDataSource.m"; sourceTree = "<group>"; };
 		5BB89D5E8FEBDEAE9E7370EC /* CompanionPushRelay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPushRelay.swift; sourceTree = "<group>"; };
@@ -5420,6 +5424,7 @@
 		759637A02593AE0700E278CC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		759637A22593AE0700E278CC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		76421C2E762130B690D1ADC5 /* RegexAtomIterator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RegexAtomIterator.swift; sourceTree = "<group>"; };
+		773A478F2170FB25B09AD24B /* NSTextView+iTermUndoSafety.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "NSTextView+iTermUndoSafety.m"; sourceTree = "<group>"; };
 		77FCEB05FACE33F5F7947261 /* iTermWindowBorderView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermWindowBorderView.swift; sourceTree = "<group>"; };
 		78C411C47C727715D6E54062 /* DiffWaitingPromptView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiffWaitingPromptView.swift; sourceTree = "<group>"; };
 		79855710ACDF8110E89ED8F6 /* libit2core.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libit2core.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -7945,6 +7950,7 @@
 		FB754C5F036EFC5301F955DB /* config.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = config.png; path = images/config.png; sourceTree = "<group>"; };
 		FB896717038D935801F955DB /* newwin.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = newwin.png; path = images/newwin.png; sourceTree = "<group>"; };
 		FBB2EBCD040AC7C201F955DB /* important.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = important.png; path = images/important.png; sourceTree = "<group>"; };
+		FBC5951FDE6F5011159D4A7E /* NSTextView+iTermUndoSafety.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "NSTextView+iTermUndoSafety.h"; sourceTree = "<group>"; };
 		FBD0AD0A0337A5B701F955DB /* PseudoTerminal.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = PseudoTerminal.m; sourceTree = "<group>"; tabWidth = 4; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		FC3C8D1807D495D39ED10205 /* iTermWorkgroupsEditingViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermWorkgroupsEditingViewController.swift; sourceTree = "<group>"; };
 		FD3AD5633442A7E32AF367B3 /* iTermGitFileStatus+Diffable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "iTermGitFileStatus+Diffable.swift"; sourceTree = "<group>"; };
@@ -9263,6 +9269,7 @@
 				A6D441C62A91306400CA76E9 /* ProfileDocument.swift */,
 				E9B6267AF6FAE7F906B1DBF9 /* iTermModalSheetRunner.m */,
 				4F0681FBE76FD9A1D5715D52 /* iTermModalSheetRunner.h */,
+				58091B793D6E3458A05EA23E /* iTermValueAnimation.swift */,
 			);
 			path = AppKit;
 			sourceTree = "<group>";
@@ -11856,6 +11863,8 @@
 				A6D1A3E42C7E994B00FECDF2 /* VT100GridTypes+Swift.swift */,
 				9DB9BDAF96F842ABF40BB10B /* Data+BigEndian.swift */,
 				6FED892A6895889964D8EFBE /* NSFont+BijectionIdentifiable.swift */,
+				FBC5951FDE6F5011159D4A7E /* NSTextView+iTermUndoSafety.h */,
+				773A478F2170FB25B09AD24B /* NSTextView+iTermUndoSafety.m */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -17948,6 +17957,9 @@
 				54A10A288506DB94EA12C0D7 /* iTermShellArguments.m in Sources */,
 				8ADB7B49271BD993963C40A6 /* AdapterShellEnvironment.swift in Sources */,
 				356909DFC400C6BA456722AC /* AdapterSession.swift in Sources */,
+				46680994644D109C76C208A2 /* iTermValueAnimation.swift in Sources */,
+				8CC791771826659671A3A1DD /* NSTextView+iTermUndoSafety.h in Sources */,
+				72E5B602EB6408B06CF63370 /* NSTextView+iTermUndoSafety.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
