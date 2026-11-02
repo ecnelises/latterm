@@ -21,7 +21,7 @@ private class VisualSelectionDelegate: NSObject, iTermSelectionDelegate {
         self.width = width
         self.bidi = bidi
     }
-    func selectionDidChange(_ selection: iTermSelection!) {}
+    func selectionDidChange(_ selection: iTermSelection) {}
     func liveSelectionDidEnd() {}
     func selectionAbsRangeForParenthetical(at coord: VT100GridAbsCoord) -> VT100GridAbsWindowedRange { VT100GridAbsWindowedRangeMake(VT100GridAbsCoordRangeMake(-1, -1, -1, -1), 0, 0) }
     func selectionAbsRangeForWord(at coord: VT100GridAbsCoord) -> VT100GridAbsWindowedRange { VT100GridAbsWindowedRangeMake(VT100GridAbsCoordRangeMake(-1, -1, -1, -1), 0, 0) }
@@ -32,7 +32,7 @@ private class VisualSelectionDelegate: NSObject, iTermSelectionDelegate {
     func selectionPredecessor(of absCoord: VT100GridAbsCoord) -> VT100GridAbsCoord { VT100GridAbsCoordMake(0, 0) }
     func selectionViewportWidth() -> Int32 { width }
     func selectionTotalScrollbackOverflow() -> Int64 { 0 }
-    func selectionIndexes(onAbsoluteLine line: Int64, containingCharacter c: unichar, in range: NSRange) -> IndexSet { IndexSet() }
+    func selectionIndexes(onAbsoluteLine line: Int64, containingCharacter c: unichar, in range: NSRange) -> IndexSet? { IndexSet() }
     func selectionParagraphIsRTL(onAbsoluteLine line: Int64) -> Bool {
         return bidi?.paragraphIsRTL ?? false
     }

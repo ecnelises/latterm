@@ -4210,14 +4210,14 @@ extension VT100GridTests {
         let grid = VT100Grid(size: VT100GridSize(width: 4, height: 4), delegate: nil)!
         append(strings: ["hi"], toGrid: grid, lineBuffer: lineBuffer)
         let gen = grid.contentGeneration
-        let copy = grid.copy() as! VT100Grid
+        let copy = grid.copy()!
         XCTAssertEqual(gen, copy.contentGeneration)
     }
 
     func testContentGeneration_copyMutationDoesNotAffectOriginal() {
         let grid = VT100Grid(size: VT100GridSize(width: 4, height: 4), delegate: nil)!
         append(strings: ["hi"], toGrid: grid, lineBuffer: LineBuffer())
-        let copy = grid.copy() as! VT100Grid
+        let copy = grid.copy()!
         let originalGen = grid.contentGeneration
         append(strings: ["yo"], toGrid: copy, lineBuffer: LineBuffer())
         XCTAssertNotEqual(copy.contentGeneration, originalGen)
