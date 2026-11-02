@@ -101,6 +101,7 @@ typedef NS_OPTIONS(int, VT100TerminalKeyReportingFlags) {
 // Convert input to printable characters.
 @property(nonatomic) BOOL literalMode;
 
+// Always 0 in tmux mode. See the implementation.
 @property(nonatomic, readonly) VT100TerminalKeyReportingFlags keyReportingFlags;
 @property(nonatomic) BOOL sendResizeNotifications;
 @property(nonatomic) BOOL sendUnsolicitedDarkModeDSR;
@@ -193,6 +194,11 @@ typedef NS_ENUM(NSUInteger, VT100TerminalResetReason) {
 - (void)gentleReset;
 
 - (void)resetSendModifiersWithSideEffects:(BOOL)sideEffects;
+
+// Reset the key reporting mode on iTerm2's own initiative rather than in response to the data
+// stream. Reports through terminalDidResetKeyReportingLocally so the delegate can tell this write
+// apart from one the shell made. See 13032.
+- (void)resetKeyReportingModeLocally;
 - (void)toggleAlternateScreen;
 - (void)toggleKeyReportingFlag:(VT100TerminalKeyReportingFlags)flag;
 

@@ -617,33 +617,87 @@ typedef struct {
 // want to pause & sync when mutating reportable state. Instead, pause and sync before sending a
 // report becuse reports are pretty rare compared to decset and friends.
 //
-// All reports go through -terminalShouldSendReport:. I know this because any that don't will break
-// tmux integration.
+// All reports go through -terminalShouldSendReport: (or the coalescible variant).
+// I know this because any that don't will break tmux integration.
 //
 // When you get a report, roll back the token (so it will be executed again later) and pause. Force
-// a sync and unpause. The allowNextReport flag is temporarily set to allow the report to go through.
+// a sync and unpause so the report goes through on re-execution.
+//
+// Coalescing (issue 13013): a report whose value the mutation thread owns uses
+// -terminalShouldSendCoalescibleReport:. Currently that's OSC 4 color queries (which read the
+// mutation-thread colorMap) and device status reports such as CSI 6 n cursor position (which read
+// the mutation-thread grid cursor); both read constant or mutation-owned state that is always
+// current at token-execution time. Its sync arms the executor's reportsMaySkipSync flag, which stays
+// armed across a run of such reports so a burst (e.g. herdr querying all 256 palette colors on
+// focus, or a program that pipelines many CSI 6 n queries) pays one sync, not one per query. Any
+// state side effect scheduled in the interim disarms it (see TokenExecutor.addSideEffect/
+// addDeferredSideEffect/setSideEffectFlag and addUnmanagedPausedSideEffect - the state-mutating
+// paths, including cursor movement's redraw side effect, all funnel through those), forcing the next
+// coalescible report to re-sync. Report-send side effects use addReportSideEffect so they don't
+// disarm it.
+//
+// IMPORTANT: reports that read main-thread-mirrored state (the config snapshot: cell size, backing
+// scale, window/grid size) must NOT be coalescible. That state is refreshed only by a sync running
+// -updateConfigurationFields, and a change to it (e.g. dragging to a display with a different
+// backing scale) schedules no mutation-queue side effect, so it would never disarm the flag and a
+// skipped sync would report a stale value. Those reports use the plain -terminalShouldSendReport:,
+// which always syncs.
 //
 // Some reports are OK to send for a tmux integration client: those that tmux itself is known not
 // to catch.
 - (BOOL)terminalShouldSendReport:(BOOL)tmuxAllowed {
-    DLog(@"begin");
+    return [self shouldSendReport:tmuxAllowed coalescible:NO];
+}
+
+- (BOOL)terminalShouldSendCoalescibleReport:(BOOL)tmuxAllowed {
+    return [self shouldSendReport:tmuxAllowed coalescible:YES];
+}
+
+- (BOOL)shouldSendReport:(BOOL)tmuxAllowed coalescible:(BOOL)coalescible {
+    DLog(@"begin coalescible=%@", @(coalescible));
     if (!tmuxAllowed && self.config.isTmuxClient) {
         DLog(@"no - is tmux client");
         return NO;
     }
+    // The one-shot handles the rolled-back report token re-executing after its
+    // sync. It applies to EVERY report, so non-coalescible reports (device
+    // attributes, cell size, ...) still get delivered. Checked first and consumed
+    // here so a run's leftover cannot leak to the next report. This does NOT
+    // depend on the coalescing flag, so an interleaved state side effect that
+    // disarms coalescing cannot livelock the re-execution.
     if (self.allowNextReport) {
-        DLog(@"Allowing report to go through");
+        DLog(@"Allowing the re-executed report to go through");
         self.allowNextReport = NO;
         return YES;
     }
+    if (coalescible && self.tokenExecutor.reportsMaySkipSync) {
+        // A joined sync already happened and no state side effect has been
+        // scheduled since, so a mutation-thread-owned value (colorMap for OSC 4,
+        // the grid cursor for CSI 6 n) reflects current state. Let it through
+        // without another sync. This is what collapses herdr's 256-color palette
+        // query burst, or a pipelined run of cursor-position queries, to a single
+        // sync.
+        DLog(@"Allowing coalescible report to go through without a new sync");
+        return YES;
+    }
     DLog(@"Will send a report. Rollback and pause");
+    self.reportSyncCount = self.reportSyncCount + 1;
     [self.tokenExecutor rollBackCurrentToken];
     iTermTokenExecutorUnpauser *unpauser = [self.tokenExecutor pause];
+    const BOOL arm = coalescible;
     __weak __typeof(self) weakSelf = self;
     [self addJoinedSideEffect:^(id<VT100ScreenDelegate> delegate) {
-        DLog(@"Now that I have synced, unpause and allow the report to go through");
-        [unpauser unpause];
+        DLog(@"Synced; allow the re-executed report and (if coalescible) arm skip-sync");
+        // Allow the rolled-back token to send when it re-executes.
         weakSelf.allowNextReport = YES;
+        if (arm) {
+            // Armed after the joined side effect flushed everything queued before
+            // it, so the main thread has applied all prior mutations. Only
+            // coalescible reports arm; a non-coalescible report never lets a later
+            // report skip its sync.
+            [weakSelf.tokenExecutor armReportsMaySkipSync];
+        }
+        [unpauser unpause];
     } name:@"should send report"];
     DLog(@"Decline report");
     return NO;
@@ -653,7 +707,7 @@ typedef struct {
     DLog(@"begin %@", variable);
     [self willSendReport];
     __weak __typeof(self) weakSelf = self;
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+    [self addReportSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         DLog(@"begin side-effect");
         [delegate screenReportVariableNamed:variable];
         [weakSelf didSendReport:delegate];
@@ -672,7 +726,7 @@ typedef struct {
         DLog(@"report %@", [report stringWithEncoding:NSUTF8StringEncoding]);
         [self willSendReport];
         __weak __typeof(self) weakSelf = self;
-        [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+        [self addReportSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
             DLog(@"begin side-effect");
             [delegate screenSendReportData:report];
             [weakSelf didSendReport:delegate];
@@ -695,7 +749,7 @@ typedef struct {
     // tmux: dispatch to session for tmux-specific handling (3.6+)
     [self willSendReport];
     __weak __typeof(self) weakSelf = self;
-    [self addSideEffect:^(id<VT100ScreenDelegate> delegate) {
+    [self addReportSideEffect:^(id<VT100ScreenDelegate> delegate) {
         [delegate screenSendTmuxOSC4Report:report];
         [weakSelf didSendReport:delegate];
     } name:@"OSC 4 tmux report"];
@@ -1209,7 +1263,7 @@ typedef struct {
     DLog(@"begin");
     [self willSendReport];
     __weak __typeof(self) weakSelf = self;
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    [self addPausedReportSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         DLog(@"running");
         [delegate screenReportPasteboard:pasteboard completion:^{
             DLog(@"unpausing");
@@ -1475,7 +1529,7 @@ typedef struct {
     }
     [self willSendReport];
     __weak __typeof(self) weakSelf = self;
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+    [self addReportSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         [delegate screenReportIconTitle];
         [weakSelf didSendReport:delegate];
     } name:@"report icon title"];
@@ -1488,7 +1542,7 @@ typedef struct {
     }
     [self willSendReport];
     __weak __typeof(self) weakSelf = self;
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+    [self addReportSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         [delegate screenReportWindowTitle];
         [weakSelf didSendReport:delegate];
     } name:@"report window title"];
@@ -2412,6 +2466,8 @@ typedef struct {
     } name:@"close aid mark (target)"];
     id<VT100RemoteHostReading> remoteHost = [[self remoteHostOnLine:self.numberOfLines] doppelganger];
     const int notifyCode = code != nil ? code.intValue : 0;
+    // Snapshot key reporting flags as of this FTCS D token (see 13015).
+    const VT100TerminalKeyReportingFlags keyReportingFlags = self.terminalKeyReportingFlags;
     [self addSideEffect:^(id<VT100ScreenDelegate> delegate) {
         [delegate screenDidUpdateReturnCodeForMark:doppelganger remoteHost:remoteHost];
         // screenCommandDidExitWithCode always fires for the target so
@@ -2419,7 +2475,9 @@ typedef struct {
         // every close-by-aid. With the parser synthesizing 0 for the
         // no-code D forms, the code argument is always meaningful here;
         // we keep the explicit "0 when unknown" default as a safety net.
-        [delegate screenCommandDidExitWithCode:notifyCode mark:doppelganger];
+        [delegate screenCommandDidExitWithCode:notifyCode
+                             keyReportingFlags:keyReportingFlags
+                                          mark:doppelganger];
     } name:@"close aid mark notify"];
 }
 
@@ -3421,14 +3479,22 @@ typedef struct {
     } name:@"change send modifiers"];
 }
 
-- (void)terminalKeyReportingFlagsDidChange {
+- (void)terminalDidResetKeyReportingLocally {
+    DLog(@"begin");
+    [self addJoinedSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+        DLog(@"begin side-effect");
+        [delegate screenDidResetKeyReportingLocally];
+    } name:@"key reporting reset locally"];
+}
+
+- (void)terminalKeyReportingFlagsDidChange:(BOOL)wholeValueReplaced {
     DLog(@"begin");
     // It's safe to do this because it won't be reeentrant and it's necessary because it syncs
     // afterwards (this change is reporable). It's joined so we get the updated config and can
     // respond to DCS_REQUEST_TERMCAP_TERMINFO properly.
     [self addJoinedSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         DLog(@"begin side-effect");
-        [delegate screenKeyReportingFlagsDidChange];
+        [delegate screenKeyReportingFlagsDidChange:wholeValueReplaced];
     } name:@"key reporting flags did change"];
 }
 
@@ -3537,7 +3603,7 @@ typedef struct {
     DLog(@"begin");
     [self willSendReport];
     __weak __typeof(self) weakSelf = self;
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+    [self addReportSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         DLog(@"begin side-effect");
         [delegate screenReportCapabilities];
         [weakSelf didSendReport:delegate];
@@ -3599,7 +3665,7 @@ typedef struct {
     NSString *dcsID = values[4];
     [self appendBannerMessage:[NSString stringWithFormat:@"ssh %@", sshargs]];
     NSDictionary *savedState = self.savedState;
-    [self addSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
+    [self addUrgentSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
         [delegate screenDidHookSSHConductorWithToken:token
                                             uniqueID:uniqueID
                                             boolArgs:boolArgs
@@ -3611,20 +3677,20 @@ typedef struct {
 }
 
 - (void)terminalDidReadSSHConductorLine:(NSString *)string depth:(int)depth {
-    [self addSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
+    [self addUrgentSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
         [delegate screenDidReadSSHConductorLine:string depth:(int)depth];
     } name:@"read ssh"];
 
 }
 - (void)terminalDidUnhookSSHConductor {
-    [self addSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
+    [self addUrgentSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
         [delegate screenDidUnhookSSHConductor];
     } name:@"unhook ssh"];
 }
 
 - (void)terminalDidBeginSSHConductorCommandWithIdentifier:(NSString *)identifier
                                                     depth:(int)depth {
-    [self addSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
+    [self addUrgentSideEffect:^(id<VT100ScreenDelegate> _Nonnull delegate) {
         [delegate screenDidBeginSSHConductorCommandWithIdentifier:identifier
                                                             depth:depth];
     } name:@"begin ssh command"];
@@ -3634,7 +3700,7 @@ typedef struct {
                                                    type:(NSString *)type
                                                  status:(uint8_t)status
                                                   depth:(int)depth {
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    [self addUrgentPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         [delegate screenDidEndSSHConductorCommandWithIdentifier:identifier
                                                            type:type
                                                          status:status
@@ -3649,6 +3715,10 @@ typedef struct {
                                    channel:(uint8_t)channel
                                      depth:(int)depth {
     DLog(@"terminalHandleSSHSideChannelOutput:%@ pid:%@ channel:%@ depth:%@", string, @(pid), @(channel), @(depth));
+    // Not urgent. A running command's output lines are always followed by an
+    // "end ssh command", which is urgent, and side effects share one FIFO, so they flush
+    // with it. The cases where this can be the last thing queued (autopoll lines and the
+    // EOF that re-arms autopoll, %notif) hold nothing up.
     [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         [delegate screenHandleSSHSideChannelOutput:string pid:pid channel:channel depth:depth];
     } name:@"handle side channel"];
@@ -3663,13 +3733,16 @@ typedef struct {
         return;
     }
     DLog(@"Add side effect to handle raw ssh data %@", data.shortDebugString);
+    // Not urgent. This only feeds a coprocess, if one is attached; it does not advance the
+    // conductor and nothing waits on it. Delivering coprocess input in batches when the
+    // session is off-screen is the batching working as intended.
     [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         [delegate screenDidReadRawSSHData:data];
     } name:@"read raw ssh"];
 }
 
 - (void)terminalHandleSSHTerminatePID:(int)pid withCode:(int)code depth:(int)depth {
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    [self addUrgentPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         [delegate screenDidTerminateSSHProcess:pid code:code depth:depth];
         [unpauser unpause];
     } name:@"terminate pid"];
@@ -3680,7 +3753,7 @@ typedef struct {
         return;
     }
     DLog(@"terminalHandleIT2:%@ depth:%@", string, @(depth));
-    [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
+    [self addUrgentSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
         [delegate screenHandleIT2:string depth:depth];
     } name:@"handle it2"];
 }
@@ -3714,7 +3787,7 @@ typedef struct {
 - (void)terminalEndSSH:(NSString *)uniqueID {
     __weak __typeof(self) weakSelf = self;
     dispatch_queue_t queue = _queue;
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    [self addUrgentPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         const NSInteger count = [delegate screenEndSSH:uniqueID];
         if (count <= 0) {
             [unpauser unpause];
@@ -3736,7 +3809,9 @@ typedef struct {
 - (void)terminalBeginFramerRecoveryForChildOfConductorAtDepth:(int)parentDepth {
     [self appendBannerMessage:@"Recovering ssh connection…"];
     self.terminal.framerRecoveryMode = VT100TerminalFramerRecoveryModeRecovering;
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    // Urgent: opens the recovery handshake, which is strictly serial and pauses the token
+    // executor per step. See -terminalHandleFramerRecoveryString:.
+    [self addUrgentPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         [delegate screenBeginFramerRecovery:parentDepth];
         [unpauser unpause];
     } name:@"begin framer recovery for child"];
@@ -3745,7 +3820,12 @@ typedef struct {
 - (void)terminalHandleFramerRecoveryString:(NSString *)string {
     __weak __typeof(self) weakSelf = self;
     dispatch_queue_t queue = _queue;
-    [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
+    // Urgent, and this is the one that matters most on this path. The framer emits one
+    // recovery line per process and per saved key between begin-recovery and end-recovery,
+    // each arriving here as its own paused side effect that stops token execution until it
+    // runs. Batched at the background period that is a second per line, so recovering a
+    // hidden ssh session would be as slow as issue 13013 made typing.
+    [self addUrgentPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         iTermConductorRecovery *recovery = [delegate screenHandleFramerRecoveryString:string];
         if (recovery) {
             weakSelf.terminal.framerRecoveryMode = VT100TerminalFramerRecoveryModeSyncing;

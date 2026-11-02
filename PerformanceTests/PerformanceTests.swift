@@ -172,12 +172,13 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func screenPushKeyLabels(_ value: String) {}
     func screenPopKeyLabels(_ value: String) {}
     func screenSendModifiersDidChange() {}
-    func screenKeyReportingFlagsDidChange() {}
+    func screenKeyReportingFlagsDidChange(_ wholeValueReplaced: Bool) {}
+    func screenDidResetKeyReportingLocally() {}
     func screenReportVariableNamed(_ name: String) {}
     func screenReportCapabilities() {}
     func screenCommandDidChange(to command: String, atPrompt: Bool, hadCommand: Bool, haveCommand: Bool) {}
     func screenDidExecuteCommand(_ command: String?, range: VT100GridCoordRange, onHost host: (any VT100RemoteHostReading)?, inDirectory directory: String?, mark: (any VT100ScreenMarkReading)?) {}
-    func screenCommandDidExit(withCode code: Int32, mark maybeMark: (any VT100ScreenMarkReading)?) {}
+    func screenCommandDidExit(withCode code: Int32, keyReportingFlags: VT100TerminalKeyReportingFlags, mark maybeMark: (any VT100ScreenMarkReading)?) {}
     func screenCommandDidAbort(onLine line: Int32, outputRange: VT100GridCoordRange, command: String, mark: any VT100ScreenMarkReading) {}
     func screenLogWorkingDirectory(onAbsoluteLine absLine: Int64, remoteHost: (any VT100RemoteHostReading)?, withDirectory directory: String?, pushType: VT100ScreenWorkingDirectoryPushType, accepted: Bool) {}
     func screenDidClearScrollbackBuffer() {}
@@ -299,7 +300,7 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func objectMethodRegistry() -> iTermBuiltInFunctions? { nil }
     func objectScope() -> iTermVariableScope? { nil }
     func screenDidBecomeAutoComposerEligible() {}
-    func screenDidExecuteCommand(_ command: String?, absRange range: VT100GridAbsCoordRange, onHost host: (any VT100RemoteHostReading)?, inDirectory directory: String?, mark: (any VT100ScreenMarkReading)?, paused: Bool) {}
+    func screenDidExecuteCommand(_ command: String?, absRange range: VT100GridAbsCoordRange, onHost host: (any VT100RemoteHostReading)?, inDirectory directory: String?, mark: (any VT100ScreenMarkReading)?, keyReportingFlags: VT100TerminalKeyReportingFlags, paused: Bool) {}
     func screenOfferToDisableTriggers(inInteractiveApps stats: String) {}
     func screenExecDidFail() {}
     func screenSetProfileProperties(_ dict: [AnyHashable : Any]) {}

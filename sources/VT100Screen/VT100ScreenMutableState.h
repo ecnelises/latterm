@@ -89,10 +89,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic) BOOL performingSideEffect;
 @property (atomic) BOOL performingPausedSideEffect;
 
+// Number of times a report took the pause+sync path (rather than being coalesced
+// via skip-sync). Test observability for the issue 13013 coalescing; read on the
+// mutation thread. A burst of OSC 4 color queries should advance this by 1.
+@property (nonatomic, readonly) NSInteger reportSyncCount;
+
 // This is how mutation code schedules work to be done on the main thread later. In particular, this
 // is the only way for it to call delegate methods. It will be performed asynchronously at some
 // later time.
 - (void)addSideEffect:(void (^)(id<VT100ScreenDelegate> delegate))sideEffect name:(NSString *)name;
+// For purely outbound report-send side effects only. See implementation.
+- (void)addReportSideEffect:(void (^)(id<VT100ScreenDelegate> delegate))sideEffect name:(NSString *)name;
 - (void)addIntervalTreeSideEffect:(void (^)(id<iTermIntervalTreeObserver> observer))sideEffect
                              name:(NSString *)name;
 - (void)addUnmanagedPausedSideEffect:(void (^)(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser))block
@@ -577,6 +584,11 @@ lengthExcludingInBandSignaling:(int)lengthExcludingInBandSignaling
 #pragma mark - Tmux
 
 - (void)setTmuxState:(NSDictionary *)state;
+
+// Applies the modifyOtherKeys level from a tmux #{pane_key_mode} value. A value
+// that does not describe one (including the empty string from tmux before 3.5)
+// leaves it alone.
+- (void)applyTmuxPaneKeyMode:(nullable NSString *)paneKeyMode;
 
 #pragma mark - SSH
 

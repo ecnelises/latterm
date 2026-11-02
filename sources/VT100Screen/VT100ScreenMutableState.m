@@ -288,6 +288,46 @@ static const int64_t VT100ScreenMutableStateSideEffectFlagLineBufferDidDropLines
     }];
 }
 
+- (void)addUrgentSideEffect:(void (^)(id<VT100ScreenDelegate> delegate))sideEffect
+                       name:(NSString *)name {
+    DLog(@"[side effects] %@ Add urgent side effect %@", self.config.sessionGuid, name);
+    __weak __typeof(self) weakSelf = self;
+    [_tokenExecutor addUrgentSideEffect:^{
+        DLog(@"[side effects] %@ Execute urgent side effect %@", weakSelf.config.sessionGuid, name);
+        [weakSelf performSideEffect:sideEffect name:name];
+    }];
+}
+
+- (void)addUrgentPausedSideEffect:(void (^)(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser))sideEffect
+                             name:(NSString *)name {
+    DLog(@"[side effects] %@ Add urgent paused side effect %@", self.config.sessionGuid, name);
+    iTermTokenExecutorUnpauser *unpauser = [_tokenExecutor pause];
+    __weak __typeof(self) weakSelf = self;
+    [_tokenExecutor addUrgentSideEffect:^{
+        if (!weakSelf) {
+            [unpauser unpause];
+            return;
+        }
+        [weakSelf performPausedSideEffect:unpauser block:sideEffect name:name];
+    }];
+}
+
+// Paused variant of addReportSideEffect:: pauses like addPausedSideEffect: but
+// schedules via addReportSideEffect so it does not disarm skip-sync.
+- (void)addPausedReportSideEffect:(void (^)(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser))sideEffect
+                             name:(NSString *)name {
+    DLog(@"[side effects] %@ Add paused report side effect %@", self.config.sessionGuid, name);
+    iTermTokenExecutorUnpauser *unpauser = [_tokenExecutor pause];
+    __weak __typeof(self) weakSelf = self;
+    [_tokenExecutor addReportSideEffect:^{
+        if (!weakSelf) {
+            [unpauser unpause];
+            return;
+        }
+        [weakSelf performPausedSideEffect:unpauser block:sideEffect name:name];
+    }];
+}
+
 - (void)addDeferredSideEffect:(void (^)(id<VT100ScreenDelegate> delegate))sideEffect
                          name:(NSString *)name {
     DLog(@"[side effects] %@ Add deferred side effect %@", self.config.sessionGuid, name);
@@ -307,6 +347,18 @@ static const int64_t VT100ScreenMutableStateSideEffectFlagLineBufferDidDropLines
     }];
 }
 
+
+// Like addSideEffect:name: but for purely outbound report-send side effects.
+// Does not invalidate the report skip-sync flag, so a burst of report queries
+// coalesces to a single joined sync instead of one per query.
+- (void)addReportSideEffect:(void (^)(id<VT100ScreenDelegate> delegate))sideEffect name:(NSString *)name {
+    DLog(@"[side effects] %@ Add report side effect %@", self.config.sessionGuid, name);
+    __weak __typeof(self) weakSelf = self;
+    [_tokenExecutor addReportSideEffect:^{
+        DLog(@"[side effects] %@ Execute report side effect %@", weakSelf.config.sessionGuid, name);
+        [weakSelf performSideEffect:sideEffect name:name];
+    }];
+}
 
 - (void)addNoDelegateSideEffect:(void (^)(void))sideEffect name:(NSString *)name {
     DLog(@"[side effects] %@ Add side effect %@", self.config.sessionGuid, name);
@@ -2417,7 +2469,7 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     [self invalidateCommandStartCoordWithoutSideEffects];
     // currentGrid selects which key-reporting stack contributes the effective flags.
     if (oldKeyReportingFlags != self.terminalKeyReportingFlags) {
-        [self terminalKeyReportingFlagsDidChange];
+        [self terminalKeyReportingFlagsDidChange:NO];
     }
     [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         [delegate screenRemoveSelection];
@@ -2442,7 +2494,7 @@ void VT100ScreenEraseCell(screen_char_t *sct,
 
     [self.currentGrid markAllCharsDirty:YES updateTimestamps:NO];
     if (oldKeyReportingFlags != self.terminalKeyReportingFlags) {
-        [self terminalKeyReportingFlagsDidChange];
+        [self terminalKeyReportingFlagsDidChange:NO];
     }
     [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
         [delegate screenRemoveSelection];
@@ -3304,6 +3356,10 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     // TODO: Per issue 12581 I should consider finding a way to do this unpaused. Perhaps it could be
     // unmanaged, or part of it could be unmanaged.
     const VT100GridAbsCoordRange absRange = VT100GridAbsCoordRangeFromCoordRange(range, self.cumulativeScrollbackOverflow);
+    // Snapshot the key reporting flags now, on the mutation thread, as of the FTCS C token.
+    // The side effect below may run after later tokens have changed the flags, so reading the
+    // live value there would be inconsistent with the snapshot taken at FTCS D. See 13015.
+    const VT100TerminalKeyReportingFlags keyReportingFlags = self.terminalKeyReportingFlags;
 
     if (IsSecureEventInputEnabled() || self.config.autoComposerEnabled) {
         [self addPausedSideEffect:^(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser) {
@@ -3317,6 +3373,7 @@ void VT100ScreenEraseCell(screen_char_t *sct,
                                        onHost:remoteHost
                                   inDirectory:workingDirectory
                                          mark:mark
+                            keyReportingFlags:keyReportingFlags
                                        paused:YES];
             DLog(@"commandDidEndWithRange: unpause");
             [unpauser unpause];
@@ -3333,6 +3390,7 @@ void VT100ScreenEraseCell(screen_char_t *sct,
                                        onHost:remoteHost
                                   inDirectory:workingDirectory
                                          mark:mark
+                            keyReportingFlags:keyReportingFlags
                                        paused:NO];
         } name:@"command did end with range"];
     }
@@ -4008,8 +4066,15 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     } else {
         DLog(@"No last command mark found.");
     }
+    // Snapshot the key reporting flags now, on the mutation thread, as of the FTCS D token.
+    // A shell like Fish 4.x re-enables key reporting for its next prompt with tokens that follow
+    // FTCS D; reading the live value in the side effect would see that later state and falsely
+    // conclude that an app left key reporting stuck on. See 13015.
+    const VT100TerminalKeyReportingFlags keyReportingFlags = self.terminalKeyReportingFlags;
     [self addSideEffect:^(id<VT100ScreenDelegate>  _Nonnull delegate) {
-        [delegate screenCommandDidExitWithCode:returnCode mark:doppelganger];
+        [delegate screenCommandDidExitWithCode:returnCode
+                             keyReportingFlags:keyReportingFlags
+                                          mark:doppelganger];
     } name:@"set rc 2"];
 }
 
@@ -7003,20 +7068,19 @@ lengthExcludingInBandSignaling:data.length
     // Gracefully degrades to NO on tmux versions that lack bracket_paste_flag.
     [self.terminal setBracketedPasteMode:[state[kStateDictBracketedPasteMode] boolValue]];
 
-    // pane_key_mode is exposed by tmux 3.5+ and reports the per-pane modifyOtherKeys
-    // state of whatever application is running inside the pane. Older tmux versions
-    // return an empty string, which we leave alone.
-    NSString *paneKeyMode = [NSString castFrom:state[kStateDictPaneKeyMode]];
-    int modifyOtherKeysValue = -1;
-    if ([paneKeyMode isEqualToString:@"Ext 1"]) {
-        modifyOtherKeysValue = 1;
-    } else if ([paneKeyMode isEqualToString:@"Ext 2"]) {
-        modifyOtherKeysValue = 2;
-    } else if ([paneKeyMode isEqualToString:@"VT10x"]) {
-        modifyOtherKeysValue = 0;
-    }
-    if (modifyOtherKeysValue >= 0 && self.terminal.sendModifiers.count > 4) {
-        self.terminal.sendModifiers[4] = @(modifyOtherKeysValue);
+    // pane_key_mode is exposed by tmux 3.5+ and reports how the application running
+    // in the pane has asked for keys to be encoded. Older tmux versions return an
+    // empty string, which we leave alone.
+    [self applyTmuxPaneKeyMode:[NSString castFrom:state[kStateDictPaneKeyMode]]];
+}
+
+- (void)applyTmuxPaneKeyMode:(NSString *)paneKeyMode {
+    // Only the modifyOtherKeys level is applied. We never encode keys with the
+    // Kitty keyboard protocol in a tmux pane (see -[VT100Terminal keyReportingFlags]),
+    // so a Kitty value, which carries no modifyOtherKeys level, changes nothing.
+    iTermTmuxPaneKeyMode *mode = [iTermTmuxPaneKeyMode modeForString:paneKeyMode];
+    if (mode && mode.modifyOtherKeys >= 0 && self.terminal.sendModifiers.count > 4) {
+        self.terminal.sendModifiers[4] = @(mode.modifyOtherKeys);
         [self terminalDidChangeSendModifiers];
     }
 }
@@ -7097,6 +7161,10 @@ lengthExcludingInBandSignaling:data.length
 - (void)addUnmanagedSideEffect:(void (^)(id<VT100ScreenDelegate> delegate))block
                           name:(NSString *)name {
     DLog(@"[side effects] Add unmanaged side effect %@", name);
+    // Like addUnmanagedPausedSideEffect:, this dispatches straight to the main
+    // queue and bypasses the executor's addSideEffect chokepoint, so invalidate
+    // the report skip-sync flag explicitly.
+    [_tokenExecutor noteStateSideEffectScheduled];
     __weak __typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         DLog(@"[side effects] Execute unmanaged side effect %@", name);
@@ -7110,6 +7178,10 @@ lengthExcludingInBandSignaling:data.length
 // very hard to reason about and are almost certainly incorrect.
 - (void)addUnmanagedPausedSideEffect:(void (^)(id<VT100ScreenDelegate> delegate, iTermTokenExecutorUnpauser *unpauser))block name:(NSString *)name {
     DLog(@"[side effects] add %@", name);
+    // This scheduling path bypasses the executor's addSideEffect chokepoint, so
+    // invalidate the report skip-sync flag explicitly. (Color-table sets go
+    // through here and are reportable state.)
+    [_tokenExecutor noteStateSideEffectScheduled];
     __weak __typeof(self) weakSelf = self;
     iTermTokenExecutorUnpauser *unpauser = [_tokenExecutor pause];
     dispatch_async(dispatch_get_main_queue(), ^{

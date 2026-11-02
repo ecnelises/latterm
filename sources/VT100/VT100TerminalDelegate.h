@@ -114,6 +114,20 @@ NS_ASSUME_NONNULL_BEGIN
 // Returns if it's safe to send reports.
 - (BOOL)terminalShouldSendReport:(BOOL)tmuxAllowed;
 
+// Like terminalShouldSendReport: but for reports whose value the mutation thread
+// owns and keeps current, so a run of them may share a single pause+sync instead
+// of paying one per query (issue 13013). Used by OSC 4 palette color queries
+// (value read from the mutation-thread colorMap) and by device status reports
+// such as CSI 6 n cursor position (value read from the mutation-thread grid
+// cursor); both read constant or mutation-owned state, never a stale snapshot.
+//
+// This is only safe for reports whose value the mutation thread owns and whose
+// every mutation schedules a disarming side effect. It must NOT be used for
+// reports that read main-thread-mirrored state such as the config snapshot (cell
+// size, backing scale, window/grid size), which is refreshed only by a sync and
+// would read stale. Such reports use terminalShouldSendReport:.
+- (BOOL)terminalShouldSendCoalescibleReport:(BOOL)tmuxAllowed;
+
 - (void)terminalReportVariableNamed:(NSString *)variable;
 
 // Sends a report.
@@ -536,7 +550,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)terminalAppendSixelData:(nullable NSData *)sixelData;
 
 - (void)terminalDidChangeSendModifiers;
-- (void)terminalKeyReportingFlagsDidChange;
+// Whole-value writes let a shell replace any mode left behind by an app.
+- (void)terminalKeyReportingFlagsDidChange:(BOOL)wholeValueReplaced;
+// A local reset is not a write by the shell.
+- (void)terminalDidResetKeyReportingLocally;
 - (BOOL)terminalIsInAlternateScreenMode;
 
 - (iTermPromise<NSString *> *)terminalStringForKeypressWithCode:(unsigned short)keycode
