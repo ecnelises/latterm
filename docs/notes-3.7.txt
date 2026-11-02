@@ -9,6 +9,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Keep Python-created windows and tabs selected.
+- Preserve manual tab titles and update tmux
+  title decoration without waiting for output.
 - Enable WAL and checkpoint-based SQLite syncing
   for frequently saved restorable state.
 - Reject malformed Dynamic Profiles values.

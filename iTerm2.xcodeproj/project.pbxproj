@@ -693,6 +693,7 @@
 		3C9A285FEE6EA4443AC9A1DA /* iTermVersionComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30240B8496436BDF5909EA35 /* iTermVersionComparator.swift */; };
 		3DF240AC0E869D3C0A076902 /* iTermModalSheetRunner.h in Sources */ = {isa = PBXBuildFile; fileRef = 4F0681FBE76FD9A1D5715D52 /* iTermModalSheetRunner.h */; };
 		3FDED437FA560463A539E6E0 /* iTermAdditionalHotKeyTableCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B366910004352341AE4EE5 /* iTermAdditionalHotKeyTableCellView.swift */; };
+		400427AFD4C32663348FAE68 /* iTermAPICreateTabFocusDeferral.m in Sources */ = {isa = PBXBuildFile; fileRef = 849B3E8D28B9345690423B42 /* iTermAPICreateTabFocusDeferral.m */; };
 		41087F6965EAA157F08289C5 /* iTermCursorBlinkFadeCurveIcon.m in Sources */ = {isa = PBXBuildFile; fileRef = 7057439196C1E9D6AFF58395 /* iTermCursorBlinkFadeCurveIcon.m */; };
 		42C54503EB543E22E037F935 /* iTermAdditionalHotKeyObjectValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643FCD24EFB96CA07A1E0DA7 /* iTermAdditionalHotKeyObjectValue.swift */; };
 		43640225470B76F4D13E6E86 /* iTermSessionPreviewPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 434641A807C0B3035264BEF2 /* iTermSessionPreviewPanel.m */; };
@@ -4341,6 +4342,7 @@
 		DDF0FD65062916F70080EF74 /* iTermApplication.h in Headers */ = {isa = PBXBuildFile; fileRef = DDF0FD63062916F70080EF74 /* iTermApplication.h */; };
 		DECF12ECD66573849C34F781 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B6BE78A6A0C18980A2A46 /* Helpers.swift */; };
 		E2DFAD8D76A3655948CB3F37 /* iTermModalSheetRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = E9B6267AF6FAE7F906B1DBF9 /* iTermModalSheetRunner.m */; };
+		E3525131D5EF5908FA2EC915 /* iTermAPICreateTabFocusDeferral.h in Sources */ = {isa = PBXBuildFile; fileRef = 0A29A4CF9C40447393D5F845 /* iTermAPICreateTabFocusDeferral.h */; };
 		E3F691502939DF2E874D7DD1 /* IT2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92FC80BA122066E3610BEA16 /* IT2.swift */; };
 		E4BE6F9594BF6756F85076DB /* iTermCursorBlinkFadeCurveIcon.h in Sources */ = {isa = PBXBuildFile; fileRef = 11FDA9247035DE0FCCE7D23D /* iTermCursorBlinkFadeCurveIcon.h */; };
 		E4BF4BC18C3054F2AD6145DC /* iTermWorkgroupSessionMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0071478CE7978AC6B38C5DF7 /* iTermWorkgroupSessionMode.swift */; };
@@ -4687,6 +4689,7 @@
 		06E0C88C1DF9695400AA061B /* iTermServiceProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermServiceProvider.h; sourceTree = "<group>"; };
 		06E0C88D1DF9695400AA061B /* iTermServiceProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermServiceProvider.m; sourceTree = "<group>"; };
 		072CF60E8CBB40E461BE74FE /* iTermMachineIdentity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermMachineIdentity.swift; sourceTree = "<group>"; };
+		0A29A4CF9C40447393D5F845 /* iTermAPICreateTabFocusDeferral.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermAPICreateTabFocusDeferral.h; sourceTree = "<group>"; };
 		0A66CD0466A0D99AC697D076 /* AppCommand.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppCommand.swift; path = it2cli/Sources/it2core/Commands/AppCommand.swift; sourceTree = "<group>"; };
 		0B1C7E2FF9AF3E9E5E975659 /* TemporaryNumberAllocator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TemporaryNumberAllocator.swift; sourceTree = "<group>"; };
 		0C31771A4FA3F45D1F1CBAD5 /* iTermStuckKeyReportingDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermStuckKeyReportingDetector.swift; sourceTree = "<group>"; };
@@ -5429,6 +5432,7 @@
 		8414509943BEC14005C3E043 /* IT2Embedded.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IT2Embedded.swift; path = it2cli/Sources/it2core/IT2Embedded.swift; sourceTree = "<group>"; };
 		8479D131E84B1C22C982BFC1 /* iTermGitStringMaker.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermGitStringMaker.h; sourceTree = "<group>"; };
 		84897A6E8B159D2C3608965D /* WorkgroupAutoRequestReviewToolbarItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkgroupAutoRequestReviewToolbarItem.swift; sourceTree = "<group>"; };
+		849B3E8D28B9345690423B42 /* iTermAPICreateTabFocusDeferral.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermAPICreateTabFocusDeferral.m; sourceTree = "<group>"; };
 		863EB142E6E5072207B710E8 /* SettingsLocalization.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsLocalization.swift; sourceTree = "<group>"; };
 		86C0539E651D1486353396EC /* SessionView+CodeReviewPromptOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "SessionView+CodeReviewPromptOverlay.swift"; sourceTree = "<group>"; };
 		86FC661122588ABDA0EE3245 /* PTYTextViewAccessibilityTest.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = PTYTextViewAccessibilityTest.m; sourceTree = "<group>"; };
@@ -9388,6 +9392,8 @@
 				047ECAD2519474D103A60FEC /* iTermInProcessAPIConnection.m */,
 				9ED6D5D4322AFD690059C29F /* iTermInProcessIt2.m */,
 				21F8530D8EDE4464A3DC219F /* iTermInProcessIt2.h */,
+				0A29A4CF9C40447393D5F845 /* iTermAPICreateTabFocusDeferral.h */,
+				849B3E8D28B9345690423B42 /* iTermAPICreateTabFocusDeferral.m */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -17920,6 +17926,8 @@
 				A683E58D7355265C7FF4CDCC /* iTermForkedServerRegistry.swift in Sources */,
 				FC2B1EBC9C303330D1D8E5B3 /* iTermMultiServerSocketNumbers.swift in Sources */,
 				1E389668373357AAB3B687F6 /* iTermAccessibilitySelectionReplacement.swift in Sources */,
+				E3525131D5EF5908FA2EC915 /* iTermAPICreateTabFocusDeferral.h in Sources */,
+				400427AFD4C32663348FAE68 /* iTermAPICreateTabFocusDeferral.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

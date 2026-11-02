@@ -3619,6 +3619,10 @@ ITERM_WEAKLY_REFERENCEABLE
     _tmuxController = nil;
     [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxClientName];
     [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxPaneTitle];
+    // No -formattingDescriptorDidChange here: this session is going away, and
+    // republishing its undecorated title would rewrite the tab title, re-render
+    // the touch bar, and rebuild the session menu for a pane that is being torn
+    // down. The surviving pane's title is recomputed by -[PTYTab setActiveSession:].
 
     // The source pane may have just exited. Dogs and cats living together!
     // Mass hysteria!
@@ -3948,6 +3952,11 @@ ITERM_WEAKLY_REFERENCEABLE
         }
         [self.variablesScope setValue:dict[key] forVariableNamed:key];
     }
+    // -sessionNameControllerFormattingDescriptor keys off _tmuxController, and the
+    // name controller applies that formatting when it evaluates rather than when it
+    // is read. Without this the presentation name keeps the undecorated title until
+    // something unrelated changes the base name. Issue 13072.
+    [_nameController formattingDescriptorDidChange];
 }
 
 - (void)handleKeypressInTmuxGateway:(NSEvent *)event {
@@ -9474,6 +9483,9 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                  profileModel:model];
 
     [self.variablesScope setValue:_tmuxController.clientName forVariableNamed:iTermVariableKeySessionTmuxClientName];
+    // Gateway mode and the controller are both descriptor inputs and neither goes
+    // through -setTmuxController:, so republish here. See -setTmuxController:.
+    [_nameController formattingDescriptorDidChange];
     _tmuxController.ambiguousIsDoubleWidth = _treatAmbiguousWidthAsDoubleWidth;
     _tmuxController.unicodeVersion = _unicodeVersion;
 
@@ -10130,6 +10142,8 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     self.tmuxMode = TMUX_NONE;
     [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxClientName];
     [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxPaneTitle];
+    // Take the gateway decoration off now rather than a main-queue turn later.
+    [_nameController formattingDescriptorDidChange];
 }
 
 - (void)tmuxCannotSendCharactersInSupplementaryPlanes:(NSString *)string windowPane:(int)windowPane {

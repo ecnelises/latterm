@@ -3597,10 +3597,11 @@ ITERM_WEAKLY_REFERENCEABLE
         [aSession setTmuxController:tmuxController];
         [self setDimmingForSession:aSession];
     }
-    // Set the tab title from the active session's name, which (because it has
-    // a tmux controller) will be based on the tmux window's name provided by
-    // the tab. This must be done after setting the tmux controller.
-    [tab loadTitleFromSession];
+    // -setTmuxController: above republishes each session's presentation name with
+    // the tmux formatting applied. This covers what that can't: a session that has
+    // not evaluated a title yet has nothing to republish, so the tab title falls
+    // back to the tmux window name here. Must come after the loop.
+    [tab updateTabTitle];
     // Apply the profile’s custom tab title to a newly created tmux window (a
     // manual Command-T open). Because tmux tabs derive their title from the
     // tmux window name, -setTitleOverride: renames the tmux window, so we only
@@ -7834,7 +7835,6 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     theTab.delegate = self;
     NSTabViewItem *tabViewItem = [[[NSTabViewItem alloc] initWithIdentifier:(id)theTab] autorelease];
     [theTab setTabViewItem:tabViewItem];
-    [tabViewItem setLabel:[session name] ? [session name] : @""];
 
     [theTab numberOfSessionsDidChange];
     [self saveTmuxWindowOrigins];
