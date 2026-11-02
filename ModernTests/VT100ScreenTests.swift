@@ -1799,6 +1799,8 @@ struct SeededGenerator: RandomNumberGenerator {
 }
 
 class FakeSession: NSObject, VT100ScreenDelegate {
+    var getWorkingDirectoryCallCount = 0
+    var promptDidStartCallCount = 0
     var keyReportingFlagsAtChange = [VT100TerminalKeyReportingFlags]()
     var screen: VT100Screen?
     var configuration = VT100MutableScreenConfiguration()
@@ -2146,6 +2148,7 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     }
     
     func screenGetWorkingDirectory(completion: @escaping (String?) -> Void) {
+        getWorkingDirectoryCallCount += 1
         completion(nil)
     }
     
@@ -2174,6 +2177,7 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     }
     
     func screenPromptDidStart(atLine line: Int32) {
+        promptDidStartCallCount += 1
 
     }
 

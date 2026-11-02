@@ -260,6 +260,7 @@ class ConductorFileTransfer: TransferrableFile {
     }
 
     override func stop() {
+        guard !isStopped else { return }
         FileTransferManager.sharedInstance().transferrableFileWillStop(self)
         state = .failed
     }

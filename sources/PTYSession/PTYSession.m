@@ -3804,6 +3804,11 @@ ITERM_WEAKLY_REFERENCEABLE
         // Abort early so the surrogate hack works.
         return;
     }
+    if (!reporting) {
+        // Whatever this starts (e.g. ssh) can make the next OSC 7 come from
+        // another machine.
+        [_screen inputWillBeWrittenToTask];
+    }
     if (canBroadcast && _screen.terminalSendReceiveMode && !self.isTmuxClient && !self.isTmuxGateway) {
         // Local echo. Only for broadcastable text to avoid printing passwords from the password manager.
         [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
@@ -14505,12 +14510,12 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         path.path = [destinationPath.path stringByAppendingPathComponent:filename];
         DLog(@"Will upload local:%@ to remote:%@", file, path.path);
 
-        if (@available(macOS 11, *)) {
-            if ([_conductor canTransferFilesTo:path]) {
-                DLog(@"Using conductor for upload");
-                [_conductor uploadFile:file to:path];
-                break;
-            }
+        iTermConductor *conductor = [self nonTextPasteConductor];
+        if ([conductor canTransferFilesTo:path]) {
+            // Each upload is independent; hand off every file in the batch.
+            DLog(@"Using conductor for upload");
+            [conductor uploadFile:file to:path];
+            continue;
         }
         DLog(@"Using SCPFile for upload");
         SCPFile *scpFile = [[[SCPFile alloc] init] autorelease];
@@ -19208,24 +19213,55 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return self.view.window;
 }
 
-- (BOOL)nonTextPasteHelperCanUpload:(iTermNonTextPasteHelper *)sender {
-    // Can upload if we have SSH integration (conductor) in framing mode, or if
-    // shell integration detected we're on a remote host.
-    DLog(@"nonTextPasteHelperCanUpload: conductor=%@ framing=%@ currentHost=%@ isLocalhost=%@",
-         self.conductor, @(self.conductor.framing), self.currentHost, @(self.currentHost.isLocalhost));
-    if (self.conductor.framing) {
-        DLog(@"Can upload via conductor");
-        return YES;
+- (iTermNonTextPasteDestination)nonTextPasteHelperDestination:(iTermNonTextPasteHelper *)sender {
+    // Can upload if we have SSH integration (our own conductor or, in a tmux
+    // integration pane, the gateway's) in framing mode, or if shell integration
+    // detected we're on a remote host. Only the latter can be a wrong guess, and
+    // only when nothing proved it (see issue 13117). Either way there must be
+    // somewhere to upload to.
+    id<VT100RemoteHostReading> host = self.currentHost;
+    iTermConductor *conductor = [self nonTextPasteConductor];
+    SCPPath *destination = [self scpPathForCurrentRemoteHost];
+    DLog(@"nonTextPasteHelperDestination: conductor=%@ currentHost=%@ isLocalhost=%@ destination=%@",
+         conductor, host, @(host.isLocalhost), destination);
+    if (!destination) {
+        return iTermNonTextPasteDestinationLocal;
     }
-    BOOL canUpload = self.currentHost != nil && !self.currentHost.isLocalhost;
-    DLog(@"canUpload=%@", @(canUpload));
-    return canUpload;
+    if (conductor) {
+        DLog(@"Can upload via conductor");
+        return iTermNonTextPasteDestinationVerifiedRemote;
+    }
+    // Without a conductor, a destination means shell integration reported a remote host.
+    return host.localityVerified ? iTermNonTextPasteDestinationVerifiedRemote : iTermNonTextPasteDestinationUnverifiedRemote;
+}
+
+// A control-mode pane has no conductor of its own. Its gateway owns the SSH
+// connection, but pasted input must still go to this pane.
+- (iTermConductor *)nonTextPasteConductor {
+    if (_conductor) {
+        return _conductor.framing ? _conductor : nil;
+    }
+    PTYSession *gateway = self.tmuxGatewaySession;
+    if (self.isTmuxClient && !_tmuxController.serverIsLocal && gateway != self) {
+        return [gateway nonTextPasteConductor];
+    }
+    return nil;
 }
 
 // Returns an SCPPath for the current remote host and working directory, or nil if not available.
 - (SCPPath *)scpPathForCurrentRemoteHost {
     id<VT100RemoteHostReading> remoteHost = self.currentHost;
+    iTermConductor *conductor = [self nonTextPasteConductor];
     DLog(@"scpPathForCurrentRemoteHost: remoteHost=%@", remoteHost);
+    // SSH integration knows the destination even before shell integration has
+    // reported a host or working directory (including inside ordinary tmux).
+    if (!remoteHost && conductor) {
+        SCPPath *path = [[[SCPPath alloc] init] autorelease];
+        path.hostname = conductor.sshIdentity.hostname;
+        path.username = conductor.sshIdentity.username;
+        path.path = conductor.homeDirectory;
+        return path.path.length ? path : nil;
+    }
     if (!remoteHost || !remoteHost.username || !remoteHost.hostname) {
         DLog(@"No remote host or missing username/hostname");
         return nil;
@@ -19235,7 +19271,13 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         return nil;
     }
     NSString *workingDirectory = self.variablesScope.path;
-    if (!workingDirectory) {
+    SCPPath *identityPath = [[[SCPPath alloc] init] autorelease];
+    identityPath.hostname = remoteHost.hostname;
+    identityPath.username = remoteHost.username;
+    if (!workingDirectory.length && [conductor canTransferFilesTo:identityPath]) {
+        workingDirectory = conductor.homeDirectory;
+    }
+    if (!workingDirectory.length) {
         DLog(@"No working directory");
         return nil;
     }
@@ -19263,7 +19305,18 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)nonTextPasteHelper:(iTermNonTextPasteHelper *)sender uploadFileAndPastePath:(NSString *)localPath {
     DLog(@"nonTextPasteHelper:uploadFileAndPastePath: localPath=%@", localPath);
-    if (_uploadAndPasteTransfer) {
+    [self uploadFilesAndPastePaths:@[ localPath ]];
+}
+
+- (void)nonTextPasteHelper:(iTermNonTextPasteHelper *)sender uploadFilesAndPastePaths:(NSArray<NSString *> *)localPaths {
+    [self uploadFilesAndPastePaths:localPaths];
+}
+
+- (void)uploadFilesAndPastePaths:(NSArray<NSString *> *)localPaths {
+    if (localPaths.count == 0) {
+        return;
+    }
+    if (_uploadAndPasteTransfers.count > 0) {
         DLog(@"Upload already in progress, blocking new upload");
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
         alert.messageText = @"Upload in Progress";
@@ -19283,48 +19336,142 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         return;
     }
 
-    // Calculate the remote path
-    NSString *filename = [localPath lastPathComponent];
-    NSString *remotePath = [scpPath.path stringByAppendingPathComponent:filename];
-    DLog(@"Remote path will be: %@", remotePath);
-
-    // Show upload indicator
+    NSString *label;
+    if (localPaths.count == 1) {
+        label = [localPaths.firstObject lastPathComponent];
+    } else {
+        label = [NSString localizedStringWithFormat:NSLocalizedStringWithDefaultValue(@"PTYSession.UploadingFileCount", nil, [NSBundle mainBundle], @"%ld files", @"Label on the upload progress indicator when several files are uploading at once; %ld is the number of files"), (long)localPaths.count];
+    }
     __weak __typeof(self) weakSelf = self;
-    [_view showUploadIndicatorWithFilename:filename onCancel:^{
+    iTermConductor *conductor = [self nonTextPasteConductor];
+    [_view showUploadIndicatorWithFilename:label onCancel:^{
         DLog(@"Upload cancelled by user");
         [weakSelf cancelUploadAndPaste];
     }];
 
-    // Start the upload with a completion handler
-    _uploadAndPasteTransfer = [self uploadFile:localPath toPath:scpPath completion:^(BOOL success, NSString *error) {
-        DLog(@"Upload completed: success=%d error=%@", success, error);
-        __strong __typeof(self) strongSelf = [[weakSelf retain] autorelease];
-        
-        if (!strongSelf) {
+    _uploadAndPasteGeneration += 1;
+    const NSInteger generation = _uploadAndPasteGeneration;
+    _uploadAndPasteTransfers = [[NSMutableArray alloc] init];
+
+    // Slot per input, filled in on success and left as NSNull on failure, so the pasted order
+    // matches the order dropped no matter which upload finishes first and a failure simply leaves
+    // a gap rather than shifting the rest.
+    NSMutableArray *remotePaths = [NSMutableArray array];
+    for (NSUInteger i = 0; i < localPaths.count; i++) {
+        [remotePaths addObject:[NSNull null]];
+    }
+
+    // Finish only once every upload has reported and the loop below has started them all. Without
+    // the second condition a synchronous failure (an unreadable file reports before its upload
+    // call even returns) would finish the group while later files were still to be started.
+    __block NSInteger completed = 0;
+    __block BOOL allStarted = NO;
+    void (^finishIfDone)(void) = ^{
+        if (!allStarted || completed < (NSInteger)localPaths.count) {
             return;
         }
-        strongSelf->_uploadAndPasteTransfer = nil;
-        [strongSelf.view hideUploadIndicator];
-        if (success) {
-            NSString *escapedPath = [remotePath quotedStringForPaste];
-            DLog(@"Pasting escaped path: %@", escapedPath);
-            [strongSelf pasteString:escapedPath flags:0];
-        } else {
-            DLog(@"Upload failed, not pasting path");
+        __strong __typeof(self) strongSelf = [[weakSelf retain] autorelease];
+        if (!strongSelf || strongSelf->_uploadAndPasteGeneration != generation) {
+            return;
         }
-    }];
+        [strongSelf finishUploadAndPasteWithRemotePaths:remotePaths
+                                            destination:scpPath
+                                              conductor:conductor];
+    };
+
+    for (NSUInteger i = 0; i < localPaths.count; i++) {
+        const NSUInteger index = i;
+        TransferrableFile *transfer =
+            [self uploadFile:localPaths[i] toPath:scpPath completion:^(BOOL success, NSString *error, NSString *remotePath) {
+                DLog(@"Upload of %@ completed: success=%d error=%@ remotePath=%@", localPaths[index], success, error, remotePath);
+                __strong __typeof(self) strongSelf = [[weakSelf retain] autorelease];
+                if (!strongSelf || strongSelf->_uploadAndPasteGeneration != generation) {
+                    DLog(@"Ignoring completion from a cancelled or superseded upload group");
+                    return;
+                }
+                if (success && remotePath.length > 0) {
+                    remotePaths[index] = remotePath;
+                }
+                completed += 1;
+                finishIfDone();
+            }];
+        if (transfer) {
+            [_uploadAndPasteTransfers addObject:transfer];
+        }
+    }
+    allStarted = YES;
+    finishIfDone();
+}
+
+// Pastes the paths of the uploads that succeeded. A file that failed contributes nothing: its
+// name would point at something that is not there, and the failure is already reported in the
+// file transfers window. Pasting nothing at all is the right outcome when every one failed.
+// Nothing is pasted if, while uploading, the session ended or moved to another host or ssh
+// connection, since the paths would name files that are not there.
+- (void)finishUploadAndPasteWithRemotePaths:(NSArray *)remotePaths
+                                destination:(SCPPath *)destination
+                                  conductor:(iTermConductor *)conductor {
+    _uploadAndPasteGeneration += 1;
+    [_uploadAndPasteTransfers release];
+    _uploadAndPasteTransfers = nil;
+    [_view hideUploadIndicator];
+
+    if (self.exited || [self nonTextPasteConductor] != conductor) {
+        DLog(@"Session exited or its ssh connection changed during upload, so not pasting");
+        return;
+    }
+    SCPPath *currentPath = [self scpPathForCurrentRemoteHost];
+    const BOOL sameName = [currentPath.hostname isEqualToString:destination.hostname] &&
+        (currentPath.username == destination.username || [currentPath.username isEqualToString:destination.username]);
+    // The conductor knows every name its host goes by (the ssh alias, its HostName, and
+    // hostname -f), so different names can still be the same host, as when shell integration
+    // reports the full name mid-upload.
+    const BOOL sameConductorHost = (currentPath != nil &&
+                                    [conductor canTransferFilesTo:destination] &&
+                                    [conductor canTransferFilesTo:currentPath]);
+    if (!sameName && !sameConductorHost) {
+        DLog(@"Host changed during upload from %@ to %@, so not pasting", destination, currentPath);
+        return;
+    }
+
+    NSMutableArray<NSString *> *escaped = [NSMutableArray array];
+    for (id remotePath in remotePaths) {
+        NSString *path = [NSString castFrom:remotePath];
+        if (path.length == 0) {
+            continue;
+        }
+        [escaped addObject:[iTermNonTextPasteHelper escapedPathForPaste:path]];
+    }
+    if (escaped.count == 0) {
+        DLog(@"Every upload failed, so nothing to paste");
+        return;
+    }
+    NSString *string = [escaped componentsJoinedByString:@" "];
+    DLog(@"Pasting %@ escaped path(s)", @(escaped.count));
+    [self pasteString:string flags:0];
 }
 
 - (void)cancelUploadAndPaste {
-    if (_uploadAndPasteTransfer) {
-        DLog(@"Cancelling upload and paste transfer");
-        [_uploadAndPasteTransfer stop];
-        _uploadAndPasteTransfer = nil;
+    if (_uploadAndPasteTransfers.count > 0) {
+        DLog(@"Cancelling %@ upload and paste transfer(s)", @(_uploadAndPasteTransfers.count));
+        // Bump first so completions provoked by -stop find their group gone and do not paste.
+        _uploadAndPasteGeneration += 1;
+        NSArray<TransferrableFile *> *transfers = [[_uploadAndPasteTransfers copy] autorelease];
+        [_uploadAndPasteTransfers release];
+        _uploadAndPasteTransfers = nil;
+        for (TransferrableFile *transfer in transfers) {
+            [transfer stop];
+        }
     }
     [_view hideUploadIndicator];
 }
 
-- (TransferrableFile *)uploadFile:(NSString *)localPath toPath:(SCPPath *)destinationPath completion:(void (^)(BOOL success, NSString *error))completion {
+// The completion reports where the file actually landed, which is not always the path computed
+// here: an upload over ssh integration never overwrites, so if the name is taken on the far host
+// it uploads as "name (2)" and records that. Pasting the requested path instead would name the
+// pre-existing file, which is a different file. -destination is the transfer's own answer once it
+// has finished, so ask it rather than predicting.
+- (TransferrableFile *)uploadFile:(NSString *)localPath toPath:(SCPPath *)destinationPath completion:(void (^)(BOOL success, NSString *error, NSString *remotePath))completion {
     DLog(@"uploadFile:%@ toPath:%@ with completion", localPath, destinationPath.path);
 
     NSString *filename = [localPath lastPathComponent];
@@ -19335,17 +19482,29 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     path.path = [destinationPath.path stringByAppendingPathComponent:filename];
     DLog(@"Will upload local:%@ to remote:%@", localPath, path.path);
 
-    if ([_conductor canTransferFilesTo:path]) {
+    // Assigned before any completion can run: the conductor finishes on a later turn of the run
+    // loop, and the SCPFile branch assigns before starting the upload. The one case that reports
+    // synchronously (an archive that could not be built) reports failure, where the path is unused.
+    __block TransferrableFile *transfer = nil;
+    NSString *predictedPath = path.path;
+    void (^wrapper)(BOOL, NSString *) = [[^(BOOL success, NSString *error) {
+        completion(success, error, transfer.destination ?: predictedPath);
+    } copy] autorelease];
+
+    iTermConductor *conductor = [self nonTextPasteConductor];
+    if ([conductor canTransferFilesTo:path]) {
         DLog(@"Using conductor for upload with completion");
-        return [_conductor uploadFile:localPath to:path withCompletion:completion];
+        transfer = [conductor uploadFile:localPath to:path withCompletion:wrapper];
+        return transfer;
     }
 
     DLog(@"Using SCPFile for upload with completion");
     SCPFile *scpFile = [[[SCPFile alloc] init] autorelease];
     scpFile.path = path;
     scpFile.localPath = localPath;
-    scpFile.completionBlock = completion;
+    scpFile.completionBlock = wrapper;
     DLog(@"SCPFile localPath=%@ remotePath=%@", scpFile.localPath, scpFile.path.path);
+    transfer = scpFile;
     [scpFile upload];
     return scpFile;
 }

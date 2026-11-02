@@ -48,9 +48,16 @@ final class VT100RemoteHostStampTests: XCTestCase {
         XCTAssertEqual(localityAfterReporting(local), .localhost)
     }
 
-    // A hostname that isn't ours: stamped remote.
+    // A hostname that isn't ours: stamped remote at report time. It stays remote
+    // even if our own .local name later drifts, because the verdict is frozen
+    // rather than recomputed from names.
     func testReportingForeignHostnameStampsRemote() {
-        XCTAssertEqual(localityAfterReporting("me@build-box.example.invalid"), .remote)
+        let screen = makeScreen()
+        report("me@build-box.example.invalid", to: screen)
+        let host = screen.lastRemoteHost()
+        XCTAssertEqual(host?.localityState, .remote)
+        XCTAssertEqual(host?.isRemoteHost, true)
+        XCTAssertEqual(host?.isLocalhost, false)
     }
 
     // A user-only re-report (trailing @, empty host) backfills the hostname
@@ -80,5 +87,77 @@ final class VT100RemoteHostStampTests: XCTestCase {
         })
         XCTAssertEqual(screen.lastRemoteHost()?.localityState, .localhost,
                        "restoring a pre-ssh localhost host must not re-stamp it remote")
+    }
+    // MARK: - Whether locality was verified (issue 13117)
+
+    // A hostname compare is a guess, so it isn't verified, either way it goes.
+    func testHostnameCompareIsNotVerified() {
+        let screen = makeScreen()
+        report("me@build-box.example.invalid", to: screen)
+        XCTAssertEqual(screen.lastRemoteHost()?.localityVerified, false)
+
+        let localScreen = makeScreen()
+        report("me@" + Host.fullyQualifiedDomainName(), to: localScreen)
+        XCTAssertEqual(localScreen.lastRemoteHost()?.localityVerified, false)
+    }
+
+    // A user-only re-report carries the previous host's verification forward along
+    // with its locality.
+    func testUserOnlyReportCarriesVerificationForward() {
+        let screen = makeScreen()
+        let token = iTermMachineIdentity.localVersion1TokenForTesting()!
+        screen.performBlock(joinedThreads: { _, mutableState, _ in
+            mutableState.setWorkingDirectoryFromURLString("file://me@vpn-name.example/tmp?machineID=\(token)")
+            mutableState.appendCarriageReturnLineFeed()
+        })
+        report("me2@", to: screen)
+        XCTAssertEqual(screen.lastRemoteHost()?.username, "me2")
+        XCTAssertEqual(screen.lastRemoteHost()?.localityVerified, true)
+    }
+
+    // Saved and restored with the host, so a restored session doesn't turn a proven
+    // verdict back into a guess.
+    func testVerificationSurvivesDictionaryRoundTrip() {
+        let verified = VT100RemoteHost(username: "me", hostname: "box.example",
+                                       locality: .remote, localityVerified: true)
+        let restored = VT100RemoteHost(dictionary: verified.dictionaryValue())
+        XCTAssertEqual(restored?.localityState, .remote)
+        XCTAssertEqual(restored?.localityVerified, true)
+
+        let unverified = VT100RemoteHost(username: "me", hostname: "box.example",
+                                         locality: .remote, localityVerified: false)
+        XCTAssertEqual(VT100RemoteHost(dictionary: unverified.dictionaryValue())?.localityVerified, false)
+    }
+
+    // Data saved before verification existed has no key for it. That verdict was a
+    // hostname compare or older, so it reads back as unverified.
+    func testLegacyDictionaryIsUnverified() {
+        var dict = makeHost("me", "box.example", .remote).dictionaryValue() as! [String: Any]
+        dict.removeValue(forKey: "Locality Verified")
+        XCTAssertEqual(VT100RemoteHost(dictionary: dict)?.localityVerified, false)
+    }
+
+    // The main thread reads hosts through their doppelgangers.
+    func testDoppelgangerKeepsVerification() {
+        let host = VT100RemoteHost(username: "me", hostname: "box.example",
+                                   locality: .remote, localityVerified: true)
+        XCTAssertEqual(host.doppelganger().localityVerified, true)
+    }
+
+    // +localhost is this machine by construction.
+    func testLocalhostIsVerified() {
+        XCTAssertTrue(VT100RemoteHost.localhost().localityVerified)
+    }
+
+    // Unhooking a conductor restores the pre-ssh host, verification included.
+    func testRestoreFromSavedStatePreservesVerification() {
+        let screen = makeScreen()
+        let savedHost = VT100RemoteHost(username: "me", hostname: "MacBook-Pro-was.local",
+                                        locality: .localhost, localityVerified: true)
+        let terminalState: [AnyHashable: Any] = ["RemoteHost": savedHost.dictionaryValue()]
+        screen.performBlock(joinedThreads: { _, mutableState, _ in
+            mutableState.restore(fromSavedState: terminalState)
+        })
+        XCTAssertEqual(screen.lastRemoteHost()?.localityVerified, true)
     }
 }

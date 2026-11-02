@@ -84,7 +84,8 @@ TriggerDelegate> {
     iTermComposerManager *_composerManager;
     iTermAppSwitchingPreventionDetector *_appSwitchingPreventionDetector;
     iTermNonTextPasteHelper *_nonTextPasteHelper;
-    TransferrableFile *_uploadAndPasteTransfer;  // Current upload for "upload and paste path" feature
+    NSMutableArray<TransferrableFile *> *_uploadAndPasteTransfers;
+    NSInteger _uploadAndPasteGeneration;
 }
 
 @property(nonatomic, retain) Interval *currentMarkOrNotePosition;

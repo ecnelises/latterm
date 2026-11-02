@@ -9,6 +9,16 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Verify OSC 7 locality without DNS lookups and
+  preserve remote paths during local polling.
+- Offer local paths when remote detection is
+  uncertain; bound previews of large text files.
+- Upload every selected file, avoid duplicate
+  remote names, and paste the actual paths.
+- Clean up cancelled uploads and transfer files
+  in larger chunks without blocking key input.
+- Recover terminal parsing after abrupt SSH
+  disconnects and reduce command queue latency.
 - Preserve user variables while tmux panes open.
 - Treat captured tmux exit text as pane content.
 - Honor tmux background-window creation and

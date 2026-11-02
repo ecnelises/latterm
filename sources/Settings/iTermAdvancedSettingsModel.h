@@ -201,6 +201,7 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (double)extraSpaceBeforeCompactTopTabBar;
 + (double)fakeNotchHeight;
 + (NSString *)fakeFullyQualifiedDomainName;
++ (NSString *)fakeBootSessionUUID;
 + (NSString *)fallbackLCCType;
 + (BOOL)fastForegroundJobUpdates;
 + (BOOL)fastTriggerRegexes;

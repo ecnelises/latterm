@@ -367,7 +367,14 @@ extension Conductor: ConductorFileTransferDelegate {
     private func reallyBeginUpload(fileTransfer: ConductorFileTransfer,
                                    of choice: Either<String, Data>) async {
         let tempfile = fileTransfer.path.path + ".uploading-\(UUID().uuidString)"
+        var renamedPath: String?
+        func checkCancellation() throws {
+            if fileTransfer.isStopped {
+                throw CancellationError()
+            }
+        }
         do {
+            try checkCancellation()
             let data = try choice.handle { path in
                 let fileURL = URL(fileURLWithPath: path)
                 return try Data(contentsOf: fileURL)
@@ -378,31 +385,23 @@ extension Conductor: ConductorFileTransferDelegate {
             try await create(tempfile,
                              content: Data())
             fileTransfer.fileSize = data.count
-            var offset = 0
-            while offset < data.count {
-                if fileTransfer.isStopped {
-                    fileTransfer.abort()
-                    return
-                }
-                let maxChunkSize = 1024
-                let chunk = data.subdata(in: offset..<min(data.count, offset + maxChunkSize))
-                offset += chunk.count
-                try await append(tempfile, content: chunk)
-                fileTransfer.didTransferBytes(UInt(chunk.count))
+            try await ConductorUpload.send(data, checkCancellation: checkCancellation) { chunk in
+                try await self.append(tempfile, content: chunk)
+            } didTransfer: { count in
+                fileTransfer.didTransferBytes(UInt(count))
             }
-            // Find a good name
-            var proposedName = fileTransfer.path.path!
-            var remoteName: String?
-            for i in 0..<100 {
-                let info = try? await stat(proposedName)
-                if info == nil {
-                    remoteName = proposedName
-                    break
-                }
-                proposedName = fileTransfer.path.path + " (\(i + 2))"
+            // Find a good name. The claim keeps a concurrent upload of a file with the same name
+            // from choosing it too; it is released once the rename has put the file there.
+            let remoteName = try await uploadNameReservations.reserve(base: fileTransfer.path.path!) { proposedName in
+                let info = try? await self.stat(proposedName)
+                try checkCancellation()
+                return info != nil
             }
             guard let remoteName else {
                 throw ConductorFileTransfer.ConductorFileTransferError("Too many iterations to find a valid file name on remote host for upload")
+            }
+            defer {
+                uploadNameReservations.release(remoteName)
             }
             fileTransfer.remoteName = remoteName
             // Rename the tempfile to the proper name
@@ -410,11 +409,20 @@ extension Conductor: ConductorFileTransferDelegate {
                 tempfile,
                 newParent: remoteName.deletingLastPathComponent,
                 newName: remoteName.lastPathComponent)
+            renamedPath = remoteName
+            try checkCancellation()
             fileTransfer.didFinishSuccessfully()
         } catch {
             // Delete the temp file
             try? await rm(tempfile, recursive: false)
-            fileTransfer.fail(reason: error.localizedDescription)
+            if fileTransfer.isStopped {
+                if let renamedPath {
+                    try? await rm(renamedPath, recursive: false)
+                }
+                fileTransfer.abort()
+            } else {
+                fileTransfer.fail(reason: error.localizedDescription)
+            }
         }
     }
 }

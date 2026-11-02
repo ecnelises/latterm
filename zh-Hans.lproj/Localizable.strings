@@ -1675,3 +1675,5 @@
 "Learn about text escaping" = "了解文本转义";
 "Snippet Text Escaping" = "文本片段转义";
 "C-style backslash escaping interprets \\a (bell), \\b (backspace), \\e (escape), \\n (newline), \\r (carriage return), \\t (tab), \\\\ (backslash), and \\x followed by two hexadecimal digits for a UTF-8 byte.\n\nLiteral text sends every character exactly as entered.\n\nLegacy escaping supports only \\n, \\e, \\a, and \\t. Choose C-style escaping for new snippets that need escape sequences." = "C 风格反斜杠转义支持 \\a（响铃）、\\b（退格）、\\e（转义）、\\n（换行）、\\r（回车）、\\t（制表符）、\\\\（反斜杠），以及 \\x 后接两位十六进制数字表示一个 UTF-8 字节。\n\n原样文本会按输入内容发送每个字符。\n\n旧版转义仅支持 \\n、\\e、\\a 和 \\t。新建需要转义序列的文本片段时，请选择 C 风格转义。";
+
+"Override the machine identity used for OSC 7 localhost detection.\nLeave empty to use this boot’s real identity. Intended for testing." = "覆盖用于 OSC 7 本机识别的机器标识。\n留空以使用本次启动的真实标识。仅用于测试。";
