@@ -523,14 +523,23 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
     // appendStringAtCursor:preconvertedData: re-converts just (predecessor + firstChar) to
     // handle the case where the actual predecessor differs from the space.
     //
-    // I verified that space augmentation produces identical output to predecessor augmentation
-    // for all characters after the augmented prefix. StringToScreenChars uses
-    // enumerateComposedCharacters: to group characters, which calls
-    // CFStringGetRangeOfComposedCharactersAtIndex and iTermFindFirstCodePointWithOwnCell —
-    // neither of which depends on what the base character is. An exhaustive test over every
-    // non-base character in the BMP (U+0300..U+FFFE from CharacterSet.nonBaseCharacters)
-    // confirmed that the tail of the buffer is byte-identical regardless of whether the
-    // prefix is a space or a real predecessor character.
+    // Space augmentation produces identical output to predecessor augmentation for all
+    // characters after the augmented prefix, with one exception handled below. Grouping is
+    // done by enumerateComposedCharacters:, which calls
+    // CFStringGetRangeOfComposedCharactersAtIndex and iTermFindFirstCodePointWithOwnCell.
+    // For combining marks and ZWJ sequences neither depends on what the base character is:
+    // an exhaustive test over every non-base character in the BMP (U+0300..U+FFFE from
+    // CharacterSet.nonBaseCharacters) confirmed the tail of the buffer is byte-identical
+    // whether the prefix is a space or a real predecessor.
+    //
+    // The exceptions are the UAX #29 rules where a real predecessor absorbs MORE of the
+    // string than a space does: GB11 (emoji ZWJ sequences), GB6-GB8 (conjoining Hangul
+    // jamo) and GB12/GB13 (regional indicators). There the extra content stays in this
+    // buffer instead of being merged into the predecessor, and the mutation thread would
+    // write it twice. Which of those applies cannot be decided here, because the
+    // predecessor is exactly what this thread cannot see, so record how much of the string
+    // the space absorbed and let the mutation thread compare it against the real
+    // predecessor and fall back when they disagree.
     //
     // Hangul Jamo composition (e.g., L+V → syllable) was also investigated: it only happens
     // during NFC normalization, which is applied to the string BEFORE the prefix is prepended.
@@ -538,7 +547,7 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
     // cannot occur in either the space-augmented or predecessor-augmented path.
     NSString *normalized = [string normalized:config.normalization];
     NSString *augmented = [@" " stringByAppendingString:normalized];
-    const int capacity = (int)(augmented.length * 3);
+    const int capacity = (int)iTermStringToScreenCharsCapacity(augmented.length);
 
     if (capacity <= kStaticPreconvertedScreenCharsCount) {
         pre->buffer = pre->staticBuffer;
@@ -559,6 +568,9 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
     pre->foundDwc = dwc;
     pre->rtlFound = rtlFound;
     pre->config = config;
+    // The space is at index 0, so everything past it in that cluster came from the string.
+    // Segment the way StringToScreenChars does, since that decides which cells get written.
+    pre->firstClusterLengthInString = (int)[augmented rangeOfFirstComposedCharacter].length - 1;
     pre->valid = YES;
 }
 

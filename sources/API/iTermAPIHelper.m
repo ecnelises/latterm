@@ -3828,7 +3828,7 @@ static BOOL iTermCheckSplitTreesIsomorphic(ITMSplitTreeNode *node1, ITMSplitTree
 
     iTermSelection *selection = session.textview.selection;
     const NSInteger absoluteOffset = session.screen.totalScrollbackOverflow;
-    for (iTermSubSelection *sub in selection.allSubSelections) {
+    for (iTermSubSelection *sub in selection.logicalSubSelections) {
         ITMSubSelection *subProto = [[ITMSubSelection alloc] init];
         const long long overflow = session.screen.totalScrollbackOverflow;
         const VT100GridWindowedRange relativeRange = VT100GridWindowedRangeFromAbsWindowedRange(sub.absRange, overflow);

@@ -1470,7 +1470,7 @@
 "Fast regular expression evaluation for triggers." = "快速计算触发器正则表达式。";
 "Post fake flags-changed events when remapping modifiers with an event tap.\nThis is an attempt to work around incompatibilities with AltTab in issue 10220." = "重映射修饰键时发送模拟的修饰键变化事件。\n用于尝试解决与 AltTab 的兼容问题（10220）。";
 "Post fake flags-changed events when remapping modifiers with an event tap." = "重映射修饰键时发送模拟的修饰键变化事件。";
-"Flag emoji render full-width" = "旗帜表情符号使用全宽。";
+"Lone regional indicators render full-width.\nA complete flag is always two columns, which is the width wcwidth reports for the pair." = "单个区域指示符使用全宽。\n完整的旗帜始终占两列，与 wcwidth 对该字符对报告的宽度一致。";
 "Pre-convert non-ASCII strings to screen characters on the parser thread.\nThis exploits parallelism between parsing and screen mutation for better performance." = "在解析线程上预先转换非 ASCII 字符串。\n利用解析与屏幕修改并行来提高性能。";
 "Pre-convert non-ASCII strings to screen characters on the parser thread." = "在解析线程上预先转换非 ASCII 字符串。";
 "Pre-convert long non-ASCII strings on a background queue.\nThis decouples preconversion from the parser thread for better throughput." = "在后台队列中预先转换较长的非 ASCII 字符串。\n与解析线程分离以提高吞吐量。";

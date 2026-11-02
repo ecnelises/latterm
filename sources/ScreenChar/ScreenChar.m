@@ -156,66 +156,6 @@ BOOL ComplexCharCodeIsSpacingCombiningMark(unichar code) {
     return [GetComplexCharRegistry() codeIsSpacingCombiningMark:code];
 }
 
-BOOL ComplexCharCodeIsRegionalIndicator(unichar code) {
-    const UTF32Char base = BaseCharacterForComplexChar(code);
-    return base >= 0x1F1E6 && base <= 0x1F1FF;
-}
-
-static BOOL iTermCellIsRegionalIndicator(const screen_char_t *line, int i, int width) {
-    return (i >= 0 &&
-            i < width &&
-            line[i].complexChar &&
-            ComplexCharCodeIsRegionalIndicator(line[i].code));
-}
-
-// DWC_RIGHT and DWL_SPACER cells carry no content of their own; they are transparent to
-// regional-indicator pairing, just as the legacy renderer skips them when building its run.
-static BOOL iTermCellIsRegionalIndicatorSpacer(const screen_char_t *line, int i, int width) {
-    return (i >= 0 &&
-            i < width &&
-            (ScreenCharIsDWC_RIGHT(line[i]) || ScreenCharIsDWL_SPACER(line[i])));
-}
-
-// Index of the next cell after i that is not a transparent spacer (may be == width).
-static int iTermNextNonSpacerCell(const screen_char_t *line, int i, int width) {
-    int k = i + 1;
-    while (k < width && iTermCellIsRegionalIndicatorSpacer(line, k, width)) {
-        k++;
-    }
-    return k;
-}
-
-iTermRegionalIndicatorPairing iTermRegionalIndicatorPairingForCell(const screen_char_t *line,
-                                                                   int i,
-                                                                   int width,
-                                                                   BOOL *pendingOpen) {
-    iTermRegionalIndicatorPairing result = { NO, NO, 0 };
-    if (iTermCellIsRegionalIndicatorSpacer(line, i, width)) {
-        // Transparent: leave the running parity untouched so an opening indicator can still
-        // pair with a following indicator across its double-width spacer.
-        return result;
-    }
-    if (!iTermCellIsRegionalIndicator(line, i, width)) {
-        *pendingOpen = NO;
-        return result;
-    }
-    if (*pendingOpen) {
-        // The previous cell opened a pair; this indicator closes it.
-        result.suppress = YES;
-        *pendingOpen = NO;
-    } else {
-        // This indicator opens a pair. It joins with the next non-spacer cell only if that
-        // cell is also an indicator; otherwise it stands alone (lone or trailing odd one).
-        *pendingOpen = YES;
-        const int next = iTermNextNonSpacerCell(line, i, width);
-        if (iTermCellIsRegionalIndicator(line, next, width)) {
-            result.joinWithNext = YES;
-            result.successorCode = line[next].code;
-        }
-    }
-    return result;
-}
-
 NSString* ScreenCharToKittyPlaceholder(const screen_char_t *const sct) {
     return [GetComplexCharRegistry() charToKittyPlaceholder:*sct];
 }
@@ -513,6 +453,47 @@ NSString *DebugStringForScreenChar(screen_char_t c) {
             @(c.unused)];
 }
 
+static BOOL iTermCodePointIsRegionalIndicator(UTF32Char c) {
+    return c >= 0x1F1E6 && c <= 0x1F1FF;
+}
+
+// YES if `s` is a flag: two or more regional indicators, which UAX #29 rules GB12/GB13
+// group into one cluster. `baseChar` is the already-decoded first code point.
+static BOOL iTermComposedCharIsFlag(NSString *s, UTF32Char baseChar) {
+    if (!iTermCodePointIsRegionalIndicator(baseChar)) {
+        return NO;
+    }
+    if (s.length < 4) {
+        return NO;
+    }
+    const unichar high = [s characterAtIndex:2];
+    if (!IsHighSurrogate(high)) {
+        return NO;
+    }
+    return iTermCodePointIsRegionalIndicator(DecodeSurrogatePair(high, [s characterAtIndex:3]));
+}
+
+// YES if `s` begins with an emoji modifier sequence: an Emoji_Modifier_Base followed by
+// a skin tone modifier, as in U+1F44D U+1F3FB, optionally with a U+FE0F between them to
+// match iTermFindFirstCodePointWithOwnCell. `baseChar` is the already-decoded first code
+// point and `next` is the UTF-16 index just past it.
+static BOOL iTermComposedCharIsEmojiModifierSequence(NSString *s, UTF32Char baseChar, NSInteger next) {
+    if (!iTermIsEmojiModifierBase(baseChar)) {
+        return NO;
+    }
+    if ((NSUInteger)next < s.length && [s characterAtIndex:next] == 0xFE0F) {
+        next += 1;
+    }
+    if (s.length < (NSUInteger)next + 2) {
+        return NO;
+    }
+    const unichar high = [s characterAtIndex:next];
+    if (!IsHighSurrogate(high)) {
+        return NO;
+    }
+    return iTermIsEmojiModifier(DecodeSurrogatePair(high, [s characterAtIndex:next + 1]));
+}
+
 // Convert a string into an array of screen characters, dealing with surrogate
 // pairs, combining marks, nonspacing marks, and double-width characters.
 void StringToScreenChars(NSString *s,
@@ -630,6 +611,26 @@ void StringToScreenChars(NSString *s,
                         disambiguated = YES;
                     }
                 }
+            }
+            if (!disambiguated && iTermComposedCharIsFlag(composedOrNonBmpChar, baseChar)) {
+                // A flag is a pair of regional indicators. It occupies two columns no matter
+                // how fullWidthFlags and the Unicode version are set: that is the width
+                // wcwidth reports for the pair, and it is what the two own-cell indicators
+                // gave before flags became a single cluster. A single narrow cell would put
+                // a program's cursor arithmetic out of step with the grid. A lone indicator
+                // is not a flag and keeps the width those settings give it.
+                isDoubleWidth = YES;
+                disambiguated = YES;
+            }
+            if (!disambiguated && iTermComposedCharIsEmojiModifierSequence(composedOrNonBmpChar, baseChar, next)) {
+                // An emoji modifier sequence is one emoji glyph, so it occupies two columns
+                // even when the base alone is narrow (e.g., U+261D). This is deliberately
+                // not gated on the alternate screen the way VS16 widening is: every emoji
+                // modifier sequence gets the same width everywhere. Note that wcwidth sums
+                // the two code points (4 columns for U+1F44D U+1F3FB), so a program that
+                // measures with it will disagree. See issue 13079.
+                isDoubleWidth = YES;
+                disambiguated = YES;
             }
             if (!disambiguated) {
                 isDoubleWidth = [NSString isDoubleWidthCharacter:baseChar

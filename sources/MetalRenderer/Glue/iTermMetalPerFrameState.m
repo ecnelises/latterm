@@ -14,6 +14,7 @@
 #import "iTermAttributedStringBuilder.h"
 #import "iTermAttributedStringProxy.h"
 #import "iTermBoxDrawingBezierCurveFactory.h"
+#import "iTermCharacterSets.h"
 #import "iTermCharacterSource.h"
 #import "iTermColorMap.h"
 #import "iTermController.h"
@@ -999,16 +1000,26 @@ NS_INLINE int iTermGlyphKeyEmitRegular(iTermCachedGlyphKeysBuffer *buf,
                                        const screen_char_t *line,
                                        BOOL isBoxDrawingCharacter,
                                        BOOL thinStrokes,
-                                       unichar regionalIndicatorSuccessor,
                                        const int *bidiLUT,
                                        int bidiLUTLength,
-                                       iTermLineAttribute lineAttribute) {
+                                       iTermBidiDisplayInfo * _Nullable bidiInfo,
+                                       iTermLineAttribute lineAttribute,
+                                       BOOL useNativePowerlineGlyphs) {
     iTermCachedGlyphKeysBufferEnsureSize(buf, i);
     iTermMetalGlyphKey *glyphKeys = buf->buffer;
     glyphKeys[i].type = iTermMetalGlyphTypeRegular;
     if (characterIsDrawable) {
         glyphKeys[i].payload.regular.code = line[logicalIndex].code;
         glyphKeys[i].payload.regular.isComplex = line[logicalIndex].complexChar;
+        // UBA rule L4: draw a bidi-mirrorable character (e.g. a bracket) as its
+        // counterpart when CoreText resolved this cell right-to-left. Only simple
+        // cells mirror. The CoreGraphics renderer does this in
+        // iTermAttributedStringBuilder.m; the Metal glyph path needs it too, or
+        // parentheses in right-to-left text render reversed («)تهران(» for
+        // «(تهران)»).
+        if (bidiInfo && !line[logicalIndex].complexChar && [bidiInfo mirrorsSourceCell:logicalIndex]) {
+            glyphKeys[i].payload.regular.code = iTermBidiMirroredCounterpart(glyphKeys[i].payload.regular.code);
+        }
     } else {
         glyphKeys[i].payload.regular.code = ' ';
         glyphKeys[i].payload.regular.isComplex = NO;
@@ -1020,15 +1031,10 @@ NS_INLINE int iTermGlyphKeyEmitRegular(iTermCachedGlyphKeysBuffer *buf,
     glyphKeys[i].payload.regular.drawable = YES;
     if (logicalIndex + 1 < width &&
         line[logicalIndex + 1].complexChar &&
-        !(!line[logicalIndex].complexChar && line[logicalIndex].code < 128) &&
-        ComplexCharCodeIsSpacingCombiningMark(line[logicalIndex + 1].code)) {
-        // Next character is a combining spacing mark that will join with this non-ascii character.
+        ComplexCharCodeIsSpacingCombiningMark(line[logicalIndex + 1].code) &&
+        iTermScreenCharCanHostSpacingMark(&line[logicalIndex], useNativePowerlineGlyphs)) {
+        // Next character is a combining spacing mark that will join with this character.
         glyphKeys[i].payload.regular.combiningSuccessor = line[logicalIndex + 1].code;
-    } else if (regionalIndicatorSuccessor) {
-        // This is the opening regional indicator of a flag; join it with the closing
-        // indicator (which may be separated by a double-width spacer) so CoreText can shape
-        // the flag glyph. The closing cell is separately suppressed (drawable=NO) by the caller.
-        glyphKeys[i].payload.regular.combiningSuccessor = regionalIndicatorSuccessor;
     } else {
         glyphKeys[i].payload.regular.combiningSuccessor = 0;
     }
@@ -1391,7 +1397,13 @@ int iTermGetMetalBackgroundColors(iTermMetalPerFrameState *self,
             }
             continue;
         }
-        const BOOL selected = [selectedIndexes containsIndex:visualX];
+        // selectedIndexes is in LOGICAL coordinates (the selection is stored and
+        // reported logically), so test the logical cell index. The run is still
+        // positioned at its visual column via the LUT above; testing visualX here
+        // lit the mirror-image cells on right-to-left lines (the highlight landed
+        // on empty trailing-space columns at the left). Matches the CoreGraphics
+        // path in iTermBackgroundColorRun.m.
+        const BOOL selected = [selectedIndexes containsIndex:logicalX];
         BOOL findMatch = NO;
         if (findMatches && !selected) {
             findMatch = CheckFindMatchAtIndex(findMatches, logicalX);
@@ -1602,6 +1614,7 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                            // content identity). The caller must not store such a row.
                                            BOOL *rowContentIsVolatilePtr) {
     const BOOL blinkAllowed = self->_configuration->_renderInputs.blinkAllowed;
+    const BOOL useNativePowerlineGlyphs = self->_configuration->_renderInputs.useNativePowerlineGlyphs;
     // The volatile-row scan only feeds the store path, so skip it entirely when the
     // cache is disabled (the default) to keep it out of the innermost glyph loop.
     const BOOL trackVolatile = (self->_rowOutputCache != nil);
@@ -1611,7 +1624,7 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
     int asIndex = -1;
     int previousVisualX = -1;
     BOOL lastSelected = NO;
-    NSCharacterSet *boxCharacterSet = [iTermBoxDrawingBezierCurveFactory boxDrawingCharactersWithBezierPathsIncludingPowerline:self->_configuration->_renderInputs.useNativePowerlineGlyphs];
+    NSCharacterSet *boxCharacterSet = [iTermBoxDrawingBezierCurveFactory boxDrawingCharactersWithBezierPathsIncludingPowerline:useNativePowerlineGlyphs];
     iTermTextColorKey keys[2];
     iTermTextColorKey *currentColorKey = &keys[0];
     iTermTextColorKey *previousColorKey = &keys[1];
@@ -1625,10 +1638,6 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
     int previousImageCode = -1;
     VT100GridCoord previousImageCoord;
     int lastDrawableGlyph = -1;
-    // Set after an opening regional indicator so the next indicator cell is treated as
-    // the closing half of a flag pair. Reset by any non-indicator cell (and naturally at
-    // the start of each row), which greedily pairs indicators left to right within a row.
-    BOOL pendingOpenRegionalIndicator = NO;
 
     iTermKittyUnicodePlaceholderState kittyPlaceholderState;
     iTermKittyUnicodePlaceholderStateInit(&kittyPlaceholderState);
@@ -1669,7 +1678,11 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
         }
 
         const vector_float4 bgColor = attributes[visualX].backgroundColor;
-        BOOL selected = [selectedIndexes containsIndex:visualX];
+        // selectedIndexes is in LOGICAL coordinates; testing visualX here gave
+        // a glyph the selected background with the unselected foreground on
+        // reordered lines (the background path below tests logicalX), which
+        // made selected glyphs disappear on the GPU renderer.
+        BOOL selected = [selectedIndexes containsIndex:logicalIndex];
         BOOL findMatch = NO;
         if (findMatches && !selected) {
             findMatch = CheckFindMatchAtIndex(findMatches, logicalIndex);
@@ -1687,7 +1700,9 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
             // Normal code path
             lastSelected = selected;
         }
-        const BOOL annotated = [annotatedIndexes containsIndex:visualX];
+        // Annotation indexes are logical as well; the attribute is still
+        // STORED at the visual column, where the cell draws.
+        const BOOL annotated = [annotatedIndexes containsIndex:logicalIndex];
         const BOOL inUnderlinedRange = NSLocationInRange(logicalIndex, underlinedRange) || annotated;
 
 
@@ -1696,23 +1711,14 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
         iTermExternalAttribute *ea = eaIndex[logicalIndex];
         iTermURL *url = ea.url;
         NSString *complexString = line[logicalIndex].complexChar ? ScreenCharToStr(&line[logicalIndex]) : nil;
-        // Regional-indicator (flag) pairing. A flag is two adjacent regional-indicator
-        // cells (stored one per cell for wcwidth compatibility). Pair them greedily left
-        // to right, matching what CoreText does when the legacy renderer shapes the line
-        // as a single run: the opening cell shapes the flag and absorbs the closing cell,
-        // and the closing cell is suppressed. A trailing unpaired indicator (lone or odd
-        // run) stays drawable and renders its fallback glyph, exactly as in legacy.
-        const iTermRegionalIndicatorPairing regionalIndicator =
-            iTermRegionalIndicatorPairingForCell(line, logicalIndex, width, &pendingOpenRegionalIndicator);
-        const unichar regionalIndicatorSuccessor = regionalIndicator.joinWithNext ? regionalIndicator.successorCode : 0;
-        const BOOL characterIsDrawable = (!regionalIndicator.suppress &&
-                                          iTermTextDrawingHelperIsCharacterDrawable(&line[logicalIndex],
+        const BOOL characterIsDrawable = iTermTextDrawingHelperIsCharacterDrawable(&line[logicalIndex],
                                                                                    logicalIndex > 0 ? &line[logicalIndex - 1] : NULL,
                                                                                    line[logicalIndex].complexChar && (complexString != nil),
                                                                                    _configuration->_blinkingItemsVisible,
                                                                                    blinkAllowed,
                                                                                    NO /* preferSpeedToFullLigatureSupport */,
-                                                                                   url != nil));
+                                                                                   url != nil,
+                                                                                   useNativePowerlineGlyphs);
         const BOOL isBoxDrawingCharacter = (characterIsDrawable &&
                                             ((!line[logicalIndex].complexChar &&
                                               line[logicalIndex].code > 127 &&
@@ -1805,10 +1811,11 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                           line,
                                           isBoxDrawingCharacter,
                                           [self useThinStrokesWithAttributes:&attributes[visualX]],
-                                          regionalIndicatorSuccessor,
                                           bidiLUT,
                                           bidiLUTLength,
-                                          lineAttribute);
+                                          bidiInfo,
+                                          lineAttribute,
+                                          useNativePowerlineGlyphs);
         } else {
             iTermGlyphKeyEmitPlaceholder(buf, gk, logicalIndex, bidiLUT, bidiLUTLength);
         }
@@ -1936,23 +1943,35 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
     if (bidiInfo || _configuration->_renderInputs.ligaturesEnabled) {
         allAttributedStrings = [NSMutableArray array];
 
-        for (int i = 0; i < rles; i++) {
+        // On a bidi line, build the whole row in ONE call instead of one call
+        // per background-color run. Each call shapes its range independently,
+        // so per-run calls sever Arabic cursive joining wherever the background
+        // changes: a selection or SGR background split «کاملاً» into final and
+        // isolated letter forms on the Metal renderer. The colors the builder
+        // resolves depend on the background (minimum contrast, faint blending),
+        // but this path ignores them: glyph tinting is per cell from the
+        // attributes buffer. Only the shaping matters, so one representative
+        // background color is fine.
+        const int rleCountForStrings = (bidiInfo && rles > 0) ? 1 : rles;
+        for (int i = 0; i < rleCountForStrings; i++) {
             const iTermMetalBackgroundColorRLE *bgrle = &backgroundRLE[i];
             NSColor *bgColor = [NSColor colorWithDisplayP3Red:bgrle->color.x
                                                         green:bgrle->color.y
                                                          blue:bgrle->color.z
                                                         alpha:bgrle->color.w];
             iTermBackgroundColorRun run = {
-                .modelRange = NSMakeRange(bgrle->logicalOrigin, bgrle->count),
-                .visualRange = NSMakeRange(bgrle->origin, bgrle->count),
+                .modelRange = bidiInfo ? NSMakeRange(0, width) : NSMakeRange(bgrle->logicalOrigin, bgrle->count),
+                .visualRange = bidiInfo ? NSMakeRange(0, width) : NSMakeRange(bgrle->origin, bgrle->count),
                 .bgColor = line[bgrle->origin].backgroundColor,
                 .bgGreen = line[bgrle->origin].bgGreen,
                 .bgBlue = line[bgrle->origin].bgBlue,
                 .bgColorMode = line[bgrle->origin].backgroundColorMode,
-                .selected = [selectedIndexes containsIndex:bgrle->origin],
+                // selectedIndexes and findMatches are both logical; bgrle->origin
+                // is a visual column, so test bgrle->logicalOrigin for each.
+                .selected = [selectedIndexes containsIndex:bgrle->logicalOrigin],
                 .isMatch = (findMatches &&
                             !run.selected &&
-                            CheckFindMatchAtIndex(findMatches, bgrle->origin)),
+                            CheckFindMatchAtIndex(findMatches, bgrle->logicalOrigin)),
                 .beneathFaintText = line[bgrle->origin].faint
             };
             NSArray<id<iTermAttributedString>> *attributedStrings =
@@ -2366,10 +2385,8 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
         const unichar successor = glyphKey->payload.regular.combiningSuccessor;
         const BOOL currentIsSpacingMark = (glyphKey->payload.regular.isComplex &&
                                            ComplexCharCodeIsSpacingCombiningMark(glyphKey->payload.regular.code));
-        if ((ComplexCharCodeIsSpacingCombiningMark(successor) && !currentIsSpacingMark) ||
-            ComplexCharCodeIsRegionalIndicator(successor)) {
-            // Append the successor cell's glyph so CoreText shapes them together: a spacing
-            // combining mark over its base, or the closing regional indicator of a flag.
+        if (ComplexCharCodeIsSpacingCombiningMark(successor) && !currentIsSpacingMark) {
+            // Append the successor cell's spacing combining mark, provided it has a predecessor.
             NSString *successorString = CharToStr(successor, YES);
             string = [string stringByAppendingString:successorString];
         }

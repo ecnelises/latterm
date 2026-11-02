@@ -9,6 +9,15 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Fix RTL shaping, bracket mirroring, selection,
+  copying, find anchors, and accessibility.
+- Keep split-write flags and skin-tone emoji in
+  one two-column cell; compose Hangul correctly.
+- Prevent combining-mark buffer overflows and
+  invalid shaping beside images and box drawing.
+- Preserve each SGR color in a shaped word.
+- Avoid saving unchanged terminal grids while
+  preserving old saved-state compatibility.
 - Resize the profile inspector and copy full
   values; show colors as readable hex values.
 - Enlarge the snippet editor, translate escaping

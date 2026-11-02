@@ -104,6 +104,16 @@ NSString *const iTermDrawInCellIndexAttribute = @"iTermDrawInCellIndexAttribute"
     if ([attributes isEqualToDictionary:_attributes]) {
         return;
     }
+    if (self.length > 0) {
+        // Attributes are changing on a non-empty builder (a color-only merge on a
+        // bidi line, or adjacent image cells), so the string will carry more than
+        // one attribute run. A cheap string holds a single attributes dictionary,
+        // and -build's cheap snapshot shares _characterData, so characters
+        // appended after this change would take the earlier run's attributes
+        // (e.g., a mid-word SGR color change drew the whole word in the first
+        // color). Build a real attributed string instead.
+        _canUseFastPath = NO;
+    }
     [self build];
     _attributes = [attributes copy];
 }
@@ -190,6 +200,22 @@ NSString *const iTermDrawInCellIndexAttribute = @"iTermDrawInCellIndexAttribute"
 
     [self build];
     if ([_attributedString isKindOfClass:[NSAttributedString class]]) {
+        // A color-only attribute change appends a new run to the same string
+        // instead of starting a new one (so Arabic shaping survives a selection
+        // boundary). -build folds the per-character cell-index blobs and the
+        // source-columns range into the FINAL run's attributes only, but
+        // consumers read them at index 0, so spread them across the whole
+        // string. The blobs cover every character appended over the builder's
+        // lifetime, so full-range application is correct for merged runs too.
+        NSMutableAttributedString *mas = [NSMutableAttributedString castFrom:_attributedString];
+        if (mas.length > 0) {
+            const NSRange fullRange = NSMakeRange(0, mas.length);
+            if (temp[iTermSourceColumnsAttribute]) {
+                [mas addAttribute:iTermSourceColumnsAttribute value:temp[iTermSourceColumnsAttribute] range:fullRange];
+            }
+            [mas addAttribute:iTermSourceCellIndexAttribute value:temp[iTermSourceCellIndexAttribute] range:fullRange];
+            [mas addAttribute:iTermDrawInCellIndexAttribute value:temp[iTermDrawInCellIndexAttribute] range:fullRange];
+        }
         [_attributedString endEditing];
     }
     return _attributedString;
