@@ -166,10 +166,6 @@ static NSArray<NSString *> *gTerminalCachedCombinedAccountNames;
 }
 
 - (void)awakeFromNib {
-    [[NSDistributedNotificationCenter defaultCenter] addObserver:[self class]
-                                                        selector:@selector(staticScreenDidLock:)
-                                                            name:@"com.apple.screenIsLocked"
-                                                          object:nil];
     [[NSDistributedNotificationCenter defaultCenter] addObserver:self
                                                         selector:@selector(instanceScreenDidLock:)
                                                             name:@"com.apple.screenIsLocked"
@@ -1369,12 +1365,6 @@ static NSInteger const kDynamicMenuItemTag = 9999;
 }
 
 #pragma mark - Notifications
-
-+ (void)staticScreenDidLock:(NSNotification *)notification {
-    if ([iTermUserDefaults requireAuthenticationAfterScreenLocks]) {
-        [self.dataSourceProvider revokeAuthentication];
-    }
-}
 
 - (void)instanceScreenDidLock:(NSNotification *)notification {
     if (iTermSecureUserDefaults.instance.requireAuthToOpenPasswordManager &&

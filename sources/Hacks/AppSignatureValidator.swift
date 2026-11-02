@@ -63,4 +63,19 @@ class AppSignatureValidator: NSObject {
         alert.alertStyle = .critical
         alert.runModal()
     }
+    // Do not continue with missing required resources or report installation damage as a crash.
+    @objc static func warnAndExit(reason: String) -> Never {
+        RLog("Exiting because the app is damaged: \(reason)")
+        if Thread.isMainThread {
+            warn(reason: reason)
+            exit(1)
+        }
+        DispatchQueue.main.async {
+            warn(reason: reason)
+            exit(1)
+        }
+        let semaphore = DispatchSemaphore(value: 0)
+        while true { semaphore.wait() }
+    }
+
 }

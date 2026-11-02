@@ -39,7 +39,11 @@ class PasswordManagerDataSourceProvider: NSObject {
         static let defaultValue = DataSource.keychain
     }
 
-    override init() {
+    private let requiresAuthenticationAfterScreenLock: () -> Bool
+
+    init(screenLockNotificationCenter: NotificationCenter = DistributedNotificationCenter.default(),
+         requiresAuthenticationAfterScreenLock: @escaping () -> Bool = { iTermUserDefaults.requireAuthenticationAfterScreenLocks }) {
+        self.requiresAuthenticationAfterScreenLock = requiresAuthenticationAfterScreenLock
         _keychain = KeychainPasswordDataSource()
         _onePassword = OnePasswordDataSource()
         _lastPass = LastPassDataSource()
@@ -64,6 +68,20 @@ class PasswordManagerDataSourceProvider: NSObject {
         super.init()
 
         dataSourceType = preferredDataSource
+        screenLockNotificationCenter.addObserver(self,
+                                                 selector: #selector(screenDidLock(_:)),
+                                                 name: NSNotification.Name("com.apple.screenIsLocked"),
+                                                 object: nil)
+    }
+
+    @objc private func screenDidLock(_ notification: Notification) {
+        guard requiresAuthenticationAfterScreenLock() else { return }
+        DLog("Screen locked. Revoke password manager authentication")
+        revokeAuthentication()
+    }
+
+    func markAuthenticatedForTesting() {
+        authenticated = true
     }
 
     var preferredDataSource: DataSource {

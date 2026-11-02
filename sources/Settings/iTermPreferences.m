@@ -343,6 +343,19 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
 
         // See https://github.com/ghostty-org/ghostty/pull/8625/files
         @"NSAutoFillHeuristicControllerEnabled": @NO,
+
+        // Turn off “Add period with double-space”. NSTextInputContext reads the text before the
+        // cursor and replaces a space with “. ” when you press space again. In vim the period
+        // repeats the last command. Issue 13123.
+        @"NSAutomaticPeriodSubstitutionEnabled": @NO,
+
+        // The text input system can see the text before the cursor, so it could apply these to
+        // the terminal too. None of them belong there. Text replacement stays on because it's
+        // useful in text views, and the terminal implements it separately.
+        @"NSAutomaticSpellingCorrectionEnabled": @NO,
+        @"NSAutomaticCapitalizationEnabled": @NO,
+        @"NSAutomaticQuoteSubstitutionEnabled": @NO,
+        @"NSAutomaticDashSubstitutionEnabled": @NO,
     };
 }
 

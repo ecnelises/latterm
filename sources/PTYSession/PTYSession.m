@@ -3124,6 +3124,10 @@ ITERM_WEAKLY_REFERENCEABLE
 // Return YES to accept it.
 - (BOOL)checkForSusLocale:(NSString *)lang guid:(NSString *)guid {
     if (lang && self.encoding == NSUTF8StringEncoding && ![lang containsString:@"UTF-8"]) {
+        NSWindow *sheetParent = [iTermLocalePrompt sheetParentForWindow:self.view.window];
+        if (!sheetParent) {
+            [NSApp activateIgnoringOtherApps:YES];
+        }
         const iTermWarningSelection selection =
         [iTermWarning showWarningWithTitle:@"Warning! This profile uses a custom locale that doesn't use UTF-8 as its character encoding, but your profile *is* using UTF-8. This can cause error messages and non-ASCII text to appear wrong."
                                    actions:@[ @"Change Locale", @"Keep This Locale"]
@@ -3131,7 +3135,7 @@ ITERM_WEAKLY_REFERENCEABLE
                                 identifier:[@"NoSyncUTF8Mismatch_" stringByAppendingString:guid ?: @""]
                                silenceable:kiTermWarningTypePermanentlySilenceable
                                    heading:@"Wrong Encoding Detected"
-                                    window:self.view.window];
+                                    window:sheetParent];
         if (selection == kiTermWarningSelection1) {
             return YES;
         }

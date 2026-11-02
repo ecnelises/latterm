@@ -25,10 +25,12 @@ class iTermLocaleGuesser: NSObject {
     struct Config {
         private static var lowerCaseEncodings: [String: Bool] = {
             guard let plistFile = Bundle(for: iTermLocaleGuesser.self).path(forResource: "EncodingsWithLowerCase", ofType: "plist") else {
-                AppSignatureValidator.warn(reason: "While loading the list of known encodings")
-                it_fatalError("bundle damaged")
+                AppSignatureValidator.warnAndExit(reason: "While loading the list of known encodings")
             }
-            return NSDictionary(contentsOfFile: plistFile) as? [String: Bool] ?? [:]
+            guard let encodings = NSDictionary(contentsOfFile: plistFile) as? [String: Bool] else {
+                AppSignatureValidator.warnAndExit(reason: "While loading the list of known encodings")
+            }
+            return encodings
         }()
 
         var fallbackLCCType: String?

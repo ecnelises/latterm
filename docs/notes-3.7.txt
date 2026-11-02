@@ -9,6 +9,14 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Stop CLI clients from relaunching a quitting app.
+- Prevent macOS text substitutions from changing
+  terminal keystrokes, including double spaces.
+- Use an Archives folder when none is configured.
+- Revoke password authentication on screen lock
+  even if its window has not opened.
+- Show locale prompts for hidden hotkey windows.
+- Report damaged app resources without crashing.
 - Keep Python-created windows and tabs selected.
 - Preserve manual tab titles and update tmux
   title decoration without waiting for output.

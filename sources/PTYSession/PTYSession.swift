@@ -509,8 +509,10 @@ extension PTYSession {
 @objc
 extension PTYSession {
     func saveArchive() {
-        guard let destination = iTermProfilePreferences.string(forKey: KEY_ARCHIVEDIR, inProfile: justProfile) else {
-            RLog("No archive dir in profile")
+        let configured = (iTermProfilePreferences.string(forKey: KEY_ARCHIVEDIR, inProfile: justProfile) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let destination = configured.isEmpty ? FileManager.default.it_defaultArchiveDirectory() : (configured as NSString).expandingTildeInPath else {
+            RLog("No archive dir")
             return
         }
         let term = delegate?.realParentWindow() as? PseudoTerminal
