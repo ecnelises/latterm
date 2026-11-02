@@ -1,3 +1,6 @@
+Use the relay-list mirror when its primary fails.
+Preserve network errors during relay resolution.
+
 iTerm2 Buddy (Companion App) Release Notes
 
 Bug Fixes:

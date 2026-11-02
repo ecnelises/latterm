@@ -155,8 +155,8 @@ final class VT100ConductorAbruptEndTests: XCTestCase {
     func testEndSSHInRecoveryModeUnhooks() {
         let parser = VT100Parser()
         parser.encoding = String.Encoding.utf8.rawValue
-        let tree: NSDictionary = [NSNumber(value: 100): ["dcs-id", NSDictionary()] as NSArray]
-        _ = parser.startConductorRecoveryMode(withID: "dcs-id", tree: tree as! [AnyHashable: Any])
+        let tree: [AnyHashable: Any] = [NSNumber(value: 100): ["dcs-id", NSDictionary()] as NSArray]
+        _ = parser.startConductorRecoveryMode(withID: "dcs-id", tree: tree)
         let tokens = parse(endSSH(clientUniqueID) + Array("local% ".utf8), parser: parser)
         assertUnhookedAndEnded(tokens, localText: "local% ")
     }

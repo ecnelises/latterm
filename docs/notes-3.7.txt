@@ -9,6 +9,8 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Use a relay-list mirror if its server is down,
+  with detailed pairing and reconnect errors.
 - Fix Settings panel focus and locale appearance.
 - Mark the active workgroup in its menu.
 - Align Tahoe tabs in titled special windows.

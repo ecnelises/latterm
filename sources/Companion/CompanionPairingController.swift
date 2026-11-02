@@ -241,7 +241,7 @@ final class CompanionPairingController: NSObject {
 
     // Set by the window controller; all invoked on the main actor.
     var onPaired: (@MainActor () -> Void)?
-    var onFailed: (@MainActor (String) -> Void)?
+    var onFailed: (@MainActor (_ message: String, _ details: String?) -> Void)?
     var onDisconnect: (@MainActor () -> Void)?
     var onStatus: (@MainActor (String) -> Void)?
     /// A fresh pairing finished its handshake and needs the user to type the
@@ -867,7 +867,7 @@ final class CompanionPairingController: NSObject {
             onPairingCodeChanged?(code)
         } catch {
             RLog("Companion: could not regenerate pairing code: \(error)")
-            onFailed?(Self.userFacingDescription(of: error))
+            reportFailure(error)
         }
     }
 
@@ -1251,7 +1251,7 @@ final class CompanionPairingController: NSObject {
     private func parkSetupDidFail(_ error: Error, what: String) {
         if freshPairingActive, bridge == nil {
             relayLog("parkAndAccept: fresh-pairing \(what) failed: \(error); surfacing and regenerating")
-            onFailed?(Self.userFacingDescription(of: error))
+            reportFailure(error)
             scheduleFreshPairingRegeneration(reason: "\(what)-failed")
         } else {
             relayLog("parkAndAccept: \(what) failed: \(error); scheduling retry")
@@ -1389,7 +1389,7 @@ final class CompanionPairingController: NSObject {
                         // "Waiting for your iPhone…" up.
                         onStatus?("Reconnecting to the relay…")
                     } else {
-                        onFailed?(Self.userFacingDescription(of: error))
+                        reportFailure(error)
                     }
                     scheduleFreshPairingRegeneration(reason: "park-closed")
                     return
@@ -1439,7 +1439,7 @@ final class CompanionPairingController: NSObject {
                 // dark. A closed park is routine churn, so retry quietly and
                 // surface only real faults (e.g. a connection/DNS failure).
                 if !routineClose {
-                    onFailed?(Self.userFacingDescription(of: error))
+                    reportFailure(error)
                 }
                 scheduleListenerRetry()
                 return
@@ -1737,7 +1737,7 @@ final class CompanionPairingController: NSObject {
             notifyPresenceChanged()
         case .fault(let error):
             RLog("Companion reconnect failed: \(error)")
-            onFailed?(Self.userFacingDescription(of: error))
+            reportFailure(error)
         case .stopped(let reason):
             guard reason == .notEligible else { return }
             relayLog("supervisor stopped: parking is no longer allowed")
@@ -1745,6 +1745,27 @@ final class CompanionPairingController: NSObject {
             relayConnectedSince = nil
             notifyPresenceChanged()
         }
+    }
+
+    private func reportFailure(_ error: Error) {
+        let message: String
+        let details: String?
+        if let fetchError = error as? ShardMapFetchError {
+            message = fetchError.isNetworkFailure
+                ? "Couldn’t get the list of relay servers. Try another network or a VPN."
+                : "Couldn’t get the list of relay servers."
+            details = "\(fetchError.summary)\n\n\(fetchError.details)"
+        } else if let transport = error as? TransportError {
+            message = transport.summary
+            details = transport.details
+        } else {
+            message = Self.userFacingDescription(of: error)
+            details = nil
+        }
+        if let details {
+            RLog("Companion: pairing failed: \(message)\n\(details)")
+        }
+        onFailed?(message, details)
     }
 
     /// Convert transport errors into actionable text.
