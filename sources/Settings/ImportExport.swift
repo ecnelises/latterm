@@ -405,7 +405,7 @@ private struct ImportExportConfig {
         Entity(key: "dot-iterm2",
                displayName: "~/.iterm2",
                flavor: .folder(Path(baseDirectory: .home, relativePath: ".iterm2"),
-                               exclude: Set(["AppSupport", "iTermServer-*", "sockets", "Scripts"]))),
+                               exclude: Set(["AppSupport", "iTermServer-*", "it2", "sockets", "Scripts"]))),
         Entity(key: "app-support",
                displayName: "Application Support",
                flavor: .folder(Path(baseDirectory: .applicationSupport, relativePath: nil),
@@ -895,10 +895,20 @@ extension NSApplication {
         let pid = ProcessInfo().processIdentifier
         let pathToSelf = Bundle.main.bundlePath
         let quotedPathToSelf = pathToSelf.withEscapedShellCharacters(includingNewlines: true) as String
+        // Preserve -suite so the relaunched instance uses the same defaults domain. -n forces a
+        // new instance, since open ignores --args when it finds a running copy to activate.
+        let openCommand: String
+        if let suiteName = iTermUserDefaults.customSuiteName() {
+            let quotedSuiteName = suiteName.withEscapedShellCharacters(includingNewlines: true) as String
+            openCommand = "/usr/bin/open -n \(quotedPathToSelf) --args -suite \(quotedSuiteName)"
+        } else {
+            openCommand = "/usr/bin/open \(quotedPathToSelf)"
+        }
+        DLog("Relaunch with: \(openCommand)")
         let script = ["while /bin/kill -0 \(pid) >&/dev/null",
                       "do /bin/sleep 0.1",
                       "done",
-                      "/usr/bin/open \(quotedPathToSelf)"].joined(separator: ";")
+                      openCommand].joined(separator: ";")
         Process.launchedProcess(launchPath: "/bin/sh", arguments: ["-c", "(" + script + ")&"])
         exit(0)
     }
@@ -908,7 +918,7 @@ private struct SecureUserDefaultsImporterExporter {
     private let filename = "SecureUserDefaults.plist"
     func export(to destination: URL) throws {
         DLog("Begin")
-        let dictionary = SecureUserDefaults.instance.serializeAll()
+        let dictionary = SecureUserDefaults.serializeAll()
         try dictionary.saveAsPropertyList(to: destination.appendingPathComponent(filename))
     }
 
@@ -937,7 +947,7 @@ private struct SecureUserDefaultsImporterExporter {
     }
 
     private func reallyPerformImport(_ dict: [String: String]) {
-        SecureUserDefaults.instance.deserializeAll(dict: dict)
+        SecureUserDefaults.deserializeAll(dict: dict)
     }
 
     func erase(action: EraseAction) {
@@ -1154,6 +1164,21 @@ fileprivate extension Dictionary {
 }
 
 extension FileManager {
+    // Sockets, FIFOs, and devices can't be copied, and they are runtime state rather than data
+    // (for example, the sockets it2 over SSH creates in ~/.iterm2/it2), so copies skip them.
+    // Symbolic links are not special; they are copied as links.
+    private func isSpecialFile(_ url: URL) -> Bool {
+        guard let type = try? url.resourceValues(forKeys: [.fileResourceTypeKey]).fileResourceType else {
+            return false
+        }
+        switch type {
+        case .socket, .namedPipe, .characterSpecial, .blockSpecial:
+            return true
+        default:
+            return false
+        }
+    }
+
     func deepCopyContentsOfDirectory(source: URL,
                                      to destination: URL,
                                      excluding exclusions: Set<String>) throws {
@@ -1174,6 +1199,11 @@ extension FileManager {
             // Check if the file should be excluded based on the glob pattern
             if exclusions.contains(where: { fileName.matchesGlob($0) }) {
                 DLog("Skipping file: \(fileName)")
+                continue
+            }
+
+            if isSpecialFile(url) {
+                DLog("Skipping special file: \(url.path)")
                 continue
             }
 
@@ -1207,6 +1237,10 @@ extension FileManager {
         try? createDirectory(at: destinationURL, withIntermediateDirectories: true, attributes: nil)
         let contents = try contentsOfDirectory(at: sourceURL, includingPropertiesForKeys: nil, options: [])
         for item in contents {
+            if isSpecialFile(item) {
+                DLog("Skipping special file: \(item.path)")
+                continue
+            }
             let destinationItemURL = destinationURL.appendingPathComponent(item.lastPathComponent)
             var isDirectory: ObjCBool = false
             guard fileExists(atPath: item.path, isDirectory: &isDirectory) else {

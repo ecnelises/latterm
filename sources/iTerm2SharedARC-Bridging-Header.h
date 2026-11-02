@@ -4,6 +4,8 @@
 
 #import "ContextMenuActionPrefsController.h"
 #import "DebugLogging.h"
+#import "iTermTermkeyKeyMapper.h"
+#import "iTermSemanticHistoryPrefsController.h"
 #import "DVRBuffer.h"
 #import "FMDatabase.h"
 #import "NSHost+iTerm.h"
@@ -123,6 +125,7 @@
 #import "iTermInProcessIt2.h"
 #import "iTermScriptExporter.h"
 #import "iTermScriptFunctionCall.h"
+#import "iTermScriptConsole.h"
 #import "iTermScriptHistory.h"
 #import "iTermScriptImporter.h"
 #import "iTermSecureKeyboardEntryController.h"

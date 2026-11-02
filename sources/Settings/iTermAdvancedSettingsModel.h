@@ -513,6 +513,7 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (double)updateScreenParamsDelay;
 + (BOOL)useCustomTabBarFontSize;
 + (BOOL)useDoubleClickDelayForCommandSelection;
++ (BOOL)usePosixSpawn;
 + (BOOL)useRestorableStateController;
 + (BOOL)useSequoiaStyleTabs;
 + (BOOL)useShortcutAccessoryViewController;

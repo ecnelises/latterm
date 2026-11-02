@@ -9,6 +9,28 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Fix Kitty alternate-key codes, Option-as-Meta,
+  IME commit handling, and old physical bindings.
+- Let Voice Control replace selected text safely.
+- Preserve app focus when leaving fullscreen and
+  reveal hotkey windows on the current Space.
+- Avoid crashes after closing accessible tabs,
+  stale pane splits, and composer link hovering.
+- Keep secure settings imports reentrant and
+  exclude live sockets from exported data.
+- Preserve the settings suite after import.
+- Use current-process servers for new sessions
+  and fix optional posix_spawn PATH lookup.
+- Open Xcode files with Command Line Tools active
+  and escape editor links for each editor.
+- Bound completed script history and release
+  finished observers without losing live scripts.
+- Avoid leaking outline disclosure buttons and
+  rebuilding unchanged snippets and toolbar views.
+- Keep per-window git colors and font styling.
+- Guard long-running histogram counters and
+  logging of malformed Unicode strings.
+- Fix API cell styles and notification callbacks.
 - Verify OSC 7 locality without DNS lookups and
   preserve remote paths during local polling.
 - Offer local paths when remote detection is

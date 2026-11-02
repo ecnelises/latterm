@@ -20723,12 +20723,13 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         ITMURL *url = [[[ITMURL alloc] init] autorelease];
         url.URL = ea.url.url.absoluteString;
         url.identifier = ea.url.identifier;
+        style.URL = url;
     }
     style.repeats = 1;
     return style;
 }
 
-- (NSString *)stringForLine:(const screen_char_t *)screenChars
++ (NSString *)stringForLine:(const screen_char_t *)screenChars
                      length:(int)length
                     eaIndex:(iTermExternalAttributeIndex *)eaIndex
                   cppsArray:(NSMutableArray<ITMCodePointsPerCell *> *)cppsArray
@@ -20760,6 +20761,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
             style = [PTYSession protoStyleForCharacter:screenChars[i] externalAttributes:eaIndex[i]];
         }
         prev = screenChars[i];
+        prevAttr = eaIndex[i];
 
         unichar c = screenChars[i].code;
         if (!screenChars[i].complexChar && c >= ITERM2_PRIVATE_BEGIN && c <= ITERM2_PRIVATE_END) {
@@ -20843,11 +20845,11 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     BOOL (^handleEol)(unichar, int, int) = ^BOOL(unichar code, int numPreceedingNulls, int linenumber) {
         iTermExternalAttributeIndex *eaIndex = [_screen externalAttributeIndexForLine:linenumber];
         ITMLineContents *lineContents = [[[ITMLineContents alloc] init] autorelease];
-        lineContents.text = [self stringForLine:line + firstIndex
-                                         length:lastIndex - firstIndex
-                                        eaIndex:eaIndex
-                                      cppsArray:lineContents.codePointsPerCellArray
-                                    stylesArray:lineContents.styleArray];
+        lineContents.text = [PTYSession stringForLine:line + firstIndex
+                                               length:lastIndex - firstIndex
+                                              eaIndex:eaIndex
+                                            cppsArray:lineContents.codePointsPerCellArray
+                                          stylesArray:lineContents.styleArray];
         switch (code) {
             case EOL_HARD:
                 lineContents.continuation = ITMLineContents_Continuation_ContinuationHardEol;
