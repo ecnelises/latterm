@@ -202,6 +202,8 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 @property(nonatomic, readonly, nullable) iTermFindDriver *findDriver;
 @property(nonatomic, readonly, nullable) iTermFindDriver *findDriverCreatingIfNeeded;
 @property(nonatomic, readonly) NSSize internalDecorationSize;
+// Space reserved for the per-session toolbar, or zero when absent.
+@property(nonatomic, readonly) CGFloat toolbarReservedHeight;
 @property(nonatomic, readonly) iTermSessionViewFindDriver findDriverType;
 @property(nonatomic, weak, nullable) id<iTermSearchResultsMinimapViewDelegate> searchResultsMinimapViewDelegate NS_AVAILABLE_MAC(10_14);
 @property(nonatomic, strong, nullable) iTermImageWrapper *image;
@@ -261,6 +263,7 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
                        blend:(CGFloat)blend;
 
 + (double)titleHeight;
++ (CGFloat)toolbarHeight;
 + (NSDate*)lastResizeDate;
 + (void)windowDidResize;
 

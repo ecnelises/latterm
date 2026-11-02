@@ -2805,6 +2805,8 @@ ITERM_WEAKLY_REFERENCEABLE
                  forceEncoding:(BOOL)forceEncoding {
     for (PTYSession *aSession in [self broadcastSessions]) {
         if (![aSession isTmuxGateway]) {
+            // Broadcast input is the user typing into every one of these panes.
+            [aSession noteUserInput];
             [aSession writeTaskNoBroadcast:string encoding:optionalEncoding forceEncoding:forceEncoding reporting:NO];
         }
     }
@@ -5190,8 +5192,9 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
                     PSMTabPosition tabPosition = [iTermPreferences intForKey:kPreferenceKeyTabPosition];
 
                     if (lionFullScreen_ && _contentView.tabBarControlOnLoan) {
-                        topInset += 3;
-                        bottomInset -= 3;
+                        const CGFloat gap = topInset + bottomInset;
+                        topInset = gap / 2.0 - 0.5;
+                        bottomInset = gap / 2.0 + 0.5;
                     }
                     if (lionFullScreen_ && tabPosition == PSMTab_BottomTab) {
                         topInset += 4;
@@ -6452,7 +6455,13 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
              @(_contentView.tabBarControl.isHidden),
              @(_contentView.tabBarControl.alphaValue),
              NSStringFromRect(_contentView.tabBarControl.frame));
-        DLog(@"View hierarchy:\n%@", [_contentView.tabBarControl.window.contentView iterm_recursiveDescription]);
+        // Dump from the window's frame view (superview of the content view) rather than the
+        // content view itself. When the window is not in Lion fullscreen the tab bar lives in the
+        // titlebar as an NSTitlebarAccessoryClipView, which is a sibling of the content view and is
+        // therefore invisible to a content-view-rooted dump. Issue: tab bar squished after exiting
+        // fullscreen.
+        NSView *frameView = _contentView.tabBarControl.window.contentView.superview ?: _contentView.tabBarControl.window.contentView;
+        DLog(@"View hierarchy:\n%@", [frameView iterm_recursiveDescription]);
 
         [_titlebarAccessoryNanny add:viewController];
         const BOOL minHeightChanged = [_titlebarAccessoryNanny updateViewController:viewController
@@ -6465,6 +6474,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
             __weak __typeof(self) weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 [weakSelf repositionWidgets];
+                [weakSelf notifyTmuxOfWindowResize];
             });
         }
     } else if (_contentView.tabBarControlOnLoan) {
@@ -7435,6 +7445,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         DLog(@"View hierarchy after tab count change:\n%@", [_contentView.tabBarControl.window.contentView iterm_recursiveDescription]);
 
         [self repositionWidgets];
+        [self notifyTmuxOfWindowResize];
         if (wasDraggedFromAnotherWindow_) {
             wasDraggedFromAnotherWindow_ = NO;
             [firstTab setReportIdealSizeAsCurrent:NO];
@@ -7553,7 +7564,9 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
    }
 
     // add tasks
-    item = [[[NSMenuItem alloc] initWithTitle:@"New Tab to the Right"
+    const PSMTabPosition tabPosition = [iTermPreferences intForKey:kPreferenceKeyTabPosition];
+    NSString *newTabTitle = (tabPosition == PSMTab_LeftTab || tabPosition == PSMTab_RightTab) ? @"New Tab Below" : @"New Tab to the Right";
+    item = [[[NSMenuItem alloc] initWithTitle:newTabTitle
                                        action:@selector(newTabToTheRight:)
                                 keyEquivalent:@""] autorelease];
     [item setRepresentedObject:tabViewItem];

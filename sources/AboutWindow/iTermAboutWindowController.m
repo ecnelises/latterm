@@ -269,7 +269,9 @@ static const CGFloat kSponsorRowY = 170.0;
 
     NSRect rect = _patronsTextView.enclosingScrollView.frame;
     [_patronsTextView sizeToFit];
-    const CGFloat desiredHeight = [_patronsTextView.textStorage heightForWidth:rect.size.width];
+    const NSSize textInset = _patronsTextView.textContainerInset;
+    const CGFloat textWidth = rect.size.width - 2 * textInset.width;
+    const CGFloat desiredHeight = [_patronsTextView.textStorage heightForWidth:textWidth] + 2 * textInset.height;
     CGFloat diff = desiredHeight - rect.size.height;
     rect.size.height = desiredHeight;
     rect.origin.y -= diff;

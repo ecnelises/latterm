@@ -1679,3 +1679,5 @@
 "Override the machine identity used for OSC 7 localhost detection.\nLeave empty to use this boot’s real identity. Intended for testing." = "覆盖用于 OSC 7 本机识别的机器标识。\n留空以使用本次启动的真实标识。仅用于测试。";
 
 "Use posix_spawn instead of fork and exec to launch sessions?\nThis avoids a slow file-descriptor-closing step without changing permission attribution. Restart iTermServer after changing this setting." = "使用 posix_spawn 代替 fork 和 exec 启动会话？\n避免缓慢的文件描述符关闭步骤，不改变权限归属。修改后请重启 iTermServer。";
+
+"When animated cursor movement is enabled, only animate a movement that happens within this many seconds of your last keystroke or mouse action.\nThis keeps programs that redraw the screen on their own, like top, from drawing streaks across the screen. Raise it if you use a slow connection." = "启用光标移动动画时，仅在距上次按键或鼠标操作的指定秒数内播放动画。\n这可防止 top 等自动重绘程序在屏幕上产生拖影。连接较慢时可增大此值。";

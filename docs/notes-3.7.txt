@@ -9,6 +9,15 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Correct tmux pane sizes with border status rows
+  and per-session toolbars.
+- Send focus reports only when pane apps request
+  them, and resize tmux after tab bar changes.
+- Keep Tahoe tab insets correct after fullscreen.
+- Animate large cursor jumps only shortly after
+  user input, avoiding trails from idle redraws.
+- Use vertical tab menu wording and size About
+  credits with their text container insets.
 - Run password adapters with the user’s shell PATH.
 - Report Bitwarden failures accurately and stop
   retrying freshly rejected login sessions.

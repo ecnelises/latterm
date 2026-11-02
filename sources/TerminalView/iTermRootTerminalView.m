@@ -1386,7 +1386,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     } else if (!visible && !drawTitle) {
         // Keep the preferred width ready for when a hidden side tab bar appears.
         [self setLeftTabBarWidthFromPreferredWidth];
-        if ([_delegate iTermTabBarWindowIsFullScreen]) {
+        if ([_delegate iTermTabBarWindowIsFullScreen] || _tabBarControlOnLoan) {
             self.tabBarControl.insets = [self.delegate tabBarInsets];
         }
     }
