@@ -34,8 +34,6 @@
 @class iTermExpect;
 @class iTermFindCursorView;
 @class iTermFindOnPageHelper;
-@class iTermFocusFollowsMouse;
-@protocol iTermFocusFollowsMouseFocusReceiver;
 @class iTermFontTable;
 @class iTermImageWrapper;
 @protocol iTermPathMarkReading;
@@ -585,8 +583,6 @@ typedef void (^PTYTextViewDrawingHookBlock)(iTermTextDrawingHelper *);
 
 // nil if no color is extended into the margins, otherwise the color.
 @property (nonatomic, readonly) NSColor *colorForMargins;
-
-@property (nonatomic, readonly) iTermFocusFollowsMouse *focusFollowsMouse;
 
 // Returns the size of a cell for a given font. hspace and vspace are multipliers and the width
 // and height.

@@ -15631,11 +15631,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         return;
     }
     [_delegate setActiveSession:self];
-    [self.delegate sessionDisableFocusFollowsMouseAtCurrentLocation];
-}
-
-- (void)refuseFirstResponderAtCurrentMouseLocation {
-    [self.textview refuseFirstResponderAtCurrentMouseLocation];
+    [[iTermPaneFocusFollowsMouse shared] freeze];
 }
 
 // Switch the workgroup peer switcher to show this session in the pane it
@@ -19663,6 +19659,18 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)sessionViewMouseMoved:(NSEvent *)event {
     [_textview mouseMoved:event];
+}
+
+- (NSView *)sessionViewFocusFollowsMouseMainResponder {
+    return self.mainResponder;
+}
+
+- (void)sessionViewFocusFollowsMouseActivateSession {
+    [self textViewDidBecomeFirstResponder];
+}
+
+- (void)sessionViewFocusFollowsMouseStolenKeyFocusDidChange {
+    [_textview requestDelegateRedraw];
 }
 
 - (void)sessionViewRightMouseDown:(NSEvent *)event {

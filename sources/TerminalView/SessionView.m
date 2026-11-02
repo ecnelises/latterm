@@ -1365,13 +1365,18 @@ typedef struct {
     NSTrackingAreaOptions options;
 } iTermTrackingAreaSpec;
 
+- (NSRect)leftMarginTrackingRect {
+    return NSMakeRect(0, 0, [iTermPreferences sideMargins], self.bounds.size.height);
+}
+
 // specs points at space for SessionViewNumberOfTrackingAreas values.
 - (void)getDesiredTrackingRectFrames:(iTermTrackingAreaSpec *)specs {
     NSTrackingAreaOptions trackingOptions;
     trackingOptions = (NSTrackingMouseEnteredAndExited |
                        NSTrackingActiveAlways |
                        NSTrackingEnabledDuringMouseDrag);
-    if ([self.delegate sessionViewCaresAboutMouseMovement]) {
+    if ([self.delegate sessionViewCaresAboutMouseMovement] ||
+        [[iTermPaneFocusFollowsMouse shared] wantsPointerMovementFor:self]) {
         DLog(@"Track mouse moved events");
         trackingOptions |= NSTrackingMouseMoved;
     } else {
@@ -1388,84 +1393,23 @@ typedef struct {
         },
         // This one is because command marks and fold buttons are in the left margin.
         {
-            .rect = NSMakeRect(0, 0, [iTermPreferences sideMargins], self.bounds.size.height),
+            .rect = [self leftMarginTrackingRect],
             .options = NSTrackingActiveInActiveApp | NSTrackingMouseMoved
         }
     };
     memmove(specs, value, sizeof(value));
 }
 
-typedef NS_ENUM(NSInteger, SessionViewTrackingMode) {
-    // Track the terminal. Handle enter and exit normally.
-    SessionViewTrackingModeNormal,
-
-    // Track the first responder. Resume normal mode on exit.
-    SessionViewTrackingModeTrackFirstResponderFragile,
-
-    // Track the terminal. Resume normal mode on exit.
-    SessionViewTrackingModeTrackTerminalFragile
-};
-
 - (CGFloat)desiredRightExtra {
     return _delegate.desiredRightExtra;
-}
-
-- (SessionViewTrackingMode)desiredTrackingMode {
-    DLog(@"desiredTrackingMode %@", self);
-    if (![iTermPreferences boolForKey:kPreferenceKeyFocusFollowsMouse]) {
-        DLog(@"ffm off");
-        return SessionViewTrackingModeNormal;
-    }
-    NSView *firstResponderView = [NSView castFrom:self.window.firstResponder];
-    if ([firstResponderView it_isTerminalResponder]) {
-        DLog(@"mouse in terminal");
-        return SessionViewTrackingModeNormal;
-    }
-    // Walk firstResponderView up to the children of SessionView.
-    while (firstResponderView != nil && firstResponderView.superview != self) {
-        firstResponderView = firstResponderView.superview;
-    }
-    if (firstResponderView == nil) {
-        DLog(@"first responder not subview of SessionView");
-        return SessionViewTrackingModeNormal;
-    }
-    const BOOL firstResponderHasImmunity = [firstResponderView it_focusFollowsMouseImmune];
-    if (!firstResponderHasImmunity) {
-        DLog(@"Mouse in non-immune view %@", firstResponderView);
-        return SessionViewTrackingModeNormal;
-    }
-    const NSPoint mouseLocation = [self.window convertPointFromScreen:[NSEvent mouseLocation]];
-    const NSRect firstResponderRect = [firstResponderView convertRect:firstResponderView.bounds
-                                                               toView:nil];
-    const BOOL mouseInFirstResponder = NSPointInRect(mouseLocation, firstResponderRect);
-    NSView *hitTest = [self.window.contentView hitTest:[self.window.contentView convertPoint:mouseLocation fromView:nil]];
-    const BOOL mouseInTerminal = hitTest.it_isTerminalResponder;
-    if (mouseInTerminal) {
-        DLog(@"Mouse in terminal - no tracking");
-        // Mouse is in terminal while a subview of the terminal is first responder.
-        // Don't track any rects.
-        return SessionViewTrackingModeTrackTerminalFragile;
-    }
-    if (mouseInFirstResponder) {
-        DLog(@"Mouse in first responder %@ - track only first responder", firstResponderView);
-        // Mouse is in the subview of the terminal. Make terminal first responder when it exits.
-        return SessionViewTrackingModeTrackFirstResponderFragile;
-    }
-    DLog(@"Mouse in nothing - track normally");
-    // Mouse is neither in the terminal nor the subview. Behave normally.
-    return SessionViewTrackingModeNormal;
 }
 
 // It's very expensive for PTYTextView to own its own tracking events because its frame changes
 // constantly, plus it can miss mouse exit events and spurious mouse enter events (issue 3345).
 // I believe it also caused hangs (issue 3974).
 - (void)updateTrackingAreas {
-    [self updateTrackingAreasOnMouseExit:NO];
-}
-
-- (void)updateTrackingAreasOnMouseExit:(BOOL)onMouseExit {
     [super updateTrackingAreas];
-    if ([self window] && (onMouseExit || [self shouldUpdateTrackingAreas])) {
+    if ([self window] && [self shouldUpdateTrackingAreas]) {
         while (self.trackingAreas.count) {
             [self removeTrackingArea:self.trackingAreas[0]];
         }
@@ -1473,34 +1417,13 @@ typedef NS_ENUM(NSInteger, SessionViewTrackingMode) {
         iTermTrackingAreaSpec specs[SessionViewNumberOfTrackingAreas];
         [self getDesiredTrackingRectFrames:specs];
 
-        const SessionViewTrackingMode mode = onMouseExit ? SessionViewTrackingModeNormal : [self desiredTrackingMode];
-        switch (mode) {
-            case SessionViewTrackingModeTrackTerminalFragile:
-                DLog(@"falling through");
-            case SessionViewTrackingModeNormal:
-                DLog(@"Create tracking area for terminal");
-                for (NSInteger i = 0; i < SessionViewNumberOfTrackingAreas; i++) {
-                    NSTrackingArea *trackingArea = [[NSTrackingArea alloc] initWithRect:specs[i].rect
-                                                                                options:specs[i].options
-                                                                                  owner:self
-                                                                               userInfo:@{@"mode": @(mode)}];
-                    [self addTrackingArea:trackingArea];
-                }
-                break;
-            case SessionViewTrackingModeTrackFirstResponderFragile: {
-                DLog(@"Create tracking area for first responder view");
-                // Mouse is in find view and find view is first responder.
-                NSView *firstResponderView = [NSView castFrom:self.window.firstResponder];
-                const NSRect rect = [self convertRect:firstResponderView.bounds fromView:firstResponderView];
-                NSTrackingArea *trackingArea =
-                    [[NSTrackingArea alloc] initWithRect:rect
-                                                 options:(NSTrackingMouseEnteredAndExited |
-                                                          NSTrackingActiveAlways)
-                                                   owner:self
-                                                userInfo:@{@"mode": @(mode)}];
-                [self addTrackingArea:trackingArea];
-                break;
-            }
+        DLog(@"Create tracking areas");
+        for (NSInteger i = 0; i < SessionViewNumberOfTrackingAreas; i++) {
+            NSTrackingArea *trackingArea = [[NSTrackingArea alloc] initWithRect:specs[i].rect
+                                                                        options:specs[i].options
+                                                                          owner:self
+                                                                       userInfo:nil];
+            [self addTrackingArea:trackingArea];
         }
     }
 }
@@ -1532,37 +1455,24 @@ typedef NS_ENUM(NSInteger, SessionViewTrackingMode) {
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent {
-    DLog(@"mouseEntered %@", self);
-    switch ([theEvent.trackingArea.userInfo[@"mode"] unsignedIntegerValue]) {
-        case SessionViewTrackingModeTrackTerminalFragile:
-        case SessionViewTrackingModeTrackFirstResponderFragile:
-            DLog(@"Ignore");
-            return;
-        case SessionViewTrackingModeNormal:
-            break;
-    }
-    DLog(@"enter %@", theEvent.trackingArea);
+    [[iTermPaneFocusFollowsMouse shared] pointerMoved];
     [_delegate sessionViewMouseEntered:theEvent];
 }
 
 - (void)mouseExited:(NSEvent *)theEvent {
-    DLog(@"mouseExited %@", self);
-    switch ([theEvent.trackingArea.userInfo[@"mode"] unsignedIntegerValue]) {
-        case SessionViewTrackingModeTrackFirstResponderFragile:
-        case SessionViewTrackingModeTrackTerminalFragile:
-            DLog(@"Mouse exited with mode immune or none");
-            [self updateTrackingAreasOnMouseExit:YES];
-            [_delegate sessionViewMouseEntered:theEvent];
-            return;
-        case SessionViewTrackingModeNormal:
-            break;
-    }
-    DLog(@"exit %@", theEvent.trackingArea);
+    [[iTermPaneFocusFollowsMouse shared] pointerMoved];
     [_delegate sessionViewMouseExited:theEvent];
 }
 
 - (void)mouseMoved:(NSEvent *)theEvent {
-    DLog(@"Mouse moved %@", self);
+    iTermPaneFocusFollowsMouse *focus = [iTermPaneFocusFollowsMouse shared];
+    if ([focus wantsPointerMovementFor:self]) {
+        [focus pointerMoved];
+    }
+    if (![self.delegate sessionViewCaresAboutMouseMovement] &&
+        !NSPointInRect([self convertPoint:theEvent.locationInWindow fromView:nil], [self leftMarginTrackingRect])) {
+        return;
+    }
     [_delegate sessionViewMouseMoved:theEvent];
 }
 
@@ -2975,6 +2885,10 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (void)sessionNoteViewDidUpdateFrame:(iTermSessionNoteView *)view {
     // Model frame is updated by the view.
+}
+
+- (void)sessionNoteViewDidCollapseWithKeyboardFocus:(iTermSessionNoteView *)view {
+    [self.delegate sessionViewBecomeFirstResponder];
 }
 
 - (NSFont *)sessionNoteFont {

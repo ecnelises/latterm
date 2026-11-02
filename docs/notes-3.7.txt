@@ -9,6 +9,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Keep pane fields focused under a resting mouse.
+- Focus follows mouse remembers each pane’s field;
+  following fields within a pane is now optional.
 - Keep editors’ undo history safe when panes close.
 - Let hidden window buttons slide clear of content.
 - Keep Composer scroll position correct on resize.

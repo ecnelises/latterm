@@ -9244,7 +9244,7 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
            performSetup:(BOOL)performSetup {
     RLog(@"splitVertically:%@ before:%@ addingSession:%@ targetSession:%@ performSetup:%@ self=%@",
          @(isVertical), @(before), newSession, targetSession, @(performSetup), self);
-    [self.currentSession refuseFirstResponderAtCurrentMouseLocation];
+    [[iTermPaneFocusFollowsMouse shared] freeze];
     NSColor *tabColor;
     PTYTab *tab = [self tabForSession:targetSession] ?: [self currentTab];
     if (newSession.tabColor) {
