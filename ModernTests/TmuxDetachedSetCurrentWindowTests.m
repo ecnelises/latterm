@@ -26,6 +26,7 @@
 
 @interface TmuxController (TmuxDetachedSetCurrentWindowTests)
 - (void)didCreateWindowWithCommand:(NSString *)command;
+- (void)didGetCurrentWindow:(NSString *)response beforeSelectingWindow:(NSNumber *)windowId;
 @end
 
 @interface TmuxDetachedSetCurrentWindowTests : XCTestCase
@@ -62,6 +63,20 @@
 - (void)testSetCurrentWindowWhileAttachedSendsSelectWindow {
     [_controller setCurrentWindow:4];
     XCTAssertTrue([[self written] containsString:@"select-window -t @4"], @"%@", [self written]);
+}
+
+- (void)testSelectingAlreadyCurrentWindowDoesNotExpectNotification {
+    [_controller didGetCurrentWindow:@"@4\n" beforeSelectingWindow:@4];
+    XCTAssertEqual([[_controller valueForKey:@"ignoreWindowChangeNotificationCount"] integerValue], 0);
+}
+
+- (void)testSelectingDifferentWindowConsumesExactlyOneNotification {
+    [_controller didGetCurrentWindow:@"@3\n" beforeSelectingWindow:@4];
+    XCTAssertEqual([[_controller valueForKey:@"ignoreWindowChangeNotificationCount"] integerValue], 1);
+    [_controller activeWindowDidChangeTo:4];
+    XCTAssertEqual([[_controller valueForKey:@"ignoreWindowChangeNotificationCount"] integerValue], 0);
+    XCTAssertTrue([_controller windowIsCurrentInTmux:4]);
+    XCTAssertFalse([_controller windowIsCurrentInTmux:3]);
 }
 
 - (void)testSetCurrentWindowAfterDetachDoesNotThrow {

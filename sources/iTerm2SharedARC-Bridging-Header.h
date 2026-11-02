@@ -247,6 +247,7 @@
 #import "VT100TerminalDelegate.h"
 #import "TmuxGateway.h"
 #import "TmuxController.h"
+#import "TmuxWindowOpener.h"
 #import "charmaps.h"
 #import "SSKeychain.h"
 #import "ColorsMenuItemView.h"

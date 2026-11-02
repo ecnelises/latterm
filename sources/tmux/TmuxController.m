@@ -39,6 +39,7 @@
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
 #import "TmuxGateway.h"
+#import "TmuxLayoutParser.h"
 #import "TmuxWindowOpener.h"
 #import "TSVParser.h"
 
@@ -149,12 +150,18 @@ static NSString *const kAggressiveResize = @"aggressive-resize";
     BOOL ambiguousIsDoubleWidth_;
     NSMutableDictionary<NSNumber *, NSDictionary *> *_hotkeys;
     NSMutableSet<NSNumber *> *_paneIDs;  // existing pane IDs
+    // Remembers control sequences in output for panes about to get a session. See issue 13006.
+    iTermTmuxDroppedOutputTracker *_droppedOutputTracker;
     NSMutableDictionary<NSNumber *, NSString *> *_tabColors;
 
     // Have we guessed the server version? Don't try to open windows until this is true, because
     // window opening is version-dependent (to avoid triggering bugs in tmux 1.8).
     BOOL _versionKnown;
     BOOL _wantsOpenWindowsInitial;
+    // Window opens requested before the version was known, from the tmux dashboard, the API
+    // (iTermAPIHelper) or a buried session being restored. Replayed by didGuessVersion, dropped by
+    // detach.
+    NSMutableArray<void (^)(void)> *_windowOpensAwaitingVersion;
 
     // Maps a window id string to a dictionary of window flags defined by TmuxWindowOpener (see the
     // top of its header file)
@@ -168,6 +175,8 @@ static NSString *const kAggressiveResize = @"aggressive-resize";
     BOOL _hasStatusBar;
     BOOL _focusEvents;
     int _currentWindowID;  // -1 if undefined
+    // Current window last reported by tmux, including notifications we ignore.
+    int _tmuxCurrentWindowID;
     // Pane -> (Key -> Value)
     NSMutableDictionary<NSNumber *, NSMutableDictionary<NSString *, NSString *> *> *_userVars;
     NSMutableDictionary<NSNumber *, void (^)(PTYSession<iTermTmuxControllerSession> *)> *_when;
@@ -202,8 +211,9 @@ static NSString *const kAggressiveResize = @"aggressive-resize";
     // If we don't tell tmux to change the active window or pane in response to its notification
     // we'll eventually catch up to its current state and remain stable.
     NSInteger _suppressActivityChanges;
-    // Number of window-change notifications to ignore. Incremented when we send select-window,
-    // decremented when we receive a session-window-changed notification. This prevents the UI
+    // Number of window-change notifications to ignore. Incremented when a select-window we sent
+    // will change tmux's current window (see -setCurrentWindow:), decremented when we receive a
+    // session-window-changed notification. This prevents the UI
     // from flickering when quickly switching tabs (e.g., cmd-2 then cmd-3) by ignoring the
     // stale notifications that arrive after the UI has already moved on.
     NSInteger _ignoreWindowChangeNotificationCount;
@@ -259,6 +269,7 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 
         gateway_ = gateway;
         _paneIDs = [[NSMutableSet alloc] init];
+        _droppedOutputTracker = [[iTermTmuxDroppedOutputTracker alloc] init];
         windowPanes_ = [[NSMutableDictionary alloc] init];
         _windowStates = [[NSMutableDictionary alloc] init];
         windowPositions_ = [[NSMutableDictionary alloc] init];
@@ -270,7 +281,9 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
         self.clientName = [[TmuxControllerRegistry sharedInstance] uniqueClientNameBasedOn:clientName];
         _windowOpenerOptions = [[NSMutableDictionary alloc] init];
         _pendingWindows = [[NSMutableDictionary alloc] init];
+        _windowOpensAwaitingVersion = [[NSMutableArray alloc] init];
         _currentWindowID = -1;
+        _tmuxCurrentWindowID = -1;
         _userVars = [[NSMutableDictionary alloc] init];
         _when = [[NSMutableDictionary alloc] init];
         [[TmuxControllerRegistry sharedInstance] setController:self forClient:_clientName];
@@ -493,6 +506,7 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
     self.sessionName = newSessionName;
     sessionId_ = sessionid;
     _paneToActivateWhenCreated = -1;
+    _tmuxCurrentWindowID = -1;
     _detaching = YES;
     [self closeAllPanes];
     _detaching = NO;
@@ -568,6 +582,7 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
     for (NSArray *record in doc.records) {
         DLog(@"Consider record %@", record);
         const int wid = [self windowIdFromString:[doc valueInRecord:record forField:@"window_id"]];
+        [self didLearnLayout:[doc valueInRecord:record forField:@"window_layout"] forWindow:wid];
         if (hiddenWindows_ && [hiddenWindows_ containsObject:[NSNumber numberWithInt:wid]]) {
             DLog(@"Don't open window %d because it was saved hidden.", wid);
             haveHidden = YES;
@@ -828,6 +843,7 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
     if (tab) {
         [self retainWindow:window withTab:tab];
         [windowPanes_ setObject:aSession forKey:[self _keyForWindowPane:windowPane]];
+        [_droppedOutputTracker forgetPane:windowPane];
         void (^call)(PTYSession<iTermTmuxControllerSession> *) = _when[@(windowPane)];
         if (call) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -850,6 +866,44 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
         [windowPanes_ removeObjectForKey:key];
         [_when removeObjectForKey:@(windowPane)];
     }
+}
+
+- (void)didDropOutput:(NSData *)data forPane:(int)wp {
+    [_droppedOutputTracker didDropOutput:data pane:wp];
+}
+
+- (NSArray<VT100Token *> *)takeDeferredTokensForPane:(int)wp {
+    NSArray<VT100Token *> *tokens = [_droppedOutputTracker takeTokensForPane:wp];
+    // The session these are for doesn't have a tmux controller when it executes them, and it
+    // copies its user variables from here once it gets one. Apply them now so they win over the
+    // @uservars fetched while opening, and so they're saved in tmux.
+    for (VT100Token *token in tokens) {
+        if (token.type != XTERMCC_SET_KVP || ![token.kvpKey isEqualToString:@"SetUserVar"]) {
+            continue;
+        }
+        iTermUserVariableAssignment *assignment = [[iTermUserVariableAssignment alloc] initWithPayload:token.kvpValue ?: @""];
+        if (assignment) {
+            [self setUserVariableWithKey:assignment.name value:assignment.value pane:wp];
+        }
+    }
+    return tokens;
+}
+
+- (void)willOpenPane:(int)wp {
+    [_droppedOutputTracker willOpenPane:wp];
+}
+
+- (void)didFinishOpeningPanes:(NSArray<NSNumber *> *)panes {
+    [_droppedOutputTracker didFinishOpeningPanes:panes];
+}
+
+- (void)didLearnLayout:(NSString *)layout forWindow:(int)windowId {
+    NSMutableDictionary *parseTree = [[TmuxLayoutParser sharedInstance] parsedLayoutFromString:layout];
+    if (!parseTree) {
+        return;
+    }
+    [_droppedOutputTracker didLearnPanes:[[TmuxLayoutParser sharedInstance] windowPanesInParseTree:parseTree]
+                                  window:windowId];
 }
 
 - (void)whenPaneRegistered:(int)wp call:(void (^)(PTYSession<iTermTmuxControllerSession> *))block {
@@ -898,12 +952,14 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
     [_setClipboardMonitor invalidate];
     _setClipboardMonitor = nil;
     detached_ = YES;
+    [_windowOpensAwaitingVersion removeAllObjects];
     [self closeAllPanes];
     gateway_ = nil;
     [_when enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, void (^ _Nonnull obj)(PTYSession<iTermTmuxControllerSession> *), BOOL * _Nonnull stop) {
         obj(nil);
     }];
     [_when removeAllObjects];
+    [_droppedOutputTracker reset];
     [[NSNotificationCenter defaultCenter] postNotificationName:kTmuxControllerDetachedNotification
                                                         object:self];
     [[TmuxControllerRegistry sharedInstance] setController:nil
@@ -1663,9 +1719,15 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
     [self loadServerPID];
     [self loadTitleFormat];
     _versionKnown = YES;
+    [gateway_.delegate tmuxServerMayOmitEndGuardBeforeExit:[gateway_ serverMayOmitEndGuardBeforeExit]];
     if (_wantsOpenWindowsInitial) {
         _wantsOpenWindowsInitial = NO;
         [self openWindowsInitial];
+    }
+    NSArray<void (^)(void)> *deferredOpens = [_windowOpensAwaitingVersion copy];
+    [_windowOpensAwaitingVersion removeAllObjects];
+    for (void (^open)(void) in deferredOpens) {
+        open();
     }
 }
 
@@ -2410,6 +2472,22 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
               affinities:(NSArray *)affinities
              intentional:(BOOL)intentional
                  profile:(Profile *)profile {
+    if (!_versionKnown) {
+        // Opening a window captures its panes, and the parser only handles a capture safely once
+        // didGuessVersion has told it what the server is (see VT100TmuxParser). A %window-add
+        // cannot arrive this early because notifications are not accepted until the initial
+        // windows open, but the tmux dashboard, the API and buried-session restoration can all
+        // ask for a window before then.
+        DLog(@"Defer opening window %d until the version is known", windowId);
+        __weak __typeof(self) weakSelf = self;
+        [_windowOpensAwaitingVersion addObject:^{
+            [weakSelf openWindowWithId:windowId
+                            affinities:affinities
+                           intentional:intentional
+                               profile:profile];
+        }];
+        return;
+    }
     if (intentional) {
         DLog(@"open intentional: Remove this window ID from hidden: %d", windowId);
         if (!_pendingWindows[@(windowId)]) {
@@ -2437,6 +2515,7 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
         }
     }];
     // Get the window's basic info to prep the creation of a TmuxWindowOpener.
+    [_droppedOutputTracker windowWillAwaitLayout:windowId];
     [gateway_ sendCommand:[NSString stringWithFormat:@"display -p -F %@ -t @%d",
                            [self listWindowsDetailedFormat], windowId]
            responseTarget:self
@@ -2970,6 +3049,10 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 }
 
 - (void)activeWindowDidChangeTo:(int)windowID {
+    // Record this before deciding whether to ignore the notification. Even a notification we
+    // ignore reports tmux's real state. When tmux creates a window without -d, this notification
+    // precedes %window-add, so windowID may not have a tab yet.
+    _tmuxCurrentWindowID = windowID;
     if (_ignoreWindowChangeNotificationCount > 0) {
         _ignoreWindowChangeNotificationCount--;
         return;
@@ -3332,11 +3415,12 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 
 - (void)listedWindowsToOpenOne:(NSString *)response
       forWindowIdAndAffinities:(NSArray *)values {
+    NSNumber *windowId = values[0];
     if (response == nil) {
         RLog(@"Listing windows failed. Maybe the window died before we could get to it?");
+        [_droppedOutputTracker windowDidStopAwaitingLayout:windowId.intValue];
         return;
     }
-    NSNumber *windowId = values[0];
     NSSet *affinities = values[1];
     Profile *profile = values[2];
     NSNumber *tabIndex = values[3];
@@ -3353,6 +3437,7 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
     for (NSArray *record in doc.records) {
         NSString *recordWindowId = [doc valueInRecord:record forField:@"window_id"];
         if ([self windowIdFromString:recordWindowId] == [windowId intValue]) {
+            [self updateTmuxCurrentWindowFromDoc:doc record:record windowId:[windowId intValue]];
             [self openWindowWithIndex:[self windowIdFromString:[doc valueInRecord:record forField:@"window_id"]]
                                  name:[[doc valueInRecord:record forField:@"window_name"] it_unescapedTmuxWindowName]
                                  size:NSMakeSize([[doc valueInRecord:record forField:@"window_width"] intValue],
@@ -3366,6 +3451,38 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
                              tabIndex:tabIndex];
         }
     }
+    // The opener, if any, has registered the panes it will open, so they keep being scanned.
+    [_droppedOutputTracker windowDidStopAwaitingLayout:windowId.intValue];
+    for (NSArray *record in doc.records) {
+        const int wid = [self windowIdFromString:[doc valueInRecord:record forField:@"window_id"]];
+        [self didLearnLayout:[doc valueInRecord:record forField:@"window_layout"] forWindow:wid];
+    }
+}
+
+// window_active describes the session that tmux picked when resolving the target. A window can be
+// linked into more than one session, so only trust it when that session is ours.
+- (void)updateTmuxCurrentWindowFromDoc:(TSVDocument *)doc
+                                record:(NSArray *)record
+                              windowId:(int)windowId {
+    NSString *sessionName = [doc valueInRecord:record forField:@"session_name"];
+    if (![sessionName isEqualToString:self.sessionName]) {
+        DLog(@"window_active for @%d describes session %@, not %@. Ignore it.",
+             windowId, sessionName, self.sessionName);
+        return;
+    }
+    const BOOL active = [[doc valueInRecord:record forField:@"window_active"] isEqualToString:@"1"];
+    DLog(@"window_active for @%d is %@. tmux current window was %d",
+         windowId, @(active), _tmuxCurrentWindowID);
+    if (active) {
+        _tmuxCurrentWindowID = windowId;
+    } else if (_tmuxCurrentWindowID == windowId) {
+        // tmux has since moved on to a window we haven't heard about yet.
+        _tmuxCurrentWindowID = -1;
+    }
+}
+
+- (BOOL)windowIsCurrentInTmux:(int)windowId {
+    return _tmuxCurrentWindowID == windowId;
 }
 
 // When an iTerm2 window is resized, a control -s client-size w,h
@@ -3589,11 +3706,36 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
         DLog(@"Not sending select-window -t %%%d because activity changes are suppressed", windowId);
         return;
     }
+    // tmux sends no %session-window-changed when the window is already current, so only expect
+    // an echo if it wasn't. Another client can change the current window at any time, so read it
+    // in the same command list as the select-window: tmux runs a client's command list without
+    // running other clients' commands in between. The echo always arrives after both responses
+    // because tmux holds back notifications until the command list's output is written.
+    NSArray *commands = @[
+        [gateway_ dictionaryForCommand:@"display -p \"#{window_id}\""
+                        responseTarget:self
+                      responseSelector:@selector(didGetCurrentWindow:beforeSelectingWindow:)
+                        responseObject:@(windowId)
+                                 flags:0],
+        [gateway_ dictionaryForCommand:[NSString stringWithFormat:@"select-window -t @%d", windowId]
+                        responseTarget:nil
+                      responseSelector:nil
+                        responseObject:nil
+                                 flags:0]
+    ];
+    [gateway_ sendCommandList:commands];
+}
+
+// A failed command aborts the connection, so if this runs then the select-window will run too.
+- (void)didGetCurrentWindow:(NSString *)response beforeSelectingWindow:(NSNumber *)windowId {
+    NSString *current = [response stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString *target = [NSString stringWithFormat:@"@%d", windowId.intValue];
+    if ([current isEqualToString:target]) {
+        DLog(@"%@ is already current. Expect no session-window-changed.", target);
+        return;
+    }
+    DLog(@"Current window is %@. Expect session-window-changed for %@.", current, target);
     _ignoreWindowChangeNotificationCount++;
-    NSString *command = [NSString stringWithFormat:@"select-window -t @%d", windowId];
-    [gateway_ sendCommand:command
-           responseTarget:nil
-         responseSelector:nil];
 }
 
 - (NSString *)userVarsString:(int)paneID {
