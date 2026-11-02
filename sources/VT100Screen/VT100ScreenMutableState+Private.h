@@ -73,6 +73,11 @@ iTermTriggerScopeProvider> {
     BOOL _foldCacheDirty;
 }
 
+@property (nonatomic) long long restoredCursorAbsLine;
+@property (nonatomic) int restoredGridHeight;
+@property (nonatomic) int restoredCursorOffsetFromPreferred;
+- (long long)absLineOfCursor;
+
 @property (atomic) BOOL hadCommand;
 // This is a class variable because there is a single mutation queue. If that queue gets locked up
 // in a joined block, then any VT100ScreenMutableState can consider itself joined while on the

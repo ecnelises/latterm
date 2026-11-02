@@ -1926,6 +1926,13 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
         if (!strongSelf) {
             return;
         }
+        if (strongSelf->detached_ || !strongSelf->gateway_) {
+            DLog(@"Not splitting pane %%%d because detached", wp);
+            if (completion) {
+                completion(-1);
+            }
+            return;
+        }
         TmuxGateway *gateway = strongSelf->gateway_;
         if (!completion) {
             [gateway sendCommand:command responseTarget:nil responseSelector:nil];
@@ -2016,6 +2023,10 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 }
 
 - (void)didCreateWindowWithCommand:(NSString *)command {
+    if (detached_ || !gateway_) {
+        DLog(@"Not creating window because detached");
+        return;
+    }
     NSMutableArray *commands = [NSMutableArray array];
     if (_variableWindowSize) {
         Profile *profile = self.sharedProfile;
@@ -2847,6 +2858,10 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 }
 
 - (void)swapPane:(int)pane1 withPane:(int)pane2 {
+    if (detached_ || !gateway_) {
+        DLog(@"Not swapping panes because detached");
+        return;
+    }
     NSString *swapPaneCommand = [NSString stringWithFormat:@"swap-pane -s \"%%%d\" -t \"%%%d\"",
                                  pane1, pane2];
 
@@ -2864,6 +2879,10 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 }
 
 - (void)toggleZoomForPane:(int)pane {
+    if (detached_ || !gateway_) {
+        DLog(@"Not zooming pane because detached");
+        return;
+    }
     NSArray *commands = @[ [gateway_ dictionaryForCommand:[NSString stringWithFormat:@"resize-pane -Z -t \"%%%d\"", pane]
                                            responseTarget:nil
                                          responseSelector:NULL
@@ -2890,6 +2909,10 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 }
 
 - (void)setLayoutInWindow:(int)window toLayout:(NSString *)layout {
+    if (detached_ || !gateway_) {
+        DLog(@"Not setting layout because detached");
+        return;
+    }
     NSArray *commands = @[ [gateway_ dictionaryForCommand:[NSString stringWithFormat:@"select-layout -t @%@ %@",
                                                            @(window), layout]
                                            responseTarget:self
@@ -3557,6 +3580,10 @@ static NSDictionary *iTermTmuxControllerDefaultFontOverridesFromProfile(Profile 
 }
 
 - (void)setCurrentWindow:(int)windowId {
+    if (detached_ || !gateway_) {
+        DLog(@"Not selecting window because detached");
+        return;
+    }
     _currentWindowID = windowId;
     if (_suppressActivityChanges) {
         DLog(@"Not sending select-window -t %%%d because activity changes are suppressed", windowId);

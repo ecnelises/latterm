@@ -38,6 +38,7 @@ typedef struct {
     NSDictionary<NSString *, BOOL (^)(id)> *validationBlocks;
     NSDictionary<NSString *, id (^)(id)> *conversionBlocks;
     NSDictionary<NSString *, NSString *> *typeHelp;
+    NSSet<NSString *> *colorKeys;
 } iTermProfilePreferencesKeyFuncs;
 
 @implementation iTermProfilePreferences
@@ -184,6 +185,19 @@ typedef struct {
               KEY_TOUCHBAR_MAP, KEY_DYNAMIC_PROFILE_PARENT_NAME, KEY_DYNAMIC_PROFILE_PARENT_GUID,
               KEY_DYNAMIC_PROFILE_FILENAME, KEY_DYNAMIC_PROFILE_REWRITABLE, KEY_DYNAMIC_PROFILE ];
 }
++ (BOOL)keyIsColor:(NSString *)key {
+    return [self.keyFuncs.colorKeys containsObject:key];
+}
+
++ (NSString *)baseColorKeyForKey:(NSString *)key {
+    for (NSString *suffix in @[ COLORS_LIGHT_MODE_SUFFIX, COLORS_DARK_MODE_SUFFIX ]) {
+        if ([key hasSuffix:suffix]) {
+            return [key substringToIndex:key.length - suffix.length];
+        }
+    }
+    return key;
+}
+
 + (NSArray<NSString *> *)allKeys {
     return [self.defaultValueMap.allKeys arrayByAddingObjectsFromArray:self.keysWithoutDefaultValues];
 }
@@ -427,6 +441,7 @@ typedef struct {
         for (NSString *key in string) {
             validationBlocks[key] = ^BOOL(id value) { return [value isKindOfClass:[NSString class]]; };
         }
+        funcs.colorKeys = [NSSet setWithArray:color];
         for (NSString *key in color) {
             typeHelp[key] = @"Colors can be specified as 3- or 6-digit hex strings such as \"#f8a\" like in HTML. By default it uses the sRGB color space. To use P3 instead, place p3 before the # as in: \"p3#f8a\". While you can use a string literal here, typically this would come from a string-valued variable or function.";
             validationBlocks[key] = ^BOOL(id value) {

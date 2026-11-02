@@ -14,6 +14,7 @@
 #import "iTermWarning.h"
 #import "NSData+iTerm.h"
 #import "NSData+GZIP.h"
+#import "NSObject+iTerm.h"
 #import "PTYSession.h"
 #import "PseudoTerminal.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
@@ -82,8 +83,8 @@
     }
 
     NSDictionary *dvrDict = dict[@"dvr"];
-    Profile *dictProfile = dict[@"profile"];
-    if (!dvrDict || !dictProfile) {
+    Profile *untrustedProfile = [NSDictionary castFrom:dict[@"profile"]];
+    if (!dvrDict || !untrustedProfile) {
         [iTermWarning showWarningWithTitle:@"This recording could not be loaded because it is missing critical information."
                                    actions:@[ @"OK" ]
                              actionMapping:nil
@@ -95,6 +96,7 @@
         return;
     }
 
+    Profile *dictProfile = [iTermRecordingProfileSanitizer sanitizedProfile:untrustedProfile];
     if (![iTermSessionLauncher profileIsWellFormed:dictProfile]) {
         return;
     }

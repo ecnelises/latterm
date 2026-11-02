@@ -9562,6 +9562,9 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             return  nil;
         }
         NSString *bare = [SmartSelectionController regexInRule:rule];
+        if (!bare) {
+            return nil;
+        }
         NSError *error = nil;
         NSRegularExpression *expr = [[NSRegularExpression alloc] initWithPattern:bare options:0 error:&error];
         if (error || !expr) {

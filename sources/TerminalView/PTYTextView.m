@@ -5590,7 +5590,11 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         [self selectCoordRange:range];
     }
     // Let the scrollview scroll if needs to before showing the find indicator.
+    const int widthAtSelection = [_dataSource width];
     dispatch_async(dispatch_get_main_queue(), ^{
+        if ([self.dataSource width] != widthAtSelection) {
+            return;
+        }
         [self.delegate textViewShowFindIndicator:windowedRange];
     });
     if (!wrapped) {

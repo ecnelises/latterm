@@ -21,6 +21,8 @@ extern NSString *const kProfilePreferenceInitialDirectoryAdvancedValue;
 @interface iTermProfilePreferences : NSObject
 
 + (NSArray<NSString *> *)allKeys;
++ (BOOL)keyIsColor:(NSString *)key;
++ (NSString *)baseColorKeyForKey:(NSString *)key;
 + (BOOL)valueIsLegal:(id)value forKey:(NSString *)key;
 + (id _Nullable)defaultObjectForKey:(NSString *)key;
 + (NSDictionary *)defaultValueMap;

@@ -2612,3 +2612,14 @@ Terminal-first maintenance:
 - Avoid repeated mouse-mode updates during tmux
   navigation, and observe the current mode when
   enabling mouse-motion reporting.
+- Accept only validated appearance settings from
+  Instant Replay files; ignore executable actions.
+- Fix stale find-range writes and Metal frame
+  statistics lifetime and texture-pool races.
+- Bound grid sizing for zero-width fonts and fix
+  margin renderer vertex-buffer bounds.
+- Preserve cleared screens during restoration and
+  serialize overlapping restoration-state saves.
+- Ignore malformed smart-selection regex rules.
+- Guard operations on detached tmux windows.
+- Free temporary session-launch request buffers.
