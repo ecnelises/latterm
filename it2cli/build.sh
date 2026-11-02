@@ -28,9 +28,10 @@ sign_binary() {
 
 echo "Building it2 for arm64..."
 swift build -c release --arch arm64 --scratch-path .build-arm64 --disable-sandbox
+it2_bin_dir=$(swift build -c release --arch arm64 --scratch-path .build-arm64 --show-bin-path)
 
 mkdir -p .build/release
-cp .build-arm64/arm64-apple-macosx/release/it2 .build/release/it2
+cp "$it2_bin_dir/it2" .build/release/it2
 
 sign_binary "it2"
 

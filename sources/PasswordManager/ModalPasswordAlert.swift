@@ -10,6 +10,7 @@ import AppKit
 class ModalPasswordAlert {
     private let prompt: String
     var username: String?
+    var detail: String?
 
     // Keep this object alive until the completion block runs.
     private var keepalive: ModalPasswordAlert?
@@ -94,6 +95,7 @@ class ModalPasswordAlert {
     private func makeAlert() -> Views {
         let alert = NSAlert()
         alert.messageText = prompt
+        if let detail { alert.informativeText = detail }
         alert.addButton(withTitle: "OK")
         alert.addButton(withTitle: "Cancel")
 

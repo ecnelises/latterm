@@ -146,8 +146,11 @@ public enum PasswordManagerProtocol {
     public struct ListAccountsResponse: Codable {
         public var accounts: [Account]
 
-        public init(accounts: [Account]) {
+        public var warning: String?
+
+        public init(accounts: [Account], warning: String? = nil) {
             self.accounts = accounts
+            self.warning = warning
         }
     }
 
@@ -264,8 +267,12 @@ public enum PasswordManagerProtocol {
     public struct ErrorResponse: Codable {
         public var error: String
 
-        public init(error: String) {
+        /// True when a credential or session was rejected; absent for ordinary errors.
+        public var needsAuthentication: Bool?
+
+        public init(error: String, needsAuthentication: Bool? = nil) {
             self.error = error
+            self.needsAuthentication = needsAuthentication
         }
     }
 }

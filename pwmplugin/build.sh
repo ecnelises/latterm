@@ -25,6 +25,7 @@ sign_binary() {
 
 echo "Building password manager adapters for arm64..."
 swift build -c release --arch arm64 --scratch-path .build-arm64 --disable-sandbox
+adapter_bin_dir=$(swift build -c release --arch arm64 --scratch-path .build-arm64 --show-bin-path)
 
 mkdir -p .build/release
 
@@ -32,7 +33,7 @@ copy_arm64() {
     local name=$1
     echo ""
     echo "Copying arm64 binary for $name..."
-    cp ".build-arm64/arm64-apple-macosx/release/$name" ".build/release/$name"
+    cp "$adapter_bin_dir/$name" ".build/release/$name"
 
     sign_binary "$name"
 

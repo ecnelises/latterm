@@ -152,7 +152,7 @@
     }
     [[iTermSlowOperationGateway sharedInstance] exfiltrateEnvironmentVariableNamed:@"PATH"
                                                                              shell:shell
-                                                                        completion:^(NSString * _Nonnull value) {
+                                                                        completion:^(NSString * _Nullable value) {
         NSArray<NSString *> *paths = [value componentsSeparatedByString:@":"];
         if (paths && !entry.ready) {
             entry.paths = paths;

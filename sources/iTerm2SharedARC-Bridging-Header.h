@@ -271,3 +271,5 @@
 #import <CoreParse/CoreParse.h>
 
 #import "iTermURLActionFactory+Testing.h"
+
+#import "iTermShellArguments.h"
