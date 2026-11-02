@@ -9,6 +9,11 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Fix Settings panel focus and locale appearance.
+- Mark the active workgroup in its menu.
+- Align Tahoe tabs in titled special windows.
+- Keep command warnings visible in Settings.
+- Expose archive menu items to the Python API.
 - Keep Companion connected through modal dialogs.
 - Reject delayed remote input during UI stalls.
 - Preserve RTL selection in Companion and cancel

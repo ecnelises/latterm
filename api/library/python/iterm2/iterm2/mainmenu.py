@@ -94,7 +94,6 @@ class MainMenu:
         ABOUT_LATTERM = MenuItemIdentifier("About Latterm", "About iTerm2")
         SHOW_TIP_OF_THE_DAY = MenuItemIdentifier("Show Tip of the Day", "Show Tip of the Day")
         COMPANION_DEVICE_SETTINGS = MenuItemIdentifier("Companion Device Settings", "Pair Companion Device")
-        CHECK_FOR_UPDATES = MenuItemIdentifier("Check for Updates…", "Check For Updates…")
         TOGGLE_DEBUG_LOGGING = MenuItemIdentifier("Toggle Debug Logging", "Toggle Debug Logging")
         SAVE_RETROSPECTIVE_DEBUG_LOGS = MenuItemIdentifier("Save Retrospective Debug Logs", "Save Retrospective Debug Logs")
         COPY_PERFORMANCE_STATS = MenuItemIdentifier("Copy Performance Stats", "Copy Performance Stats")
@@ -127,6 +126,11 @@ class MainMenu:
         CLOSE_TERMINAL_WINDOW = MenuItemIdentifier("Close Terminal Window", "Close Terminal Window")
         CLOSE_ALL_PANES_IN_TAB = MenuItemIdentifier("Close All Panes in Tab", "Close All Panes in Tab")
         UNDO_CLOSE = MenuItemIdentifier("Undo Close", "Undo Close")
+
+        class Archives(enum.Enum):
+            SAVE_ARCHIVE_OF_CURRENT_SESSION = MenuItemIdentifier("Save Archive of Current Session…", "Save Archive of Current Session")
+            RESTORE_ARCHIVE = MenuItemIdentifier("Restore Archive…", "Restore Archive")
+
 
         class Workgroups(enum.Enum):
             EXIT_WORKGROUP = MenuItemIdentifier("Exit Workgroup", "Exit Workgroup")

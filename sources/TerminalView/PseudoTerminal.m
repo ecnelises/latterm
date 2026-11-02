@@ -6398,7 +6398,6 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         case WINDOW_TYPE_LEFT_PERCENTAGE:
         case WINDOW_TYPE_RIGHT_PERCENTAGE:
         case WINDOW_TYPE_BOTTOM_PERCENTAGE:
-        case WINDOW_TYPE_CENTERED:
         case WINDOW_TYPE_TOP_CELLS:
         case WINDOW_TYPE_LEFT_CELLS:
         case WINDOW_TYPE_BOTTOM_CELLS:
@@ -6415,13 +6414,13 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
             return !exitingLionFullscreen_;
 
         case WINDOW_TYPE_NORMAL:
+        case WINDOW_TYPE_ACCESSORY:
+        case WINDOW_TYPE_MAXIMIZED:
+        case WINDOW_TYPE_CENTERED:
             if (@available(macOS 26, *)) {
                 RLog(@"YES - macOS 26 with window type %@", @(self.windowType));
                 return YES;
             }
-            // FALL THROUGH
-        case WINDOW_TYPE_ACCESSORY:
-        case WINDOW_TYPE_MAXIMIZED:
             if (![iTermAdvancedSettingsModel allowTabbarInTitlebarAccessoryBigSur]) {
                 return NO;
             }

@@ -20,7 +20,6 @@ Menu Item                                                                       
 Latterm > About Latterm                                                                 `About iTerm2`
 Latterm > Show Tip of the Day                                                           `Show Tip of the Day`
 Latterm > Companion Device Settings                                                     `Pair Companion Device`
-Latterm > Check for Updates…                                                            `Check For Updates…`
 Latterm > Toggle Debug Logging                                                          `Toggle Debug Logging`
 Latterm > Save Retrospective Debug Logs                                                 `Save Retrospective Debug Logs`
 Latterm > Copy Performance Stats                                                        `Copy Performance Stats`
@@ -51,6 +50,8 @@ Shell > Close                                                                   
 Shell > Close Terminal Window                                                           `Close Terminal Window`
 Shell > Close All Panes in Tab                                                          `Close All Panes in Tab`
 Shell > Undo Close                                                                      `Undo Close`
+Shell > Archives > Save Archive of Current Session…                                     `Save Archive of Current Session`
+Shell > Archives > Restore Archive…                                                     `Restore Archive`
 Shell > Workgroups > Exit Workgroup                                                     `Exit Workgroup`
 Shell > Broadcast Input > Send Input to Current Session Only                            `Broadcast Input.Send Input to Current Session Only`
 Shell > Broadcast Input > Broadcast Input to All Panes in All Tabs                      `Broadcast Input.Broadcast Input to All Panes in All Tabs`
