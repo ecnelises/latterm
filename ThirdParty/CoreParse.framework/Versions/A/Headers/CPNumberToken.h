@@ -48,7 +48,10 @@
 /**
  * The number found in the input stream.
  */
-@property (readwrite,copy) NSNumber *numberValue;
+@property (readwrite,copy) NSNumber *number;
+
+// Preserve the accessor exported by the previously bundled framework.
+@property (readonly) NSNumber *numberValue;
 
 @end
 
