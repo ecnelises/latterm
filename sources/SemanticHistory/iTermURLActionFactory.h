@@ -19,21 +19,23 @@
 @class URLAction;
 @protocol VT100RemoteHostReading;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface iTermURLActionFactory : NSObject<iTermCancelable>
 
 + (instancetype)urlActionAtCoord:(VT100GridCoord)coord
              respectHardNewlines:(BOOL)respectHardNewlines
                        alternate:(BOOL)alternate
-                workingDirectory:(NSString *)workingDirectory
-                           scope:(iTermVariableScope *)scope
-                           owner:(id<iTermObject>)owner
-                      remoteHost:(id<VT100RemoteHostReading>)remoteHost
+                workingDirectory:(NSString * _Nullable)workingDirectory
+                           scope:(iTermVariableScope * _Nullable)scope
+                           owner:(id<iTermObject> _Nullable)owner
+                      remoteHost:(id<VT100RemoteHostReading> _Nullable)remoteHost
                        selectors:(NSDictionary<NSNumber *, NSString *> *)selectors
                            rules:(NSArray *)rules
                        extractor:(iTermTextExtractor *)extractor
        semanticHistoryController:(iTermSemanticHistoryController *)semanticHistoryController
-                     pathFactory:(SCPPath *(^)(NSString *, int))pathFactory
-                      completion:(void (^)(URLAction *))completion;
+                     pathFactory:(SCPPath * _Nullable (^)(NSString *, int))pathFactory
+                      completion:(void (^)(URLAction * _Nullable))completion;
 
 // Synchronously returns the openable URL at `coord` (with hard newlines stripped
 // from wrapped URLs when respectHardNewlines is NO), or nil if the text there does
@@ -44,4 +46,9 @@
                     respectHardNewlines:(BOOL)respectHardNewlines
                               extractor:(iTermTextExtractor *)extractor;
 
+// Resolve selected text using the same default scheme as Command-click.
++ (NSURL * _Nullable)urlForUserSuppliedString:(NSString *)string guessingScheme:(BOOL)guessScheme;
+
 @end
+
+NS_ASSUME_NONNULL_END

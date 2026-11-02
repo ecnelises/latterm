@@ -97,7 +97,7 @@ launchProfileInCurrentTerminal:(Profile *)profile
                inBackground:(BOOL)openInBackground
    smartSelectionActionsOnly:(BOOL)smartSelectionActionsOnly;
 
-- (void)findUrlInString:(NSString *)aURLString andOpenInBackground:(BOOL)background;
+- (void)findUrlInString:(NSString *)aURLString andOpenInBackground:(BOOL)background guessingScheme:(BOOL)guessScheme;
 
 - (void)downloadFileAtSecureCopyPath:(SCPPath *)scpPath
                          displayName:(NSString *)name

@@ -669,6 +669,7 @@
 		2621488B01FD8224242400F6 /* CompanionTouchMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7FA7091BC6651354944E64 /* CompanionTouchMapper.swift */; };
 		26BD366BD1D02047E84E5F8D /* iTermWorkgroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A6B1D037AF894E662A0EFC /* iTermWorkgroup.swift */; };
 		29C503BA29752DF6A4DB2A02 /* iTermBlurRowBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19537E68A2ADEB03B3086882 /* iTermBlurRowBuffer.swift */; };
+		2A3E363F42883BE284CD0A16 /* iTermURLActionFactory+Testing.h in Sources */ = {isa = PBXBuildFile; fileRef = BFD6C50CCC81A35FAE0E5568 /* iTermURLActionFactory+Testing.h */; };
 		2A871005FAEFACD23C893003 /* WorkgroupAutoSendClippingsToolbarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BC80D4DB06ABEDF5FADC6B9 /* WorkgroupAutoSendClippingsToolbarItem.swift */; };
 		2AB0AC886DE3F1F616F92D2F /* CharacterAtomIterator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02CF16386D8605E6BC44ED81 /* CharacterAtomIterator.swift */; };
 		2AB4919B57C2A4A033E8492C /* FocusOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F19F8B951B272A53398CE6B /* FocusOrder.swift */; };
@@ -7818,6 +7819,7 @@
 		B7B8DBB7E0FAD724F2C26042 /* CodeReviewPromptManagerWindowController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CodeReviewPromptManagerWindowController.swift; sourceTree = "<group>"; };
 		B89EB9610266D0EF42285C2E /* CompanionOnboardingRouter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionOnboardingRouter.swift; sourceTree = "<group>"; };
 		BA3FEA75E047934A369B50AA /* iTermCursorBlinkFadeAnimator.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermCursorBlinkFadeAnimator.m; sourceTree = "<group>"; };
+		BFD6C50CCC81A35FAE0E5568 /* iTermURLActionFactory+Testing.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "iTermURLActionFactory+Testing.h"; sourceTree = "<group>"; };
 		C0633ABD6E952B2E3BBF254B /* SocketConnection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SocketConnection.swift; path = it2cli/Sources/it2core/Transport/SocketConnection.swift; sourceTree = "<group>"; };
 		C064EB0F853DE6D529AF6FD4 /* AuthCommand.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthCommand.swift; path = it2cli/Sources/it2core/Commands/AuthCommand.swift; sourceTree = "<group>"; };
 		C08AA4008946722C3F4C67C1 /* WordSelectionAtom.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WordSelectionAtom.swift; sourceTree = "<group>"; };
@@ -12483,6 +12485,7 @@
 				A6F718C92266DB380053488E /* iTermURLActionHelper.m */,
 				A6CFDAD0185D2587005DC94B /* URLAction.h */,
 				A6CFDAD1185D2587005DC94B /* URLAction.m */,
+				BFD6C50CCC81A35FAE0E5568 /* iTermURLActionFactory+Testing.h */,
 			);
 			path = SemanticHistory;
 			sourceTree = "<group>";
@@ -17928,6 +17931,7 @@
 				1E389668373357AAB3B687F6 /* iTermAccessibilitySelectionReplacement.swift in Sources */,
 				E3525131D5EF5908FA2EC915 /* iTermAPICreateTabFocusDeferral.h in Sources */,
 				400427AFD4C32663348FAE68 /* iTermAPICreateTabFocusDeferral.m in Sources */,
+				2A3E363F42883BE284CD0A16 /* iTermURLActionFactory+Testing.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

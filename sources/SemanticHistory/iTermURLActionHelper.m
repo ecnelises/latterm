@@ -153,19 +153,13 @@
 }
 
 - (void)findUrlInString:(NSString *)aURLString
-    andOpenInBackground:(BOOL)background {
-    DLog(@"findUrlInString:%@", aURLString);
-    NSRange range = [aURLString rangeOfURLInString];
-    if (range.location == NSNotFound) {
-        DLog(@"No URL found");
+    andOpenInBackground:(BOOL)background
+         guessingScheme:(BOOL)guessScheme {
+    NSURL *url = [iTermURLActionFactory urlForUserSuppliedString:aURLString guessingScheme:guessScheme];
+    if (!url) {
+        DLog(@"No openable URL found");
         return;
     }
-    NSString *trimmedURLString = [aURLString substringWithRange:range];
-    if (!trimmedURLString) {
-        DLog(@"string is empty");
-        return;
-    }
-    NSURL *url = [NSURL URLWithUserSuppliedString:trimmedURLString];
     [self openURL:url inBackground:background workingDirectory:nil];
 }
 
@@ -424,7 +418,7 @@ workingDirectory:(NSString *)workingDirectory {
                                    completion:^(BOOL ok) {
                                        if (!ok) {
                                            [weakSelf findUrlInString:action.string
-                                                 andOpenInBackground:openInBackground];
+                                                 andOpenInBackground:openInBackground guessingScheme:NO];
                                        }
                                    }];
                 break;

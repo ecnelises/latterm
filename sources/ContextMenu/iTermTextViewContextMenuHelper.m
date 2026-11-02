@@ -25,6 +25,7 @@
 #import "iTermSelection.h"
 #import "iTermTextExtractor.h"
 #import "iTermURLActionHelper.h"
+#import "iTermURLActionFactory.h"
 #import "iTermVariableScope.h"
 #import "iTermVariableScope+Session.h"
 #import "iTermVariableScope+Tab.h"
@@ -536,7 +537,8 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
         [[theMenu itemAtIndex:[theMenu numberOfItems] - 1] setTarget:self];
     };
     add(scpTitle, @selector(downloadWithSCP:));
-    if (shortSelectedText) {
+    NSURL *selectionURL = shortSelectedText ? [iTermURLActionFactory urlForUserSuppliedString:shortSelectedText guessingScheme:YES] : nil;
+    if (selectionURL) {
         add(@"Open Selection as URL", @selector(browse:));
     }
     add(@"Search the Web for Selection", @selector(searchInBrowser:));
@@ -1148,7 +1150,7 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
 
 - (void)browse:(id)sender {
     [_urlActionHelper findUrlInString:[self.delegate contextMenuSelectedText:self capped:0]
-                  andOpenInBackground:NO];
+                  andOpenInBackground:NO guessingScheme:YES];
 }
 
 - (void)searchInBrowser:(id)sender {
@@ -1156,7 +1158,7 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
                                              inString:[iTermAdvancedSettingsModel searchCommand]
                                             withValue:[self.delegate contextMenuSelectedText:self capped:0]];
     [_urlActionHelper findUrlInString:url.absoluteString
-                  andOpenInBackground:NO];
+                  andOpenInBackground:NO guessingScheme:NO];
 }
 
 - (void)addTrigger:(id)sender {

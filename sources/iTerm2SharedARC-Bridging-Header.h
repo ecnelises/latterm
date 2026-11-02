@@ -269,3 +269,5 @@
 #import "iTermOpenQuicklyWindowController.h"
 #import "iTermSessionPreviewPanel.h"
 #import <CoreParse/CoreParse.h>
+
+#import "iTermURLActionFactory+Testing.h"

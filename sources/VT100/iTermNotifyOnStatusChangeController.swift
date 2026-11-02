@@ -56,6 +56,12 @@ class NotifyOnStatusChangeController: NSObject {
 
     override init() {
         super.init()
+        // The controller is lazy: pre-existing status text is already the baseline.
+        for key in SessionStatusController.instance.statuses.keys {
+            if let text = SessionStatusController.instance.statuses[key]?.statusText {
+                lastSeenStatusText[key] = text
+            }
+        }
         token = SessionStatusController.instance.addObserver { [weak self] key, _, _ in
             self?.enqueue(key: key)
         }
