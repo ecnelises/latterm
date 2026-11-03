@@ -15,6 +15,7 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Remove daily tips and their startup prompts.
 - Complete Chinese menu and About translations,
   including tab and terminal context menus.
 - Use a relay-list mirror if its server is down,

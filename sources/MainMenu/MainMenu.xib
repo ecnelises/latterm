@@ -23,11 +23,6 @@
                                     <action selector="showAbout:" target="201" id="509"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Show Tip of the Day" identifier="Show Tip of the Day" id="ft3-BP-igZ">
-                                <connections>
-                                    <action selector="showTipOfTheDay:" target="201" id="mc2-ec-uGY"/>
-                                </connections>
-                            </menuItem>
                             <menuItem title="Companion Device Settings" identifier="Pair Companion Device" id="Cmp-n0-De1">
                                 <connections>
                                     <action selector="pairCompanionDevice:" target="201" id="Cmp-n0-Ac1"/>
@@ -2003,7 +1998,6 @@ CQ
                 <outlet property="_namedMarksMenuItem" destination="bWZ-Rb-J4D" id="M8H-RD-WYb"/>
                 <outlet property="_removeRecentProfilesFromDockMenuItem" destination="WcV-7l-ycc" id="Fyb-Mv-FK0"/>
                 <outlet property="_scriptsMenu" destination="CZD-7u-bch" id="2Q5-aI-74T"/>
-                <outlet property="_showTipOfTheDay" destination="ft3-BP-igZ" id="WZt-qp-iuC"/>
                 <outlet property="_splitHorizontally" destination="1289" id="Arv-ON-Put"/>
                 <outlet property="_splitHorizontallyWithCurrentProfile" destination="1201" id="FLl-hN-paX"/>
                 <outlet property="_splitVertically" destination="1291" id="HKF-80-dqT"/>

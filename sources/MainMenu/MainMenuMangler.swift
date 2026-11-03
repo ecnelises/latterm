@@ -18,7 +18,6 @@ class MainMenuMangler: NSObject {
 
     private let iconMap = [
         // iTerm2 menu
-        "Show Tip of the Day": "lightbulb",
         "Check For Updates…": "arrow.triangle.2.circlepath",
         "Toggle Debug Logging": "ladybug",
         "Copy Performance Stats": "hare",

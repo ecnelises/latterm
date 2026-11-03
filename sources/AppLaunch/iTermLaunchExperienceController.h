@@ -14,7 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)applicationWillFinishLaunching;
 + (void)applicationDidFinishLaunching;
-+ (void)performStartupActivities;
 
 @end
 

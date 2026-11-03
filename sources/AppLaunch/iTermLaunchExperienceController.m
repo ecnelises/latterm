@@ -14,7 +14,6 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermPreferences.h"
 #import "iTermSlowOperationGateway.h"
-#import "iTermTipController.h"
 #import "iTermTuple.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
@@ -42,18 +41,10 @@ static NSString *const kHaveWarnedAboutPasteConfirmationChange = @"NoSyncHaveWar
     [[self sharedInstance] applicationWillFinishLaunching];
 }
 
-+ (void)performStartupActivities {
-    [[self sharedInstance] performStartupActivities];
-}
-
 + (iTermLaunchExperienceChoice)preferredChoice {
     if ([self willWarnAboutChangeToDefaultPasteBehavior]) {
         // This is important because it is an unsafe change.
         return iTermLaunchExperienceChoiceDefaultPasteBehaviorChangeWarning;
-    }
-    if ([[iTermTipController sharedInstance] willAskPermission]) {
-        // This is just a nice thing to have.
-        return iTermLaunchExperienceChoiceTipOfTheDay;
     }
     return iTermLaunchExperienceChoiceNone;
 }
@@ -70,13 +61,6 @@ static NSString *const kHaveWarnedAboutPasteConfirmationChange = @"NoSyncHaveWar
         }];
     }
     return self;
-}
-
-- (void)performStartupActivities {
-    NSDate *notBefore = [_promptScheduler prepareForStartupActivities];
-    [[iTermTipController sharedInstance]
-     startWithPermissionPromptAllowed:_promptScheduler.permissionPromptAllowed
-     notBefore:notBefore];
 }
 
 - (void)applicationWillFinishLaunching {

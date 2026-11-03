@@ -815,13 +815,6 @@ DEFINE_BOOL(advancedPasteWaitsForPromptByDefault, YES, SECTION_PASTEBOARD @"Shou
 DEFINE_INT(alwaysWarnBeforePastingOverSize, -1, SECTION_PASTEBOARD @"When pasting more than this many characters, require confirmation.\nSet to -1 to disable warning.\nCharacters are counted in UTF-16.");
 DEFINE_BOOL(saveToPasteHistoryWhenSecureInputEnabled, NO, SECTION_PASTEBOARD @"Save to paste history when secure keyboard input is enabled?");
 
-#pragma mark - Tip of the day
-
-#define SECTION_TOTD @"Tip of the Day: "
-
-DEFINE_BOOL(noSyncTipsDisabled, NO, SECTION_TOTD @"Disable the Tip of the Day?");
-DEFINE_SETTABLE_FLOAT(timeBetweenTips, TimeBetweenTips, 24 * 60 * 60, SECTION_TOTD @"Time between tips (in seconds)");
-
 #pragma mark - Badge
 
 #define SECTION_BADGE @"Badge: "

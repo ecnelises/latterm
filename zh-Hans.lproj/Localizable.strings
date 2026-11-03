@@ -8,11 +8,8 @@
 "Quit %@?" = "要退出 %@ 吗？";
 "OK" = "确定";
 "Cancel" = "取消";
-"See Tips of the Day?" = "要查看每日技巧吗？";
-"%@ can show you a Tip of the Day message to help you learn about its many features. Are you interested?" = "%@ 可以显示“每日技巧”，帮助你了解它的功能。是否启用？";
 "Yes" = "是";
 "No" = "否";
-"%@ Tip of the Day" = "%@ 每日技巧";
 "What’s New in 3.6?\n" = "3.6 有哪些新内容？\n";
 "By George Nachman and Contributors" = "由 George Nachman 与贡献者开发";
 "Home Page" = "主页";
@@ -716,7 +713,6 @@
 "SSH Integration" = "SSH 集成";
 "Warnings" = "警告";
 "Pasteboard" = "剪贴板";
-"Tip of the Day" = "每日提示";
 "Badge" = "徽标";
 "Experimental Features" = "实验性功能";
 "Uneven tab widths allowed." = "允许标签页使用不同宽度。";
@@ -1389,8 +1385,6 @@
 "When pasting more than this many characters, require confirmation.\nSet to -1 to disable warning.\nCharacters are counted in UTF-16." = "粘贴超过此字符数时要求确认。\n设为 -1 禁用；按 UTF-16 代码单元计数。";
 "When pasting more than this many characters, require confirmation." = "粘贴超过此字符数时要求确认。";
 "Save to paste history when secure keyboard input is enabled?" = "安全键盘输入开启时仍保存粘贴历史。";
-"Disable the Tip of the Day?" = "禁用每日提示。";
-"Time between tips (in seconds)" = "提示之间的间隔（秒）。";
 "Font to use for the badge." = "徽标使用的字体。";
 "Should the badge render in bold type?" = "徽标使用粗体。";
 "Maximum width of the badge\nAs a fraction of the width of the terminal, between 0 and 1.0. This is the default value if a profile does not have a setting." = "徽标的最大宽度比例。\n相对于终端宽度，范围为 0–1；配置方案未单独设置时使用此值。";
@@ -1688,7 +1682,6 @@
 "…even to views like Search or Composer" = "…包括搜索或命令编辑器等视图";
 
 /* Menus, contextual actions, and About. */
-"Show Tip of the Day" = "显示每日技巧";
 "MainMenu" = "主菜单";
 "About Latterm" = "关于 Latterm";
 "Toggle Debug Logging" = "切换调试日志";

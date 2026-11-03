@@ -118,8 +118,6 @@
 #import "iTermSessionLauncher.h"
 #import "iTermSubpixelModelBuilder.h"
 #import "iTermSystemVersion.h"
-#import "iTermTipController.h"
-#import "iTermTipWindowController.h"
 #import "iTermToolbeltView.h"
 #import "iTermURLStore.h"
 #import "iTermUserDefaults.h"
@@ -260,7 +258,6 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     IBOutlet NSMenuItem *showFullScreenTabs;
     IBOutlet NSMenuItem *useTransparency;
     IBOutlet NSMenuItem *maximizePane;
-    IBOutlet NSMenuItem *_showTipOfTheDay;  // Here because we must remove it for older OS versions.
     BOOL quittingBecauseLastWindowClosed_;
 
     IBOutlet NSMenuItem *_splitHorizontallyWithCurrentProfile;
@@ -480,10 +477,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
                                            initWithFrame:NSMakeRect(0, 0, tabColorViewSize.width, tabColorViewSize.height)] autorelease];
     [self addMenuItemView:labelTrackView toMenu:viewMenu title:NSLocalizedString(@"Current Tab Color", @"Tab color menu title")];
 
-    if (![iTermTipController sharedInstance]) {
-        [_showTipOfTheDay.menu removeItem:_showTipOfTheDay];
-    }
-
     if ([iTermAdvancedSettingsModel showHintsInSplitPaneMenuItems]) {
         _splitHorizontally.title = [@"─⃞ " stringByAppendingString:_splitHorizontally.title];
         _splitHorizontallyWithCurrentProfile.title = [@"─⃞ " stringByAppendingString:_splitHorizontallyWithCurrentProfile.title];
@@ -582,8 +575,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
             menuItem.state = ![iTermAdvancedSettingsModel noSyncDoNotWarnBeforePastingOneLineEndingInNewlineAtShellPrompt] ? NSControlStateValueOn : NSControlStateValueOff;
         }
         return YES;
-    } else if ([menuItem action] == @selector(showTipOfTheDay:)) {
-        return ![[iTermTipController sharedInstance] showingTip];
     } else if ([menuItem action] == @selector(toggleSecureInput:)) {
         iTermSecureKeyboardEntryController *controller = [iTermSecureKeyboardEntryController sharedInstance];
         if (controller.isEnabled) {
@@ -2228,7 +2219,6 @@ static iTermKeyEventReplayer *gReplayer;
     [[iTermController sharedInstance] setStartingUp:NO];
     [PTYSession removeAllRegisteredSessions];
 
-    [iTermLaunchExperienceController performStartupActivities];
 }
 
 - (BOOL)shouldOpenUntitledFileAfterRunningAutoLaunchScripts:(BOOL)ranAutoLaunchScripts {
@@ -3275,10 +3265,6 @@ static iTermKeyEventReplayer *gReplayer;
 - (IBAction)enableMarkAlertRingsBell:(id)sender {
     [[iTermUserDefaults userDefaults] setObject:kMarkAlertActionRingBell
                                               forKey:kMarkAlertAction];
-}
-
-- (IBAction)showTipOfTheDay:(id)sender {
-    [[iTermTipController sharedInstance] showTip];
 }
 
 - (IBAction)openDashboard:(id)sender {
