@@ -23,8 +23,9 @@ protocol ComposerTextViewDelegate: AnyObject {
     @objc(composerTextViewPerformFindPanelAction:) func composerTextViewPerformFindPanelAction(_ sender: Any?)
     @objc(composerTextViewClear) func composerTextViewClear()
 
+    // Nil when there is nothing to highlight with, such as a composer with no delegate of its own.
     @objc(composerSyntaxHighlighterForAttributedString:)
-    func composerSyntaxHighlighter(textStorage: NSMutableAttributedString) -> SyntaxHighlighting
+    func composerSyntaxHighlighter(textStorage: NSMutableAttributedString) -> SyntaxHighlighting?
     @objc func composerHandleKeyDown(event: NSEvent) -> Bool
     @objc func composerTextViewShouldForwardCopy() -> Bool
     @objc func composerForwardMenuItem(_ menuItem: NSMenuItem)
@@ -1140,7 +1141,7 @@ class ComposerTextView: MultiCursorTextView {
         }
         isDoingSyntaxHighlighting = true
         composerDelegate?.composerSyntaxHighlighter(
-            textStorage: textStorage).highlight(
+            textStorage: textStorage)?.highlight(
                 range: NSRange(rangeExcludingPrefixAndSuggestion))
         isDoingSyntaxHighlighting = false
     }

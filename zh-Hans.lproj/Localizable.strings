@@ -2476,3 +2476,8 @@
 "Export to File" = "导出到文件";
 "Regular Expression:" = "正则表达式：";
 "Job:" = "任务：";
+
+/* Man page URL validation. */
+"Illegal Man Page URL" = "不允许的 man 手册页 URL";
+"The man page URL contained a disallowed character. The set of allowed characters is limited for security reasons." = "此 man 手册页 URL 包含不允许的字符。出于安全考虑，允许使用的字符受到限制。";
+"The man page URL did not name a man page or search term." = "此 man 手册页 URL 没有指定手册页或搜索词。";

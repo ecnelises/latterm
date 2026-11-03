@@ -15,6 +15,16 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Reject man page URLs that name files, options,
+  or unexpected characters.
+- Fix a startup race in character width tables.
+- Don’t crash activating a tab already closed.
+- Percent-encode + in search URL templates.
+- Honor disabled ligatures without the fast path.
+- Show vertically cropped Kitty images correctly.
+- Keep kitty keyboard flags across XTMODKEYS.
+- Keep spaces between LTR and RTL text in copies.
+- Keep text editing shortcuts in alert fields.
 - Translate the trigger editor, trigger actions,
   event types, and trigger import and export.
 - Translate the Profiles window and its menus,
