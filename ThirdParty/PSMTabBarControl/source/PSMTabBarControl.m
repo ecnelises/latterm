@@ -151,6 +151,9 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
     NSMutableArray<PSMTabBarCell *> *_cells; // the cells that draw the tabs
     NSButton *_overflowPopUpButton; // for too many tabs
     PSMRolloverButton *_addTabButton;
+    // The delegate's last answer to -tabViewShouldShowActivityIndicators:, negated so the default
+    // (NO) matches the default answer (YES).
+    BOOL _activityIndicatorsHidden;
 
     // drawing style
     NSTimer *_animationTimer;
@@ -2906,6 +2909,25 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
 
 - (NSColor *)accessoryTextColor {
     return [_style accessoryTextColor] ?: [NSColor blackColor];
+}
+
+- (BOOL)shouldShowActivityIndicators {
+    if ([self.delegate respondsToSelector:@selector(tabViewShouldShowActivityIndicators:)]) {
+        return [self.delegate tabViewShouldShowActivityIndicators:_tabView];
+    }
+    return YES;
+}
+
+- (void)updateActivityIndicators {
+    const BOOL hidden = ![self shouldShowActivityIndicators];
+    if (hidden == _activityIndicatorsHidden) {
+        return;
+    }
+    _activityIndicatorsHidden = hidden;
+    for (PSMTabBarCell *cell in _cells) {
+        [cell updateIndicators];
+    }
+    [self update:NO];
 }
 
 - (void)setTabsHaveCloseButtons:(BOOL)tabsHaveCloseButtons {

@@ -447,6 +447,14 @@ This file is a local planning document. Do not assume it belongs in a release co
 - Preserved Command-click URL opening, Open Selection as URL, web search, configured external browsers, hover URL text, dictionary lookup, and Quick Look for local files and images.
 - Audited the five remaining submodules; this AppKit/WebKit surface did not own any of them, so no submodule became safe to remove.
 
+### 2026-11-03 Partial Upstream Master Triage After 3.7.6
+
+- `UPSTREAM` stays at the reviewed 3.7.6 release commit `7ce456b98db38d3f0bafd70ffec87752e69d5d58`. This pass triaged the 600 master commits since the release branch diverged at `5964ff231` by subject and patch applicability; it is not a complete classification, so the cursor was not advanced.
+- Ported the x-man-page allowlist hardening (`f29420ae4`), character-width initialization race (`8dc03200e`), removed-tab activation crash guard (`2c8bee4ea`), URL template `+` encoding (`4d907f27d`), delegate-less composer highlighting (`99ccc1b08`), disabled-ligature shaping (`124020064`), cropped Kitty image texture frames (`5f1786330`), kitty keyboard flags across XTMODKEYS (`146b2356e`), bidi partial-copy spacing (`0d919c1e4`), alert text-editing shortcuts (`023d97c2a`), input-method arrow and Tab hand-backs (`7f4ff7397`), and Hide Activity Indicator for progress spinners (`7e862eb49`).
+- Skipped as already present or structurally divergent: the detached tmux `select-window` guard (`7f86879da`, already guarded earlier in the method), tmux select-window error tolerance (`db8daf71b`, renames a selector the fork's tests call), and pane unmaximize container sizing (`dcd01a915`, depends on the floating-pane `setNativeRootFrameSize:` refactor).
+- Deferred clean candidates for a focused follow-up: Metal layer lock hang (`ec4517e6b`), Caps Lock input-source reports (`beb7cfbff`), hyperlink archive saving (`9f7bda6f8`), and the AppKit title-indexing and refresh-rate performance fixes (`12c882686`, `171e435ff`, `2805bb742`).
+- Audited dependency impact: these ports touch only app-owned sources and tests; no submodule is added or becomes removable.
+
 ### Recent Verification
 
 - `tools/build.sh Development` passes on 2026-09-08 after removing the embedded URL preview and its WebKit wrapper.
