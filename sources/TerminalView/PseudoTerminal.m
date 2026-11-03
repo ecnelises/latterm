@@ -6734,27 +6734,18 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     }
 
     // Bookmarks
-    [theMenu insertItemWithTitle:NSLocalizedStringFromTableInBundle(@"New Window",
-                                                                    @"iTerm",
-                                                                    [NSBundle bundleForClass:[self class]],
-                                                                    @"Context menu")
+    [theMenu insertItemWithTitle:NSLocalizedString(@"New Window", @"Context menu")
                           action:nil
                    keyEquivalent:@""
                          atIndex:nextIndex++];
-    [theMenu insertItemWithTitle:NSLocalizedStringFromTableInBundle(@"New Tab",
-                                                                    @"iTerm",
-                                                                    [NSBundle bundleForClass:[self class]],
-                                                                    @"Context menu")
+    [theMenu insertItemWithTitle:NSLocalizedString(@"New Tab", @"Context menu")
                           action:nil
                    keyEquivalent:@""
                          atIndex:nextIndex++];
 
     // Create a menu with a submenu to navigate between tabs if there are more than one
     if ([_contentView.tabView numberOfTabViewItems] > 1) {
-        [theMenu insertItemWithTitle:NSLocalizedStringFromTableInBundle(@"Select",
-                                                                        @"iTerm",
-                                                                        [NSBundle bundleForClass:[self class]],
-                                                                        @"Context menu")
+        [theMenu insertItemWithTitle:NSLocalizedString(@"Select", @"Context menu")
                               action:nil
                        keyEquivalent:@""
                              atIndex:nextIndex];
@@ -7561,7 +7552,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
             [tabMenu addItem:item];
         }
 
-        [rootMenu addItemWithTitle:@"Select"
+        [rootMenu addItemWithTitle:NSLocalizedString(@"Select", @"Menu item title")
                             action:nil
                      keyEquivalent:@""];
         [rootMenu setSubmenu:tabMenu forItem:[rootMenu itemAtIndex:0]];
@@ -7570,20 +7561,20 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
     // add tasks
     const PSMTabPosition tabPosition = [iTermPreferences intForKey:kPreferenceKeyTabPosition];
-    NSString *newTabTitle = (tabPosition == PSMTab_LeftTab || tabPosition == PSMTab_RightTab) ? @"New Tab Below" : @"New Tab to the Right";
+    NSString *newTabTitle = (tabPosition == PSMTab_LeftTab || tabPosition == PSMTab_RightTab) ? NSLocalizedString(@"New Tab Below", @"Menu item title") : NSLocalizedString(@"New Tab to the Right", @"Menu item title");
     item = [[[NSMenuItem alloc] initWithTitle:newTabTitle
                                        action:@selector(newTabToTheRight:)
                                 keyEquivalent:@""] autorelease];
     [item setRepresentedObject:tabViewItem];
     [rootMenu addItem:item];
 
-    item = [[[NSMenuItem alloc] initWithTitle:@"Edit Session…"
+    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Session…", @"Menu item title")
                                        action:@selector(editSession:)
                                 keyEquivalent:@""] autorelease];
     [item setRepresentedObject:tabViewItem];
     [rootMenu addItem:item];
 
-    item = [[[NSMenuItem alloc] initWithTitle:@"Close Tab"
+    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Close Tab", @"Menu item title")
                                        action:@selector(closeTabContextualMenuAction:)
                                 keyEquivalent:@""] autorelease];
     [item setRepresentedObject:tabViewItem];
@@ -7591,21 +7582,21 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
     PTYTab *theTab = [tabViewItem identifier];
     if (![theTab isTmuxTab]) {
-        item = [[[NSMenuItem alloc] initWithTitle:@"Duplicate Tab"
+        item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Duplicate Tab", @"Menu item title")
                                            action:@selector(duplicateTab:)
                                     keyEquivalent:@""] autorelease];
         [item setRepresentedObject:tabViewItem];
         [rootMenu addItem:item];
     }
 
-    item = [[[NSMenuItem alloc] initWithTitle:@"Save Tab as Window Arrangement"
+    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Save Tab as Window Arrangement", @"Menu item title")
                                        action:@selector(saveTabAsWindowArrangement:)
                                 keyEquivalent:@""] autorelease];
     [item setRepresentedObject:tabViewItem];
     [rootMenu addItem:item];
 
     if ([_contentView.tabView numberOfTabViewItems] > 1 && !theTab.isPinned) {
-        item = [[[NSMenuItem alloc] initWithTitle:@"Move to New Window"
+        item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Move to New Window", @"Menu item title")
                                            action:@selector(moveTabToNewWindowContextualMenuAction:)
                                     keyEquivalent:@""] autorelease];
         [item setRepresentedObject:tabViewItem];
@@ -7631,7 +7622,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         }
 
         if (hasUnpinnedOther) {
-            item = [[[NSMenuItem alloc] initWithTitle:@"Close Other Tabs"
+            item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Close Other Tabs", @"Menu item title")
                                                action:@selector(closeOtherTabs:)
                                         keyEquivalent:@""] autorelease];
             [item setRepresentedObject:tabViewItem];
@@ -7642,9 +7633,9 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
             NSString *title;
             const PSMTabPosition tabPosition = [iTermPreferences intForKey:kPreferenceKeyTabPosition];
             if (tabPosition == PSMTab_LeftTab || tabPosition == PSMTab_RightTab) {
-                title = @"Close Tabs Below";
+                title = NSLocalizedString(@"Close Tabs Below", @"Menu item title");
             } else {
-                title = @"Close Tabs to the Right";
+                title = NSLocalizedString(@"Close Tabs to the Right", @"Menu item title");
             }
             item = [[[NSMenuItem alloc] initWithTitle:title
                                                action:@selector(closeTabsToTheRight:)
@@ -7657,7 +7648,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     // pin/unpin tab (not available for tmux tabs)
     if (![theTab isTmuxTab]) {
         [rootMenu addItem:[NSMenuItem separatorItem]];
-        NSString *pinTitle = theTab.isPinned ? @"Unpin Tab" : @"Pin Tab";
+        NSString *pinTitle = theTab.isPinned ? NSLocalizedString(@"Unpin Tab", @"Menu item title") : NSLocalizedString(@"Pin Tab", @"Menu item title");
         item = [[[NSMenuItem alloc] initWithTitle:pinTitle
                                            action:@selector(togglePinTab:)
                                     keyEquivalent:@""] autorelease];
@@ -7673,7 +7664,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     PTYTab *tab = [tabViewItem identifier];
     labelTrackView.currentColor = tab.activeSession.tabColor;
     labelTrackView.delegate = self;
-    item = [[[NSMenuItem alloc] initWithTitle:@"Tab Color"
+    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Tab Color", @"Menu item title")
                                        action:@selector(changeTabColorToMenuAction:)
                                 keyEquivalent:@""] autorelease];
     [item setView:labelTrackView];
@@ -11838,9 +11829,9 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
     } else if (item.action == @selector(captureNextMetalFrame:)) {
         const BOOL enabled = self.currentSession.canProduceMetalFramecap;
         if (!self.isMetalCaptureEnabled) {
-            item.title = @"Enable GPU Frame Capture";
+            item.title = NSLocalizedString(@"Enable GPU Frame Capture", @"Menu item title");
         } else {
-            item.title = @"Capture GPU Frame";
+            item.title = NSLocalizedString(@"Capture GPU Frame", @"Menu item title");
         }
         return enabled;
     } else if (item.action == @selector(exportRecording:)) {

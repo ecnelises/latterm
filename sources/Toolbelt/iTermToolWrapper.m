@@ -142,7 +142,7 @@ static const CGFloat iTermToolWrapperCollapsedHeight = 22.0;
 
 - (void)setName:(NSString *)theName {
     _name = [theName copy];
-    _title.stringValue = _name ?: @"";
+    _title.stringValue = _name ? NSLocalizedString(_name, @"Toolbelt panel title") : @"";
 }
 
 - (id<ToolbeltTool>)tool {

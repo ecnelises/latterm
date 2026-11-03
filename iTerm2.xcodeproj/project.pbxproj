@@ -4132,7 +4132,6 @@
 		A6F6AF772F9898E400F9F8F3 /* iTermWindowShortcutAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF742F9898E400F9F8F3 /* iTermWindowShortcutAccessoryView.xib */; };
 		A6F6AF792F98990800F9F8F3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF782F98990800F9F8F3 /* MainMenu.xib */; };
 		A6F6AF7A2F98990800F9F8F3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF782F98990800F9F8F3 /* MainMenu.xib */; };
-		A6F6AF7B2F98990800F9F8F3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF782F98990800F9F8F3 /* MainMenu.xib */; };
 		A6F6AF7D2F98992E00F9F8F3 /* NumberOfSpacesAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF7C2F98992E00F9F8F3 /* NumberOfSpacesAccessoryView.xib */; };
 		A6F6AF7E2F98992E00F9F8F3 /* NumberOfSpacesAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF7C2F98992E00F9F8F3 /* NumberOfSpacesAccessoryView.xib */; };
 		A6F6AF7F2F98992E00F9F8F3 /* NumberOfSpacesAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A6F6AF7C2F98992E00F9F8F3 /* NumberOfSpacesAccessoryView.xib */; };
@@ -15935,7 +15934,6 @@
 				A6EFF2311D2049A300806EEF /* Erase.png in Resources */,
 				A6EA848327223B02009D14AB /* graphic_emacs.png in Resources */,
 				A665C1FA2440461500F623F0 /* WindowCorner@2x.png in Resources */,
-				A6F6AF7B2F98990800F9F8F3 /* MainMenu.xib in Resources */,
 				A6339DD81D232CEE000BAD78 /* StatusItem@2x.png in Resources */,
 				A6F7A740213CB143004DE961 /* StatusBarIconHost@2x.png in Resources */,
 				1D8BBA681B30F5C30005A852 /* Navigate.png in Resources */,
@@ -16515,6 +16513,7 @@
 				"$(SRCROOT)/zh-Hans.lproj/SpecialExceptionsWindowController.strings",
 				"$(SRCROOT)/sources/Settings/iTermEditSnippetWindowController.xib",
 				"$(SRCROOT)/zh-Hans.lproj/iTermEditSnippetWindowController.strings",
+				"$(SRCROOT)/sources/AboutWindow/AboutWindow.xib",
 				"$(SRCROOT)/zh-Hans.lproj/AboutWindow.strings",
 				"$(SRCROOT)/zh-Hans.lproj/InfoPlist.strings",
 				"$(SRCROOT)/zh-Hans.lproj/Localizable.strings",
@@ -16525,6 +16524,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MainMenu.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/MainMenu.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/PreferencePanel.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/SpecialExceptionsWindowController.nib",
@@ -16533,6 +16533,8 @@
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/iTermEditSnippetWindowController.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/PreferencePanel.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/AboutWindow.nib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/AboutWindow.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/AboutWindow.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/InfoPlist.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/Localizable.strings",
@@ -16542,7 +16544,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\nset -euo pipefail\n\nresources_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nenglish_destination=\"${resources_root}/en.lproj\"\ndestination=\"${resources_root}/zh-Hans.lproj\"\nrm -rf \"${resources_root}/zh_CN.lproj\"\nmkdir -p \"$english_destination\" \"$destination\"\ncp \"${SRCROOT}/zh-Hans.lproj/AboutWindow.strings\" \"$destination/AboutWindow.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"$destination/PreferencePanel.strings\"\nxcrun ibtool --compile \"$english_destination/MainMenu.nib\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\nxcrun ibtool --compile \"$destination/MainMenu.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\n\nxcrun ibtool --compile \"$english_destination/PreferencePanel.nib\" \"${SRCROOT}/sources/Settings/PreferencePanel.xib\"\nxcrun ibtool --compile \"$destination/PreferencePanel.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"${SRCROOT}/sources/Settings/PreferencePanel.xib\"\nxcrun ibtool --compile \"$english_destination/iTermEditSnippetWindowController.nib\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$destination/iTermEditSnippetWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermEditSnippetWindowController.strings\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$english_destination/SpecialExceptionsWindowController.nib\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\nxcrun ibtool --compile \"$destination/SpecialExceptionsWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/SpecialExceptionsWindowController.strings\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\n";
+			shellScript = "#!/bin/bash\nset -euo pipefail\n\nresources_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nenglish_destination=\"${resources_root}/en.lproj\"\ndestination=\"${resources_root}/zh-Hans.lproj\"\nrm -rf \"${resources_root}/zh_CN.lproj\"\nmkdir -p \"$english_destination\" \"$destination\"\ncp \"${SRCROOT}/zh-Hans.lproj/AboutWindow.strings\" \"$destination/AboutWindow.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"$destination/PreferencePanel.strings\"\nxcrun ibtool --compile \"$english_destination/MainMenu.nib\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\nxcrun ibtool --compile \"$destination/MainMenu.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\n\nxcrun ibtool --compile \"$english_destination/PreferencePanel.nib\" \"${SRCROOT}/sources/Settings/PreferencePanel.xib\"\nxcrun ibtool --compile \"$destination/PreferencePanel.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"${SRCROOT}/sources/Settings/PreferencePanel.xib\"\nxcrun ibtool --compile \"$english_destination/iTermEditSnippetWindowController.nib\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$destination/iTermEditSnippetWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermEditSnippetWindowController.strings\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$english_destination/SpecialExceptionsWindowController.nib\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\nxcrun ibtool --compile \"$destination/SpecialExceptionsWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/SpecialExceptionsWindowController.strings\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\n\nxcrun ibtool --compile \"$english_destination/AboutWindow.nib\" \"${SRCROOT}/sources/AboutWindow/AboutWindow.xib\"\nxcrun ibtool --compile \"$destination/AboutWindow.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/AboutWindow.strings\" \"${SRCROOT}/sources/AboutWindow/AboutWindow.xib\"\n\n# Remove the old unlocalized menu from incremental builds. Cocoa prefers it\n# over the language-specific nibs compiled above.\nrm -rf \"${resources_root}/MainMenu.nib\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

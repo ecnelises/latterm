@@ -1,10 +1,11 @@
-"""Validate Settings translation resources without starting the app.
+"""Validate Chinese translation resources without starting the app.
 
 Run with: python3 tests/settings_localization_test.py
 """
 import collections
 import json
 from pathlib import Path
+import plistlib
 import re
 import subprocess
 import unittest
@@ -59,6 +60,84 @@ class SettingsLocalizationTests(unittest.TestCase):
             identifiers = {node.get("id") for node in root.iter()}
             for key in strings(ROOT / "zh-Hans.lproj" / f"{name}.strings"):
                 self.assertIn(key.split(".")[0], identifiers, f"{name}: {key}")
+
+    def test_all_main_menu_titles_are_translated(self):
+        localized = strings(ROOT / "zh-Hans.lproj/MainMenu.strings")
+        root = ET.parse(ROOT / "sources/MainMenu/MainMenu.xib").getroot()
+        titles = {f'{node.get("id")}.title': node.get("title")
+                  for node in root.iter() if node.get("title")}
+        self.assertEqual(set(localized), set(titles))
+        unchanged = {"Latterm", "tmux", "ssh", "VT100", "VT200", "VT300", "VT400", "VT500"}
+        for key, title in titles.items():
+            if title not in unchanged:
+                self.assertNotEqual(localized[key], title, key)
+
+    def test_runtime_menu_and_about_translations(self):
+        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
+        for name in ("AppKit/iTermApplicationDelegate.m",
+                     "AboutWindow/iTermAboutWindowController.m",
+                     "ContextMenu/iTermTextViewContextMenuHelper.m",
+                     "Settings/Profiles/iTermProfilesMenuController.m",
+                     "Toolbelt/ToolProfiles.m", "Toolbelt/ToolNotes.m",
+                     "TerminalView/PseudoTerminal.m", "iTermController/iTermController.m"):
+            source = (ROOT / "sources" / name).read_text()
+            self.assertNotRegex(source, r'NSLocalizedStringFromTableInBundle\([^,]+,\s*@"iTerm"', name)
+            keys = re.findall(r'NSLocalizedString\(@("(?:[^"\\]|\\.)*")', source)
+            if "ContextMenu" in name:
+                # Built-in helper/dictionary/terminal-state titles use dynamic lookups.
+                keys += re.findall(r'\badd\(@("(?:[^"\\]|\\.)*")', source)
+                keys += re.findall(r'@"title": @("(?:[^"\\]|\\.)*")', source)
+                keys += re.findall(r'\{ @("(?:[^"\\]|\\.)*"), @selector', source)
+            for literal in keys:
+                key = json.loads(literal)
+                if key in {"VT100", "VT200", "VT300", "VT400", "VT500"}:
+                    continue
+                self.assertTrue(key in localized, f"{name}: missing {key}")
+        toolbelt = (ROOT / "sources/Toolbelt/iTermToolbeltView.m").read_text()
+        for key in re.findall(r'k\w+ToolName = @"([^"]+)"', toolbelt):
+            self.assertIn(key, localized)
+
+    def test_about_nib_and_sponsors_heading_are_translated(self):
+        localized = strings(ROOT / "zh-Hans.lproj/AboutWindow.strings")
+        root = ET.parse(ROOT / "sources/AboutWindow/AboutWindow.xib").getroot()
+        for node in root.iter("textFieldCell"):
+            if node.get("title"):
+                self.assertIn(f'{node.get("id")}.title', localized)
+        heading = root.find('.//textView[@id="XqE-kC-hnW"]/attributedString')
+        content = "".join(fragment.get("content") or fragment.find("string").text
+                          for fragment in heading.findall("fragment"))
+        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
+        self.assertIn(content, localized)
+        self.assertEqual(re.findall(r'href="[^"]+"', content),
+                         re.findall(r'href="[^"]+"', localized[content]))
+
+    def test_permission_prompts_are_translated(self):
+        localized = strings(ROOT / "zh-Hans.lproj/InfoPlist.strings")
+        for name in ("dev", "release", "beta", "nightly"):
+            with (ROOT / "plists" / f"{name}-iTerm2.plist").open("rb") as file:
+                info = plistlib.load(file)
+            for key, value in info.items():
+                if key.endswith("UsageDescription"):
+                    self.assertIn(key, localized, name)
+                    self.assertNotEqual(localized[key], value)
+
+    def test_main_menu_packaging_does_not_shadow_localized_nibs(self):
+        project = strings(ROOT / "iTerm2.xcodeproj/project.pbxproj")["objects"]
+        target = next(obj for obj in project.values()
+                      if obj.get("isa") == "PBXNativeTarget" and obj.get("name") == "iTerm2")
+        phases = [project[key] for key in target["buildPhases"]]
+        resources = next(phase for phase in phases if phase["isa"] == "PBXResourcesBuildPhase")
+        for key in resources["files"]:
+            reference = project[project[key]["fileRef"]]
+            self.assertNotEqual(reference.get("path"), "MainMenu.xib")
+        localization = next(phase for phase in phases
+                            if phase.get("name") == "Copy zh-Hans localization")
+        for language in ("en", "zh-Hans"):
+            for name in ("MainMenu", "AboutWindow"):
+                suffix = f"/{language}.lproj/{name}.nib"
+                self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]))
+        # Remove the stale root resource on incremental builds as well.
+        self.assertIn('rm -rf "${resources_root}/MainMenu.nib"', localization["shellScript"])
 
     def test_editor_labels_and_validation_messages_are_translated(self):
         localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")

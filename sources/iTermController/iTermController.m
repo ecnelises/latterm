@@ -837,7 +837,7 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
     }
     if ([[ProfileModel sharedInstance] numberOfBookmarks] > MAX_MENU_ITEMS) {
         int overflow = [[ProfileModel sharedInstance] numberOfBookmarks] - MAX_MENU_ITEMS;
-        NSMenuItem* overflowItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:@"[%d profiles not shown]", overflow]
+        NSMenuItem* overflowItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"[%d profiles not shown]", @"Profile menu overflow count"), overflow]
                                                            action:nil
                                                     keyEquivalent:@""];
         [subMenu addItem:overflowItem];
@@ -848,7 +848,7 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
 
     if (openAllSelector && count > 1) {
         [subMenu addItem:[NSMenuItem separatorItem]];
-        aMenuItem = [[NSMenuItem alloc] initWithTitle:@"Open All"
+        aMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Open All", @"Profile menu item title")
                                                action:openAllSelector
                                         keyEquivalent:@""];
         if (@available(macOS 26, *)) {
@@ -869,7 +869,7 @@ replaceInitialDirectoryForSessionWithGUID:(NSString *)guid
         [subMenu addItem:aMenuItem];
 
         // Add alternate -------------------------------------------------------
-        aMenuItem = [[NSMenuItem alloc] initWithTitle:@"Open All in New Window"
+        aMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Open All in New Window", @"Profile menu item title")
                                                action:openAllSelector
                                         keyEquivalent:@""];
         modifierMask = NSEventModifierFlagCommand | NSEventModifierFlagControl;

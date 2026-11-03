@@ -111,10 +111,11 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
 + (void)addToolsToMenu:(NSMenu *)menu {
     NSArray *names = [[iTermToolbeltView allTools] sortedArrayUsingSelector:@selector(compare:)];
     for (NSString *theName in names) {
-        NSMenuItem *i = [[NSMenuItem alloc] initWithTitle:theName
+        NSMenuItem *i = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(theName, @"Toolbelt menu item title")
                                                    action:@selector(toggleToolbeltTool:)
                                             keyEquivalent:@""];
         [i setState:[[iTermToolbeltView configuredTools] containsObject:theName] ? NSControlStateValueOn : NSControlStateValueOff];
+        i.representedObject = theName;
         i.identifier = [@"Toolbelt." stringByAppendingString:theName];
         [menu addItem:i];
     }
@@ -193,7 +194,7 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
 
         _noToolsMessage = [NSTextField newLabelStyledTextField];
         _noToolsMessage.alignment = NSTextAlignmentCenter;
-        _noToolsMessage.stringValue = @"No Tools enabled. Select them from the menu above.";
+        _noToolsMessage.stringValue = NSLocalizedString(@"No Tools enabled. Select them from the menu above.", @"Empty toolbelt message");
         _noToolsMessage.frame = self.bounds;
         [self addSubview:_noToolsMessage];
         [self layoutNoToolsMessage];

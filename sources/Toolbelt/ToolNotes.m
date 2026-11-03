@@ -91,7 +91,7 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
         mode_ = ToolNotesModeGlobal;
 
         // Mode selector
-        modeControl_ = [NSSegmentedControl segmentedControlWithLabels:@[@"Global", @"Session"]
+        modeControl_ = [NSSegmentedControl segmentedControlWithLabels:@[NSLocalizedString(@"Global", @"Notes scope"), NSLocalizedString(@"Session", @"Notes scope")]
                                                          trackingMode:NSSegmentSwitchTrackingSelectOne
                                                                target:self
                                                                action:@selector(modeChanged:)];

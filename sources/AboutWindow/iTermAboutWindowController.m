@@ -80,7 +80,7 @@ static const CGFloat kSponsorRowY = 170.0;
     paragraphStyle.alignment = NSTextAlignmentCenter;
     _sponsorsHeading.selectable = YES;
     _sponsorsHeading.editable = NO;
-    [_sponsorsHeading.textStorage setAttributedString:[NSAttributedString attributedStringWithHTML:_sponsorsHeading.textStorage.string
+    [_sponsorsHeading.textStorage setAttributedString:[NSAttributedString attributedStringWithHTML:NSLocalizedString(_sponsorsHeading.textStorage.string, @"About window sponsors heading")
                                                                                               font:_sponsorsHeading.font
                                                                                     paragraphStyle:paragraphStyle]];
 
@@ -194,11 +194,11 @@ static const CGFloat kSponsorRowY = 170.0;
 }
 
 - (instancetype)init {
-    self = [super initWithWindowNibName:@"AboutWindow"];
+    self = [super initWithWindowNibPath:[iTermSettingsLocalization nibPath:@"AboutWindow"] owner:self];
     if (self) {
         NSDictionary *myDict = [[NSBundle bundleForClass:[self class]] infoDictionary];
         NSString *const versionNumber = myDict[(NSString *)kCFBundleVersionKey];
-        NSString *versionString = [NSString stringWithFormat: @"Build %@\n\n", versionNumber];
+        NSString *versionString = [[NSString stringWithFormat:NSLocalizedString(@"Build %@", @"About window build version"), versionNumber] stringByAppendingString:@"\n\n"];
         NSString *appName = iTermAboutWindowApplicationDisplayName();
         NSAttributedString *webAString = [self attributedStringWithLinkToURL:@"https://iterm2.com/"
                                                                        title:NSLocalizedString(@"Home Page",
@@ -284,7 +284,7 @@ static const CGFloat kSponsorRowY = 170.0;
 }
 
 - (NSAttributedString *)defaultPatronsString {
-    NSString *string = [NSString stringWithFormat:@"Loading supporters…"];
+    NSString *string = NSLocalizedString(@"Loading supporters…", @"About window supporters loading status");
     NSMutableAttributedString *attributedString =
         [[NSMutableAttributedString alloc] initWithString:string
                                                attributes:self.attributes];
@@ -303,7 +303,7 @@ static const CGFloat kSponsorRowY = 170.0;
 
 - (void)setPatrons:(NSArray *)patronNames {
     if (!patronNames.count) {
-        [self setPatronsString:[[NSAttributedString alloc] initWithString:@"Error loading patrons :("
+        [self setPatronsString:[[NSAttributedString alloc] initWithString:NSLocalizedString(@"Error loading patrons :(", @"About window supporters loading error")
                                                                 attributes:[self attributes]]
                        animate:NO];
         return;
