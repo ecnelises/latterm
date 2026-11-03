@@ -55,7 +55,8 @@ class SettingsLocalizationTests(unittest.TestCase):
             self.assertIn(category, localized)
 
     def test_settings_nib_translations_reference_existing_objects(self):
-        for name in ("PreferencePanel", "SpecialExceptionsWindowController", "iTermEditSnippetWindowController"):
+        for name in ("PreferencePanel", "SpecialExceptionsWindowController", "iTermEditSnippetWindowController",
+                     "iTermEditKeyActionWindowController"):
             root = ET.parse(ROOT / "sources/Settings" / f"{name}.xib").getroot()
             identifiers = {node.get("id") for node in root.iter()}
             for key in strings(ROOT / "zh-Hans.lproj" / f"{name}.strings"):
@@ -136,6 +137,12 @@ class SettingsLocalizationTests(unittest.TestCase):
             for name in ("MainMenu", "AboutWindow"):
                 suffix = f"/{language}.lproj/{name}.nib"
                 self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]))
+        # Localized editor windows need both an English and a Chinese nib.
+        for name in ("iTermEditSnippetWindowController", "iTermEditKeyActionWindowController"):
+            for language in ("en", "zh-Hans"):
+                suffix = f"/{language}.lproj/{name}.nib"
+                self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]), suffix)
+            self.assertIn(f'--strings-file "${{SRCROOT}}/zh-Hans.lproj/{name}.strings"', localization["shellScript"])
         # Remove the stale root resource on incremental builds as well.
         self.assertIn('rm -rf "${resources_root}/MainMenu.nib"', localization["shellScript"])
 
@@ -157,7 +164,8 @@ class SettingsLocalizationTests(unittest.TestCase):
                      "ProfilesWindowPreferencesViewController.m",
                      "ProfilesColorsPreferencesViewController.m", "iTermColorPresets.m",
                      "WindowArrangements.m", "KeysPreferencesViewController.m",
-                     "iTermRemotePreferences.m"):
+                     "iTermRemotePreferences.m", "iTermEditKeyActionWindowController.m",
+                     "../Keyboard/iTermKeyBindingAction.m"):
             source = (ROOT / "sources/Settings" / name).read_text()
             for key in re.findall(r'NSLocalizedString\(@?"((?:[^"\\]|\\.)*)"', source):
                 key = json.loads('"' + key + '"')

@@ -15,6 +15,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Translate the key binding editor, its action
+  list, and key mapping descriptions, and quote
+  parameters with curly quotes.
 - Keep translated window size units in profile
   settings and translate preset, arrangement,
   and settings folder alerts.

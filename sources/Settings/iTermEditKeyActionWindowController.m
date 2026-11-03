@@ -97,51 +97,51 @@ const CGFloat sideMarginWidth = 40;
 
             case KEY_ACTION_COMPOSE:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Text for composer";
+                _parameterPlaceholder = NSLocalizedString(@"Text for composer", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_HEX_CODE:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"ex: 0x7f 0x20";
+                _parameterPlaceholder = NSLocalizedString(@"ex: 0x7f 0x20", @"Key binding action editor");
                 _applyHidden = NO;
                 break;
 
             case KEY_ACTION_VIM_TEXT:
             case KEY_ACTION_VIM_TEXT_NO_BROADCAST:
                 _parameterHidden = NO;
-                _helpString = @"Special characters are:\n* \\<1-to-3-digit octal>\n* \\x<1 or 2 digit hex>\n* \\u<4 digit hex>\n* \\b for backspace\n* \\e for esc\n* \\f for formfeed\n* \\n for newline and \\r for return\n* \\t for tab\n* \\\\ and \\\" for literal \\ and \"\n* <C-x> for control key\n* <M-x> for meta key.";
-                _parameterPlaceholder = @"Enter value to send. Click help button for special characters.";
+                _helpString = NSLocalizedString(@"Special characters are:\n* \\<1-to-3-digit octal>\n* \\x<1 or 2 digit hex>\n* \\u<4 digit hex>\n* \\b for backspace\n* \\e for esc\n* \\f for formfeed\n* \\n for newline and \\r for return\n* \\t for tab\n* \\\\ and \\\" for literal \\ and \"\n* <C-x> for control key\n* <M-x> for meta key.", @"Key binding action editor");
+                _parameterPlaceholder = NSLocalizedString(@"Enter value to send. Click help button for special characters.", @"Key binding action editor");
                 _applyHidden = NO;
                 break;
 
             case KEY_ACTION_TEXT:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Enter value to send";
+                _parameterPlaceholder = NSLocalizedString(@"Enter value to send", @"Key binding action editor");
                 _applyHidden = NO;
                 break;
 
             case KEY_ACTION_RUN_COPROCESS:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Enter command to run";
+                _parameterPlaceholder = NSLocalizedString(@"Enter command to run", @"Key binding action editor");
                 _applyHidden = NO;
                 break;
 
             case KEY_ACTION_SEND_TMUX_COMMAND:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Enter tmux command";
+                _parameterPlaceholder = NSLocalizedString(@"Enter tmux command", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_SELECT_MENU_ITEM:
-                _parameterPlaceholder = @"Enter name of menu item";
+                _parameterPlaceholder = NSLocalizedString(@"Enter name of menu item", @"Key binding action editor");
                 _menuToSelectPopupHidden = NO;
                 _parameterValue = @"";
                 break;
 
             case KEY_ACTION_ESCAPE_SEQUENCE:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"characters to send";
+                _parameterPlaceholder = NSLocalizedString(@"characters to send", @"Key binding action editor");
                 _parameterLabelHidden = NO;
-                _parameterLabel = @"Esc+";
+                _parameterLabel = NSLocalizedString(@"Esc+", @"Key binding action editor");
                 _applyHidden = NO;
                 break;
 
@@ -171,57 +171,57 @@ const CGFloat sideMarginWidth = 40;
             case KEY_ACTION_DO_NOT_REMAP_MODIFIERS:
                 _shortcutFieldDisableKeyRemapping = YES;
                 _parameterValue = @"";
-                _helpString = @"This action lets you exempt a keystroke from modifier remapping. For example, if you remap ⌘ to ⌥ but you want ⌘-Tab to work as though ⌘ were unmapped just for that keystroke, you would use this action and set the keyboard shortcut to ⌘-Tab";
+                _helpString = NSLocalizedString(@"This action lets you exempt a keystroke from modifier remapping. For example, if you remap ⌘ to ⌥ but you want ⌘-Tab to work as though ⌘ were unmapped just for that keystroke, you would use this action and set the keyboard shortcut to ⌘-Tab", @"Key binding action editor");
                 _parameterValue = @"";
                 break;
 
             case KEY_ACTION_REMAP_LOCALLY:
                 _shortcutFieldDisableKeyRemapping = YES;
                 _parameterValue = @"";
-                _helpString = @"This action applies modifier remapping but prevents other programs from seeing the keystroke. For example, if you've swapped ⌘ and ^ and want physical ^-tab to switch tabs in Latterm instead of triggering the app switcher: bind ^-tab to this action. The system won't see the remapped ⌘-tab (so no app switcher), but Latterm receives it and can switch tabs.";
+                _helpString = NSLocalizedString(@"This action applies modifier remapping but prevents other programs from seeing the keystroke. For example, if you've swapped ⌘ and ^ and want physical ^-tab to switch tabs in Latterm instead of triggering the app switcher: bind ^-tab to this action. The system won't see the remapped ⌘-tab (so no app switcher), but Latterm receives it and can switch tabs.", @"Key binding action editor");
                 _parameterValue = @"";
                 break;
 
             case KEY_ACTION_BYPASS:
-                _helpString = @"Prevents the keystroke from being sent to the terminal while allowing macOS to handle it normally. For example, if F1 triggers a  macOS Shortcut, binding F1 to Bypass Terminal stops it from sending a control sequence to the terminal but still lets the system shortcut work.";
+                _helpString = NSLocalizedString(@"Prevents the keystroke from being sent to the terminal while allowing macOS to handle it normally. For example, if F1 triggers a macOS Shortcut, binding F1 to Bypass Terminal stops it from sending a control sequence to the terminal but still lets the system shortcut work.", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_IGNORE:
-                _helpString = @"Prevents the keystroke from having any effect within Latterm. Modifier remapping remains unaffected.";
+                _helpString = NSLocalizedString(@"Prevents the keystroke from having any effect within Latterm. Modifier remapping remains unaffected.", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_NEXT_MRU_TAB:
                 _parameterValue = @"";
-                _helpString = @"Switches tabs in most-recently-used order, like ⌘-Tab in macOS. Hold a modifier and tap repeatedly to walk back through tab history; release the modifier to commit your selection. A single tap with no modifier held jumps to the previously-selected tab, so binding this to a plain key acts as a toggle between the two most recent tabs.";
+                _helpString = NSLocalizedString(@"Switches tabs in most-recently-used order, like ⌘-Tab in macOS. Hold a modifier and tap repeatedly to walk back through tab history; release the modifier to commit your selection. A single tap with no modifier held jumps to the previously-selected tab, so binding this to a plain key acts as a toggle between the two most recent tabs.", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_PREVIOUS_MRU_TAB:
                 _parameterValue = @"";
-                _helpString = @"Switches tabs in reverse most-recently-used order. Hold a modifier and tap repeatedly to walk forward through tab history (oldest first); release the modifier to commit your selection. A single tap with no modifier held jumps to the least-recently-used tab.";
+                _helpString = NSLocalizedString(@"Switches tabs in reverse most-recently-used order. Hold a modifier and tap repeatedly to walk forward through tab history (oldest first); release the modifier to commit your selection. A single tap with no modifier held jumps to the least-recently-used tab.", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_FIND_REGEX:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Regular Expression";
+                _parameterPlaceholder = NSLocalizedString(@"Regular Expression", @"Key binding action editor");
                 _applyHidden = NO;
                 break;
 
             case KEY_ACTION_COPY_MODE:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Copy Mode Commands";
+                _parameterPlaceholder = NSLocalizedString(@"Copy Mode Commands", @"Key binding action editor");
                 _applyHidden = NO;
-                _helpString = @"Enter copy mode commands to move cursor, toggle selection, and so on. This key binding enters Copy Mode and then acts as though you had pressed the keys listed here. [See a list of all the commands](https://iterm2.com/documentation-copymode.html). Use vim syntax for control, option, and function keys (e.g., `<C-x>` or `<Up>`.";
+                _helpString = NSLocalizedString(@"Enter copy mode commands to move cursor, toggle selection, and so on. This key binding enters Copy Mode and then acts as though you had pressed the keys listed here. [See a list of all the commands](https://iterm2.com/documentation-copymode.html). Use vim syntax for control, option, and function keys (e.g., `<C-x>` or `<Up>`).", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_TOGGLE_SETTING:
-                _parameterPlaceholder = @"Enter name of menu item";
+                _parameterPlaceholder = NSLocalizedString(@"Enter name of menu item", @"Key binding action editor");
                 _settingToTogglePopupHidden = NO;
                 _parameterValue = @"";
                 break;
 
             case KEY_ACTION_INVOKE_SCRIPT_FUNCTION:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Function Call";
+                _parameterPlaceholder = NSLocalizedString(@"Function Call", @"Key binding action editor");
                 if (functionCallDelegate) {
                     _parameterDelegate = functionCallDelegate;
                 } else {
@@ -256,7 +256,7 @@ const CGFloat sideMarginWidth = 40;
 
             case KEY_ACTION_COPY_INTERPOLATED_STRING:
                 _parameterHidden = NO;
-                _parameterPlaceholder = @"Enter interpolated string (evaluated in session context)";
+                _parameterPlaceholder = NSLocalizedString(@"Enter interpolated string (evaluated in session context)", @"Key binding action editor");
                 if (interpolatedStringDelegate) {
                     _parameterDelegate = interpolatedStringDelegate;
                 } else {
@@ -265,7 +265,7 @@ const CGFloat sideMarginWidth = 40;
                                                                        passthrough:nil
                                                                      functionsOnly:NO];
                 }
-                _helpString = @"You can use this to copy information about the current session to the clipboard. [Learn more about interpolated strings](https://iterm2.com/documentation-scripting-fundamentals.html)";
+                _helpString = NSLocalizedString(@"You can use this to copy information about the current session to the clipboard. [Learn more about interpolated strings](https://iterm2.com/documentation-scripting-fundamentals.html)", @"Key binding action editor");
                 break;
 
             case KEY_ACTION_SCROLL_END:
@@ -346,7 +346,7 @@ const CGFloat sideMarginWidth = 40;
 
 - (instancetype)initWithContext:(iTermVariablesSuggestionContext)context
                            mode:(iTermEditKeyActionWindowControllerMode)mode {
-    self = [super initWithWindowNibName:@"iTermEditKeyActionWindowController" owner:self];
+    self = [super initWithWindowNibPath:[iTermSettingsLocalization nibPath:@"iTermEditKeyActionWindowController"] owner:self];
     if (self) {
         _suggestContext = context;
         _mode = mode;
@@ -356,19 +356,19 @@ const CGFloat sideMarginWidth = 40;
 
 - (NSArray<iTermSearchableComboViewGroup *> *)groupsForPrimary:(BOOL)primary {
     NSArray<iTermSearchableComboViewGroup *> *groups = @[
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"General" items:[@[
-            primary ? [[iTermSearchableComboViewItem alloc] initWithLabel:@"Ignore" tag:KEY_ACTION_IGNORE] : [NSNull null],
-            primary ? [[iTermSearchableComboViewItem alloc] initWithLabel:@"Bypass Terminal" tag:KEY_ACTION_BYPASS] : [NSNull null],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Menu Item..." tag:KEY_ACTION_SELECT_MENU_ITEM],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"General", @"Key binding action group") items:[@[
+            primary ? [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Ignore", @"Key binding action") tag:KEY_ACTION_IGNORE] : [NSNull null],
+            primary ? [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Bypass Terminal", @"Key binding action") tag:KEY_ACTION_BYPASS] : [NSNull null],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Select Menu Item…", @"Key binding action") tag:KEY_ACTION_SELECT_MENU_ITEM],
         ] arrayByRemovingNulls]]
     ];
     if (self.mode == iTermEditKeyActionWindowControllerModeKeyboardShortcut) {
         groups = [groups arrayByAddingObjectsFromArray:[@[
-            primary ? [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Modifier Remapping" items:@[
-                [[iTermSearchableComboViewItem alloc] initWithLabel:@"Do Not Remap Modifiers" tag:KEY_ACTION_DO_NOT_REMAP_MODIFIERS],
-                [[iTermSearchableComboViewItem alloc] initWithLabel:@"Remap Modifiers in Latterm Only" tag:KEY_ACTION_REMAP_LOCALLY],
+            primary ? [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Modifier Remapping", @"Key binding action group") items:@[
+                [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Do Not Remap Modifiers", @"Key binding action") tag:KEY_ACTION_DO_NOT_REMAP_MODIFIERS],
+                [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Remap Modifiers in Latterm Only", @"Key binding action") tag:KEY_ACTION_REMAP_LOCALLY],
             ]] : [NSNull null],
-            [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Recent Tabs" items:@[
+            [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Recent Tabs", @"Key binding action group") items:@[
                 [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Cycle Tabs Forward", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_MRU_TAB],
                 [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Cycle Tabs Backward", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_MRU_TAB],
             ]],
@@ -376,127 +376,127 @@ const CGFloat sideMarginWidth = 40;
     }
 
     groups = [groups arrayByAddingObjectsFromArray:[@[
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Miscellaneous" items:[@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Run Coprocess" tag:KEY_ACTION_RUN_COPROCESS],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Start Instant Replay" tag:KEY_ACTION_IR_BACKWARD],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Undo" tag:KEY_ACTION_UNDO],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send tmux Command" tag:KEY_ACTION_SEND_TMUX_COMMAND],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Alert on Next Mark" tag:KEY_ACTION_ALERT_ON_NEXT_MARK],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Miscellaneous", @"Key binding action group") items:[@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Run Coprocess", @"Key binding action") tag:KEY_ACTION_RUN_COPROCESS],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Start Instant Replay", @"Key binding action") tag:KEY_ACTION_IR_BACKWARD],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Undo", @"Key binding action") tag:KEY_ACTION_UNDO],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send tmux Command", @"Key binding action") tag:KEY_ACTION_SEND_TMUX_COMMAND],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Alert on Next Mark", @"Key binding action") tag:KEY_ACTION_ALERT_ON_NEXT_MARK],
         ] arrayByRemovingNulls]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"New Tab or Window" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"New Window with Profile" tag:KEY_ACTION_NEW_WINDOW_WITH_PROFILE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"New Tab with Profile" tag:KEY_ACTION_NEW_TAB_WITH_PROFILE],
-        [[iTermSearchableComboViewItem alloc] initWithLabel:@"Duplicate Tab" tag:KEY_ACTION_DUPLICATE_TAB],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"New Tab or Window", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"New Window with Profile", @"Key binding action") tag:KEY_ACTION_NEW_WINDOW_WITH_PROFILE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"New Tab with Profile", @"Key binding action") tag:KEY_ACTION_NEW_TAB_WITH_PROFILE],
+        [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Duplicate Tab", @"Key binding action") tag:KEY_ACTION_DUPLICATE_TAB],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Split" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Split Horizontally with Profile" tag:KEY_ACTION_SPLIT_HORIZONTALLY_WITH_PROFILE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Split Vertically with Profile" tag:KEY_ACTION_SPLIT_VERTICALLY_WITH_PROFILE],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Split", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Split Horizontally with Profile", @"Key binding action") tag:KEY_ACTION_SPLIT_HORIZONTALLY_WITH_PROFILE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Split Vertically with Profile", @"Key binding action") tag:KEY_ACTION_SPLIT_VERTICALLY_WITH_PROFILE],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Profile" items:[@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Change Profile" tag:KEY_ACTION_SET_PROFILE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Load Color Preset" tag:KEY_ACTION_LOAD_COLOR_PRESET],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Profile", @"Key binding action group") items:[@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Change Profile", @"Key binding action") tag:KEY_ACTION_SET_PROFILE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Load Color Preset", @"Key binding action") tag:KEY_ACTION_LOAD_COLOR_PRESET],
         ] arrayByRemovingNulls]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Tabs" items:@[
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Navigate Tabs", @"Key binding action group") items:@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Next Tab", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_SESSION],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Previous Tab", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_SESSION],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Reorder Tabs" items:@[
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Reorder Tabs", @"Key binding action group") items:@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Tab Left", @"Keyboard shortcut") tag:KEY_ACTION_MOVE_TAB_LEFT],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Tab Right", @"Keyboard shortcut") tag:KEY_ACTION_MOVE_TAB_RIGHT],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Windows" items:@[
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Navigate Windows", @"Key binding action group") items:@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Next Window", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_WINDOW],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Previous Window", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_WINDOW],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Navigate Panes" items:@[
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Navigate Panes", @"Key binding action group") items:@[
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Next Pane", @"Keyboard shortcut") tag:KEY_ACTION_NEXT_PANE],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Previous Pane", @"Keyboard shortcut") tag:KEY_ACTION_PREVIOUS_PANE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane Above" tag:KEY_ACTION_SELECT_PANE_ABOVE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane Below" tag:KEY_ACTION_SELECT_PANE_BELOW],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane On Left" tag:KEY_ACTION_SELECT_PANE_LEFT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Select Split Pane On Right" tag:KEY_ACTION_SELECT_PANE_RIGHT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Select Split Pane Above", @"Key binding action") tag:KEY_ACTION_SELECT_PANE_ABOVE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Select Split Pane Below", @"Key binding action") tag:KEY_ACTION_SELECT_PANE_BELOW],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Select Split Pane On Left", @"Key binding action") tag:KEY_ACTION_SELECT_PANE_LEFT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Select Split Pane On Right", @"Key binding action") tag:KEY_ACTION_SELECT_PANE_RIGHT],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Resize Pane" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Decrease Height" tag:KEY_ACTION_DECREASE_HEIGHT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Increase Height" tag:KEY_ACTION_INCREASE_HEIGHT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Decrease Width" tag:KEY_ACTION_DECREASE_WIDTH],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Increase Width" tag:KEY_ACTION_INCREASE_WIDTH],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Resize Pane", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Decrease Height", @"Key binding action") tag:KEY_ACTION_DECREASE_HEIGHT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Increase Height", @"Key binding action") tag:KEY_ACTION_INCREASE_HEIGHT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Decrease Width", @"Key binding action") tag:KEY_ACTION_DECREASE_WIDTH],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Increase Width", @"Key binding action") tag:KEY_ACTION_INCREASE_WIDTH],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Scroll" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll to End" tag:KEY_ACTION_SCROLL_END],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Scroll to Top" tag:KEY_ACTION_SCROLL_HOME],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Scroll", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll to End", @"Key binding action") tag:KEY_ACTION_SCROLL_END],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll to Top", @"Key binding action") tag:KEY_ACTION_SCROLL_HOME],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Line Down", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_LINE_DOWN],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Line Up", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_LINE_UP],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Page Down", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_PAGE_DOWN],
             [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Scroll One Page Up", @"Keyboard shortcut") tag:KEY_ACTION_SCROLL_PAGE_UP],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Split Panes" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Swap With Split Pane Above" tag:KEY_ACTION_SWAP_PANE_ABOVE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Swap With Split Pane Below" tag:KEY_ACTION_SWAP_PANE_BELOW],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Swap With Split Pane on Left" tag:KEY_ACTION_SWAP_PANE_LEFT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Swap With Split Pane on Right" tag:KEY_ACTION_SWAP_PANE_RIGHT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Swap With Next Pane" tag:KEY_ACTION_SWAP_WITH_NEXT_PANE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Swap With Previous Pane" tag:KEY_ACTION_SWAP_WITH_PREVIOUS_PANE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move Session to Split Pane" tag:KEY_ACTION_MOVE_TO_SPLIT_PANE],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Split Panes", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Swap With Split Pane Above", @"Key binding action") tag:KEY_ACTION_SWAP_PANE_ABOVE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Swap With Split Pane Below", @"Key binding action") tag:KEY_ACTION_SWAP_PANE_BELOW],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Swap With Split Pane on Left", @"Key binding action") tag:KEY_ACTION_SWAP_PANE_LEFT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Swap With Split Pane on Right", @"Key binding action") tag:KEY_ACTION_SWAP_PANE_RIGHT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Swap With Next Pane", @"Key binding action") tag:KEY_ACTION_SWAP_WITH_NEXT_PANE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Swap With Previous Pane", @"Key binding action") tag:KEY_ACTION_SWAP_WITH_PREVIOUS_PANE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Session to Split Pane", @"Key binding action") tag:KEY_ACTION_MOVE_TO_SPLIT_PANE],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Send Keystrokes" items:[@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send ^H Backspace" tag:KEY_ACTION_SEND_C_H_BACKSPACE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send ^? Backspace" tag:KEY_ACTION_SEND_C_QM_BACKSPACE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Escape Sequence" tag:KEY_ACTION_ESCAPE_SEQUENCE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Hex Code" tag:KEY_ACTION_HEX_CODE],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Text" tag:KEY_ACTION_TEXT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Text with “vim” Special Chars" tag:KEY_ACTION_VIM_TEXT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Text without Broadcasting" tag:KEY_ACTION_VIM_TEXT_NO_BROADCAST],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Send Snippet" tag:KEY_ACTION_SEND_SNIPPET],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Compose…" tag:KEY_ACTION_COMPOSE],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Send Keystrokes", @"Key binding action group") items:[@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send ^H Backspace", @"Key binding action") tag:KEY_ACTION_SEND_C_H_BACKSPACE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send ^? Backspace", @"Key binding action") tag:KEY_ACTION_SEND_C_QM_BACKSPACE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send Escape Sequence", @"Key binding action") tag:KEY_ACTION_ESCAPE_SEQUENCE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send Hex Code", @"Key binding action") tag:KEY_ACTION_HEX_CODE],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send Text", @"Key binding action") tag:KEY_ACTION_TEXT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send Text with “vim” Special Chars", @"Key binding action") tag:KEY_ACTION_VIM_TEXT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send Text without Broadcasting", @"Key binding action") tag:KEY_ACTION_VIM_TEXT_NO_BROADCAST],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Send Snippet", @"Key binding action") tag:KEY_ACTION_SEND_SNIPPET],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Compose…", @"Key binding action") tag:KEY_ACTION_COMPOSE],
         ] arrayByRemovingNulls]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Search" items:[@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Regular Expression…" tag:KEY_ACTION_FIND_REGEX],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Again Down" tag:KEY_FIND_AGAIN_DOWN],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Find Again Up" tag:KEY_FIND_AGAIN_UP],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Search", @"Key binding action group") items:[@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Find Regular Expression…", @"Key binding action") tag:KEY_ACTION_FIND_REGEX],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Find Again Down", @"Key binding action") tag:KEY_FIND_AGAIN_DOWN],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Find Again Up", @"Key binding action") tag:KEY_FIND_AGAIN_UP],
         ] arrayByRemovingNulls]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Pasteboard" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Paste…" tag:KEY_ACTION_PASTE_SPECIAL],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Paste from Selection…" tag:KEY_ACTION_PASTE_SPECIAL_FROM_SELECTION],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Copy or Send ^C" tag:KEY_ACTION_COPY_OR_SEND],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Paste or Send ^V" tag:KEY_ACTION_PASTE_OR_SEND],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Copy Interpolated String" tag:KEY_ACTION_COPY_INTERPOLATED_STRING],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Copy Mode Commands" tag:KEY_ACTION_COPY_MODE],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Pasteboard", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Paste…", @"Key binding action") tag:KEY_ACTION_PASTE_SPECIAL],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Paste from Selection…", @"Key binding action") tag:KEY_ACTION_PASTE_SPECIAL_FROM_SELECTION],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Copy or Send ^C", @"Key binding action") tag:KEY_ACTION_COPY_OR_SEND],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Paste or Send ^V", @"Key binding action") tag:KEY_ACTION_PASTE_OR_SEND],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Copy Interpolated String", @"Key binding action") tag:KEY_ACTION_COPY_INTERPOLATED_STRING],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Copy Mode Commands", @"Key binding action") tag:KEY_ACTION_COPY_MODE],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Toggles" items:[@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Fullscreen" tag:KEY_ACTION_TOGGLE_FULLSCREEN],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Pin Hotkey Window" tag:KEY_ACTION_TOGGLE_HOTKEY_WINDOW_PINNING],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Mouse Reporting" tag:KEY_ACTION_TOGGLE_MOUSE_REPORTING],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Toggle Setting" tag:KEY_ACTION_TOGGLE_SETTING],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Toggles", @"Key binding action group") items:[@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Toggle Fullscreen", @"Key binding action") tag:KEY_ACTION_TOGGLE_FULLSCREEN],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Toggle Pin Hotkey Window", @"Key binding action") tag:KEY_ACTION_TOGGLE_HOTKEY_WINDOW_PINNING],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Toggle Mouse Reporting", @"Key binding action") tag:KEY_ACTION_TOGGLE_MOUSE_REPORTING],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Toggle Setting", @"Key binding action") tag:KEY_ACTION_TOGGLE_SETTING],
         ] arrayByRemovingNulls]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Selection" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move Start of Selection Back" tag:KEY_ACTION_MOVE_START_OF_SELECTION_LEFT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move Start of Selection Forward" tag:KEY_ACTION_MOVE_START_OF_SELECTION_RIGHT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move End of Selection Back" tag:KEY_ACTION_MOVE_END_OF_SELECTION_LEFT],
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Move End of Selection Forward" tag:KEY_ACTION_MOVE_END_OF_SELECTION_RIGHT],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Selection", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Start of Selection Back", @"Key binding action") tag:KEY_ACTION_MOVE_START_OF_SELECTION_LEFT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move Start of Selection Forward", @"Key binding action") tag:KEY_ACTION_MOVE_START_OF_SELECTION_RIGHT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move End of Selection Back", @"Key binding action") tag:KEY_ACTION_MOVE_END_OF_SELECTION_LEFT],
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Move End of Selection Forward", @"Key binding action") tag:KEY_ACTION_MOVE_END_OF_SELECTION_RIGHT],
         ]],
 
-        [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Scripting" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Invoke Script Function…" tag:KEY_ACTION_INVOKE_SCRIPT_FUNCTION],
+        [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Scripting", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Invoke Script Function…", @"Key binding action") tag:KEY_ACTION_INVOKE_SCRIPT_FUNCTION],
         ]],
 
-        primary ? [[iTermSearchableComboViewGroup alloc] initWithLabel:@"Composition" items:@[
-            [[iTermSearchableComboViewItem alloc] initWithLabel:@"Sequence…" tag:KEY_ACTION_SEQUENCE],
+        primary ? [[iTermSearchableComboViewGroup alloc] initWithLabel:NSLocalizedString(@"Composition", @"Key binding action group") items:@[
+            [[iTermSearchableComboViewItem alloc] initWithLabel:NSLocalizedString(@"Sequence…", @"Key binding action") tag:KEY_ACTION_SEQUENCE],
         ]] : [NSNull null],
     ] arrayByRemovingNulls]];
     return groups;
@@ -514,18 +514,18 @@ const CGFloat sideMarginWidth = 40;
         case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
             break;
         case iTermEditKeyActionWindowControllerModeUnbound:
-            _actionTitleField.placeholderString = self.titleIsInterpolated ? @"Title (Interpolated String)" : @"Title";
+            _actionTitleField.placeholderString = self.titleIsInterpolated ? NSLocalizedString(@"Title (Interpolated String)", @"Key binding action editor") : NSLocalizedString(@"Title", @"Key binding action editor");
             break;
     }
 
     _comboView = [[iTermSearchableComboView alloc] initWithGroups:[self groupsForPrimary:YES]
-                                                     defaultTitle:@"Select Action…"];
+                                                     defaultTitle:NSLocalizedString(@"Select Action…", @"Key binding action editor")];
     [_comboViewContainer addSubview:_comboView];
     _comboView.frame = _comboViewContainer.bounds;
     _comboView.delegate = self;
 
     _secondaryComboView = [[iTermSearchableComboView alloc] initWithGroups:[self groupsForPrimary:NO]
-                                                              defaultTitle:@"Select Action…"];
+                                                              defaultTitle:NSLocalizedString(@"Select Action…", @"Key binding action editor")];
     [_secondaryComboViewContainer addSubview:_secondaryComboView];
     _secondaryComboView.frame = _secondaryComboViewContainer.bounds;
     _secondaryComboView.delegate = self;
@@ -542,17 +542,17 @@ const CGFloat sideMarginWidth = 40;
     (void)[_comboView selectItemWithTag:self.action];
 
     _applyButton = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-    [_applyButton addItemWithTitle:@"Apply to current session"];
+    [_applyButton addItemWithTitle:NSLocalizedString(@"Apply to current session", @"Key binding action scope")];
     _applyButton.menu.itemArray.lastObject.tag = iTermActionApplyModeCurrentSession;
-    [_applyButton addItemWithTitle:@"Apply to all sessions"];
+    [_applyButton addItemWithTitle:NSLocalizedString(@"Apply to all sessions", @"Key binding action scope")];
     _applyButton.menu.itemArray.lastObject.tag = iTermActionApplyModeAllSessions;
-    [_applyButton addItemWithTitle:@"Apply to all sessions except current"];
+    [_applyButton addItemWithTitle:NSLocalizedString(@"Apply to all sessions except current", @"Key binding action scope")];
     _applyButton.menu.itemArray.lastObject.tag = iTermActionApplyModeUnfocusedSessions;
-    [_applyButton addItemWithTitle:@"Apply to all sessions in window"];
+    [_applyButton addItemWithTitle:NSLocalizedString(@"Apply to all sessions in window", @"Key binding action scope")];
     _applyButton.menu.itemArray.lastObject.tag = iTermActionApplyModeAllInWindow;
-    [_applyButton addItemWithTitle:@"Apply to all sessions in tab"];
+    [_applyButton addItemWithTitle:NSLocalizedString(@"Apply to all sessions in tab", @"Key binding action scope")];
     _applyButton.menu.itemArray.lastObject.tag = iTermActionApplyModeAllInTab;
-    [_applyButton addItemWithTitle:@"Apply to broadcasted-to sessions"];
+    [_applyButton addItemWithTitle:NSLocalizedString(@"Apply to broadcasted-to sessions", @"Key binding action scope")];
     _applyButton.menu.itemArray.lastObject.tag = iTermActionApplyModeBroadcasting;
 
     _applyButton.target = self;
@@ -673,7 +673,7 @@ const CGFloat sideMarginWidth = 40;
 - (void)updateViewsAnimated:(BOOL)animated secondary:(BOOL)secondary {
     switch (self.mode) {
         case iTermEditKeyActionWindowControllerModeUnbound:
-            _keyboardShortcutLabel.stringValue = @"Title";
+            _keyboardShortcutLabel.stringValue = NSLocalizedString(@"Title:", @"Key binding action editor");
             if (self.titleIsInterpolated) {
                 if (!_labelDelegate) {
                     _labelDelegate = [[iTermFunctionCallTextFieldDelegate alloc] initWithPathSource:[iTermVariableHistory pathSourceForContext:iTermVariablesSuggestionContextSession]
@@ -688,7 +688,7 @@ const CGFloat sideMarginWidth = 40;
             _shortcutField.hidden = YES;
             break;
         case iTermEditKeyActionWindowControllerModeKeyboardShortcut:
-            _keyboardShortcutLabel.stringValue = @"Keyboard Shortcut:";
+            _keyboardShortcutLabel.stringValue = NSLocalizedString(@"Keyboard Shortcut:", @"Key binding action editor");
             _actionTitleField.hidden = YES;
             _shortcutField.hidden = NO;
             break;

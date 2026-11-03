@@ -131,15 +131,15 @@ static NSString *GetProfileName(NSString *guid) {
 + (NSString *)stringForSelectionMovementUnit:(PTYTextViewSelectionExtensionUnit)unit {
     switch (unit) {
         case kPTYTextViewSelectionExtensionUnitLine:
-            return @"By Line";
+            return NSLocalizedString(@"By Line", @"Selection movement unit");
         case kPTYTextViewSelectionExtensionUnitCharacter:
-            return @"By Character";
+            return NSLocalizedString(@"By Character", @"Selection movement unit");
         case kPTYTextViewSelectionExtensionUnitWord:
-            return @"By Word";
+            return NSLocalizedString(@"By Word", @"Selection movement unit");
         case kPTYTextViewSelectionExtensionUnitBigWord:
-            return @"By WORD";
+            return NSLocalizedString(@"By WORD", @"Selection movement unit");
         case kPTYTextViewSelectionExtensionUnitMark:
-            return @"By Mark";
+            return NSLocalizedString(@"By Mark", @"Selection movement unit");
     }
     XLog(@"Unrecognized selection movement unit %@", @(unit));
     return @"";
@@ -265,143 +265,142 @@ static NSString *GetProfileName(NSString *guid) {
             actionString = NSLocalizedString(@"Scroll One Page Up", @"Keyboard shortcut");
             break;
         case KEY_ACTION_ESCAPE_SEQUENCE:
-            actionString = [NSString stringWithFormat:@"%@ %@", @"Send ^[", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Send ^[ %@", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_HEX_CODE:
-            actionString = [NSString stringWithFormat: @"%@ %@", @"Send Hex Codes:", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Send Hex Codes: %@", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_VIM_TEXT:
-            actionString = [NSString stringWithFormat:@"%@ \"%@\"", @"Send:", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Send: “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_VIM_TEXT_NO_BROADCAST:
-            actionString = [NSString stringWithFormat:@"%@ \"%@\"", @"Send (no broadcast):", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Send (no broadcast): “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_TEXT:
-            actionString = [NSString stringWithFormat:@"%@ \"%@\"", @"Send:", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Send: “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_SEND_SNIPPET: {
             iTermSnippet *snippet = [[iTermSnippetsModel sharedInstance] snippetWithActionKey:_parameter];
             if (snippet) {
-                actionString = [NSString stringWithFormat:@"Send Snippet “%@”", snippet.displayTitle];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"Send Snippet “%@”", @"Key binding action"), snippet.displayTitle];
             } else {
-                actionString = @"Send Deleted Snippet (no action)";
+                actionString = NSLocalizedString(@"Send Deleted Snippet (no action)", @"Key binding action");
             }
             break;
         }
         case KEY_ACTION_COMPOSE:
-            actionString = [NSString stringWithFormat:@"Compose “%@”", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Compose “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_SEND_TMUX_COMMAND:
             actionString = [NSString stringWithFormat:@"tmux: %@", _parameter];
             break;
         case KEY_ACTION_RUN_COPROCESS:
-            actionString = [NSString stringWithFormat:@"Run Coprocess \"%@\"",
-						    _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Run Coprocess “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_SELECT_MENU_ITEM: {
             NSArray *parts = [_parameter componentsSeparatedByString:@"\n"];
-            actionString = [NSString stringWithFormat:@"%@ “%@”", @"Select Menu Item", parts.firstObject];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Select Menu Item “%@”", @"Key binding action"), parts.firstObject];
             break;
         }
         case KEY_ACTION_NEW_WINDOW_WITH_PROFILE:
             if ([[ProfileModel sharedInstance] bookmarkWithGuid:_parameter]) {
-                actionString = [NSString stringWithFormat:@"New Window with \"%@\" Profile", GetProfileName(_parameter)];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"New Window with “%@” Profile", @"Key binding action"), GetProfileName(_parameter)];
             } else {
-                actionString = @"New Window with unavailable Profile";
+                actionString = NSLocalizedString(@"New Window with unavailable Profile", @"Key binding action");
             }
             break;
         case KEY_ACTION_NEW_TAB_WITH_PROFILE:
             if ([[ProfileModel sharedInstance] bookmarkWithGuid:_parameter]) {
-                actionString = [NSString stringWithFormat:@"New Tab with \"%@\" Profile", GetProfileName(_parameter)];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"New Tab with “%@” Profile", @"Key binding action"), GetProfileName(_parameter)];
             } else {
-                actionString = @"New Tab with unavailable Profile";
+                actionString = NSLocalizedString(@"New Tab with unavailable Profile", @"Key binding action");
             }
             break;
         case KEY_ACTION_SPLIT_HORIZONTALLY_WITH_PROFILE:
             if ([[ProfileModel sharedInstance] bookmarkWithGuid:_parameter]) {
-                actionString = [NSString stringWithFormat:@"Split Horizontally with \"%@\" Profile", GetProfileName(_parameter)];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"Split Horizontally with “%@” Profile", @"Key binding action"), GetProfileName(_parameter)];
             } else {
-                actionString = @"Split Horizontally with unavailable Profile";
+                actionString = NSLocalizedString(@"Split Horizontally with unavailable Profile", @"Key binding action");
             }
             break;
         case KEY_ACTION_SPLIT_VERTICALLY_WITH_PROFILE:
             if ([[ProfileModel sharedInstance] bookmarkWithGuid:_parameter]) {
-                actionString = [NSString stringWithFormat:@"Split Vertically with \"%@\" Profile", GetProfileName(_parameter)];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"Split Vertically with “%@” Profile", @"Key binding action"), GetProfileName(_parameter)];
             } else {
-                actionString = @"Split Vertically with unavailable Profile";
+                actionString = NSLocalizedString(@"Split Vertically with unavailable Profile", @"Key binding action");
             }
             break;
         case KEY_ACTION_SET_PROFILE:
             if ([[ProfileModel sharedInstance] bookmarkWithGuid:_parameter]) {
-                actionString = [NSString stringWithFormat:@"Change Profile to \"%@\"", GetProfileName(_parameter)];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"Change Profile to “%@”", @"Key binding action"), GetProfileName(_parameter)];
             } else {
-                actionString = @"Change Profile to unavailable profile";
+                actionString = NSLocalizedString(@"Change Profile to unavailable profile", @"Key binding action");
             }
             break;
         case KEY_ACTION_LOAD_COLOR_PRESET:
-            actionString = [NSString stringWithFormat:@"Load Color Preset \"%@\"", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Load Color Preset “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_SEND_C_H_BACKSPACE:
-            actionString = @"Send ^H Backspace";
+            actionString = NSLocalizedString(@"Send ^H Backspace", @"Key binding action");
             break;
         case KEY_ACTION_SEND_C_QM_BACKSPACE:
-            actionString = @"Send ^? Backspace";
+            actionString = NSLocalizedString(@"Send ^? Backspace", @"Key binding action");
             break;
         case KEY_ACTION_IGNORE:
-            actionString = @"Ignore";
+            actionString = NSLocalizedString(@"Ignore", @"Key binding action");
             break;
         case KEY_ACTION_BYPASS:
-            actionString = @"Bypass Terminal";
+            actionString = NSLocalizedString(@"Bypass Terminal", @"Key binding action");
             break;
         case KEY_ACTION_IR_FORWARD:
-            actionString = @"Unsupported Command";
+            actionString = NSLocalizedString(@"Unsupported Command", @"Key binding action");
             break;
         case KEY_ACTION_IR_BACKWARD:
-            actionString = @"Start Instant Replay";
+            actionString = NSLocalizedString(@"Start Instant Replay", @"Key binding action");
             break;
         case KEY_ACTION_SELECT_PANE_LEFT:
-            actionString = @"Select Split Pane on Left";
+            actionString = NSLocalizedString(@"Select Split Pane on Left", @"Key binding action");
             break;
         case KEY_ACTION_SELECT_PANE_RIGHT:
-            actionString = @"Select Split Pane on Right";
+            actionString = NSLocalizedString(@"Select Split Pane on Right", @"Key binding action");
             break;
         case KEY_ACTION_SELECT_PANE_ABOVE:
-            actionString = @"Select Split Pane Above";
+            actionString = NSLocalizedString(@"Select Split Pane Above", @"Key binding action");
             break;
         case KEY_ACTION_SELECT_PANE_BELOW:
-            actionString = @"Select Split Pane Below";
+            actionString = NSLocalizedString(@"Select Split Pane Below", @"Key binding action");
             break;
         case KEY_ACTION_DO_NOT_REMAP_MODIFIERS:
-            actionString = @"Do Not Remap Modifiers";
+            actionString = NSLocalizedString(@"Do Not Remap Modifiers", @"Key binding action");
             break;
         case KEY_ACTION_REMAP_LOCALLY:
-            actionString = @"Remap Modifiers in Latterm Only";
+            actionString = NSLocalizedString(@"Remap Modifiers in Latterm Only", @"Key binding action");
             break;
         case KEY_ACTION_TOGGLE_FULLSCREEN:
-            actionString = @"Toggle Fullscreen";
+            actionString = NSLocalizedString(@"Toggle Fullscreen", @"Key binding action");
             break;
         case KEY_ACTION_TOGGLE_HOTKEY_WINDOW_PINNING:
-            actionString = @"Toggle Pin Hotkey Window";
+            actionString = NSLocalizedString(@"Toggle Pin Hotkey Window", @"Key binding action");
             break;
         case KEY_ACTION_UNDO:
-            actionString = @"Undo";
+            actionString = NSLocalizedString(@"Undo", @"Key binding action");
             break;
         case KEY_ACTION_FIND_REGEX:
-            actionString = [NSString stringWithFormat:@"Find Regex “%@”", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Find Regex “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_FIND_AGAIN_DOWN:
-            actionString = @"Find Again Down";
+            actionString = NSLocalizedString(@"Find Again Down", @"Key binding action");
             break;
         case KEY_FIND_AGAIN_UP:
-            actionString = @"Find Again Up";
+            actionString = NSLocalizedString(@"Find Again Up", @"Key binding action");
             break;
         case KEY_ACTION_PASTE_SPECIAL_FROM_SELECTION: {
             NSString *pasteDetails =
                 [iTermPasteSpecialViewController descriptionForCodedSettings:_parameter];
             if (pasteDetails.length) {
-                actionString = [NSString stringWithFormat:@"Paste from Selection: %@", pasteDetails];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"Paste from Selection: %@", @"Key binding action"), pasteDetails];
             } else {
-                actionString = @"Paste from Selection";
+                actionString = NSLocalizedString(@"Paste from Selection", @"Key binding action");
             }
             break;
         }
@@ -409,99 +408,99 @@ static NSString *GetProfileName(NSString *guid) {
             NSString *pasteDetails =
                 [iTermPasteSpecialViewController descriptionForCodedSettings:_parameter];
             if (pasteDetails.length) {
-                actionString = [NSString stringWithFormat:@"Paste: %@", pasteDetails];
+                actionString = [NSString stringWithFormat:NSLocalizedString(@"Paste: %@", @"Key binding action"), pasteDetails];
             } else {
-                actionString = @"Paste";
+                actionString = NSLocalizedString(@"Paste", @"Key binding action");
             }
             break;
         }
         case KEY_ACTION_MOVE_END_OF_SELECTION_LEFT:
-            actionString = [NSString stringWithFormat:@"Move End of Selection Left %@",
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Move End of Selection Left %@", @"Key binding action"),
                             [self.class stringForSelectionMovementUnit:_parameter.integerValue]];
             break;
         case KEY_ACTION_MOVE_END_OF_SELECTION_RIGHT:
-            actionString = [NSString stringWithFormat:@"Move End of Selection Right %@",
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Move End of Selection Right %@", @"Key binding action"),
                             [self.class stringForSelectionMovementUnit:_parameter.integerValue]];
             break;
         case KEY_ACTION_MOVE_START_OF_SELECTION_LEFT:
-            actionString = [NSString stringWithFormat:@"Move Start of Selection Left %@",
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Move Start of Selection Left %@", @"Key binding action"),
                             [self.class stringForSelectionMovementUnit:_parameter.integerValue]];
             break;
         case KEY_ACTION_MOVE_START_OF_SELECTION_RIGHT:
-            actionString = [NSString stringWithFormat:@"Move Start of Selection Right %@",
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Move Start of Selection Right %@", @"Key binding action"),
                             [self.class stringForSelectionMovementUnit:_parameter.integerValue]];
             break;
 
         case KEY_ACTION_DECREASE_HEIGHT:
-            actionString = @"Decrease Height";
+            actionString = NSLocalizedString(@"Decrease Height", @"Key binding action");
             break;
         case KEY_ACTION_INCREASE_HEIGHT:
-            actionString = @"Increase Height";
+            actionString = NSLocalizedString(@"Increase Height", @"Key binding action");
             break;
 
         case KEY_ACTION_DECREASE_WIDTH:
-            actionString = @"Decrease Width";
+            actionString = NSLocalizedString(@"Decrease Width", @"Key binding action");
             break;
         case KEY_ACTION_INCREASE_WIDTH:
-            actionString = @"Increase Width";
+            actionString = NSLocalizedString(@"Increase Width", @"Key binding action");
             break;
 
         case KEY_ACTION_SWAP_PANE_LEFT:
-            actionString = @"Swap With Split Pane on Left";
+            actionString = NSLocalizedString(@"Swap With Split Pane on Left", @"Key binding action");
             break;
         case KEY_ACTION_SWAP_PANE_RIGHT:
-            actionString = @"Swap With Split Pane on Right";
+            actionString = NSLocalizedString(@"Swap With Split Pane on Right", @"Key binding action");
             break;
         case KEY_ACTION_SWAP_PANE_ABOVE:
-            actionString = @"Swap With Split Pane Above";
+            actionString = NSLocalizedString(@"Swap With Split Pane Above", @"Key binding action");
             break;
         case KEY_ACTION_SWAP_PANE_BELOW:
-            actionString = @"Swap With Split Pane Below";
+            actionString = NSLocalizedString(@"Swap With Split Pane Below", @"Key binding action");
             break;
         case KEY_ACTION_TOGGLE_MOUSE_REPORTING:
-            actionString = @"Toggle Mouse Reporting";
+            actionString = NSLocalizedString(@"Toggle Mouse Reporting", @"Key binding action");
             break;
         case KEY_ACTION_INVOKE_SCRIPT_FUNCTION:
-            actionString = [NSString stringWithFormat:@"Call %@", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Call %@", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_DUPLICATE_TAB:
-            actionString = @"Duplicate Tab";
+            actionString = NSLocalizedString(@"Duplicate Tab", @"Key binding action");
             break;
         case KEY_ACTION_SEQUENCE: {
             NSArray<NSString *> *names = [[_parameter keyBindingActionsFromSequenceParameter] mapWithBlock:^id _Nullable(iTermKeyBindingAction * _Nonnull action) {
                 return [action displayName];
             }];
-            return [names componentsJoinedByString:@", then "];
+            return [names componentsJoinedByString:NSLocalizedString(@", then ", @"Joins key binding actions in a sequence")];
         }
         default:
-            actionString = [NSString stringWithFormat: @"%@ %d", @"Unknown Action ID", _keyAction];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Unknown Action ID %d", @"Key binding action"), _keyAction];
             break;
         case KEY_ACTION_MOVE_TO_SPLIT_PANE:
-            actionString = @"Move to Split Pane";
+            actionString = NSLocalizedString(@"Move to Split Pane", @"Key binding action");
             break;
         case KEY_ACTION_SWAP_WITH_NEXT_PANE:
-            actionString = @"Swap with Next Pane";
+            actionString = NSLocalizedString(@"Swap with Next Pane", @"Key binding action");
             break;
         case KEY_ACTION_SWAP_WITH_PREVIOUS_PANE:
-            actionString = @"Swap with Previous Pane";
+            actionString = NSLocalizedString(@"Swap with Previous Pane", @"Key binding action");
             break;
         case KEY_ACTION_COPY_OR_SEND:
-            actionString = @"Copy Selection or Send ^C";
+            actionString = NSLocalizedString(@"Copy Selection or Send ^C", @"Key binding action");
             break;
         case KEY_ACTION_PASTE_OR_SEND:
-            actionString = @"Paste or Send ^V";
+            actionString = NSLocalizedString(@"Paste or Send ^V", @"Key binding action");
             break;
         case KEY_ACTION_ALERT_ON_NEXT_MARK:
-            actionString = @"Alert on Next Mark";
+            actionString = NSLocalizedString(@"Alert on Next Mark", @"Key binding action");
             break;
         case KEY_ACTION_COPY_INTERPOLATED_STRING:
-            actionString = [NSString stringWithFormat:@"Copy Interpolated String “%@”", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Copy Interpolated String “%@”", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_COPY_MODE:
-            actionString = [NSString stringWithFormat:@"Copy mode: %@", _parameter];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Copy mode: %@", @"Key binding action"), _parameter];
             break;
         case KEY_ACTION_TOGGLE_SETTING:
-            actionString = [NSString stringWithFormat:@"Toggle %@", self.toggleSettingLabel];
+            actionString = [NSString stringWithFormat:NSLocalizedString(@"Toggle %@", @"Key binding action"), self.toggleSettingLabel];
             break;
     }
 
@@ -509,15 +508,15 @@ static NSString *GetProfileName(NSString *guid) {
         case iTermActionApplyModeCurrentSession:
             return actionString;
         case iTermActionApplyModeAllSessions:
-            return [NSString stringWithFormat:@"In all sessions, %@", actionString];
+            return [NSString stringWithFormat:NSLocalizedString(@"In all sessions, %@", @"Key binding action scope"), actionString];
         case iTermActionApplyModeUnfocusedSessions:
-            return [NSString stringWithFormat:@"In unfocused sessions, %@", actionString];
+            return [NSString stringWithFormat:NSLocalizedString(@"In unfocused sessions, %@", @"Key binding action scope"), actionString];
         case iTermActionApplyModeAllInWindow:
-            return [NSString stringWithFormat:@"In all sessions in the window, %@", actionString];
+            return [NSString stringWithFormat:NSLocalizedString(@"In all sessions in the window, %@", @"Key binding action scope"), actionString];
         case iTermActionApplyModeAllInTab:
-            return [NSString stringWithFormat:@"In all sessions in the tab, %@", actionString];
+            return [NSString stringWithFormat:NSLocalizedString(@"In all sessions in the tab, %@", @"Key binding action scope"), actionString];
         case iTermActionApplyModeBroadcasting:
-            return [NSString stringWithFormat:@"In all broadcasted-to sessions, %@", actionString];
+            return [NSString stringWithFormat:NSLocalizedString(@"In all broadcasted-to sessions, %@", @"Key binding action scope"), actionString];
     }
     return actionString;
 }
