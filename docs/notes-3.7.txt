@@ -1,4 +1,4 @@
-Latterm 26.11.1
+Latterm 26.11.2
 
 Reviewed through upstream iTerm2 3.7.6.
 Applicable fixes are adapted to the terminal fork.
