@@ -15,6 +15,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Translate the Profiles window and its menus,
+  use ellipses in its titles, and fix a Python
+  runtime error typo.
 - Translate session, tmux, and hotkey
   notifications, name sessions consistently in
   them, and point buried-session notices at the

@@ -56,7 +56,7 @@ class SettingsLocalizationTests(unittest.TestCase):
 
     def test_settings_nib_translations_reference_existing_objects(self):
         for name in ("PreferencePanel", "SpecialExceptionsWindowController", "iTermEditSnippetWindowController",
-                     "iTermEditKeyActionWindowController"):
+                     "iTermEditKeyActionWindowController", "ProfilesWindow"):
             root = ET.parse(ROOT / "sources/Settings" / f"{name}.xib").getroot()
             identifiers = {node.get("id") for node in root.iter()}
             for key in strings(ROOT / "zh-Hans.lproj" / f"{name}.strings"):
@@ -138,7 +138,8 @@ class SettingsLocalizationTests(unittest.TestCase):
                 suffix = f"/{language}.lproj/{name}.nib"
                 self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]))
         # Localized editor windows need both an English and a Chinese nib.
-        for name in ("iTermEditSnippetWindowController", "iTermEditKeyActionWindowController"):
+        for name in ("iTermEditSnippetWindowController", "iTermEditKeyActionWindowController",
+                     "ProfilesWindow"):
             for language in ("en", "zh-Hans"):
                 suffix = f"/{language}.lproj/{name}.nib"
                 self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]), suffix)

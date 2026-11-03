@@ -615,8 +615,8 @@ static NSString *const iTermAPIScriptLauncherScriptDidFailUserNotificationCallba
 + (void)didFailToLaunchScript:(NSString *)filename withException:(NSException *)e {
     ELog(@"Exception occurred %@", e);
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Error running script";
-    alert.informativeText = [NSString stringWithFormat:@"Script at \"%@\" failed.\n\n%@",
+    alert.messageText = NSLocalizedString(@"Error running script", @"Python scripts");
+    alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"Script at “%@” failed.\n\n%@", @"Python scripts"),
                              filename, e.reason];
     [alert runModal];
 }

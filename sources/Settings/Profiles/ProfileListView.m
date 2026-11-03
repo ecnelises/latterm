@@ -1024,8 +1024,8 @@ const CGFloat kDefaultTagsWidth = 80;
 
     [tableColumn_ setWidth:250];
 
-    shortcutColumn_.title = @"Shortcut";
-    commandColumn_.title = @"Command";
+    shortcutColumn_.title = NSLocalizedString(@"Shortcut", @"Profile list column");
+    commandColumn_.title = NSLocalizedString(@"Command", @"Profile list column");
     [tableView_ sizeLastColumnToFit];
 }
 

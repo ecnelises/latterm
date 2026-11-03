@@ -41,7 +41,7 @@
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="320">
                         <rect key="frame" x="629" y="49" width="167" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Edit Profiles..." bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="321">
+                        <buttonCell key="cell" type="push" title="Edit Profiles…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="321">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -136,7 +136,7 @@ DQ
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6zs-tn-Vlz">
                         <rect key="frame" x="22" y="55" width="51" height="25"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="square" title="Tags &gt;" bezelStyle="shadowlessSquare" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="QXh-S4-dCz">
+                        <buttonCell key="cell" type="square" title="Tags ›" bezelStyle="shadowlessSquare" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="QXh-S4-dCz">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>

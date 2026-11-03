@@ -555,7 +555,7 @@ Gw
                                                                 <action selector="duplicateProfile:" target="HVI-63-mNz" id="lcS-Op-ONj"/>
                                                             </connections>
                                                         </menuItem>
-                                                        <menuItem title="Bulk Copy from Selected Profile..." id="3516">
+                                                        <menuItem title="Bulk Copy from Selected Profile…" id="3516">
                                                             <modifierMask key="keyEquivalentModifierMask"/>
                                                             <connections>
                                                                 <action selector="openCopyBookmarks:" target="HVI-63-mNz" id="y0M-e8-fea"/>

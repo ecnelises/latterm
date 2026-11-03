@@ -792,8 +792,8 @@ NS_ASSUME_NONNULL_BEGIN
                                                                        completion:^(NSError *errorStatus) {
             if (errorStatus != nil) {
                  NSAlert *alert = [[NSAlert alloc] init];
-                 alert.messageText = @"Installation Failed";
-                 alert.informativeText = [NSString stringWithFormat:@"An error ocurred while installing the Python runtime. Remove ~/Library/Application Support/iTerm2/iterm2env and try again. The error was: %@", errorStatus.localizedDescription];
+                 alert.messageText = NSLocalizedString(@"Installation Failed", @"Python scripts");
+                 alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"An error occurred while installing the Python runtime. Remove ~/Library/Application Support/iTerm2/iterm2env and try again. The error was: %@", @"Python scripts"), errorStatus.localizedDescription];
                  [alert runModal];
                  return;
              }

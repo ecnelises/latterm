@@ -2370,3 +2370,16 @@
 "Use the tmux dashboard to select which to open." = "请使用 tmux 控制面板选择要打开的窗口。";
 "Error opening tmux tab" = "打开 tmux 标签页时出错";
 "A tmux pane terminated immediately after creation." = "tmux 窗格在创建后立即终止。";
+
+/* Python scripts. */
+"Installation Failed" = "安装失败";
+"An error occurred while installing the Python runtime. Remove ~/Library/Application Support/iTerm2/iterm2env and try again. The error was: %@" = "安装 Python 运行时时出错。请移除 ~/Library/Application Support/iTerm2/iterm2env 后重试。错误信息：%@";
+"Error running script" = "运行脚本时出错";
+"Script at “%@” failed.\n\n%@" = "位于“%@”的脚本运行失败。\n\n%@";
+"Edit Profile…" = "编辑配置方案…";
+"Open in New Tab" = "在新标签页中打开";
+"Open in New Window" = "在新窗口中打开";
+"Open in New Tabs" = "在新标签页中打开";
+"Open in New Windows" = "在新窗口中打开";
+"New Windows" = "新建窗口";
+"Shortcut" = "快捷键";

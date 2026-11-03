@@ -501,14 +501,14 @@ typedef enum {
             case kTextArg:
             case kScriptFunctionArg:
                 return [name stringByReplacingOccurrencesOfString:@"…"
-                                                       withString:[NSString stringWithFormat:@" \"%@\"", argument]];
+                                                       withString:[NSString stringWithFormat:@" “%@”", argument]];
             case kProfileArg: {
                 NSString *bookmarkName = [[[ProfileModel sharedInstance] bookmarkWithGuid:argument] objectForKey:KEY_NAME];
                 if (!bookmarkName) {
                     bookmarkName = @"?";
                 }
                 return [name stringByReplacingOccurrencesOfString:@"…"
-                                                       withString:[NSString stringWithFormat:@" \"%@\"", bookmarkName]];
+                                                       withString:[NSString stringWithFormat:@" “%@”", bookmarkName]];
             }
             case kAdvancedPasteArg: {
                 if (argument.length) {
@@ -524,7 +524,7 @@ typedef enum {
                 if (!title.length) {
                     break;
                 }
-                return [NSString stringWithFormat:@"Select Menu Item “%@”", title];
+                return [NSString stringWithFormat:NSLocalizedString(@"Select Menu Item “%@”", @"Pointer action"), title];
             }
         }
     }

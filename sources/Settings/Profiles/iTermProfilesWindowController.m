@@ -37,6 +37,7 @@
 #import "iTermFlagsChangedNotification.h"
 #import "iTermSessionLauncher.h"
 #import "iTermUserDefaults.h"
+#import "iTerm2SharedARC-Swift.h"
 
 static NSString *const kCloseBookmarksWindowAfterOpeningKey = @"CloseBookmarksWindowAfterOpening";
 static NSString *const iTermProfilesWindowTagsOpen = @"NoSyncProfilesWindowTagsOpen";
@@ -139,7 +140,8 @@ typedef enum {
 }
 
 - (instancetype)initWithWindowNibName:(NSString *)windowNibName {
-    self = [super initWithWindowNibName:windowNibName];
+    // Prefer the language-specific nib so the window’s controls are translated.
+    self = [super initWithWindowNibPath:[iTermSettingsLocalization nibPath:windowNibName] owner:self];
 
     if (self) {
         [[self window] setDelegate:self];
@@ -361,7 +363,7 @@ typedef enum {
         // don't want to break that.
         [tabButton_ setEnabled:!anySelectionDisablesTabs];
         [windowButton_ setEnabled:YES];
-        [windowButton_ setTitle:([guids count] > 1 ? @"New Windows" : @"New Window")];
+        [windowButton_ setTitle:([guids count] > 1 ? NSLocalizedString(@"New Windows", @"Profiles window") : NSLocalizedString(@"New Window", @"Profiles window"))];
         if ([guids count] > 1) {
             [newTabsInNewWindowButton_ setEnabled:!anySelectionDisablesTabs];
             [horizontalPaneButton_ setEnabled:YES];
@@ -435,20 +437,20 @@ typedef enum {
 
     int count = [[profileTable selectedGuids] count];
     if (count == 1) {
-        [menu addItemWithTitle:@"Edit Profile..."
+        [menu addItemWithTitle:NSLocalizedString(@"Edit Profile…", @"Profiles window")
                         action:@selector(editSelectedBookmark:)
                  keyEquivalent:@""];
-        [menu addItemWithTitle:@"Open in New Tab"
+        [menu addItemWithTitle:NSLocalizedString(@"Open in New Tab", @"Profiles window")
                         action:@selector(openBookmarkInTab:)
                  keyEquivalent:@""];
-        [menu addItemWithTitle:@"Open in New Window"
+        [menu addItemWithTitle:NSLocalizedString(@"Open in New Window", @"Profiles window")
                         action:@selector(openBookmarkInWindow:)
                  keyEquivalent:@""];
     } else if (count > 1) {
-        [menu addItemWithTitle:@"Open in New Tabs"
+        [menu addItemWithTitle:NSLocalizedString(@"Open in New Tabs", @"Profiles window")
                         action:@selector(openBookmarkInTab:)
                  keyEquivalent:@""];
-        [menu addItemWithTitle:@"Open in New Windows"
+        [menu addItemWithTitle:NSLocalizedString(@"Open in New Windows", @"Profiles window")
                         action:@selector(openBookmarkInWindow:)
                  keyEquivalent:@""];
     }
