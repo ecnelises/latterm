@@ -88,6 +88,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     private let rowHeight: CGFloat = 22
     private let rowSpacing: CGFloat = 6
     private let labelGutter: CGFloat = 100
+    private let labelSpacing: CGFloat = 8
 
     private let splitLocationMin = 0.2
     private let splitLocationMax = 0.8
@@ -97,24 +98,24 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     override func loadView() {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 400))
 
-        emptyLabel = NSTextField(labelWithString: "No session selected.")
+        emptyLabel = NSTextField(labelWithString: NSLocalizedString("No session selected.", comment: "Workgroup settings"))
         emptyLabel.textColor = .secondaryLabelColor
         emptyLabel.alignment = .center
         root.addSubview(emptyLabel)
 
-        profileRow = makeLabeledRow(labelText: "Profile:",
+        profileRow = makeLabeledRow(labelText: NSLocalizedString("Profile:", comment: "Workgroup settings"),
                                     control: makeProfilePopup())
-        modeRow = makeLabeledRow(labelText: "Mode:",
+        modeRow = makeLabeledRow(labelText: NSLocalizedString("Mode:", comment: "Workgroup settings"),
                                  control: makeModePopup())
-        commandRow = makeLabeledRow(labelText: "Command:",
+        commandRow = makeLabeledRow(labelText: NSLocalizedString("Command:", comment: "Workgroup settings"),
                                     control: makeCommandField())
         perFileCommandRow = makeLabeledRow(
-            labelText: "File command:",
+            labelText: NSLocalizedString("File command:", comment: "Workgroup settings"),
             control: makePerFileCommandField())
-        urlRow = makeLabeledRow(labelText: "URL:", control: makeURLField())
-        peerRow = makeLabeledRow(labelText: "Name:",
+        urlRow = makeLabeledRow(labelText: NSLocalizedString("URL:", comment: "Workgroup settings"), control: makeURLField())
+        peerRow = makeLabeledRow(labelText: NSLocalizedString("Name:", comment: "Workgroup settings"),
                                  control: makePeerNameField())
-        peerShortcutRow = makeLabeledRow(labelText: "Shortcut:",
+        peerShortcutRow = makeLabeledRow(labelText: NSLocalizedString("Shortcut:", comment: "Workgroup settings"),
                                          control: makePeerShortcutInput())
         splitSection = makeSplitSection()
         toolbarSection = makeToolbarSection()
@@ -222,16 +223,16 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     private func makeSplitSection() -> NSView {
         let section = NSView(frame: .zero)
 
-        let splitLabel = NSTextField(labelWithString: "Split:")
+        let splitLabel = NSTextField(labelWithString: NSLocalizedString("Split:", comment: "Workgroup settings"))
         splitLabel.sizeToFit()
         splitLabel.identifier = NSUserInterfaceItemIdentifier("splitLabel")
         section.addSubview(splitLabel)
 
         let orientation: NSSegmentedControl
         if let verticalImage = NSImage(systemSymbolName: "square.split.2x1",
-                                       accessibilityDescription: "Vertical"),
+                                       accessibilityDescription: NSLocalizedString("Vertical", comment: "Workgroup settings")),
            let horizontalImage = NSImage(systemSymbolName: "square.split.1x2",
-                                         accessibilityDescription: "Horizontal") {
+                                         accessibilityDescription: NSLocalizedString("Horizontal", comment: "Workgroup settings")) {
             orientation = NSSegmentedControl(
                 images: [verticalImage, horizontalImage],
                 trackingMode: .selectOne,
@@ -239,7 +240,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
                 action: #selector(splitOrientationChanged(_:)))
         } else {
             orientation = NSSegmentedControl(
-                labels: ["􀏠 Vertical", "􀕰 Horizontal"],
+                labels: [NSLocalizedString("Vertical", comment: "Workgroup settings"), NSLocalizedString("Horizontal", comment: "Workgroup settings")],
                 trackingMode: .selectOne,
                 target: self,
                 action: #selector(splitOrientationChanged(_:)))
@@ -249,7 +250,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         section.addSubview(orientation)
 
         let side = NSSegmentedControl(
-            labels: ["Left", "Right"],
+            labels: [NSLocalizedString("Left", comment: "Workgroup settings"), NSLocalizedString("Right", comment: "Workgroup settings")],
             trackingMode: .selectOne,
             target: self,
             action: #selector(splitSideChanged(_:)))
@@ -257,7 +258,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         splitSidePicker = side
         section.addSubview(side)
 
-        let locationLabel = NSTextField(labelWithString: "Location:")
+        let locationLabel = NSTextField(labelWithString: NSLocalizedString("Location:", comment: "Workgroup settings"))
         locationLabel.sizeToFit()
         locationLabel.identifier = NSUserInterfaceItemIdentifier("locationLabel")
         section.addSubview(locationLabel)
@@ -280,7 +281,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     private func makeToolbarSection() -> NSView {
         let section = NSView(frame: .zero)
 
-        toolbarHeaderLabel = NSTextField(labelWithString: "Toolbar Items:")
+        toolbarHeaderLabel = NSTextField(labelWithString: NSLocalizedString("Toolbar Items:", comment: "Workgroup settings"))
         toolbarHeaderLabel.sizeToFit()
         section.addSubview(toolbarHeaderLabel)
 
@@ -332,7 +333,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     private func makeToolbarParamContainer() -> NSView {
         let container = NSView(frame: .zero)
 
-        let minLabel = NSTextField(labelWithString: "Min width:")
+        let minLabel = NSTextField(labelWithString: NSLocalizedString("Min width:", comment: "Workgroup settings"))
         minLabel.sizeToFit()
         minLabel.identifier = NSUserInterfaceItemIdentifier("minLabel")
         container.addSubview(minLabel)
@@ -342,7 +343,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         spacerMinField = minField
         container.addSubview(minField)
 
-        let maxLabel = NSTextField(labelWithString: "Max width:")
+        let maxLabel = NSTextField(labelWithString: NSLocalizedString("Max width:", comment: "Workgroup settings"))
         maxLabel.sizeToFit()
         maxLabel.identifier = NSUserInterfaceItemIdentifier("maxLabel")
         container.addSubview(maxLabel)
@@ -363,7 +364,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     private func makeToolbarShortcutsContainer() -> NSView {
         let container = NSView(frame: .zero)
 
-        backShortcutLabel = NSTextField(labelWithString: "Back:")
+        backShortcutLabel = NSTextField(labelWithString: NSLocalizedString("Back:", comment: "Workgroup settings"))
         backShortcutLabel.sizeToFit()
         container.addSubview(backShortcutLabel)
         backShortcutInput = iTermShortcutInputView(frame: NSRect(x: 0, y: 0, width: 200, height: kShortcutPreferredHeight))
@@ -371,7 +372,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         backShortcutInput.disableKeyRemapping = true
         container.addSubview(backShortcutInput)
 
-        forwardShortcutLabel = NSTextField(labelWithString: "Forward:")
+        forwardShortcutLabel = NSTextField(labelWithString: NSLocalizedString("Forward:", comment: "Workgroup settings"))
         forwardShortcutLabel.sizeToFit()
         container.addSubview(forwardShortcutLabel)
         forwardShortcutInput = iTermShortcutInputView(frame: NSRect(x: 0, y: 0, width: 200, height: kShortcutPreferredHeight))
@@ -379,7 +380,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         forwardShortcutInput.disableKeyRemapping = true
         container.addSubview(forwardShortcutInput)
 
-        reloadShortcutLabel = NSTextField(labelWithString: "Reload:")
+        reloadShortcutLabel = NSTextField(labelWithString: NSLocalizedString("Reload:", comment: "Workgroup settings"))
         reloadShortcutLabel.sizeToFit()
         container.addSubview(reloadShortcutLabel)
         reloadShortcutInput = iTermShortcutInputView(frame: NSRect(x: 0, y: 0, width: 200, height: kShortcutPreferredHeight))
@@ -470,11 +471,20 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         let label = row.subviews[0] as? NSTextField
         let control = row.subviews[1]
         let h = row.bounds.height
-        label?.frame.origin = NSPoint(x: margin, y: (h - (label?.frame.height ?? 17)) / 2)
+        if let label {
+            label.frame.origin = NSPoint(x: trailingLabelX(label), y: (h - label.frame.height) / 2)
+        }
         control.frame = NSRect(x: labelGutter,
                                y: 0,
                                width: max(0, row.bounds.width - labelGutter - margin),
                                height: h)
+    }
+
+    // Labels end at the shared control column, matching Settings forms
+    // and keeping translated labels of different widths visually tied
+    // to their controls.
+    private func trailingLabelX(_ label: NSTextField) -> CGFloat {
+        return max(margin, labelGutter - labelSpacing - label.frame.width)
     }
 
     private func layoutSplitSection() {
@@ -490,7 +500,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
             $0.identifier?.rawValue == "splitLabel"
         }) as? NSTextField else { return }
         splitLabel.frame.origin = NSPoint(
-            x: margin,
+            x: trailingLabelX(splitLabel),
             y: row1Bottom + (rowHeight - splitLabel.frame.height) / 2)
 
         splitOrientationPicker.frame = NSRect(
@@ -509,7 +519,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
             $0.identifier?.rawValue == "locationLabel"
         }) as? NSTextField else { return }
         locationLabel.frame.origin = NSPoint(
-            x: margin,
+            x: trailingLabelX(locationLabel),
             y: row2Bottom + (rowHeight - locationLabel.frame.height) / 2)
 
         let readoutWidth: CGFloat = 44
@@ -577,7 +587,8 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         func place(label: NSTextField, input: iTermShortcutInputView) {
             guard !input.isHidden else { return }
             label.frame.origin = NSPoint(
-                x: 0, y: y + (shortcutRowHeight - label.frame.height) / 2)
+                x: trailingLabelX(label) - margin,
+                y: y + (shortcutRowHeight - label.frame.height) / 2)
             input.frame = NSRect(x: inputX, y: y,
                                  width: inputW, height: shortcutRowHeight)
             y -= shortcutRowHeight + rowSpacing
@@ -720,11 +731,11 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
 
     private func refreshSideLabels(for orientation: SplitSettings.Orientation) {
         if orientation == .vertical {
-            splitSidePicker.setLabel("Left", forSegment: 0)
-            splitSidePicker.setLabel("Right", forSegment: 1)
+            splitSidePicker.setLabel(NSLocalizedString("Left", comment: "Workgroup settings"), forSegment: 0)
+            splitSidePicker.setLabel(NSLocalizedString("Right", comment: "Workgroup settings"), forSegment: 1)
         } else {
-            splitSidePicker.setLabel("Top", forSegment: 0)
-            splitSidePicker.setLabel("Bottom", forSegment: 1)
+            splitSidePicker.setLabel(NSLocalizedString("Top", comment: "Workgroup settings"), forSegment: 0)
+            splitSidePicker.setLabel(NSLocalizedString("Bottom", comment: "Workgroup settings"), forSegment: 1)
         }
     }
 
@@ -735,7 +746,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
 
     private func populateProfilePopup() {
         profilePopup.removeAllItems()
-        profilePopup.addItem(withTitle: "Default")
+        profilePopup.addItem(withTitle: NSLocalizedString("Default", comment: "Workgroup settings"))
         profilePopup.lastItem?.representedObject = NSNull()
         guard let model = ProfileModel.sharedInstance() else { return }
         for profile in model.bookmarks() {
@@ -752,7 +763,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
     @objc private func profileChanged(_ sender: NSPopUpButton) {
         guard var s = session else { return }
         s.profileGUID = sender.selectedItem?.representedObject as? String
-        commitUpdate(s, actionName: "Change Profile") { [weak self] in
+        commitUpdate(s, actionName: NSLocalizedString("Change Profile", comment: "Undo action")) { [weak self] in
             self?.refresh()
         }
     }
@@ -763,7 +774,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
               let mode = iTermWorkgroupSessionMode(rawValue: raw),
               s.mode != mode else { return }
         s.mode = mode
-        commitUpdate(s, actionName: "Change Mode")
+        commitUpdate(s, actionName: NSLocalizedString("Change Mode", comment: "Undo action"))
     }
 
     @objc private func splitOrientationChanged(_ sender: NSSegmentedControl) {
@@ -772,7 +783,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
         settings.orientation = sender.selectedSegment == 0 ? .vertical : .horizontal
         refreshSideLabels(for: settings.orientation)
         s.kind = .split(settings)
-        commitUpdate(s, actionName: "Change Orientation")
+        commitUpdate(s, actionName: NSLocalizedString("Change Orientation", comment: "Undo action"))
     }
 
     @objc private func splitSideChanged(_ sender: NSSegmentedControl) {
@@ -780,7 +791,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
               case .split(var settings) = s.kind else { return }
         settings.side = sender.selectedSegment == 0 ? .leadingOrTop : .trailingOrBottom
         s.kind = .split(settings)
-        commitUpdate(s, actionName: "Change Side")
+        commitUpdate(s, actionName: NSLocalizedString("Change Side", comment: "Undo action"))
     }
 
     @objc private func splitLocationChanged(_ sender: NSSlider) {
@@ -790,7 +801,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
                                 splitLocationMax)
         updateLocationReadout(settings.location)
         s.kind = .split(settings)
-        commitUpdate(s, actionName: "Change Split Location")
+        commitUpdate(s, actionName: NSLocalizedString("Change Split Location", comment: "Undo action"))
     }
 
     // Called by the detail VC while the user drags a divider in the
@@ -974,7 +985,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
             else { return }
         let insertAt = (selectedToolbarRow ?? (s.toolbarItems.count - 1)) + 1
         s.toolbarItems.insert(metadata.defaultValue, at: insertAt)
-        commitUpdate(s, actionName: "Add Toolbar Item") { [weak self] in
+        commitUpdate(s, actionName: NSLocalizedString("Add Toolbar Item", comment: "Undo action")) { [weak self] in
             guard let self else { return }
             self.toolbarTable.reloadData()
             self.toolbarTable.selectRowIndexes(IndexSet(integer: insertAt),
@@ -993,7 +1004,7 @@ class iTermWorkgroupSessionDetailViewController: NSViewController {
             return
         }
         s.toolbarItems.remove(at: row)
-        commitUpdate(s, actionName: "Remove Toolbar Item") { [weak self] in
+        commitUpdate(s, actionName: NSLocalizedString("Remove Toolbar Item", comment: "Undo action")) { [weak self] in
             guard let self else { return }
             self.toolbarTable.reloadData()
             self.refreshToolbarParamUI()
@@ -1086,22 +1097,22 @@ extension iTermWorkgroupSessionDetailViewController: NSTextFieldDelegate {
             // pass restores a default if the session is a peer.
             if s.displayName != field.stringValue {
                 s.displayName = field.stringValue
-                commitUpdate(s, actionName: "Rename Peer")
+                commitUpdate(s, actionName: NSLocalizedString("Rename Peer", comment: "Undo action"))
             }
         case commandField:
             if s.command != field.stringValue {
                 s.command = field.stringValue
-                commitUpdate(s, actionName: "Change Command")
+                commitUpdate(s, actionName: NSLocalizedString("Change Command", comment: "Undo action"))
             }
         case perFileCommandField:
             if s.perFileCommand != field.stringValue {
                 s.perFileCommand = field.stringValue
-                commitUpdate(s, actionName: "Change Per-File Command")
+                commitUpdate(s, actionName: NSLocalizedString("Change Per-File Command", comment: "Undo action"))
             }
         case urlField:
             if s.urlString != field.stringValue {
                 s.urlString = field.stringValue
-                commitUpdate(s, actionName: "Change URL")
+                commitUpdate(s, actionName: NSLocalizedString("Change URL", comment: "Undo action"))
             }
         default:
             break
@@ -1128,7 +1139,7 @@ extension iTermWorkgroupSessionDetailViewController: NSTextFieldDelegate {
                 field.stringValue = replacement
                 if s.displayName != replacement {
                     s.displayName = replacement
-                    commitUpdate(s, actionName: "Rename Peer")
+                    commitUpdate(s, actionName: NSLocalizedString("Rename Peer", comment: "Undo action"))
                 }
                 return
             }
@@ -1136,7 +1147,7 @@ extension iTermWorkgroupSessionDetailViewController: NSTextFieldDelegate {
             // the kind-based default in the visual view).
             if s.displayName != trimmed {
                 s.displayName = trimmed
-                commitUpdate(s, actionName: "Rename Peer")
+                commitUpdate(s, actionName: NSLocalizedString("Rename Peer", comment: "Undo action"))
             }
         case spacerMinField, spacerMaxField:
             applySpacerEditIfNeeded()
@@ -1175,7 +1186,7 @@ extension iTermWorkgroupSessionDetailViewController: NSTextFieldDelegate {
         let minCG = CGFloat(minValue)
         let maxCG = max(minCG, CGFloat(maxValue))
         s.toolbarItems[row] = .spacer(minWidth: minCG, maxWidth: maxCG)
-        commitUpdate(s, actionName: "Change Spacer Width") { [weak self] in
+        commitUpdate(s, actionName: NSLocalizedString("Change Spacer Width", comment: "Undo action")) { [weak self] in
             guard let self else { return }
             self.toolbarTable.reloadData(
                 forRowIndexes: IndexSet(integer: row),
@@ -1248,7 +1259,7 @@ extension iTermWorkgroupSessionDetailViewController: NSTableViewDataSource, NSTa
         // shifts down by one.
         let insertAt = destinationRow > sourceRow ? destinationRow - 1 : destinationRow
         s.toolbarItems.insert(item, at: insertAt)
-        commitUpdate(s, actionName: "Reorder Toolbar Item") { [weak self] in
+        commitUpdate(s, actionName: NSLocalizedString("Reorder Toolbar Item", comment: "Undo action")) { [weak self] in
             guard let self else { return }
             self.toolbarTable.reloadData()
             self.toolbarTable.selectRowIndexes(IndexSet(integer: insertAt),
@@ -1302,7 +1313,8 @@ extension iTermWorkgroupSessionDetailViewController: NSTableViewDataSource, NSTa
             ?? item.kind.rawValue
         switch item {
         case .spacer(let minWidth, let maxWidth):
-            return "\(base) (\(formatWidth(minWidth))–\(formatWidth(maxWidth)) pt)"
+            return String(format: NSLocalizedString("%@ (%@–%@ pt)", comment: "Workgroup spacer width range"),
+                          base, formatWidth(minWidth), formatWidth(maxWidth))
         default:
             return base
         }
@@ -1332,7 +1344,7 @@ extension iTermWorkgroupSessionDetailViewController: iTermShortcutInputViewDeleg
         if view === peerShortcutInput {
             guard sessionIsInPeerGroup(s) else { return }
             s.peerSwitchShortcut = newValue
-            commitUpdate(s, actionName: "Change Peer Shortcut")
+            commitUpdate(s, actionName: NSLocalizedString("Change Peer Shortcut", comment: "Undo action"))
             return
         }
         guard let row = selectedToolbarRow,
@@ -1349,10 +1361,10 @@ extension iTermWorkgroupSessionDetailViewController: iTermShortcutInputViewDeleg
                 return
             }
             s.toolbarItems[row] = .navigation(shortcuts)
-            commitUpdate(s, actionName: "Change Shortcut")
+            commitUpdate(s, actionName: NSLocalizedString("Change Shortcut", comment: "Undo action"))
         case .reload:
             s.toolbarItems[row] = .reload(newValue)
-            commitUpdate(s, actionName: "Change Shortcut")
+            commitUpdate(s, actionName: NSLocalizedString("Change Shortcut", comment: "Undo action"))
         default:
             return
         }

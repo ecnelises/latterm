@@ -59,7 +59,7 @@ class iTermWorkgroupDetailViewController: NSViewController {
         root.addSubview(whatIsButton)
 
         nameField = NSTextField(frame: .zero)
-        nameField.placeholderString = "Workgroup name"
+        nameField.placeholderString = NSLocalizedString("Workgroup name", comment: "Workgroup settings")
         nameField.delegate = self
         root.addSubview(nameField)
 
@@ -72,6 +72,8 @@ class iTermWorkgroupDetailViewController: NSViewController {
             target: self,
             action: #selector(segmentClicked(_:)))
         segmented.segmentStyle = .smallSquare
+        segmented.setToolTip(NSLocalizedString("Add Session", comment: "Workgroup settings"), forSegment: 0)
+        segmented.setToolTip(NSLocalizedString("Remove Session", comment: "Workgroup settings"), forSegment: 1)
         root.addSubview(segmented)
 
         outlineScroll = NSScrollView(frame: .zero)
@@ -297,11 +299,9 @@ class iTermWorkgroupDetailViewController: NSViewController {
     // MARK: - + / − actions
 
     @objc private func whatIsAWorkgroupClicked(_ sender: NSButton) {
-        let markdown = "A **Workgroup** turns a single session into a "
-            + "coordinated set of related sessions, each with its own "
-            + "command and toolbar; see the "
-            + "[Workgroups documentation](https://iterm2.com/documentation-workgroups.html) "
-            + "for the full story."
+        let markdown = NSLocalizedString(
+            "A **Workgroup** turns a single session into a coordinated set of related sessions, each with its own command and toolbar; see the [Workgroups documentation](https://iterm2.com/documentation-workgroups.html) for the full story.",
+            comment: "Workgroup help")
         sender.it_showInformativeMessage(withMarkdown: markdown)
     }
 
@@ -319,18 +319,18 @@ class iTermWorkgroupDetailViewController: NSViewController {
         // Disable AppKit's target-based auto-enable so our own
         // isEnabled flags aren't overridden right before display.
         menu.autoenablesItems = false
-        let peer = menu.addItem(withTitle: "Add Peer",
+        let peer = menu.addItem(withTitle: NSLocalizedString("Add Peer", comment: "Workgroup settings"),
                                 action: #selector(addPeer),
                                 keyEquivalent: "")
         peer.target = self
-        let split = menu.addItem(withTitle: "Add Split",
+        let split = menu.addItem(withTitle: NSLocalizedString("Add Split", comment: "Workgroup settings"),
                                  action: #selector(addSplit),
                                  keyEquivalent: "")
         split.target = self
         // No split from anywhere inside a peer group — that includes
         // both the host (ambiguous target) and the peers themselves.
         split.isEnabled = !sessionIsInPeerGroup(selID: selID)
-        let tab = menu.addItem(withTitle: "Add Tab",
+        let tab = menu.addItem(withTitle: NSLocalizedString("Add Tab", comment: "Workgroup settings"),
                                action: #selector(addTab),
                                keyEquivalent: "")
         tab.target = self
@@ -417,7 +417,7 @@ class iTermWorkgroupDetailViewController: NSViewController {
             displayName: displayName)
         wg.sessions.append(newSession)
         enforceModeSwitcherInvariant(on: &wg)
-        parentEditor?.replaceSelectedWorkgroup(wg, actionName: "Add Session")
+        parentEditor?.replaceSelectedWorkgroup(wg, actionName: NSLocalizedString("Add Session", comment: "Undo action"))
         // Select the newly-added session so the user can configure it
         // straight away (and so the visual preview shows it).
         if let row = outlineRow(forSessionID: newSession.uniqueIdentifier) {
@@ -444,7 +444,7 @@ class iTermWorkgroupDetailViewController: NSViewController {
         }
         wg.sessions.removeAll { toDelete.contains($0.uniqueIdentifier) }
         enforceModeSwitcherInvariant(on: &wg)
-        parentEditor?.replaceSelectedWorkgroup(wg, actionName: "Remove Session")
+        parentEditor?.replaceSelectedWorkgroup(wg, actionName: NSLocalizedString("Remove Session", comment: "Undo action"))
     }
 
     // Each "peer group" is a non-peer session (the host) plus every
@@ -509,7 +509,7 @@ extension iTermWorkgroupDetailViewController: NSTextFieldDelegate {
               var wg = currentWorkgroup,
               wg.name != nameField.stringValue else { return }
         wg.name = nameField.stringValue
-        parentEditor?.replaceSelectedWorkgroup(wg, actionName: "Rename Workgroup")
+        parentEditor?.replaceSelectedWorkgroup(wg, actionName: NSLocalizedString("Rename Workgroup", comment: "Undo action"))
     }
 }
 
@@ -619,6 +619,6 @@ extension iTermWorkgroupDetailViewController: WorkgroupVisualViewDelegate {
         }) else { return }
         wg.sessions[idx] = s
         parentEditor?.replaceSelectedWorkgroup(wg,
-                                               actionName: "Change Split Location")
+                                               actionName: NSLocalizedString("Change Split Location", comment: "Undo action"))
     }
 }

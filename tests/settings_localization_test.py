@@ -159,6 +159,24 @@ class SettingsLocalizationTests(unittest.TestCase):
                 key = json.loads('"' + key + '"')
                 self.assertTrue(key in localized, f"{name}: missing {key}")
 
+    def test_workgroup_editor_and_toolbar_strings_are_translated(self):
+        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
+        paths = sorted((ROOT / "sources/Workgroups").glob("*.swift"))
+        paths.append(ROOT / "sources/iTermSessionToolbarView.swift")
+        for path in paths:
+            source = path.read_text()
+            for key in re.findall(r'NSLocalizedString\(\s*"((?:[^"\\]|\\.)*)"', source):
+                key = json.loads('"' + key + '"')
+                self.assertTrue(key in localized, f"{path.name}: missing {key}")
+        # Settings labels in the Workgroups editor must not bypass lookup.
+        for name in ("iTermWorkgroupsEditingViewController.swift",
+                     "iTermWorkgroupDetailViewController.swift",
+                     "iTermWorkgroupSessionDetailViewController.swift"):
+            source = (ROOT / "sources/Workgroups" / name).read_text()
+            self.assertNotRegex(source, r'labelWithString: "[A-Z]', name)
+            self.assertNotRegex(source, r'(?:title|labelText|placeholderString): "[A-Z]', name)
+            self.assertNotRegex(source, r'actionName: "[A-Z]', name)
+
 
 if __name__ == "__main__":
     unittest.main()

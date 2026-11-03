@@ -64,7 +64,7 @@ class CodeReviewPromptView: iTermLayerBackedSolidColorView {
         textView = ShiftReturnSubmittingTextView(frame: .zero)
         startButton = NSButton(frame: .zero)
         promptMenuButton = NSPopUpButton(frame: .zero, pullsDown: true)
-        titleLabel = NSTextField(labelWithString: "Code review prompt:")
+        titleLabel = NSTextField(labelWithString: NSLocalizedString("Code review prompt:", comment: "Workgroup code review"))
 
         super.init(frame: frameRect)
 
@@ -99,7 +99,7 @@ class CodeReviewPromptView: iTermLayerBackedSolidColorView {
         scrollView.autoresizingMask = [.width, .height]
         addSubview(scrollView)
 
-        startButton.title = "Start"
+        startButton.title = NSLocalizedString("Start", comment: "Workgroup code review")
         startButton.bezelStyle = .rounded
         // Shift-Return submits via the text view's keyDown override
         // (set above); plain Return inserts a newline. The button
@@ -262,7 +262,7 @@ class CodeReviewPromptView: iTermLayerBackedSolidColorView {
     // saved prompt is currently loaded.
     private func rebuildPromptMenu() {
         let menu = NSMenu()
-        menu.addItem(withTitle: "Prompts", action: nil, keyEquivalent: "")
+        menu.addItem(withTitle: NSLocalizedString("Prompts", comment: "Workgroup code review"), action: nil, keyEquivalent: "")
 
         let store = CodeReviewPromptStore.shared
         if !store.prompts.isEmpty {
@@ -277,14 +277,14 @@ class CodeReviewPromptView: iTermLayerBackedSolidColorView {
             menu.addItem(.separator())
         }
 
-        let saveItem = NSMenuItem(title: "Save Current as New…",
+        let saveItem = NSMenuItem(title: NSLocalizedString("Save Current as New…", comment: "Workgroup code review"),
                                    action: #selector(saveAsNewMenuItem(_:)),
                                    keyEquivalent: "")
         saveItem.target = self
         saveItem.identifier = Self.saveItemIdentifier
         menu.addItem(saveItem)
 
-        let manageItem = NSMenuItem(title: "Manage Prompts…",
+        let manageItem = NSMenuItem(title: NSLocalizedString("Manage Prompts…", comment: "Workgroup code review"),
                                      action: #selector(manageMenuItem(_:)),
                                      keyEquivalent: "")
         manageItem.target = self
@@ -309,14 +309,14 @@ class CodeReviewPromptView: iTermLayerBackedSolidColorView {
     @objc private func saveAsNewMenuItem(_ sender: Any) {
         guard let host = window else { return }
         let alert = NSAlert()
-        alert.messageText = "Name this prompt"
+        alert.messageText = NSLocalizedString("Name this prompt", comment: "Workgroup code review")
         alert.informativeText =
-            "Saved prompts can be re-loaded from the Prompts pulldown."
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
+            NSLocalizedString("Saved prompts can be reloaded from the Prompts menu.", comment: "Workgroup code review")
+        alert.addButton(withTitle: NSLocalizedString("Save", comment: "Workgroup code review"))
+        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Workgroup code review"))
 
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 22))
-        field.placeholderString = "Prompt name"
+        field.placeholderString = NSLocalizedString("Prompt name", comment: "Workgroup code review")
         alert.accessoryView = field
 
         alert.beginSheetModal(for: host) { [weak self] response in

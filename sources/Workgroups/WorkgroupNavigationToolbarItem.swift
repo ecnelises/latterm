@@ -45,11 +45,11 @@ final class WorkgroupNavigationToolbarItem: SessionToolbarGenericView {
         forwardButton = Self.makeButton(symbol: .chevronRight)
         reloadButton = Self.makeButton(symbol: .arrowClockwise)
         progressLabel = Self.makeProgressLabel()
-        backButton.toolTip = Self.tooltip(action: "Previous file",
+        backButton.toolTip = Self.tooltip(action: NSLocalizedString("Previous file", comment: "Workgroup toolbar"),
                                           shortcut: shortcuts.back)
-        forwardButton.toolTip = Self.tooltip(action: "Next file",
+        forwardButton.toolTip = Self.tooltip(action: NSLocalizedString("Next file", comment: "Workgroup toolbar"),
                                              shortcut: shortcuts.forward)
-        reloadButton.toolTip = Self.tooltip(action: "Reload",
+        reloadButton.toolTip = Self.tooltip(action: NSLocalizedString("Reload", comment: "Workgroup toolbar"),
                                             shortcut: shortcuts.reload)
 
         // Plain NSView container, no auto layout — terminal-window
@@ -219,7 +219,7 @@ final class WorkgroupReloadToolbarItem: SessionToolbarGenericView {
          shortcut: WorkgroupToolbarShortcut? = nil) {
         reloadButton = WorkgroupNavigationToolbarItem.makeReloadButton()
         reloadButton.toolTip = WorkgroupNavigationToolbarItem.tooltip(
-            action: "Reload", shortcut: shortcut)
+            action: NSLocalizedString("Reload", comment: "Workgroup toolbar"), shortcut: shortcut)
         let container = NSView(frame: .zero)
         container.addSubview(reloadButton)
         super.init(identifier: identifier, priority: priority, view: container)

@@ -21,7 +21,7 @@ enum WorkgroupPresets {
     static let all: [WorkgroupPreset] = [
         WorkgroupPreset(
             identifier: "terminalPlusDiff",
-            displayName: "Terminal + Diff",
+            displayName: NSLocalizedString("Terminal + Diff", comment: "Workgroup preset"),
             build: buildTerminalPlusDiff)
     ]
 
@@ -56,13 +56,13 @@ enum WorkgroupPresets {
                            .changedFileSelector,
                            .gitBaseSelector,
                            .navigation(WorkgroupNavigationShortcuts.defaults)],
-            displayName: "Diff",
+            displayName: NSLocalizedString("Diff", comment: "Workgroup session mode"),
             perFileCommand: "git diff \\(gitBase) -- \\(file)",
             mode: .diff)
 
         return iTermWorkgroup(
             uniqueIdentifier: UUID().uuidString,
-            name: "Terminal + Diff",
+            name: NSLocalizedString("Terminal + Diff", comment: "Workgroup preset"),
             sessions: [root, diff])
     }
 }

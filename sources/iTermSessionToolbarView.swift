@@ -477,8 +477,9 @@ class CCDiffSelectorItem: SessionToolbarControl {
             .union(unstaged.map { $0.path })
             .count
         let allFilesTitle = hasChanges
-            ? "All Files (\(uniqueChangedFileCount))"
-            : "Empty Diff"
+            ? String(format: NSLocalizedString("All Files (%ld)", comment: "Workgroup toolbar"),
+                     uniqueChangedFileCount)
+            : NSLocalizedString("Empty Diff", comment: "Workgroup toolbar")
         let allFilesItem = NSMenuItem(title: allFilesTitle,
                                       action: nil,
                                       keyEquivalent: "")

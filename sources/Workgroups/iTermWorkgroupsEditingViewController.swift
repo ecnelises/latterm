@@ -53,7 +53,7 @@ class iTermWorkgroupsEditingViewController: NSViewController {
         tableView.allowsMultipleSelection = false
         tableView.rowSizeStyle = .default
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("name"))
-        column.title = "Name"
+        column.title = NSLocalizedString("Name", comment: "Workgroup settings")
         column.resizingMask = .autoresizingMask
         tableView.addTableColumn(column)
         tableView.dataSource = self
@@ -71,6 +71,8 @@ class iTermWorkgroupsEditingViewController: NSViewController {
             action: #selector(segmentClicked(_:)))
         segmented.segmentStyle = .smallSquare
         segmented.setEnabled(false, forSegment: 1)
+        segmented.setToolTip(NSLocalizedString("Add Workgroup", comment: "Workgroup settings"), forSegment: 0)
+        segmented.setToolTip(NSLocalizedString("Remove Workgroup", comment: "Workgroup settings"), forSegment: 1)
         root.addSubview(segmented)
 
         // "Add Preset" pull-down button. First menu item is the button's
@@ -78,7 +80,7 @@ class iTermWorkgroupsEditingViewController: NSViewController {
         presetPopup = NSPopUpButton(frame: .zero, pullsDown: true)
         presetPopup.bezelStyle = .rounded
         presetPopup.controlSize = .regular
-        let titleItem = NSMenuItem(title: "Add Preset",
+        let titleItem = NSMenuItem(title: NSLocalizedString("Add Preset", comment: "Workgroup settings"),
                                    action: nil, keyEquivalent: "")
         presetPopup.menu?.addItem(titleItem)
         for preset in WorkgroupPresets.all {
@@ -100,6 +102,7 @@ class iTermWorkgroupsEditingViewController: NSViewController {
         helpButton.title = ""
         helpButton.target = self
         helpButton.action = #selector(helpClicked(_:))
+        helpButton.toolTip = NSLocalizedString("Workgroups documentation", comment: "Workgroup settings")
         helpButton.autoresizingMask = [.minXMargin, .maxYMargin]
         // Hidden until a workgroup is selected; the empty state has its
         // own "What is a Workgroup?" button. updateDetail() toggles this.
@@ -243,7 +246,7 @@ class iTermWorkgroupsEditingViewController: NSViewController {
 
     private func addWorkgroup() {
         pushUndo()
-        let wg = iTermWorkgroup.newEmpty(name: "Untitled Workgroup")
+        let wg = iTermWorkgroup.newEmpty(name: NSLocalizedString("Untitled Workgroup", comment: "Workgroup settings"))
         iTermWorkgroupModel.instance.add(wg)
         if let idx = iTermWorkgroupModel.instance.workgroups.firstIndex(where: {
             $0.uniqueIdentifier == wg.uniqueIdentifier
@@ -281,7 +284,7 @@ class iTermWorkgroupsEditingViewController: NSViewController {
             target.pushUndo()
             iTermWorkgroupModel.instance.setAll(snapshot)
         }
-        view.window?.undoManager?.setActionName("Change Workgroups")
+        view.window?.undoManager?.setActionName(NSLocalizedString("Change Workgroups", comment: "Undo action"))
     }
 
     func replaceSelectedWorkgroup(_ updated: iTermWorkgroup,
@@ -321,7 +324,10 @@ extension iTermWorkgroupsEditingViewController: NSTableViewDataSource, NSTableVi
             text.translatesAutoresizingMaskIntoConstraints = true
             text.lineBreakMode = .byTruncatingTail
         }
-        cell.textField?.stringValue = workgroups[row].name
+        // An unnamed workgroup would otherwise be an invisible row.
+        let name = workgroups[row].name
+        cell.textField?.stringValue = name.isEmpty ? NSLocalizedString("Untitled", comment: "Workgroup settings") : name
+        cell.textField?.textColor = name.isEmpty ? .secondaryLabelColor : .labelColor
         return cell
     }
 

@@ -19,13 +19,11 @@ extension SessionView {
         installOverlay(
             DiffWaitingPromptView(
                 frame: scrollview.frame,
-                title: "Diff session is waiting for changes.",
-                body: "This session is set to Diff mode and only starts its "
-                    + "command when git reports staged or unstaged changes. "
-                    + "The working tree is currently clean, or Latterm hasn’t "
-                    + "finished its first check yet. Edit a file (or stage one) "
-                    + "and the command will start on its own. To run it now "
-                    + "anyway, click below.",
+                title: NSLocalizedString("Diff session is waiting for changes.",
+                                         comment: "Workgroup diff session"),
+                body: NSLocalizedString(
+                    "This session is set to Diff mode and only starts its command when git reports staged or unstaged changes. The working tree is currently clean, or Latterm hasn’t finished its first check yet. Edit a file (or stage one) and the command will start on its own. To run it now anyway, click below.",
+                    comment: "Workgroup diff session"),
                 showCancel: false),
             onRunAnyway: onRunAnyway,
             onCancel: nil)
@@ -44,12 +42,11 @@ extension SessionView {
         installOverlay(
             DiffWaitingPromptView(
                 frame: scrollview.frame,
-                title: "Reload queued. Waiting for changes.",
-                body: "This session is set to Diff mode, so Reload will "
-                    + "re-run the command only after git reports staged or "
-                    + "unstaged changes. The previous output is still on "
-                    + "screen behind this panel. Cancel to keep that output "
-                    + "and abandon the reload, or run the command now anyway.",
+                title: NSLocalizedString("Reload queued. Waiting for changes.",
+                                         comment: "Workgroup diff session"),
+                body: NSLocalizedString(
+                    "This session is set to Diff mode, so Reload will re-run the command only after git reports staged or unstaged changes. The previous output is still on screen behind this panel. Cancel to keep that output and abandon the reload, or run the command now anyway.",
+                    comment: "Workgroup diff session"),
                 showCancel: true),
             onRunAnyway: onRunAnyway,
             onCancel: onCancel)

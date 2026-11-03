@@ -52,7 +52,7 @@ final class CodeReviewPromptManagerWindowController: NSWindowController {
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
             backing: .buffered,
             defer: false)
-        window.title = "Code Review Prompts"
+        window.title = NSLocalizedString("Code Review Prompts", comment: "Workgroup code review")
         window.setFrameAutosaveName("CodeReviewPromptManager")
         window.minSize = NSSize(width: 560, height: 320)
         super.init(window: window)
@@ -135,7 +135,7 @@ final class CodeReviewPromptManagerWindowController: NSWindowController {
             using: .systemFont(ofSize: NSFont.systemFontSize))
 
         let nameColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("Name"))
-        nameColumn.title = "Name"
+        nameColumn.title = NSLocalizedString("Name", comment: "Workgroup code review")
         nameColumn.isEditable = true
         nameColumn.width = leftWidth - 4
         table.addTableColumn(nameColumn)
@@ -146,9 +146,9 @@ final class CodeReviewPromptManagerWindowController: NSWindowController {
 
         let segmented = NSSegmentedControl(images: [
             NSImage(systemSymbolName: "plus",
-                     accessibilityDescription: "Add")!,
+                     accessibilityDescription: NSLocalizedString("Add", comment: "Workgroup code review"))!,
             NSImage(systemSymbolName: "minus",
-                     accessibilityDescription: "Remove")!
+                     accessibilityDescription: NSLocalizedString("Remove", comment: "Workgroup code review"))!
         ], trackingMode: .momentary, target: nil, action: nil)
         segmented.frame = NSRect(x: margin, y: margin,
                                   width: 60, height: segmentHeight)
@@ -160,7 +160,7 @@ final class CodeReviewPromptManagerWindowController: NSWindowController {
         let rightX = margin + leftWidth + margin
         let rightWidth = container.bounds.width - rightX - margin
 
-        let nameLabel = NSTextField(labelWithString: "Name:")
+        let nameLabel = NSTextField(labelWithString: NSLocalizedString("Name:", comment: "Workgroup code review"))
         nameLabel.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         nameLabel.textColor = .secondaryLabelColor
         nameLabel.frame = NSRect(x: rightX,
@@ -175,13 +175,13 @@ final class CodeReviewPromptManagerWindowController: NSWindowController {
             y: nameLabel.frame.minY - 24,
             width: rightWidth,
             height: 22))
-        nameInput.placeholderString = "Untitled"
+        nameInput.placeholderString = NSLocalizedString("Untitled", comment: "Workgroup code review")
         nameInput.autoresizingMask = [.width, .minYMargin]
         nameInput.delegate = self
         container.addSubview(nameInput)
         nameField = nameInput
 
-        let bodyLabel = NSTextField(labelWithString: "Prompt:")
+        let bodyLabel = NSTextField(labelWithString: NSLocalizedString("Prompt:", comment: "Workgroup code review"))
         bodyLabel.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         bodyLabel.textColor = .secondaryLabelColor
         bodyLabel.frame = NSRect(x: rightX,
@@ -221,7 +221,7 @@ final class CodeReviewPromptManagerWindowController: NSWindowController {
         bodyScrollView = bodyScroll
 
         let placeholder = NSTextField(wrappingLabelWithString:
-            "Select a prompt on the left to edit it, or click + to add a new prompt.")
+            NSLocalizedString("Select a prompt on the left to edit it, or click + to add a new prompt.", comment: "Workgroup code review"))
         placeholder.font = .systemFont(ofSize: NSFont.systemFontSize)
         placeholder.textColor = .secondaryLabelColor
         placeholder.alignment = .center
@@ -429,7 +429,7 @@ private final class PromptDataProvider: CRUDDataProvider {
 
     func makeNew(completion: @escaping (Int) -> ()) {
         guard let controller else { return }
-        let name = uniqueName(basedOn: "New Prompt")
+        let name = uniqueName(basedOn: NSLocalizedString("New Prompt", comment: "Workgroup code review"))
         var newIndex = -1
         controller.performLocalMutation {
             controller.crudController?.undoable {
