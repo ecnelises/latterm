@@ -2339,3 +2339,34 @@
 "Apply to all sessions in tab" = "应用到标签页中的所有会话";
 "Apply to broadcasted-to sessions" = "应用到接收广播的会话";
 "Keyboard Shortcut:" = "键盘快捷键：";
+
+/* User notifications. */
+"Session “%@” in tab #%d became idle." = "会话“%@”（标签页 #%d）已空闲。";
+"Idle" = "空闲";
+"New Output" = "新输出";
+"New output was received in “%@”, tab #%d." = "“%@”（标签页 #%d）收到了新输出。";
+"Session Ended" = "会话已结束";
+"Session “%@” in tab #%d just terminated." = "会话“%@”（标签页 #%d）已终止。";
+"Bell" = "响铃";
+"Session “%@” in tab #%d rang the bell." = "会话“%@”（标签页 #%d）发出了响铃。";
+"Session Buried" = "会话已隐藏";
+"It can be restored by detaching from tmux, or from the Session > Buried Sessions menu." = "可以通过从 tmux 分离，或从“会话 > 隐藏的会话”菜单中恢复。";
+"Session “%@” in tab #%d had a mark set." = "会话“%@”（标签页 #%d）设置了标记。";
+"Mark Set" = "已设置标记";
+"Session “%@” in tab #%d: %@" = "会话“%@”（标签页 #%d）：%@";
+"Alert" = "提醒";
+"Session Updated" = "会话已更新";
+"Triggers disabled in interactive apps. You can change this in Edit Session > Advanced." = "已在交互式应用中停用触发器。可以在“编辑会话 > 高级”中更改。";
+"Profile Updated" = "配置方案已更新";
+"Triggers disabled in interactive apps. You can change this in Settings > Profiles > Advanced." = "已在交互式应用中停用触发器。可以在“设置 > 配置方案 > 高级”中更改。";
+"Session “%@”" = "会话“%@”";
+"Status changed to “%@”" = "状态已更改为“%@”";
+"Hotkeys Unavailable" = "快捷键不可用";
+"Another app has enabled secure keyboard input. That prevents hotkey windows from being shown." = "另一个应用启用了安全键盘输入，因此无法显示快捷键窗口。";
+"Can’t Switch Apps" = "无法切换应用";
+"Can’t switch back to %@ because another app has enabled secure keyboard entry." = "无法切换回 %@，因为另一个应用启用了安全键盘输入。";
+"Too many tmux windows!" = "tmux 窗口过多！";
+"Some tmux windows were hidden." = "部分 tmux 窗口已隐藏。";
+"Use the tmux dashboard to select which to open." = "请使用 tmux 控制面板选择要打开的窗口。";
+"Error opening tmux tab" = "打开 tmux 标签页时出错";
+"A tmux pane terminated immediately after creation." = "tmux 窗格在创建后立即终止。";

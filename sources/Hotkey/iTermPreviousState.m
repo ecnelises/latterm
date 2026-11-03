@@ -68,8 +68,8 @@
         RLog(@"Some other app enabled secure keyboard entry");
         static NSInteger count = 0;
         if (count++ == 0) {
-            [[iTermNotificationController sharedInstance] notify:@"Can’t Switch Apps"
-                                                 withDescription:[NSString stringWithFormat:@"Can’t switch back to %@ because another app has enabled secure keyboard entry.",
+            [[iTermNotificationController sharedInstance] notify:NSLocalizedString(@"Can’t Switch Apps", @"User notification")
+                                                 withDescription:[NSString stringWithFormat:NSLocalizedString(@"Can’t switch back to %@ because another app has enabled secure keyboard entry.", @"User notification"),
                                                                   app.localizedName]];
         }
         return nil;

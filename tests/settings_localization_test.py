@@ -189,6 +189,25 @@ class SettingsLocalizationTests(unittest.TestCase):
             self.assertNotRegex(source, r'(?:title|labelText|placeholderString): "[A-Z]', name)
             self.assertNotRegex(source, r'actionName: "[A-Z]', name)
 
+    def test_every_localized_source_string_is_translated(self):
+        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
+        missing = []
+        for path in sorted((ROOT / "sources").rglob("*")):
+            if path.suffix not in (".m", ".swift"):
+                continue
+            source = path.read_text(errors="ignore")
+            for literal in re.findall(r'NSLocalizedString\(\s*@?"((?:[^"\\]|\\.)*)"', source):
+                key = json.loads('"' + literal + '"')
+                if key not in localized:
+                    missing.append(f"{path.relative_to(ROOT)}: {key}")
+        self.assertEqual(missing, [])
+
+    def test_notifications_name_the_existing_buried_sessions_menu(self):
+        source = (ROOT / "sources/PTYSession/PTYSession.m").read_text()
+        self.assertNotIn("Sessions > Buried Sessions", source)
+        self.assertIn("Session > Buried Sessions", source)
+        self.assertNotIn('@"iTerm"', (ROOT / "sources/TerminalView/PTYTab.m").read_text())
+
 
 if __name__ == "__main__":
     unittest.main()
