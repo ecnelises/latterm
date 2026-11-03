@@ -19,7 +19,7 @@
 
 + (NSString *)title
 {
-    return @"Ring Bell";
+    return NSLocalizedString(@"Ring Bell", @"Trigger action");
 }
 
 - (BOOL)takesParameter

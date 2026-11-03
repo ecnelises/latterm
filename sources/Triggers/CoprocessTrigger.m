@@ -16,7 +16,7 @@ static NSString *const kSuppressCoprocessTriggerWarning = @"NoSyncSuppressCoproc
 @implementation CoprocessTrigger
 
 + (NSString *)title {
-    return @"Run Coprocess…";
+    return NSLocalizedString(@"Run Coprocess…", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -28,7 +28,7 @@ static NSString *const kSuppressCoprocessTriggerWarning = @"NoSyncSuppressCoproc
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter coprocess command to run";
+    return NSLocalizedString(@"Enter coprocess command to run", @"Trigger action");
 }
 
 // Requires a live session to launch a coprocess
@@ -71,7 +71,7 @@ static NSString *const kSuppressCoprocessTriggerWarning = @"NoSyncSuppressCoproc
 @implementation MuteCoprocessTrigger
 
 + (NSString *)title {
-    return @"Run Silent Coprocess…";
+    return NSLocalizedString(@"Run Silent Coprocess…", @"Trigger action");
 }
 
 - (BOOL)takesParameter {
@@ -79,7 +79,7 @@ static NSString *const kSuppressCoprocessTriggerWarning = @"NoSyncSuppressCoproc
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter coprocess command to run";
+    return NSLocalizedString(@"Enter coprocess command to run", @"Trigger action");
 }
 
 - (BOOL)isSilent {

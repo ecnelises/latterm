@@ -16,7 +16,7 @@ import Foundation
 @objc(iTermEnterWorkgroupTrigger)
 class EnterWorkgroupTrigger: Trigger {
     override static var title: String {
-        return "Enter Workgroup…"
+        return NSLocalizedString("Enter Workgroup…", comment: "Trigger action")
     }
 
     override var description: String {

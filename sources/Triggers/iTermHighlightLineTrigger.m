@@ -17,7 +17,7 @@
 @implementation iTermHighlightLineTrigger
 
 + (NSString *)title {
-    return @"Highlight Line…";
+    return NSLocalizedString(@"Highlight Line…", @"Trigger action");
 }
 
 - (NSString *)description {

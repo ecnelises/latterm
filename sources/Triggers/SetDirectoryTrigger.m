@@ -13,7 +13,7 @@
 @implementation SetDirectoryTrigger
 
 + (NSString *)title {
-  return @"Report Directory";
+  return NSLocalizedString(@"Report Directory", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -25,7 +25,7 @@
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-  return @"Directory";
+  return NSLocalizedString(@"Directory", @"Trigger action");
 }
 
 - (BOOL)isIdempotent {

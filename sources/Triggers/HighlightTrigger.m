@@ -64,7 +64,7 @@ enum {
 }
 
 + (NSString *)title {
-    return @"Highlight Text…";
+    return NSLocalizedString(@"Highlight Text…", @"Trigger action");
 }
 
 - (NSString *)description {

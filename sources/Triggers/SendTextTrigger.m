@@ -13,7 +13,7 @@
 
 + (NSString *)title
 {
-    return @"Send Text…";
+    return NSLocalizedString(@"Send Text…", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -26,7 +26,7 @@
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter text to send";
+    return NSLocalizedString(@"Enter text to send", @"Trigger action");
 }
 
 // Requires a live session to send text to

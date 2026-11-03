@@ -13,7 +13,7 @@
 
 + (NSString *)title
 {
-    return @"Annotate…";
+    return NSLocalizedString(@"Annotate…", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -26,7 +26,7 @@
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter annotation";
+    return NSLocalizedString(@"Enter annotation", @"Trigger action");
 }
 
 // Annotations require captured text ranges, so not compatible with event triggers

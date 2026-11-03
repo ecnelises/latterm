@@ -15,7 +15,7 @@
 @implementation iTermHyperlinkTrigger
 
 + (NSString *)title {
-    return @"Make Hyperlink…";
+    return NSLocalizedString(@"Make Hyperlink…", @"Trigger action");
 }
 
 - (NSString *)description {

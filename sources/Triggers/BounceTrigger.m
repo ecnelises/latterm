@@ -18,7 +18,7 @@ typedef NS_ENUM(int, BounceTriggerParamTag) {
 
 + (NSString *)title
 {
-    return @"Bounce Dock Icon";
+    return NSLocalizedString(@"Bounce Dock Icon", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -76,11 +76,11 @@ typedef NS_ENUM(int, BounceTriggerParamTag) {
 + (NSString *)stringForParameter:(BounceTriggerParamTag)parameter {
     switch (parameter) {
         case kBounceTriggerParamTagBounceUntilFocus:
-            return @"Bounce Until Activated";
+            return NSLocalizedString(@"Bounce Until Activated", @"Trigger action");
         case kBounceTriggerParamTagBounceOnce:
-            return @"Bounce Once";
+            return NSLocalizedString(@"Bounce Once", @"Trigger action");
     }
-    return @"Bounce Until Activated";
+    return NSLocalizedString(@"Bounce Until Activated", @"Trigger action");
 }
 
 - (NSDictionary *)menuItemsForPoupupButton

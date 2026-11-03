@@ -383,7 +383,7 @@ static const CGFloat kLabelWidth = 124;
     performanceRow.hidden = YES;
     
     // Create help button
-    NSString *helpText = @"This histogram shows how much CPU time was used evaluating the regular expression for this trigger over the lifetime of the current terminal session. The X axis gives time in microseconds while the Y axis gives the number of samples which fell in that duration bucket. The vertical red line indicates the mean duration. You can use this to diagnose triggers that cause performance problems.";
+    NSString *helpText = NSLocalizedString(@"This histogram shows how much CPU time was used evaluating the regular expression for this trigger over the lifetime of the current terminal session. The X axis gives time in microseconds while the Y axis gives the number of samples which fell in that duration bucket. The vertical red line indicates the mean duration. You can use this to diagnose triggers that cause performance problems.", @"Trigger editor");
     iTermPopoverHelpButton *helpButton = [[iTermPopoverHelpButton alloc] initWithHelpText:helpText];
     helpButton.translatesAutoresizingMaskIntoConstraints = NO;
     [performanceRow addSubview:helpButton];
@@ -391,7 +391,7 @@ static const CGFloat kLabelWidth = 124;
     // Create label
     NSTextField *performanceLabel = [[NSTextField alloc] init];
     performanceLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    performanceLabel.stringValue = @"CPU Time:";
+    performanceLabel.stringValue = NSLocalizedString(@"CPU Time:", @"Trigger editor");
     performanceLabel.editable = NO;
     performanceLabel.bordered = NO;
     performanceLabel.backgroundColor = [NSColor clearColor];
@@ -541,7 +541,8 @@ static const CGFloat kLabelWidth = 124;
 
     NSTextField *label = [[NSTextField alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.stringValue = labelText;
+    // labelText also identifies the row below, so translate only the visible label.
+    label.stringValue = NSLocalizedString(labelText, @"Trigger editor row label");
     label.editable = NO;
     label.bordered = NO;
     label.backgroundColor = [NSColor clearColor];
@@ -563,7 +564,7 @@ static const CGFloat kLabelWidth = 124;
         _nameTextField = textField;
     } else if ([labelText isEqualToString:@"Job:"]) {
         _jobTextField = textField;
-        _jobTextField.placeholderString = @"Trigger enabled only for this job (e.g., emacs)";
+        _jobTextField.placeholderString = NSLocalizedString(@"Trigger enabled only for this job (e.g., emacs)", @"Trigger editor");
     }
 
     [NSLayoutConstraint activateConstraints:@[
@@ -587,7 +588,7 @@ static const CGFloat kLabelWidth = 124;
     // Create label
     NSTextField *label = [[NSTextField alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.stringValue = @"Match Against:";
+    label.stringValue = NSLocalizedString(@"Match Against:", @"Trigger editor");
     label.editable = NO;
     label.bordered = NO;
     label.backgroundColor = [NSColor clearColor];
@@ -599,7 +600,7 @@ static const CGFloat kLabelWidth = 124;
     // Create popup button for match type
     _matchTypeButton = [[NSPopUpButton alloc] init];
     _matchTypeButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [_matchTypeButton it_addItemWithTitle:@"Regular Expression" tag:iTermTriggerMatchTypeRegex];
+    [_matchTypeButton it_addItemWithTitle:NSLocalizedString(@"Regular Expression", @"Trigger editor") tag:iTermTriggerMatchTypeRegex];
 
     [[_matchTypeButton menu] addItem:[NSMenuItem separatorItem]];
     NSArray<NSNumber *> *sortedEventTypes = [[iTermEventTriggerMatchTypeHelper allEventTypes] sortedArrayUsingComparator:^NSComparisonResult(NSNumber *a, NSNumber *b) {
@@ -680,7 +681,7 @@ static const CGFloat kLabelWidth = 124;
     // Create label
     NSTextField *label = [[NSTextField alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.stringValue = @"Parameters:";
+    label.stringValue = NSLocalizedString(@"Parameters:", @"Trigger editor");
     label.editable = NO;
     label.bordered = NO;
     label.backgroundColor = [NSColor clearColor];
@@ -763,7 +764,7 @@ static const CGFloat kLabelWidth = 124;
     _instantButton = [[NSButton alloc] init];
     _instantButton.translatesAutoresizingMaskIntoConstraints = NO;
     _instantButton.buttonType = NSButtonTypeSwitch;
-    _instantButton.title = @"Instant";
+    _instantButton.title = NSLocalizedString(@"Instant", @"Trigger editor");
     _instantButton.target = self;
     _instantButton.action = @selector(instantDidChange:);
     [row addSubview:_instantButton];
@@ -771,7 +772,7 @@ static const CGFloat kLabelWidth = 124;
     _enabledButton = [[NSButton alloc] init];
     _enabledButton.translatesAutoresizingMaskIntoConstraints = NO;
     _enabledButton.buttonType = NSButtonTypeSwitch;
-    _enabledButton.title = @"Enabled";
+    _enabledButton.title = NSLocalizedString(@"Enabled", @"Trigger editor");
     _enabledButton.target = self;
     _enabledButton.action = @selector(enabledDidChange:);
     [row addSubview:_enabledButton];
@@ -779,7 +780,7 @@ static const CGFloat kLabelWidth = 124;
     _updateProfileButton = [[NSButton alloc] init];
     _updateProfileButton.translatesAutoresizingMaskIntoConstraints = NO;
     _updateProfileButton.buttonType = NSButtonTypeSwitch;
-    _updateProfileButton.title = @"Update Profile";
+    _updateProfileButton.title = NSLocalizedString(@"Update Profile", @"Trigger editor");
     [row addSubview:_updateProfileButton];
     
     // Add leading spacer to align with text fields
@@ -865,8 +866,8 @@ static const CGFloat kLabelWidth = 124;
     _leaderOnlyButton = [[NSButton alloc] init];
     _leaderOnlyButton.translatesAutoresizingMaskIntoConstraints = NO;
     _leaderOnlyButton.buttonType = NSButtonTypeSwitch;
-    _leaderOnlyButton.title = @"Only on the workgroup leader";
-    _leaderOnlyButton.toolTip = @"When set, the trigger fires only for the workgroup leader (the session that originally entered the workgroup). Peers such as the Code Review and Diff sessions do not, so reloading or quitting one keeps the workgroup open.";
+    _leaderOnlyButton.title = NSLocalizedString(@"Only on the workgroup leader", @"Trigger editor");
+    _leaderOnlyButton.toolTip = NSLocalizedString(@"When set, the trigger fires only for the workgroup leader (the session that originally entered the workgroup). Peers such as the Code Review and Diff sessions do not, so reloading or quitting one keeps the workgroup open.", @"Trigger editor");
     _leaderOnlyButton.target = self;
     _leaderOnlyButton.action = @selector(leaderOnlyDidChange:);
     [row addSubview:_leaderOnlyButton];
@@ -928,7 +929,7 @@ static const CGFloat kLabelWidth = 124;
     // Create label
     NSTextField *label = [[NSTextField alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.stringValue = @"Action:";
+    label.stringValue = NSLocalizedString(@"Action:", @"Trigger editor");
     label.editable = NO;
     label.bordered = NO;
     label.backgroundColor = [NSColor clearColor];
@@ -1007,7 +1008,7 @@ static const CGFloat kLabelWidth = 124;
     _cancelButton = [[NSButton alloc] init];
     _cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
     _cancelButton.bezelStyle = NSBezelStyleRounded;
-    _cancelButton.title = @"Cancel";
+    _cancelButton.title = NSLocalizedString(@"Cancel", @"Trigger editor");
     _cancelButton.target = self;
     _cancelButton.action = @selector(cancel:);
     _cancelButton.keyEquivalent = @"\e"; // Escape key
@@ -1016,7 +1017,7 @@ static const CGFloat kLabelWidth = 124;
     _okButton = [[NSButton alloc] init];
     _okButton.translatesAutoresizingMaskIntoConstraints = NO;
     _okButton.bezelStyle = NSBezelStyleRounded;
-    _okButton.title = @"OK";
+    _okButton.title = NSLocalizedString(@"OK", @"Trigger editor");
     _okButton.target = self;
     _okButton.action = @selector(ok:);
     _okButton.keyEquivalent = @"\r"; // Return key
@@ -1228,7 +1229,7 @@ static const CGFloat kLabelWidth = 124;
                               _matchType == iTermTriggerMatchTypeEventJobEnded);
     _jobTextField.enabled = !jobFieldRedundant;
     if (jobFieldRedundant) {
-        _jobTextField.placeholderString = @"Set job above";
+        _jobTextField.placeholderString = NSLocalizedString(@"Set job above", @"Trigger editor");
         // Clear so we don't serialize a stale trigger.job from a
         // previously-selected match type. The job-started/ended
         // evaluator ignores trigger.job entirely (it reads from
@@ -1236,7 +1237,7 @@ static const CGFloat kLabelWidth = 124;
         // would confuse future callers.
         _jobTextField.stringValue = @"";
     } else {
-        _jobTextField.placeholderString = @"Trigger enabled only for this job (e.g., emacs)";
+        _jobTextField.placeholderString = NSLocalizedString(@"Trigger enabled only for this job (e.g., emacs)", @"Trigger editor");
     }
 }
 
@@ -1245,7 +1246,7 @@ static const CGFloat kLabelWidth = 124;
     [_matchTypeButton removeAllItems];
 
     // Always add regex
-    [_matchTypeButton it_addItemWithTitle:@"Regular Expression" tag:iTermTriggerMatchTypeRegex];
+    [_matchTypeButton it_addItemWithTitle:NSLocalizedString(@"Regular Expression", @"Trigger editor") tag:iTermTriggerMatchTypeRegex];
 
     // Add all event types, sorted alphabetically by display name
     NSArray<NSNumber *> *sortedEventTypes = [[iTermEventTriggerMatchTypeHelper allEventTypes] sortedArrayUsingComparator:^NSComparisonResult(NSNumber *a, NSNumber *b) {

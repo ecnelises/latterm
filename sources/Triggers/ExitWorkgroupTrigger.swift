@@ -18,7 +18,7 @@ class ExitWorkgroupTrigger: Trigger {
     @objc static let leaderOnlyParamKey = "leaderOnly"
 
     override static var title: String {
-        return "Exit Workgroup"
+        return NSLocalizedString("Exit Workgroup", comment: "Trigger action")
     }
 
     override var description: String {

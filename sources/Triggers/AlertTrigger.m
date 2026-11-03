@@ -20,11 +20,11 @@
 
 + (NSString *)title
 {
-    return @"Show Alert…";
+    return NSLocalizedString(@"Show Alert…", @"Trigger action");
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter text to show in alert";
+    return NSLocalizedString(@"Enter text to show in alert", @"Trigger action");
 }
 
 - (NSString *)description {

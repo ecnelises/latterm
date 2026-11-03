@@ -11,7 +11,7 @@
 @implementation SetHostnameTrigger
 
 + (NSString *)title {
-    return @"Report User & Host";
+    return NSLocalizedString(@"Report User & Host", @"Trigger action");
 }
 
 - (NSString *)description {

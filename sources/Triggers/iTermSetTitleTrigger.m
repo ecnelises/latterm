@@ -15,7 +15,7 @@
 
 + (NSString *)title
 {
-    return @"Set Title…";
+    return NSLocalizedString(@"Set Title…", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -23,7 +23,7 @@
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter new title";
+    return NSLocalizedString(@"Enter new title", @"Trigger action");
 }
 
 - (BOOL)isIdempotent {

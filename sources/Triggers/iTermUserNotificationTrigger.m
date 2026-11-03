@@ -32,7 +32,7 @@
 }
 
 + (NSString *)title {
-    return @"Post Notification…";
+    return NSLocalizedString(@"Post Notification…", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -44,7 +44,7 @@
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter Message";
+    return NSLocalizedString(@"Enter Message", @"Trigger action");
 }
 
 - (NSSet<NSNumber *> *)allowedMatchTypes {

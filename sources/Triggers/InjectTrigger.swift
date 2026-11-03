@@ -14,7 +14,7 @@ class InjectTrigger: Trigger {
     }
 
     override static var title: String {
-        return "Inject Data…"
+        return NSLocalizedString("Inject Data…", comment: "Trigger action")
     }
 
     override func takesParameter() -> Bool {
@@ -29,7 +29,7 @@ class InjectTrigger: Trigger {
     }
 
     override func triggerOptionalParameterPlaceholder(withInterpolation interpolation: Bool) -> String? {
-        return "Use \\e for esc, \\a for ^G."
+        return NSLocalizedString("Use \\e for esc, \\a for ^G.", comment: "Trigger action")
     }
 
     override func performAction(withCapturedStrings strings: [String],

@@ -12,7 +12,7 @@ class FoldTrigger: Trigger {
     }
 
     override static var title: String {
-        return "Fold to Named Mark"
+        return NSLocalizedString("Fold to Named Mark", comment: "Trigger action")
     }
 
     override func takesParameter() -> Bool {
@@ -26,7 +26,7 @@ class FoldTrigger: Trigger {
     }
 
     override func triggerOptionalParameterPlaceholder(withInterpolation interpolation: Bool) -> String? {
-        return "Name of Mark"
+        return NSLocalizedString("Name of Mark", comment: "Trigger action")
     }
 
     override func performAction(withCapturedStrings strings: [String],

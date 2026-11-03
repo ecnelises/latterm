@@ -12,7 +12,7 @@ class SetNamedMarkTrigger: Trigger {
     }
 
     override static var title: String {
-        return "Set Named Mark"
+        return NSLocalizedString("Set Named Mark", comment: "Trigger action")
     }
 
     override func takesParameter() -> Bool {
@@ -26,7 +26,7 @@ class SetNamedMarkTrigger: Trigger {
     }
 
     override func triggerOptionalParameterPlaceholder(withInterpolation interpolation: Bool) -> String? {
-        return "Name for this mark"
+        return NSLocalizedString("Name for this mark", comment: "Trigger action")
     }
 
     override func performAction(withCapturedStrings strings: [String],

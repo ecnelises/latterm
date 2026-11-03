@@ -66,7 +66,7 @@ class SetUserVariableTrigger: Trigger {
     }
 
     override static var title: String {
-        return "Set User Variable…"
+        return NSLocalizedString("Set User Variable…", comment: "Trigger action")
     }
 
     override func takesParameter() -> Bool {
@@ -80,7 +80,7 @@ class SetUserVariableTrigger: Trigger {
     }
 
     override func triggerOptionalParameterPlaceholder(withInterpolation interpolation: Bool) -> String? {
-        return "Value for variable"
+        return NSLocalizedString("Value for variable", comment: "Trigger action")
     }
 
     override func performAction(withCapturedStrings strings: [String],

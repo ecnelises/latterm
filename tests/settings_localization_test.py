@@ -56,7 +56,7 @@ class SettingsLocalizationTests(unittest.TestCase):
 
     def test_settings_nib_translations_reference_existing_objects(self):
         for name in ("PreferencePanel", "SpecialExceptionsWindowController", "iTermEditSnippetWindowController",
-                     "iTermEditKeyActionWindowController", "ProfilesWindow"):
+                     "iTermEditKeyActionWindowController", "ProfilesWindow", "iTermTriggersPanel"):
             root = ET.parse(ROOT / "sources/Settings" / f"{name}.xib").getroot()
             identifiers = {node.get("id") for node in root.iter()}
             for key in strings(ROOT / "zh-Hans.lproj" / f"{name}.strings"):
@@ -139,7 +139,7 @@ class SettingsLocalizationTests(unittest.TestCase):
                 self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]))
         # Localized editor windows need both an English and a Chinese nib.
         for name in ("iTermEditSnippetWindowController", "iTermEditKeyActionWindowController",
-                     "ProfilesWindow"):
+                     "ProfilesWindow", "iTermTriggersPanel"):
             for language in ("en", "zh-Hans"):
                 suffix = f"/{language}.lproj/{name}.nib"
                 self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]), suffix)
@@ -202,6 +202,14 @@ class SettingsLocalizationTests(unittest.TestCase):
                 if key not in localized:
                     missing.append(f"{path.relative_to(ROOT)}: {key}")
         self.assertEqual(missing, [])
+
+    def test_trigger_editor_row_labels_are_translated(self):
+        # These labels are looked up dynamically because they also identify rows.
+        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
+        source = (ROOT / "sources/Settings/iTermAddTriggerViewController.m").read_text()
+        for key in re.findall(r'createRowWithLabelText:@"([^"]+)"', source):
+            self.assertIn(key, localized)
+            self.assertNotEqual(localized[key], key)
 
     def test_notifications_name_the_existing_buried_sessions_menu(self):
         source = (ROOT / "sources/PTYSession/PTYSession.m").read_text()

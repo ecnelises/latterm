@@ -14,7 +14,7 @@ class SGRTrigger: Trigger {
     }
 
     override static var title: String {
-        return "Change Style…"
+        return NSLocalizedString("Change Style…", comment: "Trigger action")
     }
 
     override func takesParameter() -> Bool {
@@ -22,7 +22,7 @@ class SGRTrigger: Trigger {
     }
 
     override func triggerOptionalParameterPlaceholder(withInterpolation interpolation: Bool) -> String? {
-        return "Enter SGR codes. See help button for details."
+        return NSLocalizedString("Enter SGR codes. See help button for details.", comment: "Trigger action")
     }
 
     override var helpText: String? {

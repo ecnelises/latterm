@@ -22,7 +22,7 @@ static NSString *const iTermRPCTriggerPathLineNumber = @"trigger.line_number";
 @implementation iTermRPCTrigger
 
 + (NSString *)title {
-    return @"Invoke Script Function";
+    return NSLocalizedString(@"Invoke Script Function", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -30,7 +30,7 @@ static NSString *const iTermRPCTriggerPathLineNumber = @"trigger.line_number";
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Function call";
+    return NSLocalizedString(@"Function call", @"Trigger action");
 }
 
 - (BOOL)takesParameter {

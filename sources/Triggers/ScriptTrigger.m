@@ -29,7 +29,7 @@
 
 + (NSString *)title
 {
-    return @"Run Command…";
+    return NSLocalizedString(@"Run Command…", @"Trigger action");
 }
 
 - (NSString *)description {
@@ -42,7 +42,7 @@
 }
 
 - (NSString *)triggerOptionalParameterPlaceholderWithInterpolation:(BOOL)interpolation {
-    return @"Enter command to run";
+    return NSLocalizedString(@"Enter command to run", @"Trigger action");
 }
 
 - (NSSet<NSNumber *> *)allowedMatchTypes {

@@ -20,7 +20,7 @@ typedef enum {
 @implementation MarkTrigger
 
 + (NSString *)title {
-    return @"Set Mark";
+    return NSLocalizedString(@"Set Mark", @"Trigger action");
 }
 
 - (NSString *)description {

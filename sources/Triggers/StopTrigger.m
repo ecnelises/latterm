@@ -11,7 +11,7 @@
 @implementation StopTrigger
 
 + (NSString *)title {
-  return @"Stop Processing Triggers";
+  return NSLocalizedString(@"Stop Processing Triggers", @"Trigger action");
 }
 
 - (NSString *)description {

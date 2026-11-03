@@ -30,7 +30,7 @@ class BufferInputTrigger: Trigger {
     }
 
     override static var title: String {
-        return "Buffer Input…"
+        return NSLocalizedString("Buffer Input…", comment: "Trigger action")
     }
 
     override func takesParameter() -> Bool {

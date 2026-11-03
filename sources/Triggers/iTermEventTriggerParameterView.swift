@@ -721,39 +721,39 @@ class EventTriggerMatchTypeHelper: NSObject {
     @objc static func displayName(for matchType: iTermTriggerMatchType) -> String {
         switch matchType {
         case .eventPromptDetected:
-            return "Prompt Detected"
+            return NSLocalizedString("Prompt Detected", comment: "Trigger event")
         case .eventCommandFinished:
-            return "Command Finished"
+            return NSLocalizedString("Command Finished", comment: "Trigger event")
         case .eventDirectoryChanged:
-            return "Directory Changed"
+            return NSLocalizedString("Directory Changed", comment: "Trigger event")
         case .eventHostChanged:
-            return "Host Changed"
+            return NSLocalizedString("Host Changed", comment: "Trigger event")
         case .eventUserChanged:
-            return "User Changed"
+            return NSLocalizedString("User Changed", comment: "Trigger event")
         case .eventIdle:
-            return "Idle (Silence)"
+            return NSLocalizedString("Idle (Silence)", comment: "Trigger event")
         case .eventActivityAfterIdle:
-            return "Activity After Idle"
+            return NSLocalizedString("Activity After Idle", comment: "Trigger event")
         case .eventSessionEnded:
-            return "Session Ended"
+            return NSLocalizedString("Session Ended", comment: "Trigger event")
         case .eventBellReceived:
-            return "Bell Received"
+            return NSLocalizedString("Bell Received", comment: "Trigger event")
         case .eventLongRunningCommand:
-            return "Long-Running Command"
+            return NSLocalizedString("Long-Running Command", comment: "Trigger event")
         case .eventCustomEscapeSequence:
-            return "Custom Escape Sequence"
+            return NSLocalizedString("Custom Escape Sequence", comment: "Trigger event")
         case .eventNotificationPosted:
-            return "Notification Posted"
+            return NSLocalizedString("Notification Posted", comment: "Trigger event")
         case .eventProgressBarChanged:
-            return "Progress Bar Changed"
+            return NSLocalizedString("Progress Bar Changed", comment: "Trigger event")
         case .eventJobStarted:
-            return "Job Started"
+            return NSLocalizedString("Job Started", comment: "Trigger event")
         case .eventJobEnded:
-            return "Job Ended"
+            return NSLocalizedString("Job Ended", comment: "Trigger event")
         case .eventVariableChanged:
-            return "Variable Changed"
+            return NSLocalizedString("Variable Changed", comment: "Trigger event")
         default:
-            return "Unknown Event"
+            return NSLocalizedString("Unknown Event", comment: "Trigger event")
         }
     }
 
@@ -761,37 +761,37 @@ class EventTriggerMatchTypeHelper: NSObject {
     @objc static func helpText(for matchType: iTermTriggerMatchType) -> String {
         switch matchType {
         case .eventPromptDetected:
-            return "Fires when terminal metadata reports a new prompt."
+            return NSLocalizedString("Fires when terminal metadata reports a new prompt.", comment: "Trigger event")
         case .eventCommandFinished:
-            return "Fires when a command exits. Requires command lifecycle metadata."
+            return NSLocalizedString("Fires when a command exits. Requires command lifecycle metadata.", comment: "Trigger event")
         case .eventDirectoryChanged:
-            return "Fires when the working directory changes."
+            return NSLocalizedString("Fires when the working directory changes.", comment: "Trigger event")
         case .eventHostChanged:
-            return "Fires when connecting to a different host via SSH."
+            return NSLocalizedString("Fires when connecting to a different host via SSH.", comment: "Trigger event")
         case .eventUserChanged:
-            return "Fires when the current user changes (su/sudo)."
+            return NSLocalizedString("Fires when the current user changes (su/sudo).", comment: "Trigger event")
         case .eventIdle:
-            return "Fires when no output is received for the specified duration."
+            return NSLocalizedString("Fires when no output is received for the specified duration.", comment: "Trigger event")
         case .eventActivityAfterIdle:
-            return "Fires when output resumes after being idle."
+            return NSLocalizedString("Fires when output resumes after being idle.", comment: "Trigger event")
         case .eventSessionEnded:
-            return "Fires when the session terminates."
+            return NSLocalizedString("Fires when the session terminates.", comment: "Trigger event")
         case .eventBellReceived:
-            return "Fires when a terminal bell (\\a) is received."
+            return NSLocalizedString("Fires when a terminal bell (\\a) is received.", comment: "Trigger event")
         case .eventLongRunningCommand:
-            return "Fires when a command runs longer than the threshold."
+            return NSLocalizedString("Fires when a command runs longer than the threshold.", comment: "Trigger event")
         case .eventCustomEscapeSequence:
-            return "Fires when a specific OSC escape sequence is received."
+            return NSLocalizedString("Fires when a specific OSC escape sequence is received.", comment: "Trigger event")
         case .eventNotificationPosted:
-            return "Fires when a notification is posted by a control sequence (OSC 9)."
+            return NSLocalizedString("Fires when a notification is posted by a control sequence (OSC 9).", comment: "Trigger event")
         case .eventProgressBarChanged:
-            return "Fires when a progress bar appears or disappears."
+            return NSLocalizedString("Fires when a progress bar appears or disappears.", comment: "Trigger event")
         case .eventJobStarted:
-            return "Fires when a process matching the job filter enters the foreground-job ancestry chain."
+            return NSLocalizedString("Fires when a process matching the job filter enters the foreground-job ancestry chain.", comment: "Trigger event")
         case .eventJobEnded:
-            return "Fires when a process matching the job filter leaves the foreground-job ancestry chain."
+            return NSLocalizedString("Fires when a process matching the job filter leaves the foreground-job ancestry chain.", comment: "Trigger event")
         case .eventVariableChanged:
-            return "Fires when a session variable changes to a value matching the regex."
+            return NSLocalizedString("Fires when a session variable changes to a value matching the regex.", comment: "Trigger event")
         default:
             return ""
         }
