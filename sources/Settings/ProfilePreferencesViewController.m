@@ -1029,8 +1029,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
         dispatch_async(dispatch_get_main_queue(), ^{
             if (error) {
                 NSAlert *alert = [[NSAlert alloc] init];
-                alert.messageText = @"Error";
-                alert.informativeText = [NSString stringWithFormat:@"Couldn't save to “%@” on %@: %@",
+                alert.messageText = NSLocalizedString(@"Couldn’t Save Profile", @"Profile settings");
+                alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"Couldn’t save to “%@” on %@: %@", @"Profile settings"),
                                          item.filename,
                                          item.host.displayName,
                                          [error localizedDescription]];
@@ -1069,8 +1069,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
     NSString *string = [self jsonForProfile:profile error:&error];
     if (!string) {
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Error";
-        alert.informativeText = [NSString stringWithFormat:@"Couldn't convert profile to JSON: %@",
+        alert.messageText = NSLocalizedString(@"Couldn’t Save Profile", @"Profile settings");
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"Couldn’t convert the profile to JSON: %@", @"Profile settings"),
                                  [error localizedDescription]];
         [alert runModal];
         return;
@@ -1104,8 +1104,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
     NSString *string = [self jsonForAllProfilesWithErrorCount:&errors];
     if (errors) {
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Error";
-        alert.informativeText = [NSString stringWithFormat:@"Couldn't convert one or more profiles to JSON. Check Console.app for errors."];
+        alert.messageText = NSLocalizedString(@"Couldn’t Save Profiles", @"Profile settings");
+        alert.informativeText = NSLocalizedString(@"Couldn’t convert one or more profiles to JSON. Check Console.app for errors.", @"Profile settings");
         [alert runModal];
         return;
     }

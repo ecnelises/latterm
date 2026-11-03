@@ -619,8 +619,11 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
 - (void)saveColorPreset:(id)sender {
     iTermColorPresetDictionary *customPresets = [iTermColorPresets customColorPresets];
     __weak __typeof(self) weakSelf = self;
-    [self showSaveColorPresetAlertWithItems:customPresets.allKeys completion:^(NSString *name) {
-        if (!name) {
+    NSArray<NSString *> *names = [customPresets.allKeys sortedArrayUsingSelector:@selector(localizedStandardCompare:)];
+    [self showSaveColorPresetAlertWithItems:names completion:^(NSString *name) {
+        // A blank name would create a preset that can't be told apart in menus.
+        name = [name stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (name.length == 0) {
             return;
         }
         [weakSelf reallySaveColorPresetWithName:name customPresets:customPresets];
@@ -657,8 +660,8 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
 - (void)showSaveColorPresetAlertWithItems:(NSArray<NSString *> *)items
                                completion:(void (^)(NSString *name))completion {
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Save Color Preset";
-    alert.informativeText = @"Select preset name";
+    alert.messageText = NSLocalizedString(@"Save Color Preset", @"Color presets");
+    alert.informativeText = NSLocalizedString(@"Enter a name for the new preset, or choose a custom preset to replace.", @"Color presets");
     alert.alertStyle = NSAlertStyleInformational;
 
     // Add the ComboBox
@@ -667,9 +670,10 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     comboBox.stringValue = [self mostSimilarCustomPresetName] ?: @"";
 
     alert.accessoryView = comboBox;
+    alert.window.initialFirstResponder = comboBox;
 
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Cancel"];
+    [alert addButtonWithTitle:NSLocalizedString(@"Save", @"Color presets")];
+    [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Color presets")];
 
     [alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse response) {
         if (response == NSAlertFirstButtonReturn) {
@@ -700,19 +704,20 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     iTermColorPresetDictionary *customPresets = [iTermColorPresets customColorPresets];
     if (!customPresets || [customPresets count] == 0) {
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"No deletable color presets.";
-        alert.informativeText = @"You cannot erase the built-in presets and no custom presets have been imported.";
-        [alert addButtonWithTitle:@"OK"];
+        alert.messageText = NSLocalizedString(@"No Custom Color Presets", @"Color presets");
+        alert.informativeText = NSLocalizedString(@"Built-in presets can’t be deleted, and no custom presets have been saved or imported.", @"Color presets");
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Color presets")];
         [alert runModal];
         return;
     }
 
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Select a preset to delete:";
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Cancel"];
+    alert.messageText = NSLocalizedString(@"Delete Color Preset", @"Color presets");
+    alert.informativeText = NSLocalizedString(@"Choose a custom preset to delete.", @"Color presets");
+    [alert addButtonWithTitle:NSLocalizedString(@"Delete", @"Color presets")];
+    [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Color presets")];
     NSPopUpButton *popUpButton = [[NSPopUpButton alloc] init];
-    for (NSString *key in [[customPresets allKeys] sortedArrayUsingSelector:@selector(compare:)]) {
+    for (NSString *key in [[customPresets allKeys] sortedArrayUsingSelector:@selector(localizedStandardCompare:)]) {
         [popUpButton addItemWithTitle:key];
         popUpButton.itemArray.lastObject.identifier = key;
     }
@@ -753,9 +758,9 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     [theDict writeToSaveItem:item completionHandler:^(NSError *error) {
         if (error) {
             NSAlert *alert = [[NSAlert alloc] init];
-            alert.messageText = @"Save Failed.";
-            alert.informativeText = [NSString stringWithFormat:@"Could not save to %@", item.displayName];
-            [alert addButtonWithTitle:@"OK"];
+            alert.messageText = NSLocalizedString(@"Couldn’t Export Color Preset", @"Color presets");
+            alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"The preset could not be saved to %@.", @"Color presets"), item.displayName];
+            [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Color presets")];
             [alert runModal];
         } else {
             [item revealInFinderIfLocal];

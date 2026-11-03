@@ -15,6 +15,11 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Keep translated window size units in profile
+  settings and translate preset, arrangement,
+  and settings folder alerts.
+- Ignore blank names when saving color presets
+  or saving and renaming window arrangements.
 - Translate the Workgroups editor, toolbar items,
   diff overlays, and code review prompts, and
   right-align session editor labels.

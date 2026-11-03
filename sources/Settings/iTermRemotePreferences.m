@@ -208,13 +208,13 @@ respectingTimeoutSetting:(BOOL)respectingTimeoutSetting
 
 - (NSData *)didFailToLoadFromURL:(NSURL *)url withError:(NSError *)error {
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Failed to load settings from URL. Falling back to local copy.";
-    alert.informativeText = [NSString stringWithFormat:@"HTTP request failed: %@",
-                             [error localizedDescription] ?: @"unknown error"];
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Reveal in Settings"];
+    alert.messageText = NSLocalizedString(@"Failed to load settings from URL. Falling back to local copy.", @"Custom settings folder");
+    alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"HTTP request failed: %@", @"Custom settings folder"),
+                             [error localizedDescription] ?: NSLocalizedString(@"unknown error", @"Custom settings folder")];
+    [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Custom settings folder")];
+    [alert addButtonWithTitle:NSLocalizedString(@"Reveal in Settings", @"Custom settings folder")];
     if ([error.domain isEqual:NSURLErrorDomain] && error.code == NSURLErrorTimedOut) {
-        [alert addButtonWithTitle:@"Try Again Without Timeout"];
+        [alert addButtonWithTitle:NSLocalizedString(@"Try Again Without Timeout", @"Custom settings folder")];
     }
 
     const NSModalResponse response = [alert runModal];
@@ -293,17 +293,17 @@ respectingTimeoutSetting:(BOOL)respectingTimeoutSetting
         RLog(@"It's empty");
         if ([[self customFolderOrURL] length] == 0) {
             NSAlert *alert = [[NSAlert alloc] init];
-            alert.messageText = @"Error Loading Settings";
-            alert.informativeText = @"You have enabled “Load settings from a custom folder or URL” in settings but the location is not set.";
-            [alert addButtonWithTitle:@"Don’t Load Remote Settings"];
-            [alert addButtonWithTitle:@"Cancel"];
+            alert.messageText = NSLocalizedString(@"Error Loading Settings", @"Custom settings folder");
+            alert.informativeText = NSLocalizedString(@"You have enabled “Load settings from a custom folder or URL” in settings but the location is not set.", @"Custom settings folder");
+            [alert addButtonWithTitle:NSLocalizedString(@"Don’t Load Remote Settings", @"Custom settings folder")];
+            [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Custom settings folder")];
             if ([alert runModal] == NSAlertFirstButtonReturn) {
                 [iTermPreferences setBool:NO forKey:kPreferenceKeyLoadPrefsFromCustomFolder];
             }
         } else {
             NSAlert *alert = [[NSAlert alloc] init];
-            alert.messageText = @"Failed to load settings from custom directory. Falling back to local copy.";
-            alert.informativeText = [NSString stringWithFormat:@"Missing or malformed file at \"%@\"",
+            alert.messageText = NSLocalizedString(@"Failed to load settings from custom directory. Falling back to local copy.", @"Custom settings folder");
+            alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"Missing or malformed file at “%@”.", @"Custom settings folder"),
                                      [self customFolderOrURL]];
             [alert runModal];
         }
@@ -363,11 +363,9 @@ respectingTimeoutSetting:(BOOL)respectingTimeoutSetting
     NSString *folder = [self expandedCustomFolderOrURL];
     if ([folder stringIsUrlLike]) {
         NSString *informativeText =
-            @"To make it available, first quit Latterm and then manually "
-            @"copy ~/Library/Preferences/com.googlecode.iterm2.plist to "
-            @"your hosting provider.";
+            NSLocalizedString(@"To make it available, first quit Latterm and then manually copy ~/Library/Preferences/com.googlecode.iterm2.plist to your hosting provider.", @"Custom settings folder");
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Settings cannot be copied to a URL.";
+        alert.messageText = NSLocalizedString(@"Settings cannot be copied to a URL.", @"Custom settings folder");
         alert.informativeText = informativeText;
         [alert runModal];
         return;
@@ -377,8 +375,8 @@ respectingTimeoutSetting:(BOOL)respectingTimeoutSetting
     NSDictionary *myDict = iTermRemotePreferencesSave(iTermUserDefaultsDictionary(self.preservedKeys), filename);
     if (!myDict) {
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Failed to copy settings to custom directory.";
-        alert.informativeText = [NSString stringWithFormat:@"Tried to copy %@ to %@",
+        alert.messageText = NSLocalizedString(@"Failed to copy settings to custom directory.", @"Custom settings folder");
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"Tried to copy %@ to %@.", @"Custom settings folder"),
                                  [self remotePrefsLocation], filename];
         [alert runModal];
     } else {

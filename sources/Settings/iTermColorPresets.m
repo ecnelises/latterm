@@ -34,9 +34,9 @@ NSString *const kRebuildColorPresetsMenuNotification = @"kRebuildColorPresetsMen
     if (!aDict) {
         RLog(@"Failed to parse dictionary");
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Import Failed.";
-        alert.informativeText = @"The selected file could not be read or did not contain a valid color scheme.";
-        [alert addButtonWithTitle:@"OK"];
+        alert.messageText = NSLocalizedString(@"Couldn’t Import Color Preset", @"Color presets");
+        alert.informativeText = NSLocalizedString(@"The selected file could not be read or does not contain a valid color scheme.", @"Color presets");
+        [alert addButtonWithTitle:NSLocalizedString(@"OK", @"Color presets")];
         [alert runModal];
         return NO;
     } else {
@@ -45,10 +45,10 @@ NSString *const kRebuildColorPresetsMenuNotification = @"kRebuildColorPresetsMen
         if (dup) {
             DLog(@"Is a duplicate preset");
             NSAlert *alert = [[NSAlert alloc] init];
-            alert.messageText = @"Add duplicate color preset?";
-            alert.informativeText = [NSString stringWithFormat:@"The color preset “%@” is the same as the preset you're trying to add. Really add it?", dup];
-            [alert addButtonWithTitle:@"Cancel"];
-            [alert addButtonWithTitle:@"Add it anyway"];
+            alert.messageText = NSLocalizedString(@"Add Duplicate Color Preset?", @"Color presets");
+            alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"The color preset “%@” already has the same colors. Add another copy anyway?", @"Color presets"), dup];
+            [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Color presets")];
+            [alert addButtonWithTitle:NSLocalizedString(@"Add Anyway", @"Color presets")];
             if ([alert runModal] == NSAlertFirstButtonReturn) {
                 DLog(@"User declined to install dup");
                 return NO;

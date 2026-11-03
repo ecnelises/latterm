@@ -450,6 +450,27 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     }
 }
 
+// The NIB titles are localized, but each window style swaps in more specific
+// unit names, so these titles must be localized here too.
+- (void)showUnitsButtonsWithColumnsInCells:(BOOL)columnsIsCells rowsInCells:(BOOL)rowsIsCells {
+    _columnsUnitsButton.hidden = NO;
+    _columnsUnitsButton.menu.itemArray[0].title = NSLocalizedString(@"Columns", @"Profile window size units");
+    _columnsUnitsButton.menu.itemArray[1].title = NSLocalizedString(@"% of screen width", @"Profile window size units");
+    [_columnsUnitsButton selectItemWithTag:columnsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+
+    _rowsUnitsButton.hidden = NO;
+    _rowsUnitsButton.menu.itemArray[0].title = NSLocalizedString(@"Rows", @"Profile window size units");
+    _rowsUnitsButton.menu.itemArray[1].title = NSLocalizedString(@"% of screen height", @"Profile window size units");
+    [_rowsUnitsButton selectItemWithTag:rowsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+}
+
+- (void)showCellCountLabels {
+    _widthLabel.hidden = NO;
+    _heightLabel.hidden = NO;
+    _widthLabel.stringValue = NSLocalizedString(@"columns by", @"Profile window size");
+    _heightLabel.stringValue = NSLocalizedString(@"rows", @"Profile window size");
+}
+
 - (BOOL)updateWindowTypeControlFromSettings {
     PreferenceInfo *info = [self infoForControl:_windowStyle];
     iTermWindowType type = iTermUnthemedWindowType([self intForKey:info.key]);
@@ -507,15 +528,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
             _percentageWidthField.enabled = YES;
             _percentageHeightField.enabled = YES;
 
-            _columnsUnitsButton.hidden = NO;
-            _columnsUnitsButton.menu.itemArray[0].title = @"Columns";
-            _columnsUnitsButton.menu.itemArray[1].title = @"% of screen width";
-            [_columnsUnitsButton selectItemWithTag:columnsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
-
-            _rowsUnitsButton.hidden = NO;
-            _rowsUnitsButton.menu.itemArray[0].title = @"Rows";
-            _rowsUnitsButton.menu.itemArray[1].title = @"% of screen height";
-            [_rowsUnitsButton selectItemWithTag:rowsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+            [self showUnitsButtonsWithColumnsInCells:columnsIsCells rowsInCells:rowsIsCells];
 
             _widthLabel.hidden = YES;
             _heightLabel.hidden = YES;
@@ -533,11 +546,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
             _percentageWidthField.hidden = YES;
             _percentageHeightField.hidden = YES;
 
-            _widthLabel.hidden = NO;
-            _heightLabel.hidden = NO;
-
-            _widthLabel.stringValue = @"columns by";
-            _heightLabel.stringValue = @"rows";
+            [self showCellCountLabels];
 
             _byLabel.hidden = YES;
             break;
@@ -553,15 +562,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
             _percentageWidthField.hidden = YES;
             _percentageHeightField.hidden = YES;
 
-            _columnsUnitsButton.hidden = NO;
-            _columnsUnitsButton.menu.itemArray[0].title = @"Columns";
-            _columnsUnitsButton.menu.itemArray[1].title = @"% of screen width";
-            [_columnsUnitsButton selectItemWithTag:columnsIsCells ? 0 : 1];
-
-            _rowsUnitsButton.hidden = NO;
-            _rowsUnitsButton.menu.itemArray[0].title = @"Rows";
-            _rowsUnitsButton.menu.itemArray[1].title = @"% of screen height";
-            [_rowsUnitsButton selectItemWithTag:rowsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+            [self showUnitsButtonsWithColumnsInCells:columnsIsCells rowsInCells:rowsIsCells];
 
             _widthLabel.hidden = YES;
             _heightLabel.hidden = YES;
@@ -580,15 +581,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
             _percentageWidthField.hidden = YES;
             _percentageHeightField.hidden = YES;
 
-            _columnsUnitsButton.hidden = NO;
-            _columnsUnitsButton.menu.itemArray[0].title = @"Columns";
-            _columnsUnitsButton.menu.itemArray[1].title = @"% of screen width";
-            [_columnsUnitsButton selectItemWithTag:columnsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
-
-            _rowsUnitsButton.hidden = NO;
-            _rowsUnitsButton.menu.itemArray[0].title = @"Rows";
-            _rowsUnitsButton.menu.itemArray[1].title = @"% of screen height";
-            [_rowsUnitsButton selectItemWithTag:rowsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+            [self showUnitsButtonsWithColumnsInCells:columnsIsCells rowsInCells:rowsIsCells];
 
             _widthLabel.hidden = YES;
             _heightLabel.hidden = YES;
@@ -609,15 +602,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
             _percentageWidthField.enabled = YES;
             _percentageHeightField.enabled = YES;
 
-            _columnsUnitsButton.hidden = NO;
-            _columnsUnitsButton.menu.itemArray[0].title = @"Columns";
-            _columnsUnitsButton.menu.itemArray[1].title = @"% of screen width";
-            [_columnsUnitsButton selectItemWithTag:columnsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
-
-            _rowsUnitsButton.hidden = NO;
-            _rowsUnitsButton.menu.itemArray[0].title = @"Rows";
-            _rowsUnitsButton.menu.itemArray[1].title = @"% of screen height";
-            [_rowsUnitsButton selectItemWithTag:rowsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+            [self showUnitsButtonsWithColumnsInCells:columnsIsCells rowsInCells:rowsIsCells];
 
             _widthLabel.hidden = YES;
             _heightLabel.hidden = YES;
@@ -637,15 +622,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
             _percentageWidthField.enabled = YES;
             _percentageHeightField.enabled = YES;
 
-            _columnsUnitsButton.hidden = NO;
-            _columnsUnitsButton.menu.itemArray[0].title = @"Columns";
-            _columnsUnitsButton.menu.itemArray[1].title = @"% of screen width";
-            [_columnsUnitsButton selectItemWithTag:columnsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
-
-            _rowsUnitsButton.hidden = NO;
-            _rowsUnitsButton.menu.itemArray[0].title = @"Rows";
-            _rowsUnitsButton.menu.itemArray[1].title = @"% of screen height";
-            [_rowsUnitsButton selectItemWithTag:rowsIsCells ? iTermWindowUnitsTagCells : iTermWindowUnitsTagScreenPercentage];
+            [self showUnitsButtonsWithColumnsInCells:columnsIsCells rowsInCells:rowsIsCells];
 
             _widthLabel.hidden = YES;
             _heightLabel.hidden = YES;
@@ -668,11 +645,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
 
             _columnsUnitsButton.hidden = YES;
             _rowsUnitsButton.hidden = YES;
-            _widthLabel.hidden = NO;
-            _heightLabel.hidden = NO;
-
-            _widthLabel.stringValue = @"columns by";
-            _heightLabel.stringValue = @"rows";
+            [self showCellCountLabels];
 
             _byLabel.hidden = YES;
             break;
@@ -1020,9 +993,9 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     int selectedTag = [_screen selectedTag];
     [_screen removeAllItems];
     int i = 0;
-    [_screen addItemWithTitle:@"No Preference"];
+    [_screen addItemWithTitle:NSLocalizedString(@"No Preference", @"Profile window screen")];
     [[_screen lastItem] setTag:-1];
-    [_screen addItemWithTitle:@"Screen with Cursor"];
+    [_screen addItemWithTitle:NSLocalizedString(@"Screen with Cursor", @"Profile window screen")];
     [[_screen lastItem] setTag:-2];
     NSArray<NSScreen *> *screens = [NSScreen screens];
     NSMenuItem *separator = [NSMenuItem separatorItem];
@@ -1032,7 +1005,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     const int numScreens = [screens count];
     for (i = 0; i < numScreens; i++) {
         if (i == 0) {
-            [_screen addItemWithTitle:[NSString stringWithFormat:@"Main Screen"]];
+            [_screen addItemWithTitle:NSLocalizedString(@"Main Screen", @"Profile window screen")];
         } else {
             [_screen addItemWithTitle:screens[i].it_uniqueName];
         }

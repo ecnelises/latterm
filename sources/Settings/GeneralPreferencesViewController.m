@@ -865,16 +865,16 @@ enum {
 #pragma mark - Actions
 
 - (IBAction)exportAllSettingsAndData:(id)sender {
-    [self showMessage:[iTerm2ImportExport exportAll] title:@"Problem Exporting"];
+    [self showMessage:[iTerm2ImportExport exportAll] title:NSLocalizedString(@"Problem Exporting", @"General settings")];
 }
 
 - (IBAction)importAllSettingsAndData:(id)sender {
-    [self showMessage:[iTerm2ImportExport importAll] title:@"Problem Importing"];
+    [self showMessage:[iTerm2ImportExport importAll] title:NSLocalizedString(@"Problem Importing", @"General settings")];
 }
 
 - (IBAction)eraseAllSettingsAndData:(id)sender {
     [self showMessage:[iTerm2ImportExport eraseAllWithWindow:self.view.window]
-                title:@"Problem Erasing Settings and Data"];
+                title:NSLocalizedString(@"Problem Erasing Settings and Data", @"General settings")];
 }
 
 - (void)showMessage:(NSString *)message title:(NSString *)title {
@@ -882,7 +882,7 @@ enum {
         return;
     }
     [iTermWarning showWarningWithTitle:message
-                               actions:@[ @"OK" ]
+                               actions:@[ NSLocalizedString(@"OK", @"General settings") ]
                              accessory:nil
                             identifier:nil
                            silenceable:kiTermWarningTypePersistent
@@ -1033,9 +1033,9 @@ enum {
                 // User didn't hit cancel; if he chose a writable directory, ask if he wants to write to it.
                 if ([[iTermRemotePreferences sharedInstance] remoteLocationIsValid]) {
                     NSAlert *alert = [[NSAlert alloc] init];
-                    alert.messageText = @"Copy local settings to custom folder now?";
-                    [alert addButtonWithTitle:@"Copy"];
-                    [alert addButtonWithTitle:@"Don’t Copy"];
+                    alert.messageText = NSLocalizedString(@"Copy local settings to custom folder now?", @"General settings");
+                    [alert addButtonWithTitle:NSLocalizedString(@"Copy", @"General settings")];
+                    [alert addButtonWithTitle:NSLocalizedString(@"Don’t Copy", @"General settings")];
                     if ([alert runModal] == NSAlertFirstButtonReturn) {
                         [[iTermRemotePreferences sharedInstance] saveLocalUserDefaultsToRemotePrefs];
                     }

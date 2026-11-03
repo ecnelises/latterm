@@ -153,7 +153,11 @@ class SettingsLocalizationTests(unittest.TestCase):
                      "iTermProfilePreferences.m", "ProfilePreferencesViewController.m",
                      "../OpenQuickly/iTermOpenQuicklyCommands.m",
                      "../OpenQuickly/iTermOpenQuicklyModel.m",
-                     "iTermPreferencesSearchEngineResultsWindowController.m"):
+                     "iTermPreferencesSearchEngineResultsWindowController.m",
+                     "ProfilesWindowPreferencesViewController.m",
+                     "ProfilesColorsPreferencesViewController.m", "iTermColorPresets.m",
+                     "WindowArrangements.m", "KeysPreferencesViewController.m",
+                     "iTermRemotePreferences.m"):
             source = (ROOT / "sources/Settings" / name).read_text()
             for key in re.findall(r'NSLocalizedString\(@?"((?:[^"\\]|\\.)*)"', source):
                 key = json.loads('"' + key + '"')
