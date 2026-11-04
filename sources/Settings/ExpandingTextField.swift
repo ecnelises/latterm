@@ -7,8 +7,6 @@
 
 import AppKit
 
-import AppKit
-
 @objc(iTermExpandingTextField)
 class ExpandingTextField: NSTextField {
     private let toggleExpandedButton = NSButton()
@@ -43,21 +41,9 @@ class ExpandingTextField: NSTextField {
     }
 
     private static func setImage(button: NSButton, expand: Bool) {
-        if expand {
-            if #available(macOS 11, *) {
-                button.image = NSImage(systemSymbolName: SFSymbol.rectangleExpandVertical.rawValue, accessibilityDescription: "Expand")
-                button.imagePosition = .imageOnly
-            } else {
-                button.title = "⇳"
-            }
-        } else {
-            if #available(macOS 11, *) {
-                button.image = NSImage(systemSymbolName: SFSymbol.rectangleCompressVertical.rawValue, accessibilityDescription: "Expand")
-                button.imagePosition = .imageOnly
-            } else {
-                button.title = "×"
-            }
-        }
+        let symbol = expand ? SFSymbol.rectangleExpandVertical : SFSymbol.rectangleCompressVertical
+        button.image = NSImage(systemSymbolName: symbol.rawValue, accessibilityDescription: "Expand")
+        button.imagePosition = .imageOnly
     }
 
     private func initCommon() {

@@ -416,8 +416,6 @@
 		1D6ED97719AEA20D005A7799 /* config.png in Resources */ = {isa = PBXBuildFile; fileRef = FB754C5F036EFC5301F955DB /* config.png */; };
 		1D6ED97919AEA20D005A7799 /* important.png in Resources */ = {isa = PBXBuildFile; fileRef = FBB2EBCD040AC7C201F955DB /* important.png */; };
 		1D6ED97B19AEA20D005A7799 /* newwin.png in Resources */ = {isa = PBXBuildFile; fileRef = FB896717038D935801F955DB /* newwin.png */; };
-		1D6ED97E19AEA20D005A7799 /* QuestionMarkSign.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2AF4F19521CFF005769D5 /* QuestionMarkSign.png */; };
-		1D6ED98019AEA20D005A7799 /* QuestionMarkSign@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2AF5019521CFF005769D5 /* QuestionMarkSign@2x.png */; };
 		1D6ED98719AEA20D005A7799 /* Maximized.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2A1CA1949165D005769D5 /* Maximized.png */; };
 		1D6ED98A19AEA20D005A7799 /* LogoFrame.png in Resources */ = {isa = PBXBuildFile; fileRef = A6CEDA5D19988A7300BB57EC /* LogoFrame.png */; };
 		1D6ED99319AEA20D005A7799 /* iTerm2.sdef in Resources */ = {isa = PBXBuildFile; fileRef = A6C7DE5819A459E9001E5C75 /* iTerm2.sdef */; };
@@ -559,10 +557,6 @@
 		1DC2A1CD1949165D005769D5 /* Maximized.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2A1CA1949165D005769D5 /* Maximized.png */; };
 		1DC2A1CE1949165D005769D5 /* Maximized@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2A1CB1949165D005769D5 /* Maximized@2x.png */; };
 		1DC2A1CF1949165D005769D5 /* Maximized@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2A1CB1949165D005769D5 /* Maximized@2x.png */; };
-		1DC2AF5119521CFF005769D5 /* QuestionMarkSign.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2AF4F19521CFF005769D5 /* QuestionMarkSign.png */; };
-		1DC2AF5219521CFF005769D5 /* QuestionMarkSign.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2AF4F19521CFF005769D5 /* QuestionMarkSign.png */; };
-		1DC2AF5319521CFF005769D5 /* QuestionMarkSign@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2AF5019521CFF005769D5 /* QuestionMarkSign@2x.png */; };
-		1DC2AF5419521CFF005769D5 /* QuestionMarkSign@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC2AF5019521CFF005769D5 /* QuestionMarkSign@2x.png */; };
 		1DC38818148E840700B89F7C /* SolidColorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DC38816148E840600B89F7C /* SolidColorView.h */; };
 		1DC742A0127C96F90069594C /* IBarCursor.png in Resources */ = {isa = PBXBuildFile; fileRef = 1DC7429F127C96F90069594C /* IBarCursor.png */; };
 		1DCA5ECF13EE507800B7725E /* WindowArrangements.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DCA5ECD13EE507800B7725E /* WindowArrangements.h */; };
@@ -4891,8 +4885,6 @@
 		1DBBA5DD1B3CB0590026E3B6 /* restore-arrangement@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "restore-arrangement@2x.png"; path = "images/restore-arrangement@2x.png"; sourceTree = "<group>"; };
 		1DC2A1CA1949165D005769D5 /* Maximized.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = Maximized.png; path = images/Maximized.png; sourceTree = "<group>"; };
 		1DC2A1CB1949165D005769D5 /* Maximized@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "Maximized@2x.png"; path = "images/Maximized@2x.png"; sourceTree = "<group>"; };
-		1DC2AF4F19521CFF005769D5 /* QuestionMarkSign.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = QuestionMarkSign.png; path = images/QuestionMarkSign.png; sourceTree = "<group>"; };
-		1DC2AF5019521CFF005769D5 /* QuestionMarkSign@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "QuestionMarkSign@2x.png"; path = "images/QuestionMarkSign@2x.png"; sourceTree = "<group>"; };
 		1DC38816148E840600B89F7C /* SolidColorView.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = SolidColorView.h; sourceTree = "<group>"; tabWidth = 4; };
 		1DC38817148E840700B89F7C /* SolidColorView.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = SolidColorView.m; sourceTree = "<group>"; tabWidth = 4; };
 		1DC393C317B59B08000EE0F2 /* SearchResult.h */ = {isa = PBXFileReference; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = SearchResult.h; sourceTree = "<group>"; tabWidth = 4; };
@@ -8508,8 +8500,6 @@
 				A6F2F216250757FD00FC227F /* PrefsShortcuts@2x.png */,
 				A68E33311DE746F5003F1D8E /* Previous Mark Touch Bar Icon.png */,
 				A68E33321DE746F5003F1D8E /* Previous Mark Touch Bar Icon@2x.png */,
-				1DC2AF4F19521CFF005769D5 /* QuestionMarkSign.png */,
-				1DC2AF5019521CFF005769D5 /* QuestionMarkSign@2x.png */,
 				A6B4832629D73DA00055E24A /* rectangle.portrait.on.rectangle.portrait.png */,
 				1DBBA5DC1B3CB0590026E3B6 /* restore-arrangement.png */,
 				1DBBA5DD1B3CB0590026E3B6 /* restore-arrangement@2x.png */,
@@ -14768,7 +14758,6 @@
 				1D6ED97B19AEA20D005A7799 /* newwin.png in Resources */,
 				1DBBA5E01B3CB0590026E3B6 /* restore-arrangement.png in Resources */,
 				A6F18B432AE2F39C006C08EE /* uniE0B8_lower-left-triangle.pdf in Resources */,
-				1D6ED97E19AEA20D005A7799 /* QuestionMarkSign.png in Resources */,
 				A67F6146214395870093940A /* graphic_java.png in Resources */,
 				A61A85A524F1CCBA00B03880 /* iTermGlobalSearch.xib in Resources */,
 				A67F61E6214395D50093940A /* graphic_vim.png in Resources */,
@@ -14783,7 +14772,6 @@
 				A6F7A742213CB143004DE961 /* StatusBarIconHost@2x.png in Resources */,
 				A6E7AEAB214394F600DE9F3B /* graphic_docker@2x.png in Resources */,
 				A6F7A71E213CB143004DE961 /* StatusBarIconFolder.png in Resources */,
-				1D6ED98019AEA20D005A7799 /* QuestionMarkSign@2x.png in Resources */,
 				A62A78DF2F987FC6007CAA0B /* iTermPreferencesSearchEngineResultsWindowController.xib in Resources */,
 				A61E51502F98978000EB2B55 /* iTermTriggersPanel.xib in Resources */,
 				A61E51512F98978000EB2B55 /* PreferencePanel.xib in Resources */,
@@ -15410,7 +15398,6 @@
 				A61A85A424F1CCB900B03880 /* iTermGlobalSearch.xib in Resources */,
 				A6CEDA6219988A7300BB57EC /* LogoShadow.png in Resources */,
 				A65B725E1B1A630100F947A7 /* CheckMark@2x.png in Resources */,
-				1DC2AF5419521CFF005769D5 /* QuestionMarkSign@2x.png in Resources */,
 				1DD39AE1180B8118004E56D5 /* InfoPlist.strings in Resources */,
 				5308BF8E228283CE004BECAC /* StatusBarIconBattery.png in Resources */,
 				A6F7A723213CB143004DE961 /* StatusBarIconCPU.png in Resources */,
@@ -15477,7 +15464,6 @@
 				A67D0D4B1A2EE12A003A8B35 /* configPanel.strings in Resources */,
 				A6F7A738213CB143004DE961 /* StatusBarIconGitBranch@2x.png in Resources */,
 				A6F7A70B213CB143004DE961 /* StatusBarIconNetwork.png in Resources */,
-				1DC2AF5219521CFF005769D5 /* QuestionMarkSign.png in Resources */,
 				A62A77BB2F9879B8007CAA0B /* AboutWindow.xib in Resources */,
 				A6D3205829C492410088BBE1 /* nerd.itse in Resources */,
 				A6109B652B969B4100D8E4E9 /* graphic_neovim@2x.png in Resources */,
@@ -15654,7 +15640,6 @@
 				1D5FDD7F1208E91100C46BA3 /* important.png in Resources */,
 				1D5FDD811208E91100C46BA3 /* newwin.png in Resources */,
 				A6F18B562AE2F39C006C08EE /* uniE0B4_right-half-circle-thick.pdf in Resources */,
-				1DC2AF5119521CFF005769D5 /* QuestionMarkSign.png in Resources */,
 				A66433532DEA78A60099F722 /* globe@2x.png in Resources */,
 				A66433542DEA78A60099F722 /* globe.png in Resources */,
 				A62A7B5D2F9896D9007CAA0B /* MinimalPasteView.xib in Resources */,
@@ -15662,7 +15647,6 @@
 				A6F2F218250757FE00FC227F /* PrefsShortcuts@2x.png in Resources */,
 				A6E7AE55214394CA00DE9F3B /* graphic_bq.png in Resources */,
 				1DEDF56C19C917FD005B023A /* new-tab@2x.png in Resources */,
-				1DC2AF5319521CFF005769D5 /* QuestionMarkSign@2x.png in Resources */,
 				1DC2A1CC1949165D005769D5 /* Maximized.png in Resources */,
 				A6CB24AC2C68149100005824 /* it2universion in Resources */,
 				A6CEDA5F19988A7300BB57EC /* LogoFrame.png in Resources */,
