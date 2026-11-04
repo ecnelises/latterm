@@ -19,7 +19,6 @@
 
 #import "NSArray+iTerm.h"
 #import "NSFont+iTerm.h"
-#import "NSImage+iTerm.h"
 #import "NSIndexSet+iTerm.h"
 #import "NSStringITerm.h"
 #import "NSTableView+iTerm.h"
@@ -100,7 +99,7 @@ static NSButton *iTermToolSnippetsNewButton(NSString *imageName, NSString *title
     NSButton *button = [[NSButton alloc] initWithFrame:NSMakeRect(0, frame.size.height - kButtonHeight, frame.size.width, kButtonHeight)];
     [button setButtonType:NSButtonTypeMomentaryPushIn];
     if (imageName) {
-        button.image = [NSImage it_imageForSymbolName:imageName accessibilityDescription:title];
+        button.image = [NSImage imageWithSystemSymbolName:imageName accessibilityDescription:title];
     } else {
         button.title = title;
     }

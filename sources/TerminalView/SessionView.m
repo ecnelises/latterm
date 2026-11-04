@@ -1006,14 +1006,12 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     // A sibling pane's tab color may have changed, which can flip whether this
     // tab has multiple distinct tab colors and therefore whether the title bar
     // should be tinted. Refresh both the background and text color and redraw.
-    [_title updateBackgroundColor];
     [_title updateTextColor];
     [_title setNeedsDisplay:YES];
 }
 
 - (void)setNeedsDisplay:(BOOL)needsDisplay {
     [super setNeedsDisplay:needsDisplay];
-    [_title updateBackgroundColor];
     if (needsDisplay) {
         [_metalView setNeedsDisplay:YES];
         [_title setNeedsDisplay:YES];

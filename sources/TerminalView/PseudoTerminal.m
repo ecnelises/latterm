@@ -62,7 +62,6 @@
 #import "VT100Terminal.h"
 #import "iTerm.h"
 #import "iTermAPIHelper.h"
-#import "iTermAboutWindow.h"
 #import "iTermAdjustFontSizeHelper.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermModalSheetRunner.h"
@@ -6209,10 +6208,8 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     RLog(@"self=%@", self);
     NSScreen *screen = self.window.screen;
     [_contentView setShowsWindowSize:NO];
-    if (@available(macOS 10.16, *)) {
-        // Zoom/unzoom leaves wrong titlebar separator.
-        [self forceUpdateTitlebarSeparator];
-    }
+    // Zoom/unzoom leaves wrong titlebar separator.
+    [self forceUpdateTitlebarSeparator];
 
     // Canonicalize the frame so that centered windows stay centered, edge-attached windows stay edge
     // attached.
@@ -8270,31 +8267,29 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
                 return @0;
         }
     } else if ([option isEqualToString:PSMTabBarControlOptionAttachedToTitleBar]) {
-        if (@available(macOS 10.16, *)) {
-            iTermPreferencesTabStyle preferredStyle = [iTermPreferences intForKey:kPreferenceKeyTabStyle];
-            switch (preferredStyle) {
-                case TAB_STYLE_COMPACT:
-                    switch ([iTermPreferences intForKey:kPreferenceKeyTabPosition]) {
-                        case PSMTab_TopTab:
-                            return @NO;
-                        case PSMTab_LeftTab:
-                        case PSMTab_RightTab:
-                        case PSMTab_BottomTab:
-                            return @YES;
-                    }
-                    assert(NO);
-                    break;
+        iTermPreferencesTabStyle preferredStyle = [iTermPreferences intForKey:kPreferenceKeyTabStyle];
+        switch (preferredStyle) {
+            case TAB_STYLE_COMPACT:
+                switch ([iTermPreferences intForKey:kPreferenceKeyTabPosition]) {
+                    case PSMTab_TopTab:
+                        return @NO;
+                    case PSMTab_LeftTab:
+                    case PSMTab_RightTab:
+                    case PSMTab_BottomTab:
+                        return @YES;
+                }
+                assert(NO);
+                break;
 
-                case TAB_STYLE_MINIMAL:
-                    return @YES;
+            case TAB_STYLE_MINIMAL:
+                return @YES;
 
-                case TAB_STYLE_LIGHT:
-                case TAB_STYLE_DARK:
-                case TAB_STYLE_LIGHT_HIGH_CONTRAST:
-                case TAB_STYLE_DARK_HIGH_CONTRAST:
-                case TAB_STYLE_AUTOMATIC:
-                    return @YES;
-            }
+            case TAB_STYLE_LIGHT:
+            case TAB_STYLE_DARK:
+            case TAB_STYLE_LIGHT_HIGH_CONTRAST:
+            case TAB_STYLE_DARK_HIGH_CONTRAST:
+            case TAB_STYLE_AUTOMATIC:
+                return @YES;
         }
     } else if ([option isEqualToString:PSMTabBarControlOptionHTMLTabTitles]) {
         return @([iTermPreferences boolForKey:kPreferenceKeyHTMLTabTitles]);
@@ -10803,14 +10798,12 @@ static BOOL iTermApproximatelyEqualRects(NSRect lhs, NSRect rhs, double epsilon)
 }
 
 - (void)rootTerminalViewWillLayoutSubviews {
-    if (@available(macOS 10.16, *)) {
-        const iTermShouldHaveTitleSeparator shouldHave =
-        [self terminalWindowShouldHaveTitlebarSeparator] ?
-            iTermShouldHaveTitleSeparatorYes : iTermShouldHaveTitleSeparatorNo;
-        if (shouldHave != _previousTerminalWindowShouldHaveTitlebarSeparator) {
-            [self forceUpdateTitlebarSeparator];
-            _previousTerminalWindowShouldHaveTitlebarSeparator = shouldHave;
-        }
+    const iTermShouldHaveTitleSeparator shouldHave =
+    [self terminalWindowShouldHaveTitlebarSeparator] ?
+        iTermShouldHaveTitleSeparatorYes : iTermShouldHaveTitleSeparatorNo;
+    if (shouldHave != _previousTerminalWindowShouldHaveTitlebarSeparator) {
+        [self forceUpdateTitlebarSeparator];
+        _previousTerminalWindowShouldHaveTitlebarSeparator = shouldHave;
     }
 }
 
@@ -10820,7 +10813,7 @@ static BOOL iTermApproximatelyEqualRects(NSRect lhs, NSRect rhs, double epsilon)
     }
 }
 
-- (void)forceUpdateTitlebarSeparator NS_AVAILABLE_MAC(10_16) {
+- (void)forceUpdateTitlebarSeparator {
     NSTitlebarSeparatorStyle saved = self.window.titlebarSeparatorStyle;
     self.window.titlebarSeparatorStyle = (saved == NSTitlebarSeparatorStyleAutomatic) ? NSTitlebarSeparatorStyleNone : NSTitlebarSeparatorStyleAutomatic;
     self.window.titlebarSeparatorStyle = saved;

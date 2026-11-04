@@ -13,7 +13,7 @@ func makeToolbeltButton(imageName: String?, title: String, target: AnyObject, se
     let button = NSButton(frame: NSRect(x: 0.0, y: frame.size.height - buttonHeight, width: frame.width, height: buttonHeight))
     button.setButtonType(.momentaryPushIn)
     if let imageName {
-        button.image = NSImage.it_image(forSymbolName: imageName, accessibilityDescription: title)
+        button.image = NSImage(systemSymbolName: imageName, accessibilityDescription: title)
     } else {
         button.title = title
     }

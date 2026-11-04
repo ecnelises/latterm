@@ -9,7 +9,7 @@
 
 @implementation iTermOpenQuicklySettingItem
 - (NSImage *)icon {
-    return [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolGearshape) accessibilityDescription:nil];
+    return [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolGearshape) accessibilityDescription:nil];
 }
 @end
 
@@ -117,7 +117,7 @@
 @implementation iTermOpenQuicklyInvocationItem
 
 - (NSImage *)icon {
-    return [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolFunction) accessibilityDescription:nil];
+    return [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolFunction) accessibilityDescription:nil];
 }
 
 @end

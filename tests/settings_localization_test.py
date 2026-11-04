@@ -76,7 +76,6 @@ class SettingsLocalizationTests(unittest.TestCase):
     def test_runtime_menu_and_about_translations(self):
         localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
         for name in ("AppKit/iTermApplicationDelegate.m",
-                     "AboutWindow/iTermAboutWindowController.m",
                      "ContextMenu/iTermTextViewContextMenuHelper.m",
                      "Settings/Profiles/iTermProfilesMenuController.m",
                      "Toolbelt/ToolProfiles.m", "Toolbelt/ToolNotes.m",
@@ -97,20 +96,6 @@ class SettingsLocalizationTests(unittest.TestCase):
         toolbelt = (ROOT / "sources/Toolbelt/iTermToolbeltView.m").read_text()
         for key in re.findall(r'k\w+ToolName = @"([^"]+)"', toolbelt):
             self.assertIn(key, localized)
-
-    def test_about_nib_and_sponsors_heading_are_translated(self):
-        localized = strings(ROOT / "zh-Hans.lproj/AboutWindow.strings")
-        root = ET.parse(ROOT / "sources/AboutWindow/AboutWindow.xib").getroot()
-        for node in root.iter("textFieldCell"):
-            if node.get("title"):
-                self.assertIn(f'{node.get("id")}.title', localized)
-        heading = root.find('.//textView[@id="XqE-kC-hnW"]/attributedString')
-        content = "".join(fragment.get("content") or fragment.find("string").text
-                          for fragment in heading.findall("fragment"))
-        localized = strings(ROOT / "zh-Hans.lproj/Localizable.strings")
-        self.assertIn(content, localized)
-        self.assertEqual(re.findall(r'href="[^"]+"', content),
-                         re.findall(r'href="[^"]+"', localized[content]))
 
     def test_permission_prompts_are_translated(self):
         localized = strings(ROOT / "zh-Hans.lproj/InfoPlist.strings")
@@ -134,9 +119,8 @@ class SettingsLocalizationTests(unittest.TestCase):
         localization = next(phase for phase in phases
                             if phase.get("name") == "Copy zh-Hans localization")
         for language in ("en", "zh-Hans"):
-            for name in ("MainMenu", "AboutWindow"):
-                suffix = f"/{language}.lproj/{name}.nib"
-                self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]))
+            suffix = f"/{language}.lproj/MainMenu.nib"
+            self.assertTrue(any(path.endswith(suffix) for path in localization["outputPaths"]))
         # Localized editor windows need both an English and a Chinese nib.
         for name in ("iTermEditSnippetWindowController", "iTermEditKeyActionWindowController",
                      "ProfilesWindow", "iTermTriggersPanel"):

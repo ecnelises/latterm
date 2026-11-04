@@ -47,13 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Returns "gif", "png", etc., or nil.
 + (NSString * _Nullable)extensionForUniformType:(NSString *)type;
 
-+ (NSImage * _Nullable)it_imageForSymbolName:(NSString *)name
-                    accessibilityDescription:(NSString * _Nullable)description NS_AVAILABLE_MAC(10_16);
-+ (NSImage * _Nullable)it_imageForSymbolName:(NSString *)name
-                    accessibilityDescription:(NSString * _Nullable)description
-                           fallbackImageName:(NSString *)fallbackImageName
-                                    forClass:(Class)theClass;
-+ (NSImage * _Nullable)it_hamburgerForClass:(Class)theClass;
 + (instancetype _Nullable)it_imageNamed:(NSImageName)name forClass:(Class)theClass;
 + (instancetype _Nullable)it_cacheableImageNamed:(NSImageName)name forClass:(Class)theClass;
 
