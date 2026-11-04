@@ -75,14 +75,6 @@ static inline id iTermAdvancedSettingsModelInverseTransformInt(int value) {
     return @(value);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-static inline int iTermAdvancedSettingsModelTransformNonnegativeInt(id object) {
-    int value = [object intValue];
-    return MAX(0, value);
-}
-#pragma clang diagnostic pop
-
 static inline double iTermAdvancedSettingsModelTransformFloat(id object) {
     return [object doubleValue];
 }
@@ -189,9 +181,6 @@ DEFINE_SECURE_BOILERPLATE(name, capitalizedName, NSString *, kiTermAdvancedSetti
 #define DEFINE_BOOL(name, theDefault, theDescription) \
 DEFINE_BOILERPLATE(name, BOOL, kiTermAdvancedSettingTypeBoolean, theDefault, theDescription, iTermAdvancedSettingsModelTransformBool, iTermAdvancedSettingsModelInverseTransformBool)
 
-#define DEFINE_BOOL(name, theDefault, theDescription) \
-DEFINE_BOILERPLATE(name, BOOL, kiTermAdvancedSettingTypeBoolean, theDefault, theDescription, iTermAdvancedSettingsModelTransformBool, iTermAdvancedSettingsModelInverseTransformBool)
-
 #define DEFINE_SETTABLE_BOOL(name, capitalizedName, theDefault, theDescription) \
 DEFINE_SETTABLE_BOILERPLATE(name, capitalizedName, BOOL, kiTermAdvancedSettingTypeBoolean, theDefault, theDescription, iTermAdvancedSettingsModelTransformBool, iTermAdvancedSettingsModelInverseTransformBool)
 
@@ -203,15 +192,6 @@ DEFINE_SETTABLE_BOILERPLATE(name, capitalizedName, const BOOL *, kiTermAdvancedS
 
 #define DEFINE_INT(name, theDefault, theDescription) \
 DEFINE_BOILERPLATE(name, int, kiTermAdvancedSettingTypeInteger, theDefault, theDescription, iTermAdvancedSettingsModelTransformInt, iTermAdvancedSettingsModelInverseTransformInt)
-
-#define DEFINE_SETTABLE_INT(name, capitalizedName, theDefault, theDescription) \
-DEFINE_SETTABLE_BOILERPLATE(name, capitalizedName, int, kiTermAdvancedSettingTypeInteger, theDefault, theDescription, iTermAdvancedSettingsModelTransformInt, iTermAdvancedSettingsModelInverseTransformInt)
-
-#define DEFINE_NONNEGATIVE_INT(name, theDefault, theDescription) \
-DEFINE_BOILERPLATE(name, int, kiTermAdvancedSettingTypeInteger, theDefault, theDescription, iTermAdvancedSettingsModelTransformNonnegativeInt, iTermAdvancedSettingsModelInverseTransformInt)
-
-#define DEFINE_OPTIONAL_INT(name, theDefault, theDescription) \
-DEFINE_BOILERPLATE(name, int *, kiTermAdvancedSettingTypeOptionalInteger, theDefault, theDescription, iTermAdvancedSettingsModelTransformOptionalInt, iTermAdvancedSettingsModelInverseTransformOptionalInt)
 
 // An integer setting presented as a popup button. theDefault is the default
 // integer value. theOptions is an NSArray<NSString *> * of option titles; the
@@ -279,15 +259,6 @@ DEFINE_SETTABLE_BOILERPLATE(name, capitalizedName, NSString *, kiTermAdvancedSet
 #else
 #define YES_IF_BETA_ELSE_NO NO
 #endif
-
-#pragma mark - Custom Defaults
-
-BOOL UseSystemCursorWhenPossibleDefault(void) {
-    if (@available(macOS 10.15, *)) {
-        return YES;
-    }
-    return NO;
-}
 
 #pragma mark - iTermAdvancedSettingsModel
 
@@ -392,7 +363,7 @@ DEFINE_STRING(alternateMouseScrollStringForDown, @"",
               @"The value should use Vim syntax, such as \\e for escape.");
 DEFINE_SETTABLE_BOOL(alternateMouseScroll, AlternateMouseScroll, NO, SECTION_MOUSE @"Scroll wheel sends arrow keys when in alternate screen mode.");
 DEFINE_BOOL(pinchToChangeFontSizeDisabled, NO, SECTION_MOUSE @"Disable changing font size in response to a pinch gesture.");
-DEFINE_BOOL(useSystemCursorWhenPossible, UseSystemCursorWhenPossibleDefault(), SECTION_MOUSE @"Use system cursor icons when possible.");
+DEFINE_BOOL(useSystemCursorWhenPossible, YES, SECTION_MOUSE @"Use system cursor icons when possible.");
 DEFINE_BOOL(alwaysAcceptFirstMouse, YES, SECTION_MOUSE @"Always accept first mouse event on terminal windows.\nThis means clicks will work the same when Latterm is active as when it’s inactive. Note that there is a separate setting for mouse reporting on first mouse.");
 DEFINE_BOOL(autodetectMouseReportingStuck, YES, SECTION_MOUSE @"Automatically detect when mouse reporting got stuck on?\nThis watches for parts of mouse reporting control sequences being printed to the screen");
 DEFINE_BOOL(reportOnFirstMouse, NO, SECTION_MOUSE @"Send mouse reports when you click in a window that isn't already frontmouse?");
