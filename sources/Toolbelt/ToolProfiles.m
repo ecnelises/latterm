@@ -14,7 +14,6 @@
 #import "iTermSessionLauncher.h"
 #import "NSEvent+iTerm.h"
 #import "NSFont+iTerm.h"
-#import "NSImage+iTerm.h"
 #import "ProfileModel.h"
 #import "PseudoTerminal.h"
 
@@ -51,7 +50,7 @@ static NSString *const iTermToolProfilesProfileListViewState = @"iTermToolProfil
         _openButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, frame.size.height - kButtonHeight, frame.size.width, kButtonHeight)];
         _openButton.bezelStyle = NSBezelStyleRegularSquare;
         _openButton.bordered = NO;
-        _openButton.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolPlay) accessibilityDescription:NSLocalizedString(@"Open Profile", @"Toolbelt profile action")];
+        _openButton.image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolPlay) accessibilityDescription:NSLocalizedString(@"Open Profile", @"Toolbelt profile action")];
         _openButton.imageScaling = NSImageScaleProportionallyUpOrDown;
         _openButton.imagePosition = NSImageOnly;
         [_openButton setTarget:self];

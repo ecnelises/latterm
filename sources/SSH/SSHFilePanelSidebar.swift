@@ -721,24 +721,15 @@ extension SSHFilePanelSidebar: NSOutlineViewDelegate {
             attributedString.append(NSAttributedString(string: "\n"))
             attributedString.append(host)
             text = .right(attributedString)
-            if favorite.host == .localhost {
-                if let template = SystemFolderIconProvider.iconForFolder(
-                    at: URL(fileURLWithPath: favorite.path)) {
-                    image = template
-                    image?.isTemplate = true
-                } else {
-                    image = NSImage.it_image(
-                        forSymbolName: SFSymbol.folder.rawValue,
-                        accessibilityDescription: "Folder",
-                        fallbackImageName: "folder",
-                        for: SSHFilePanelSidebar.self)
-                }
+            let template = favorite.host == .localhost
+                ? SystemFolderIconProvider.iconForFolder(at: URL(fileURLWithPath: favorite.path))
+                : nil
+            if let template {
+                image = template
+                image?.isTemplate = true
             } else {
-                image = NSImage.it_image(
-                    forSymbolName: SFSymbol.folder.rawValue,
-                    accessibilityDescription: "Folder",
-                    fallbackImageName: "folder",
-                    for: SSHFilePanel.self)
+                image = NSImage(systemSymbolName: SFSymbol.folder.rawValue,
+                                accessibilityDescription: "Folder")
             }
         } else if let host = item as? SSHIdentity {
             identifier = NSUserInterfaceItemIdentifier("HostCell")
@@ -747,12 +738,8 @@ extension SSHFilePanelSidebar: NSOutlineViewDelegate {
                 image = template
                 image?.isTemplate = true
             } else {
-                image = NSImage.it_image(
-                    forSymbolName: SFSymbol.serverRack.rawValue,
-                    accessibilityDescription: "Server",
-                    fallbackImageName: "rack",
-                    for: SSHFilePanel.self
-                )
+                image = NSImage(systemSymbolName: SFSymbol.serverRack.rawValue,
+                                accessibilityDescription: "Server")
             }
         } else {
             return nil

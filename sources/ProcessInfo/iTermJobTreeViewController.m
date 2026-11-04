@@ -332,7 +332,7 @@ static int gSignalsToList[] = {
 }
 
 - (void)awakeFromNib {
-    kill_.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolPlay) accessibilityDescription:@"Clear"];
+    kill_.image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolPlay) accessibilityDescription:@"Clear"];
     _outlineView.style = NSTableViewStyleInset;
     _outlineView.backgroundColor = [NSColor clearColor];
     if (!_useVisualEffectView) {
@@ -347,7 +347,7 @@ static int gSignalsToList[] = {
             _vev = glassView;
         }
     }
-    NSImage *magnifyingGlass = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolMagnifyingglass)
+    NSImage *magnifyingGlass = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolMagnifyingglass)
                                     accessibilityDescription:@"Inspect"];
     _inspectButton = [NSButton buttonWithImage:magnifyingGlass target:self action:@selector(inspect:)];
     _inspectButton.bordered = NO;
@@ -824,8 +824,9 @@ static int gSignalsToList[] = {
 }
 
 - (NSAttributedString *)monitorIndicatorPrefixWithFont:(NSFont *)font {
-    NSImage *bell = [NSImage it_imageForSymbolName:@"bell"
-                            accessibilityDescription:@"Will notify when this job terminates"];
+    NSString *const symbolName = SFSymbolGetString(SFSymbolBell);
+    NSImage *bell = [NSImage imageWithSystemSymbolName:symbolName
+                           accessibilityDescription:@"Will notify when this job terminates"];
     if (!bell) {
         return [[NSAttributedString alloc] initWithString:@""];
     }
@@ -837,7 +838,7 @@ static int gSignalsToList[] = {
         [[NSAttributedString attributedStringWithAttachment:attachment] mutableCopy];
     // The cell rerenders this attachment with a selection- and appearance-aware
     // color whenever its background style or effective appearance changes.
-    [result addAttribute:iTermDynamicProfileSymbolName value:@"bell" range:NSMakeRange(0, result.length)];
+    [result addAttribute:iTermDynamicProfileSymbolName value:symbolName range:NSMakeRange(0, result.length)];
     [result appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
     return result;
 }

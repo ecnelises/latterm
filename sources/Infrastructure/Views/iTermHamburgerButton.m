@@ -7,7 +7,7 @@
 
 #import "iTermHamburgerButton.h"
 
-#import "NSImage+iTerm.h"
+#import "SFSymbolEnum.h"
 
 @protocol iTermHamburgerButtonCellControl<NSObject>
 - (NSMenu *)hamburgerMenu;
@@ -57,7 +57,8 @@
         self.cell = [[iTermHamburgerButtonCell alloc] init];
         self.bezelStyle = NSBezelStyleRegularSquare;
         self.bordered = NO;
-        self.image = [NSImage it_hamburgerForClass:self.class];
+        self.image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolEllipsisCircle)
+                             accessibilityDescription:@"Menu"];
         self.imagePosition = NSImageOnly;
         _menuProvider = [menuProvider copy];
     }

@@ -33,7 +33,6 @@
 @property(nonatomic, weak) id<PSMPUAFontProvider> puaFontProvider;
 
 - (void)updateTextColor;
-- (void)updateBackgroundColor;
 - (void)updateLockButton;
 - (void)invalidateTitleFont;
 

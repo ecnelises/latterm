@@ -24,7 +24,6 @@ extern void *const iTermDeclineFirstResponderAssociatedObjectKey;
 // with the open quickly window.
 - (void)it_makeKeyAndOrderFront;
 
-- (NSView *)it_titlebarViewOfClassWithName:(NSString *)className;
 - (void)it_titleBarDoubleClick;
 - (void)it_shakeNo;
 

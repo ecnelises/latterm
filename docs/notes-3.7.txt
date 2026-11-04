@@ -15,6 +15,13 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Use AppKit directly for system symbol images.
+  Remove obsolete icon wrappers and menu bitmaps.
+- Remove obsolete window title, border, and notch
+  compatibility paths for macOS before 12.4.
+- Simplify About to show the version once and
+  link to the Latterm project. Remove the author
+  byline and unused sponsor window and images.
 - Remove obsolete Settings and Toolbelt UI
   compatibility paths for macOS before 12.4.
 - Simplify Open Quickly and search field drawing

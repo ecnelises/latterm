@@ -11,7 +11,6 @@
 "Yes" = "是";
 "No" = "否";
 "What’s New in 3.6?\n" = "3.6 有哪些新内容？\n";
-"By George Nachman and Contributors" = "由 George Nachman 与贡献者开发";
 "Home Page" = "主页";
 "Report a bug" = "报告问题";
 "Credits" = "致谢";
@@ -1977,9 +1976,6 @@
 "Tab Color" = "标签页颜色";
 "Open All" = "全部打开";
 "Open All in New Window" = "在新窗口中全部打开";
-"Build %@" = "构建版本 %@";
-"Loading supporters…" = "正在加载支持者…";
-"Error loading patrons :(" = "无法加载支持者名单";
 "Paste History" = "粘贴历史";
 "Jobs" = "作业";
 "Command History" = "命令历史";
@@ -2036,7 +2032,6 @@
 "Bury" = "隐藏会话";
 "[%d profiles not shown]" = "［另有 %d 个配置方案未显示］";
 "No Tools enabled. Select them from the menu above." = "未启用任何工具。请从上方菜单选择。";
-"Latterm is supported by these backers on <a href=\"https://patreon.com/gnachman\">Patreon</a> and <a href=\"https://github.com/sponsors/gnachman\">GitHub Sponsors</a>:" = "Latterm 由以下支持者通过 <a href=\"https://patreon.com/gnachman\">Patreon</a> 和 <a href=\"https://github.com/sponsors/gnachman\">GitHub Sponsors</a> 提供支持：";
 "Current Tab Color" = "当前标签页颜色";
 "New Window…" = "新建窗口…";
 "New Tab…" = "新建标签页…";

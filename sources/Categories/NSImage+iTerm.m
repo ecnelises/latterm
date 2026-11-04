@@ -7,7 +7,6 @@
 //
 
 #import "NSAppearance+iTerm.h"
-#import "SFSymbolEnum/SFSymbolEnum.h"
 
 #import "DebugLogging.h"
 #import "NSArray+iTerm.h"
@@ -246,24 +245,6 @@
                            UTTypeTIFF.identifier: @"tiff",
                            UTTypeICO.identifier: @"ico" };
     return map[type];
-}
-
-+ (NSImage *)it_imageForSymbolName:(NSString *)name accessibilityDescription:(NSString *)accessibilityDescription NS_AVAILABLE_MAC(10_16) {
-    return [NSImage imageWithSystemSymbolName:name accessibilityDescription:accessibilityDescription];
-}
-
-+ (NSImage *)it_imageForSymbolName:(NSString *)name accessibilityDescription:(NSString *)description fallbackImageName:(NSString *)fallbackImageName forClass:(Class)theClass {
-    if (@available(macOS 11, *)) {
-        return [NSImage imageWithSystemSymbolName:name accessibilityDescription:description];
-    }
-    return [NSImage it_imageNamed:fallbackImageName forClass:theClass];
-}
-
-+ (NSImage *)it_hamburgerForClass:(Class)theClass {
-    if (@available(macOS 10.16, *)) {
-        return [self it_imageForSymbolName:SFSymbolGetString(SFSymbolEllipsisCircle) accessibilityDescription:@"Menu"];
-    }
-    return [NSImage it_imageNamed:@"Hamburger" forClass:theClass];
 }
 
 + (instancetype)it_imageNamed:(NSImageName)name forClass:(Class)theClass {

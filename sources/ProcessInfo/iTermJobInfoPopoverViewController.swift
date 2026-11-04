@@ -161,8 +161,8 @@ class iTermJobInfoPopoverViewController: NSViewController, NSTableViewDataSource
     }
 
     private func copyButton(action: Selector) -> NSButton {
-        let image = NSImage.it_image(forSymbolName: SFSymbol.docOnDoc.rawValue,
-                                     accessibilityDescription: "Copy") ?? NSImage()
+        let image = NSImage(systemSymbolName: SFSymbol.docOnDoc.rawValue,
+                            accessibilityDescription: "Copy") ?? NSImage()
         let button = NSButton(image: image, target: self, action: action)
         button.isBordered = false
         button.imagePosition = .imageOnly

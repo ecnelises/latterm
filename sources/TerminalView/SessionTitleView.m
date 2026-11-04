@@ -229,20 +229,6 @@ static const CGFloat kLockButtonSize = 14;
     [super drawRect:insaneRect];
 }
 
-- (void)setDelegate:(id<SessionTitleViewDelegate>)delegate {
-    delegate_ = delegate;
-    [self updateBackgroundColor];
-}
-
-- (void)updateBackgroundColor {
-    if (@available(macOS 10.16, *)) {
-        return;
-    }
-    label_.backgroundColor = [self.delegate sessionTitleViewBackgroundColor];
-    label_.drawsBackground = YES;
-    [self setNeedsDisplay:YES];
-}
-
 - (void)setTitle:(NSString *)title {
     if ([title isEqualToString:title_]) {
         return;

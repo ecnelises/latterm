@@ -190,11 +190,6 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     paragraphStyle.alignment = NSTextAlignmentCenter;
     paragraphStyle.lineSpacing = 4.0;
 
-    NSDictionary *bodyAttributes = @{
-        NSForegroundColorAttributeName: [NSColor secondaryLabelColor],
-        NSParagraphStyleAttributeName: paragraphStyle,
-        NSFontAttributeName: [NSFont systemFontOfSize:12],
-    };
     NSDictionary *separatorAttributes = @{
         NSForegroundColorAttributeName: [NSColor tertiaryLabelColor],
         NSParagraphStyleAttributeName: paragraphStyle,
@@ -202,13 +197,9 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     };
 
     NSMutableAttributedString *credits = [[NSMutableAttributedString alloc] init];
-    NSString *byline = NSLocalizedString(@"By George Nachman and Contributors",
-                                         @"About panel byline");
-    [credits appendAttributedString:[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@\n\n", byline]
-                                                                    attributes:bodyAttributes]];
     [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Home Page",
                                                                                     @"About window home page link title"),
-                                                                  @"https://iterm2.com/")];
+                                                                  @"https://github.com/ecnelises/latterm")];
     [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"  ·  "
                                                                     attributes:separatorAttributes]];
     [credits appendAttributedString:iTermAttributedAboutPanelLink(NSLocalizedString(@"Report a bug",
@@ -3030,15 +3021,15 @@ static iTermKeyEventReplayer *gReplayer;
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *shortVersion = [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     NSString *buildVersion = [bundle objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+    NSString *version = shortVersion.length > 0 ? shortVersion : buildVersion;
 
     NSMutableDictionary *options = [NSMutableDictionary dictionary];
     options[NSAboutPanelOptionApplicationName] = iTermApplicationDisplayName();
-    if (shortVersion.length > 0) {
-        options[NSAboutPanelOptionApplicationVersion] = shortVersion;
+    if (version.length > 0) {
+        options[NSAboutPanelOptionApplicationVersion] = version;
     }
-    if (buildVersion.length > 0 && ![buildVersion isEqualToString:shortVersion]) {
-        options[NSAboutPanelOptionVersion] = buildVersion;
-    }
+    // An omitted build version falls back to the bundle and appears in parentheses.
+    options[NSAboutPanelOptionVersion] = @"";
     options[NSAboutPanelOptionCredits] = iTermStandardAboutPanelCredits();
     [NSApp orderFrontStandardAboutPanelWithOptions:options];
     [NSApp activateIgnoringOtherApps:YES];

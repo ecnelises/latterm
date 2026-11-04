@@ -14,7 +14,6 @@
 #import "iTermWebSocketConnection.h"
 #import "DebugLogging.h"
 #import "NSArray+iTerm.h"
-#import "NSImage+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"
 #import "SFSymbolEnum/SFSymbolEnum.h"
@@ -164,7 +163,7 @@ typedef NS_ENUM(NSInteger, iTermScriptFilterControlTag) {
 }
 
 - (void)setSymbol:(NSString *)symbolName tooltip:(NSString *)tooltip onButton:(NSButton *)button {
-    button.image = [NSImage it_imageForSymbolName:symbolName accessibilityDescription:tooltip];
+    button.image = [NSImage imageWithSystemSymbolName:symbolName accessibilityDescription:tooltip];
     button.toolTip = tooltip;
 }
 

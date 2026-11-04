@@ -65,33 +65,6 @@ void *const iTermDeclineFirstResponderAssociatedObjectKey = (void *)"iTermDeclin
     [[iTermApplication sharedApplication] it_makeWindowKey:self];
 }
 
-static NSView *SearchForViewOfClass(NSView *view, NSString *className, NSView *viewToIgnore) {
-    if ([NSStringFromClass(view.class) isEqual:className]) {
-        return view;
-    }
-    for (NSView *subview in view.subviews) {
-        if (subview == viewToIgnore) {
-            continue;
-        }
-        NSView *result = SearchForViewOfClass(subview, className, viewToIgnore);
-        if (result) {
-            return result;
-        }
-    }
-    return nil;
-}
-
-- (NSView *)it_titlebarViewOfClassWithName:(NSString *)className {
-    NSView *current = self.contentView;
-    if (!current) {
-        return nil;
-    }
-    while (current.superview) {
-        current = current.superview;
-    }
-    return SearchForViewOfClass(current, className, self.contentView);
-}
-
 - (void)it_shakeNo {
     const NSRect frame = self.frame;
     CAKeyframeAnimation *shakeAnimation = [CAKeyframeAnimation animation];

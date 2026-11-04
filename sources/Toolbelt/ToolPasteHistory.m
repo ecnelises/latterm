@@ -15,7 +15,6 @@
 #import "iTermToolWrapper.h"
 #import "NSDateFormatterExtras.h"
 #import "NSFont+iTerm.h"
-#import "NSImage+iTerm.h"
 #import "NSTableColumn+iTerm.h"
 #import "NSTableView+iTerm.h"
 #import "NSTextField+iTerm.h"
@@ -50,7 +49,7 @@ static const CGFloat kMargin = 4;
         clear_ = [[NSButton alloc] initWithFrame:NSMakeRect(0, frame.size.height - kButtonHeight, frame.size.width, kButtonHeight)];
         clear_.bezelStyle = NSBezelStyleRegularSquare;
         clear_.bordered = NO;
-        clear_.image = [NSImage it_imageForSymbolName:SFSymbolGetString(SFSymbolTrash) accessibilityDescription:@"Delete All"];
+        clear_.image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolTrash) accessibilityDescription:@"Delete All"];
         clear_.imagePosition = NSImageOnly;
         clear_.frame = NSMakeRect(0, 0, 22, 22);
         [clear_ setTarget:self];

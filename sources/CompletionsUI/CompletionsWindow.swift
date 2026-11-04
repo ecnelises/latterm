@@ -580,45 +580,33 @@ class CompletionsWindow: NSWindow, NSTableViewDataSource, NSTableViewDelegate {
     }
 
     private func icon(for item: Item) -> NSImage {
+        let symbol: SFSymbol
+        let description: String
         switch item.kind {
         case .file:
             if #available(macOS 15, *) {
-                return NSImage.it_image(forSymbolName: SFSymbol.document.rawValue,
-                                        accessibilityDescription: "File",
-                                        fallbackImageName: "document",
-                                        for: CompletionsWindow.self)!
+                symbol = .document
             } else {
-                return NSImage.it_image(forSymbolName: SFSymbol.doc.rawValue,
-                                        accessibilityDescription: "File",
-                                        fallbackImageName: "document",
-                                        for: CompletionsWindow.self)!
+                symbol = .doc
             }
+            description = "File"
         case .history:
-            return NSImage.it_image(forSymbolName: SFSymbol.clock.rawValue,
-                                    accessibilityDescription: "History",
-                                    fallbackImageName: "clock",
-                                    for: CompletionsWindow.self)!
+            symbol = .clock
+            description = "History"
         case .command:
-            return NSImage.it_image(forSymbolName: SFSymbol.command.rawValue,
-                                    accessibilityDescription: "Command",
-                                    fallbackImageName: "command",
-                                    for: CompletionsWindow.self)!
+            symbol = .command
+            description = "Command"
         case .folder:
-            return NSImage.it_image(forSymbolName: SFSymbol.folder.rawValue,
-                                    accessibilityDescription: "Folder",
-                                    fallbackImageName: "folder",
-                                    for: CompletionsWindow.self)!
+            symbol = .folder
+            description = "Folder"
         case .navigation:
-            return NSImage.it_image(forSymbolName: SFSymbol.safari.rawValue,
-                                    accessibilityDescription: "Navigate",
-                                    fallbackImageName: "safari",
-                                    for: CompletionsWindow.self)!
+            symbol = .safari
+            description = "Navigate"
         case .bookmark:
-            return NSImage.it_image(forSymbolName: SFSymbol.bookmark.rawValue,
-                                    accessibilityDescription: "Bookmark",
-                                    fallbackImageName: "bookmark",
-                                    for: CompletionsWindow.self)!
+            symbol = .bookmark
+            description = "Bookmark"
         }
+        return NSImage(systemSymbolName: symbol.rawValue, accessibilityDescription: description)!
     }
 
     func tableView(_ tableView: NSTableView, didAdd rowView: NSTableRowView, forRow row: Int) {

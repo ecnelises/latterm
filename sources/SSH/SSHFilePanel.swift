@@ -666,10 +666,8 @@ extension SSHFilePanel {
         backButton = NSButton()
         backButton.translatesAutoresizingMaskIntoConstraints = false
         backButton.bezelStyle = .texturedRounded
-        backButton.image = NSImage.it_image(forSymbolName: SFSymbol.chevronLeft.rawValue,
-                                            accessibilityDescription: "Back",
-                                            fallbackImageName: "chevron.left",
-                                            for: SSHFilePanel.self)
+        backButton.image = NSImage(systemSymbolName: SFSymbol.chevronLeft.rawValue,
+                                   accessibilityDescription: "Back")
         backButton.isEnabled = false
         backButton.target = self
         backButton.action = #selector(backButtonClicked)
@@ -677,10 +675,8 @@ extension SSHFilePanel {
         forwardButton = NSButton()
         forwardButton.translatesAutoresizingMaskIntoConstraints = false
         forwardButton.bezelStyle = .texturedRounded
-        forwardButton.image = NSImage.it_image(forSymbolName: SFSymbol.chevronRight.rawValue,
-                                               accessibilityDescription: "Forward",
-                                               fallbackImageName: "chevron.right",
-                                               for: SSHFilePanel.self)
+        forwardButton.image = NSImage(systemSymbolName: SFSymbol.chevronRight.rawValue,
+                                      accessibilityDescription: "Forward")
         forwardButton.isEnabled = false
         forwardButton.target = self
         forwardButton.action = #selector(forwardButtonClicked)

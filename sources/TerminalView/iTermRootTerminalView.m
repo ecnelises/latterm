@@ -83,7 +83,6 @@ static const CGFloat iTermCompactProxyIconRightMargin = 2;
 
 @end
 
-NS_CLASS_AVAILABLE_MAC(10_14)
 @interface iTermTabBarBacking : NSView<iTermTabBarControlViewContainer>
 @property (nonatomic) BOOL hidesWhenTabBarHidden;
 @property (nonatomic, readonly) NSVisualEffectView *visualEffectView;
@@ -100,9 +99,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
         _visualEffectView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
         NSVisualEffectState state = NSVisualEffectStateActive;
         if (![iTermAdvancedSettingsModel allowTabbarInTitlebarAccessoryBigSur]) {
-            if (@available(macOS 10.16, *)) {
-                state = NSVisualEffectStateFollowsWindowActiveState;
-            }
+            state = NSVisualEffectStateFollowsWindowActiveState;
         }
         _visualEffectView.state = state;
 
@@ -117,9 +114,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
 
 - (void)addWindowColorView {
     if (![iTermAdvancedSettingsModel allowTabbarInTitlebarAccessoryBigSur]) {
-        if (@available(macOS 10.16, *)) {
-            return;
-        }
+        return;
     }
     NSView *windowColorView = [[NSView alloc] initWithFrame:self.bounds];
     windowColorView.wantsLayer = YES;
@@ -159,20 +154,19 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     NSNumber *_windowNumber;
     NSTextField *_windowNumberLabel;
     iTermFakeWindowTitleLabel *_windowTitleLabel;
-    iTermTabBarBacking *_tabBarBacking NS_AVAILABLE_MAC(10_14);
+    iTermTabBarBacking *_tabBarBacking;
     iTermGenericStatusBarContainer *_statusBarContainer;
     NSDictionary *_desiredToolbeltProportions;
-    iTermWindowSizeView *_windowSizeView NS_AVAILABLE_MAC(10_14);
+    iTermWindowSizeView *_windowSizeView;
 
-    iTermLayerBackedSolidColorView *_titleBackgroundView NS_AVAILABLE_MAC(10_14);
-    NSVisualEffectView *_titleBackgroundVEV NS_AVAILABLE_MAC(10_14);
+    iTermLayerBackedSolidColorView *_titleBackgroundView;
+    NSVisualEffectView *_titleBackgroundVEV;
 
-    iTermWindowBorderView *_windowBorderView NS_AVAILABLE_MAC(10_14);
-    BOOL _cornerRadiusDetectionFailed NS_AVAILABLE_MAC(10_14);
+    iTermWindowBorderView *_windowBorderView;
+    BOOL _cornerRadiusDetectionFailed;
 
-    iTermImageView *_backgroundImage NS_AVAILABLE_MAC(10_14);
-    NSView *_workaroundView;  // 10.14 only. See issue 8701.
-    iTermLayerBackedSolidColorView *_notchMask NS_AVAILABLE_MAC(12_0);
+    iTermImageView *_backgroundImage;
+    iTermLayerBackedSolidColorView *_notchMask;
     iTermCompactProxyIconView *_compactProxyIconView;
 }
 
@@ -275,18 +269,14 @@ NS_CLASS_AVAILABLE_MAC(10_14)
         [self updateToolbeltForWindow:nil];
 
         _windowNumberLabel = [NSTextField newLabelStyledTextField];
-        if (@available(macOS 10.16, *)) {
-            _windowNumberLabel.font = [NSFont titleBarFontOfSize:[NSFont systemFontSize]];
-        }
+        _windowNumberLabel.font = [NSFont titleBarFontOfSize:[NSFont systemFontSize]];
         _windowNumberLabel.alphaValue = iTermRootTerminalViewWindowNumberLabelAlpha;
         _windowNumberLabel.hidden = YES;
         _windowNumberLabel.autoresizingMask = (NSViewMaxXMargin | NSViewMinYMargin);
         [self addSubview:_windowNumberLabel];
 
         _windowTitleLabel = [iTermFakeWindowTitleLabel newLabelStyledTextField];
-        if (@available(macOS 10.16, *)) {
-            _windowTitleLabel.font = [NSFont titleBarFontOfSize:[NSFont systemFontSize]];
-        }
+        _windowTitleLabel.font = [NSFont titleBarFontOfSize:[NSFont systemFontSize]];
         _windowTitleLabel.alphaValue = 1;
         _windowTitleLabel.alignment = NSTextAlignmentCenter;
         _windowTitleLabel.hidden = YES;
@@ -299,16 +289,9 @@ NS_CLASS_AVAILABLE_MAC(10_14)
             [iTermAdvancedSettingsModel squareWindowCorners] ? 0 : [iTermWindowCornerRadiusDetector fallbackCornerRadius];
         [self addSubview:_windowBorderView];
 
-        if (@available(macOS 10.15, *)) {} else {
-            // 10.14 only
-            _workaroundView = [[SolidColorView alloc] initWithFrame:NSMakeRect(0, 0, 1, 1) color:[NSColor clearColor]];
-            [self addSubview:_workaroundView];
-        }
-        if (@available(macOS 12.0, *)) {
-            _notchMask = [[iTermLayerBackedSolidColorView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0) color:[NSColor blackColor]];
-            _notchMask.hidden = YES;
-            [self addSubview:_notchMask];
-        }
+        _notchMask = [[iTermLayerBackedSolidColorView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0) color:[NSColor blackColor]];
+        _notchMask.hidden = YES;
+        [self addSubview:_notchMask];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(advancedSettingsDidChange:)
                                                      name:iTermAdvancedSettingsDidChange
@@ -323,7 +306,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     _verticalTabBarDragHandle.delegate = nil;
 }
 
-- (void)advancedSettingsDidChange:(NSNotification *)notification NS_AVAILABLE_MAC(10_14) {
+- (void)advancedSettingsDidChange:(NSNotification *)notification {
     [self updateBorderViews];
 }
 
@@ -772,7 +755,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     return NSMakeRect(0, 0, self.bounds.size.width, 1);
 }
 
-- (void)updateTitleAndBorderViews NS_AVAILABLE_MAC(10_14) {
+- (void)updateTitleAndBorderViews {
     const BOOL wantsTitleBackgroundView = [_delegate rootTerminalViewShouldDrawWindowTitleInPlaceOfTabBar];
     if (wantsTitleBackgroundView) {
         if (!_titleBackgroundView) {
@@ -796,9 +779,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
                 _titleBackgroundVEV.autoresizingMask = NSViewWidthSizable | NSViewMinYMargin;
                 NSVisualEffectState state = NSVisualEffectStateActive;
                 if (![iTermAdvancedSettingsModel allowTabbarInTitlebarAccessoryBigSur]) {
-                    if (@available(macOS 10.16, *)) {
-                        state = NSVisualEffectStateFollowsWindowActiveState;
-                    }
+                    state = NSVisualEffectStateFollowsWindowActiveState;
                 }
                 _titleBackgroundVEV.state = state;
                 _titleBackgroundVEV.blendingMode = NSVisualEffectBlendingModeWithinWindow;
@@ -857,7 +838,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     return [color colorWithAlphaComponent:alpha];
 }
 
-- (NSColor *)resolvedWindowBorderColor NS_AVAILABLE_MAC(10_14) {
+- (NSColor *)resolvedWindowBorderColor {
     NSColor *focused = iTermWindowBorderColorFromSetting([iTermAdvancedSettingsModel windowBorderColor]);
     NSColor *unfocused = iTermWindowBorderColorFromSetting([iTermAdvancedSettingsModel windowBorderColorUnfocused]);
     NSColor *base = self.window.isKeyWindow ? (focused ?: unfocused) : (unfocused ?: focused);
@@ -871,7 +852,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
 // The border is drawn fully inside the window, so updateBorderViews subtracts
 // half the border width to get the stroke's centerline radius. Updated on
 // cache miss by the early-return path in updateBorderViews.
-- (CGFloat)resolvedWindowBorderCornerRadius NS_AVAILABLE_MAC(10_14) {
+- (CGFloat)resolvedWindowBorderCornerRadius {
     if ([iTermAdvancedSettingsModel squareWindowCorners]) {
         return 0;
     }
@@ -883,7 +864,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     return MAX(0, cached.doubleValue);
 }
 
-- (void)updateBorderViews NS_AVAILABLE_MAC(10_14) {
+- (void)updateBorderViews {
     NSWindow *window = self.window;
 
     // Hide the border until the detector has cached a radius for this window
@@ -940,15 +921,6 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     }
     _useMetal = useMetal;
     self.tabView.drawsBackground = NO;
-    if (@available(macOS 10.15, *)) { } else {
-        if (useMetal) {
-            self.wantsLayer = YES;
-            self.layer = [[CALayer alloc] init];
-        } else {
-            self.wantsLayer = NO;
-            self.layer = nil;
-        }
-    }
     [self updateTitleAndBorderViews];
 
     [_divisionView removeFromSuperview];
@@ -957,7 +929,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     [self updateDivisionViewAndWindowNumberLabel];
 }
 
-- (void)viewDidChangeEffectiveAppearance NS_AVAILABLE_MAC(10_14) {
+- (void)viewDidChangeEffectiveAppearance {
     // This can be called from within -[NSWindow setStyleMask:]
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.delegate rootTerminalViewDidChangeEffectiveAppearance];
@@ -1248,19 +1220,8 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
 }
 
 - (void)updateWindowNumberFont {
-    if ([self tabBarShouldBeVisible]) {
-        if (@available(macOS 10.16, *)) {
-            _windowNumberLabel.font = [NSFont titleBarFontOfSize:[NSFont smallSystemFontSize]];
-        } else {
-            _windowNumberLabel.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-        }
-    } else {
-        if (@available(macOS 10.16, *)) {
-            _windowNumberLabel.font = [NSFont titleBarFontOfSize:[NSFont systemFontSize]];
-        } else {
-            _windowNumberLabel.font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
-        }
-    }
+    const CGFloat fontSize = [self tabBarShouldBeVisible] ? [NSFont smallSystemFontSize] : [NSFont systemFontSize];
+    _windowNumberLabel.font = [NSFont titleBarFontOfSize:fontSize];
 }
 
 - (BOOL)shouldLeaveEmptyAreaAtTop {
@@ -1293,12 +1254,8 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     if (fakeHeight > 0) {
         return fakeHeight;
     }
-    if (@available(macOS 12, *)) {
-        // self.safeAreaInsets is all 0s on a notch Mac. Why the hell doesn't anything work right?
-        const NSEdgeInsets safeAreaInsets = self.window.screen.safeAreaInsets;
-        return safeAreaInsets.top;
-    }
-    return 0;
+    // Read the screen's inset; the content view reports zero on notched displays.
+    return self.window.screen.safeAreaInsets.top;
 }
 
 #pragma mark - Layout Calculator Integration
@@ -1521,9 +1478,6 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     DLog(@"Before:\n%@", [self iterm_recursiveDescription]);
     [self.delegate rootTerminalViewWillLayoutSubviews];
 
-    if (@available(macOS 10.15, *)) { } else {
-        _workaroundView.frame = NSMakeRect(0, self.bounds.size.height - 1, 1, 1);
-    }
     const BOOL showToolbeltInline = self.shouldShowToolbelt;
     NSWindow *thisWindow = _delegate.window;
     if (!_tabBarControlOnLoan) {
@@ -1541,11 +1495,9 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
     }
     _tabViewFrameReduced = NO;
     [self layoutTerminalContentForWindow:thisWindow];
-    if (@available(macOS 12.0, *)) {
-        const CGFloat notchHeight = [self notchInset];
-        _notchMask.hidden = (notchHeight == 0);
-        _notchMask.frame = NSMakeRect(0, NSHeight(self.bounds) - notchHeight, NSWidth(self.bounds), notchHeight);
-    }
+    const CGFloat notchHeight = [self notchInset];
+    _notchMask.hidden = (notchHeight == 0);
+    _notchMask.frame = NSMakeRect(0, NSHeight(self.bounds) - notchHeight, NSWidth(self.bounds), notchHeight);
 
     if (showToolbeltInline) {
         [self updateToolbeltFrameForWindow:thisWindow];
@@ -1867,7 +1819,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
         symbol = SFSymbolChevronRight;
         description = NSLocalizedString(@"Show Window Buttons", nil);
     }
-    _stoplightHotboxToggle.image = [NSImage it_imageForSymbolName:SFSymbolGetString(symbol)
+    _stoplightHotboxToggle.image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(symbol)
                                          accessibilityDescription:description];
     _stoplightHotboxToggle.toolTip = description;
 }
@@ -2014,9 +1966,6 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
 @end
 
 BOOL PSMShouldExtendTransparencyIntoMinimalTabBar(void) {
-    if (@available(macOS 10.16, *)) { } else {
-        return NO;
-    }
     switch ([iTermPreferences intForKey:kPreferenceKeyTabStyle]) {
         case TAB_STYLE_MINIMAL:
             return YES;
