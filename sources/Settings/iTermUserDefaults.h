@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, iTermAppleWindowTabbingMode) {
 @property (class, nonatomic) BOOL requireAuthenticationAfterScreenLocks;
 @property (class, nonatomic) BOOL openTmuxDashboardIfHiddenWindows;
 
-// Whether session-status text (from cc-status, OSC 21337, the SetTabStatus
+// Whether session-status text (from OSC 21337, the SetTabStatus
 // trigger, or iterm2.set_status) is woven into the tab’s subtitle and
 // allowed to tint that subtitle text. The colored dot on the tab is
 // independent and always visible regardless of this setting. Default YES

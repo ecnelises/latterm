@@ -22,10 +22,7 @@ class VT100TabStatusUpdate: NSObject {
     @objc var detailPresence: VT100TabStatusUpdateFieldPresence = .notSet
     @objc var detail: String? = nil
 
-    // Count of background tasks/subagents the status-reporting program
-    // says are still running. Written by cc-status so that later hook
-    // events with no task info (idle_prompt) can read the last known
-    // count back instead of keeping state of their own on disk.
+    // Last background-task count reported by the session’s program.
     @objc var backgroundTasksPresence: VT100TabStatusUpdateFieldPresence = .notSet
     @objc var backgroundTasks: Int = 0
 
@@ -327,11 +324,7 @@ class iTermSessionTabStatus: NSObject {
     private static let arrangementStatusTextColorKey = "Status Text Color"
     private static let arrangementDetailTextKey = "Detail Text"
 
-    // backgroundTasks is deliberately NOT encoded here: it exists so
-    // stateless hook invocations (cc-status) can park a count in RAM
-    // between events, and it must not leak to disk via arrangements.
-    // It would also be wrong after a restore, since the tasks it
-    // counted died with the original session's program.
+    // Omit backgroundTasks because the count belongs to the original process.
     @objc func arrangementDictionary() -> NSDictionary? {
         guard hasActiveStatus else {
             return nil

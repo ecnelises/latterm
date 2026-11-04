@@ -4,7 +4,7 @@
 //
 //  The member list of a workgroup, reached by tapping a workgroup @-mention.
 //  Each member shows its role, session title, and machine-readable status
-//  (OSC 21337 / cc-status) when the session reports one; launched members
+//  (OSC 21337) when the session reports one; launched members
 //  drill down into the read-only session view.
 //
 

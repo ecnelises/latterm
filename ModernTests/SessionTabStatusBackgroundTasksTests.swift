@@ -2,7 +2,7 @@
 //  SessionTabStatusBackgroundTasksTests.swift
 //  ModernTests
 //
-//  The background-task count that cc-status parks in iTermSessionTabStatus
+//  The background-task count stored in iTermSessionTabStatus
 //  is RAM-only by design: it must round-trip through apply()/copyStatus()
 //  but never reach disk via the arrangement dictionary.
 //

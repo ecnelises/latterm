@@ -15,6 +15,7 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Remove the bundled Claude Code status hook.
 - Send arrow keys and Tab that an input method
   hands back after committing text.
 - Hide Activity Indicator also hides the tab
