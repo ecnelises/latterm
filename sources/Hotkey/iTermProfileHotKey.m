@@ -312,12 +312,7 @@ static NSString *const kArrangement = @"Arrangement";
         return NSNormalWindowLevel;
     }
     DLog(@"Use main menu window level (I am key, no detected panels are open)");
-    NSWindowLevel windowLevelJustBelowNotificiations;
-    if (@available(macOS 10.16, *)) {
-        windowLevelJustBelowNotificiations = NSMainMenuWindowLevel - 2;
-    } else {
-        windowLevelJustBelowNotificiations = 17;
-    }
+    const NSWindowLevel windowLevelJustBelowNotifications = NSMainMenuWindowLevel - 2;
     // These are the window levels in play:
     //
     // NSStatusWindowLevel (25) -                Floating hotkey panels overlapping a fixed, visible menu bar.
@@ -325,8 +320,6 @@ static NSString *const kArrangement = @"Arrangement";
     // 23 -                                      Notification center (macOS 11+)
     // 22 -                                      (macOS 11+) Hotkey windows under a hidden-but-not-auto-hidden menu bar.
     // 20 -                                      Character accent menu (at least in macOS 15, and hopefully others)
-    // 18 -                                      Notification center (macOS 10.x)
-    // 17 -                                      (macOS 10.x) Hotkey windows under a hidden-but-not-auto-hidden menu bar.
     //
     // NSTornOffMenuWindowLevel (3) -            Just too low, used to use this, but not any more because it's under the dock.
 
@@ -365,13 +358,13 @@ static NSString *const kArrangement = @"Arrangement";
                 // appear on us overlapping the hotkey window. This is the case when on another app's
                 // full screen window. Do this to avoid overlapping notifications.
                 DLog(@"Go just below notifications because the menu var is not visible");
-                return windowLevelJustBelowNotificiations;
+                return windowLevelJustBelowNotifications;
             }
             if (!self.windowController.fullScreen) {
                 // Non-fullscreen windows have their frame set below the menu bar so we can let
                 // notifications overlap them.
                 DLog(@"Go just below notifications because, while the menu bar is visible, the window is not fullscreen");
-                return windowLevelJustBelowNotificiations;
+                return windowLevelJustBelowNotifications;
             }
             // Floating fullscreen panel and fixed menu bar — overlap the menu bar.
             // Unfortunately, this overlaps notification center since it is at the same level as
@@ -386,7 +379,7 @@ static NSString *const kArrangement = @"Arrangement";
     // Floating hotkey window that does not join all spaces. This doesn't seem to work well in the
     // presence of other apps' fullscreen windows, regardless of level.
     DLog(@"Go just below notifications because it is not a floating window");
-    return windowLevelJustBelowNotificiations;
+    return windowLevelJustBelowNotifications;
 }
 
 - (BOOL)menuBarAutoHides {
@@ -923,14 +916,12 @@ static NSString *const kArrangement = @"Arrangement";
 - (NSArray<iTermBaseHotKey *> *)hotKeyPressedWithSiblings:(NSArray<iTermBaseHotKey *> *)genericSiblings {
     RLog(@"hotKeypressedWithSiblings called on %@ with siblings %@", self, genericSiblings);
     DLog(@"Secure input=%@", @([[iTermSecureKeyboardEntryController sharedInstance] isEnabled]));
-    if (@available(macOS 12.0, *)) {
-        if ([[iTermSecureKeyboardEntryController sharedInstance] isEnabled] &&
-            ![NSApp isActive]) {
-            DLog(@"Notify");
-            [[iTermNotificationController sharedInstance] notify:NSLocalizedString(@"Hotkeys Unavailable", @"User notification")
-                                                 withDescription:NSLocalizedString(@"Another app has enabled secure keyboard input. That prevents hotkey windows from being shown.", @"User notification")];
-            return @[];
-        }
+    if ([[iTermSecureKeyboardEntryController sharedInstance] isEnabled] &&
+        ![NSApp isActive]) {
+        DLog(@"Notify");
+        [[iTermNotificationController sharedInstance] notify:NSLocalizedString(@"Hotkeys Unavailable", @"User notification")
+                                             withDescription:NSLocalizedString(@"Another app has enabled secure keyboard input. That prevents hotkey windows from being shown.", @"User notification")];
+        return @[];
     }
     genericSiblings = [genericSiblings arrayByAddingObject:self];
 

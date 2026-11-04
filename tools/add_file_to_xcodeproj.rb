@@ -12,7 +12,8 @@
 # (e.g. new groups had to be created), we fall back to the gem's full output with
 # a warning so the file is still added.
 
-require 'xcodeproj'
+require 'json'
+require 'open3'
 require 'pathname'
 require 'set'
 
@@ -32,16 +33,6 @@ def main
     exit 1
   end
 
-  project = Xcodeproj::Project.open(proj_path)
-
-  target = project.targets.find { |t| t.name == target_name }
-  unless target
-    puts "Error: Target '#{target_name}' not found"
-    puts "Available targets:"
-    project.targets.each { |t| puts "  - #{t.name}" }
-    exit 1
-  end
-
   unless File.exist?(file_path)
     puts "Error: File '#{file_path}' does not exist"
     exit 1
@@ -50,10 +41,21 @@ def main
   # A file under a PBXFileSystemSynchronizedRootGroup is auto-discovered by Xcode;
   # no project change is needed.
   dir_components = File.dirname(file_path).split(File::SEPARATOR).reject { |c| c == '.' }
-  if synchronized_root_group?(project, dir_components)
+  if synchronized_root_group?(proj_path, target_name, dir_components)
     puts "Directory '#{File.dirname(file_path)}' is a synchronized root group — Xcode manages it automatically."
     puts "No project changes needed."
     exit 0
+  end
+
+  require 'xcodeproj'
+  project = Xcodeproj::Project.open(proj_path)
+
+  target = project.targets.find { |t| t.name == target_name }
+  unless target
+    puts "Error: Target '#{target_name}' not found"
+    puts "Available targets:"
+    project.targets.each { |t| puts "  - #{t.name}" }
+    exit 1
   end
 
   pbxproj_path = File.join(proj_path, 'project.pbxproj')
@@ -189,17 +191,30 @@ def find_xcodeproj
   nil
 end
 
-def synchronized_root_group?(project, components)
-  current = project.main_group
+def synchronized_root_group?(proj_path, target_name, components)
+  # Inspect automatic source membership without loading the project editor. The
+  # xcodeproj gem is only needed when the project actually needs to be changed.
+  json, _error, status = Open3.capture3('plutil', '-convert', 'json', '-o', '-',
+                                       File.join(proj_path, 'project.pbxproj'))
+  return false unless status.success?
+  project = JSON.parse(json)
+  objects = project.fetch('objects')
+  target = objects.values.find { |object|
+    object['isa'] == 'PBXNativeTarget' && object['name'] == target_name
+  }
+  return false unless target
+  current = objects.fetch(objects.fetch(project.fetch('rootObject')).fetch('mainGroup'))
   components.each do |component|
-    child = current.children.find { |c|
-      c.respond_to?(:display_name) && (c.display_name == component || c.path == component)
+    child_id = current.fetch('children', []).find { |key|
+      child = objects.fetch(key)
+      child['name'] == component || child['path'] == component
     }
-    return false unless child
-    if child.is_a?(Xcodeproj::Project::Object::PBXFileSystemSynchronizedRootGroup)
-      return true
+    return false unless child_id
+    child = objects.fetch(child_id)
+    if child['isa'] == 'PBXFileSystemSynchronizedRootGroup'
+      return target.fetch('fileSystemSynchronizedGroups', []).include?(child_id)
     end
-    return false unless child.is_a?(Xcodeproj::Project::Object::PBXGroup)
+    return false unless child['isa'] == 'PBXGroup'
     current = child
   end
   false

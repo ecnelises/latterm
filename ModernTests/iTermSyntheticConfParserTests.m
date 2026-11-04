@@ -1,6 +1,6 @@
 //
 //  iTermSyntheticConfParserTests.m
-//  iTerm2XCTests
+//  ModernTests
 //
 //  Created by George Nachman on 12/2/19.
 //
@@ -14,11 +14,6 @@
 @end
 
 @implementation iTermTestableSyntheticConfParser
-
-- (void)dealloc {
-    [_fakeContents release];
-    [super dealloc];
-}
 
 static NSString *_fakeContents;
 
