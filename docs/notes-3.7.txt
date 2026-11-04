@@ -21,6 +21,7 @@ Terminal-first fork changes:
   by removing unused legacy UI paths.
 - Remove obsolete menu, dialog, and scripting UI
   fallbacks and unused settings macros.
+- Share Toolbelt table and outline scroll setup.
 - Remove the bundled Claude Code status hook.
 - Send arrow keys and Tab that an input method
   hands back after committing text.
