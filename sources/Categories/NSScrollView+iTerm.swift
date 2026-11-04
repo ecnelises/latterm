@@ -17,14 +17,7 @@ extension NSScrollView {
                                                          insets: NSEdgeInsets,
                                                          rowHeight: CGFloat,
                                                          keyboardNavigable: Bool) -> NSScrollView {
-        let frame = container.bounds.insetByEdgeInsets(insets)
-        let scrollView = NSScrollView(frame: frame)
-        scrollView.hasVerticalScroller = true
-        scrollView.hasHorizontalScroller = false
-        scrollView.borderType = .lineBorder
-        scrollView.scrollerStyle = .overlay
-        scrollView.autoresizingMask = [.width, .height]
-        scrollView.drawsBackground = false
+        let scrollView = toolbeltScrollView(container: container, insets: insets)
 
         if keyboardNavigable {
             _ = iTermAutomaticKeyboardNavigatableTableView.toolbeltTableView(inScrollview: scrollView,
@@ -41,6 +34,15 @@ extension NSScrollView {
     @objc static func scrollViewWithOutlineViewForToolbelt(container: NSView & NSOutlineViewDelegate & NSOutlineViewDataSource,
                                                            insets: NSEdgeInsets,
                                                            rowHeight: CGFloat) -> NSScrollView {
+        let scrollView = toolbeltScrollView(container: container, insets: insets)
+
+        _ = NSOutlineView.toolbeltOutlineView(inScrollview: scrollView,
+                                              fixedRowHeight: rowHeight,
+                                              owner: container)
+        return scrollView
+    }
+
+    private static func toolbeltScrollView(container: NSView, insets: NSEdgeInsets) -> NSScrollView {
         let frame = container.bounds.insetByEdgeInsets(insets)
         let scrollView = NSScrollView(frame: frame)
         scrollView.hasVerticalScroller = true
@@ -49,10 +51,6 @@ extension NSScrollView {
         scrollView.scrollerStyle = .overlay
         scrollView.autoresizingMask = [.width, .height]
         scrollView.drawsBackground = false
-
-        _ = NSOutlineView.toolbeltOutlineView(inScrollview: scrollView,
-                                              fixedRowHeight: rowHeight,
-                                              owner: container)
         return scrollView
     }
 }
