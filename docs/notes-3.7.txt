@@ -15,6 +15,12 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Remove obsolete startup, hotkey, clipboard, and
+  working-directory paths for macOS before 12.4.
+- Run synthetic directory mapping regressions
+  with the current ModernTests suite.
+- Skip optional Ruby project-editing dependencies
+  for Xcode-managed source folders.
 - Remove unused image blur helpers and obsolete
   document and clock fallback bitmaps.
 - Use AppKit directly for system symbol images.

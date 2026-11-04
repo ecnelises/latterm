@@ -3929,7 +3929,6 @@
 		A6F1B3C52693BC2F00546767 /* iTermNotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = F69E788C0AB7AC6D001EC0FF /* iTermNotificationController.m */; };
 		A6F22ABF2396326200C5D1A9 /* iTermSyntheticConfParser.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F22ABD2396326200C5D1A9 /* iTermSyntheticConfParser.h */; };
 		A6F22AC02396326200C5D1A9 /* iTermSyntheticConfParser.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F22ABE2396326200C5D1A9 /* iTermSyntheticConfParser.m */; };
-		A6F22AC22396374500C5D1A9 /* iTermSyntheticConfParserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A6F22AC12396374500C5D1A9 /* iTermSyntheticConfParserTests.m */; };
 		A6F22AC5239638B500C5D1A9 /* iTermSyntheticConfParser+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F22AC4239637E200C5D1A9 /* iTermSyntheticConfParser+Private.h */; };
 		A6F2F218250757FE00FC227F /* PrefsShortcuts@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6F2F216250757FD00FC227F /* PrefsShortcuts@2x.png */; };
 		A6F2F219250757FE00FC227F /* PrefsShortcuts@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6F2F216250757FD00FC227F /* PrefsShortcuts@2x.png */; };
@@ -7484,7 +7483,6 @@
 		A6F1B3BE2693B82B00546767 /* DebugLogging.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = DebugLogging.png; path = images/DebugLogging.png; sourceTree = "<group>"; };
 		A6F22ABD2396326200C5D1A9 /* iTermSyntheticConfParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSyntheticConfParser.h; sourceTree = "<group>"; };
 		A6F22ABE2396326200C5D1A9 /* iTermSyntheticConfParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSyntheticConfParser.m; sourceTree = "<group>"; };
-		A6F22AC12396374500C5D1A9 /* iTermSyntheticConfParserTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSyntheticConfParserTests.m; sourceTree = "<group>"; };
 		A6F22AC4239637E200C5D1A9 /* iTermSyntheticConfParser+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iTermSyntheticConfParser+Private.h"; sourceTree = "<group>"; };
 		A6F22ACE239B66CC00C5D1A9 /* SIGArchiveCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SIGArchiveCommon.h; path = SignedArchive/SIGArchiveCommon.h; sourceTree = "<group>"; };
 		A6F2D54C2563455D0036B9C5 /* auth.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = auth.py; sourceTree = "<group>"; };
@@ -11874,7 +11872,6 @@
 				53D68F822283FA4B0018710D /* iTermTmuxLayoutBuilderTest.m */,
 				A65660DA2372AA5100DC6744 /* iTermDoublyLinkedListTests.m */,
 				A65660DC2372ADEA00DC6744 /* iTermCacheTests.m */,
-				A6F22AC12396374500C5D1A9 /* iTermSyntheticConfParserTests.m */,
 				A63493FA23F2741D0047C31B /* iTermPromiseTests.m */,
 				A6024B8A254DDFEE0036D6CF /* iTermNSColorCategoryTests.m */,
 				A60F6FEA270B7F1D0017A003 /* iTermModifyOtherKeys1Test.m */,
@@ -17892,7 +17889,6 @@
 				A603A96829B12CEA000E9E98 /* SearchTests.m in Sources */,
 				A608CD08214DE7C1007A7B87 /* iTermTextExtractorTest.m in Sources */,
 				A608CD0D214DE7C1007A7B87 /* iTermFunctionCallSuggesterTest.m in Sources */,
-				A6F22AC22396374500C5D1A9 /* iTermSyntheticConfParserTests.m in Sources */,
 				A608CD01214DE7C1007A7B87 /* VT100CSIParserTest.m in Sources */,
 				A61F8E301E62591800D315D0 /* iTermFakeUserDefaults.m in Sources */,
 				A608CCFB214DE7C1007A7B87 /* iTermNSStringCategoryTest.m in Sources */,
