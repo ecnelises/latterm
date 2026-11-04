@@ -8,7 +8,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="iTermOpenQuicklyWindowController">
             <connections>
-                <outlet property="_divider" destination="LMf-8a-4bR" id="Wey-ru-WrI"/>
                 <outlet property="_loupe" destination="JJh-GR-vUt" id="7Rr-Qa-10S"/>
                 <outlet property="_scrollView" destination="dC8-0m-hjk" id="oMz-Oc-FAB"/>
                 <outlet property="_table" destination="zk3-s6-bJy" id="IC8-8b-nvC"/>
@@ -122,7 +121,7 @@
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1uy-mq-lAE" userLabel="Clear Button">
                         <rect key="frame" x="456" y="419" width="21" height="21"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" image="closebutton" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="WYa-f6-yQ2">
+                        <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyDown" inset="2" id="WYa-f6-yQ2">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
@@ -133,14 +132,10 @@ Gw
                             <action selector="close:" target="-2" id="mVi-R5-hgI"/>
                         </connections>
                     </button>
-                    <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LMf-8a-4bR" userLabel="Divider" customClass="SolidColorView">
-                        <rect key="frame" x="0.0" y="405" width="488" height="1"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    </customView>
                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JJh-GR-vUt" userLabel="Loupe">
                         <rect key="frame" x="13" y="420" width="22" height="22"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="Loupe" id="8ST-yR-ZiF"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="8ST-yR-ZiF"/>
                     </imageView>
                 </subviews>
             </view>
@@ -151,8 +146,4 @@ Gw
             <point key="canvasLocation" x="333.5" y="295.5"/>
         </window>
     </objects>
-    <resources>
-        <image name="Loupe" width="64" height="64"/>
-        <image name="closebutton" width="12.5" height="12.5"/>
-    </resources>
 </document>

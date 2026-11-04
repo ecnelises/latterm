@@ -4,7 +4,3 @@
 @interface iTermOpenQuicklyTableRowView : NSTableRowView
 
 @end
-
-@interface iTermOpenQuicklyTableRowView_BigSur : NSTableRowView
-
-@end
