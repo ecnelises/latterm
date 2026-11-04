@@ -105,11 +105,6 @@ extension SetStatusBuiltInFunction: iTermBuiltInFunctionProtocol {
             }
         iTermBuiltInFunctions.sharedInstance().register(builtInFunction, namespace: "iterm2")
 
-        // Read-back for the background-task count. cc-status runs once
-        // per hook event with no state of its own, and idle_prompt
-        // payloads carry no task info; this lets it ask iTerm2 for the
-        // count the earlier Stop/SubagentStop events parked here (RAM
-        // only), instead of keeping marker files on disk.
         let getBackgroundTasks = iTermBuiltInFunction(
             name: "get_background_task_count",
             arguments: [:],

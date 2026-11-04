@@ -431,12 +431,6 @@ it2cli: force
 paranoid-it2cli: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) it2cli
 
-cc-status: force
-	cd cc-status/ && ./build.sh
-
-paranoid-cc-status: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) cc-status
-
 paranoid-CoreParse: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" CoreParse
 

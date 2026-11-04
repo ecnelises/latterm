@@ -3186,7 +3186,6 @@
 		A6BA7D24247637B700407C4D /* VT100InlineImageHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6BA7D22247637B700407C4D /* VT100InlineImageHelper.h */; };
 		A6BA7D25247637B700407C4D /* VT100InlineImageHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A6BA7D23247637B700407C4D /* VT100InlineImageHelper.m */; };
 		A6BAB25C2F8CBC550063FA7F /* SetStatusBuiltInFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BAB25B2F8CBC550063FA7F /* SetStatusBuiltInFunction.swift */; };
-		A6BAB25E2F8CCCD10063FA7F /* cc-status in CopyFiles */ = {isa = PBXBuildFile; fileRef = A6BAB25D2F8CCCD10063FA7F /* cc-status */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A6BBBFCB2CC87203000A697C /* ConditionVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BBBFCA2CC871FF000A697C /* ConditionVariable.swift */; };
 		A6BBBFCF2CC8727E000A697C /* AddressString.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BBBFCE2CC87278000A697C /* AddressString.swift */; };
 		A6BBBFD12CC876D3000A697C /* Range+iTerm.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BBBFD02CC876CC000A697C /* Range+iTerm.swift */; };
@@ -4551,7 +4550,6 @@
 			dstPath = utilities;
 			dstSubfolderSpec = 7;
 			files = (
-				A6BAB25E2F8CCCD10063FA7F /* cc-status in CopyFiles */,
 				A6E7ED2F2F7CAFDD001349AE /* it2 in CopyFiles */,
 				A6CB24AF2C68155800005824 /* imgcat in CopyFiles */,
 				A6CB24B02C68155800005824 /* imgls in CopyFiles */,
@@ -6978,7 +6976,6 @@
 		A6BA7D22247637B700407C4D /* VT100InlineImageHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VT100InlineImageHelper.h; sourceTree = "<group>"; };
 		A6BA7D23247637B700407C4D /* VT100InlineImageHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VT100InlineImageHelper.m; sourceTree = "<group>"; };
 		A6BAB25B2F8CBC550063FA7F /* SetStatusBuiltInFunction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetStatusBuiltInFunction.swift; sourceTree = "<group>"; };
-		A6BAB25D2F8CCCD10063FA7F /* cc-status */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = "cc-status"; path = "cc-status/bin/cc-status"; sourceTree = "<group>"; };
 		A6BBBFCA2CC871FF000A697C /* ConditionVariable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionVariable.swift; sourceTree = "<group>"; };
 		A6BBBFCE2CC87278000A697C /* AddressString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressString.swift; sourceTree = "<group>"; };
 		A6BBBFD02CC876CC000A697C /* Range+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Range+iTerm.swift"; sourceTree = "<group>"; };
@@ -8078,7 +8075,6 @@
 		0464AB0D006CD2EC7F000001 = {
 			isa = PBXGroup;
 			children = (
-				A6BAB25D2F8CCCD10063FA7F /* cc-status */,
 				A6E7ED2E2F7CAFDD001349AE /* it2 */,
 				A6E7F31B2F7DD5E9001349AE /* it2 */,
 				A6B1C69D2DC15898008AD3CA /* ModernTests.xctestplan */,

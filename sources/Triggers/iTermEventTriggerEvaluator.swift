@@ -256,7 +256,7 @@ class EventTriggerEvaluator: NSObject {
             // A jobName filter is required: firing on every job
             // ancestry change would mean an Exit Workgroup trigger
             // tears the workgroup down whenever any short-lived
-            // child (e.g. cc-status) ends, even though the host
+            // child ends, even though the host
             // process is still running.
             guard let target = trigger.eventParams?["jobName"] as? String,
                   !target.isEmpty else {
