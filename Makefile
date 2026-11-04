@@ -15,7 +15,6 @@ NAME=$(shell echo $(VERSION) | sed -e "s/\\./_/g")
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
 CMAKE ?= $(HOMEBREW_PREFIX)/bin/cmake
 PKG_CONFIG ?= $(HOMEBREW_PREFIX)/bin/pkg-config
-RUSTUP ?= $(shell PATH="$(ORIG_PATH):$(HOME)/.cargo/bin" which rustup 2>/dev/null)
 DEPLOYMENT_TARGET=12.0
 XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme iTerm2
 
@@ -48,7 +47,6 @@ endif
 TARGET_ARCH := arm64
 ARCH_FLAGS = ARCHS="$(TARGET_ARCH)" ONLY_ACTIVE_ARCH=YES
 CMAKE_ARCHS = $(TARGET_ARCH)
-RUST_TARGET = aarch64-apple-darwin
 
 .PHONY: clean all backup-old-iterm restart setup dangerous-setup _setup-main help doctor
 
@@ -179,22 +177,11 @@ _setup-main:
 	else \
 		sudo PATH="$(ORIG_PATH)" xcodebuild -license accept 2>/dev/null || true; \
 	fi
-	@if [ -z "$(RUSTUP)" ]; then \
-		echo "rustup is not installed."; \
-		if [ "$(SKIP_CONFIRM)" != "1" ]; then \
-			printf "Install rustup via 'curl https://sh.rustup.rs | sh'? [y/N] "; \
-			read ans </dev/tty; case "$$ans" in [yY]) ;; *) echo "Aborted."; exit 1;; esac; \
-		fi; \
-		curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \
-		export PATH="$$HOME/.cargo/bin:$$PATH"; \
-	fi
 	@test -f plists/iTerm2.plist || cp plists/dev-iTerm2.plist plists/iTerm2.plist
 	@PATH="$(ORIG_PATH)" brew list cmake >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install cmake
 	@PATH="$(ORIG_PATH)" brew list pkg-config >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install pkg-config
 	@PATH="$(ORIG_PATH)" brew list automake >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install automake
 	@PATH="$(ORIG_PATH)" command -v perl >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install perl
-	@# gettext provides envsubst, used by tools/copy_shell_integration.sh to embed it2.py.
-	@PATH="$(ORIG_PATH)" brew list gettext >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install gettext
 	@if ! test -x "$(HOMEBREW_PREFIX)/bin/python3"; then \
 		PATH="$(ORIG_PATH)" brew install python3; \
 		if ! PATH="$(ORIG_PATH)" brew link python@3 2>/dev/null; then \
@@ -220,8 +207,6 @@ _setup-main:
 		fi; \
 	fi
 	@$(HOMEBREW_PREFIX)/bin/python3 -c "import objc" 2>/dev/null || $(HOMEBREW_PREFIX)/bin/pip3 install --break-system-packages pyobjc
-	@PATH="$(ORIG_PATH):$$HOME/.cargo/bin" command -v cbindgen >/dev/null || $(or $(RUSTUP),$$HOME/.cargo/bin/rustup) run stable cargo install cbindgen
-	$(or $(RUSTUP),$$HOME/.cargo/bin/rustup) target add $(RUST_TARGET)
 	git submodule update --init --recursive
 	PATH="$(ORIG_PATH)" xcodebuild -downloadComponent MetalToolchain || \
 		echo "WARNING: Metal Toolchain download failed. You can retry later with: xcodebuild -downloadComponent MetalToolchain"
@@ -245,8 +230,6 @@ doctor:
 		elif echo "$$ver" | grep -q "^Python 3"; then echo "$$ver"; \
 		else echo "$$ver (WARNING: needs Python 3)"; fi
 	@printf "  %-18s" "pyobjc:"; ($(HOMEBREW_PREFIX)/bin/python3 -c "import objc; print('installed')" 2>/dev/null) || echo "NOT FOUND"
-	@printf "  %-18s" "rustup:"; (PATH="$(ORIG_PATH):$(HOME)/.cargo/bin" rustup --version 2>/dev/null) || echo "NOT FOUND"
-	@printf "  %-18s" "cbindgen:"; (PATH="$(ORIG_PATH):$(HOME)/.cargo/bin" cbindgen --version 2>/dev/null) || echo "NOT FOUND"
 	@printf "  %-18s" "sf-symbols:"; (PATH="$(ORIG_PATH)" brew list --cask sf-symbols >/dev/null 2>&1 && echo "installed") || echo "NOT FOUND"
 
 TAGS:
