@@ -50,9 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype _Nullable)it_imageNamed:(NSImageName)name forClass:(Class)theClass;
 + (instancetype _Nullable)it_cacheableImageNamed:(NSImageName)name forClass:(Class)theClass;
 
-// Returns an image blurred by repeated box blurs with |radius| iterations.
-- (NSImage *)blurredImageWithRadius:(int)radius;
-
 // Recolor the image with the given color but preserve its alpha channel.
 - (NSImage *)imageWithColor:(NSColor *)color;
 
