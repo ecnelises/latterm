@@ -155,9 +155,7 @@ const CGFloat kDefaultTagsWidth = 80;
 
         tableView_ = [[ProfileTableView alloc] initWithFrame:tableViewFrame];
 
-        if (@available(macOS 10.16, *)) {
-            tableView_.style = NSTableViewStyleInset;
-        }
+        tableView_.style = NSTableViewStyleInset;
 
         [tableView_ setMenuHandler:self];
         [tableView_ registerForDraggedTypes:[NSArray arrayWithObject:kProfileTableViewDataType]];
@@ -175,11 +173,7 @@ const CGFloat kDefaultTagsWidth = 80;
         [tableView_ addTableColumn:tableColumn_];
 
         [scrollView_ setDocumentView:tableView_];
-        if (@available(macOS 10.16, *)) {
-            scrollView_.borderType = NSLineBorder;
-        } else {
-            [scrollView_ setBorderType:NSBezelBorder];
-        }
+        scrollView_.borderType = NSLineBorder;
 
         selectedGuids_ = [[NSMutableSet alloc] init];
 
@@ -634,26 +628,24 @@ const CGFloat kDefaultTagsWidth = 80;
         [theAttributedString insertAttributedString:star atIndex:0];
     }
     if (isDynamic) {
-        if (@available(macOS 12.0, *)) {
-            NSTextAttachment *attachment = [[[NSTextAttachment alloc] init] autorelease];
-            NSString *imageName = SFSymbolGetString(SFSymbolTrayAndArrowDown);
-            NSColor *color = [[NSColor labelColor] colorWithAlphaComponent:0.75];
-            NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithHierarchicalColor:color];
-            NSImage *image = [[NSImage imageWithSystemSymbolName:imageName accessibilityDescription:nil]
-                              imageWithSymbolConfiguration:config];
-            image.size = NSMakeSize(16, 16);
-            attachment.image = image;
-            NSAttributedString *dynamicIcon = [NSAttributedString attributedStringWithAttachment:attachment];
-            NSMutableAttributedString *dynamicIconWithAttr = [[dynamicIcon mutableCopy] autorelease];
-            [dynamicIconWithAttr addAttribute:iTermDynamicProfileSymbolName
-                                        value:imageName
-                                        range:NSMakeRange(0, dynamicIconWithAttr.length)];
-            NSAttributedString *space = [[[NSAttributedString alloc] initWithString:@" "
-                                                                         attributes:plainAttributes] autorelease];
-            NSMutableAttributedString *spaceWithIcon = [[[NSMutableAttributedString alloc] initWithAttributedString:space] autorelease];
-            [spaceWithIcon appendAttributedString:dynamicIconWithAttr];
-            [theAttributedString appendAttributedString:spaceWithIcon];
-        }
+        NSTextAttachment *attachment = [[[NSTextAttachment alloc] init] autorelease];
+        NSString *imageName = SFSymbolGetString(SFSymbolTrayAndArrowDown);
+        NSColor *color = [[NSColor labelColor] colorWithAlphaComponent:0.75];
+        NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithHierarchicalColor:color];
+        NSImage *image = [[NSImage imageWithSystemSymbolName:imageName accessibilityDescription:nil]
+                          imageWithSymbolConfiguration:config];
+        image.size = NSMakeSize(16, 16);
+        attachment.image = image;
+        NSAttributedString *dynamicIcon = [NSAttributedString attributedStringWithAttachment:attachment];
+        NSMutableAttributedString *dynamicIconWithAttr = [[dynamicIcon mutableCopy] autorelease];
+        [dynamicIconWithAttr addAttribute:iTermDynamicProfileSymbolName
+                                    value:imageName
+                                    range:NSMakeRange(0, dynamicIconWithAttr.length)];
+        NSAttributedString *space = [[[NSAttributedString alloc] initWithString:@" "
+                                                                     attributes:plainAttributes] autorelease];
+        NSMutableAttributedString *spaceWithIcon = [[[NSMutableAttributedString alloc] initWithAttributedString:space] autorelease];
+        [spaceWithIcon appendAttributedString:dynamicIconWithAttr];
+        [theAttributedString appendAttributedString:spaceWithIcon];
     }
     if (tags.count) {
         NSAttributedString *newline = [[[NSAttributedString alloc] initWithString:@"\n"
