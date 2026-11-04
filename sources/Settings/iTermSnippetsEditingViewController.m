@@ -8,7 +8,6 @@
 #import "iTermSnippetsEditingViewController.h"
 
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermCompetentTableRowView.h"
 #import "iTermEditSnippetWindowController.h"
 #import "iTermPreferencesBaseViewController.h"
 #import "iTermSnippetsModel.h"
@@ -556,10 +555,7 @@ static NSString *const iTermSnippetsEditingPasteboardType = @"com.googlecode.ite
 #pragma mark - NSTableViewDelegate
 
 - (NSTableRowView *)tableView:(NSTableView *)tableView rowViewForRow:(NSInteger)row {
-    if (@available(macOS 10.16, *)) {
-        return [[iTermBigSurTableRowView alloc] initWithFrame:NSZeroRect];
-    }
-    return [[iTermCompetentTableRowView alloc] initWithFrame:NSZeroRect];
+    return [[NSTableRowView alloc] initWithFrame:NSZeroRect];
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)notification {

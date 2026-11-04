@@ -9,7 +9,6 @@
 
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermActionsModel.h"
-#import "iTermCompetentTableRowView.h"
 #import "iTermEditKeyActionWindowController.h"
 #import "iTermPreferencesBaseViewController.h"
 #import "iTermWarning.h"
@@ -349,10 +348,7 @@ static NSString *const iTermActionsEditingPasteboardType = @"com.googlecode.iter
 #pragma mark - NSTableViewDelegate
 
 - (NSTableRowView *)tableView:(NSTableView *)tableView rowViewForRow:(NSInteger)row {
-    if (@available(macOS 10.16, *)) {
-        return [[iTermBigSurTableRowView alloc] initWithFrame:NSZeroRect];
-    }
-    return [[iTermCompetentTableRowView alloc] initWithFrame:NSZeroRect];
+    return [[NSTableRowView alloc] initWithFrame:NSZeroRect];
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)notification {
