@@ -147,14 +147,11 @@
 @implementation iTermOpenQuicklyBookmarkItem
 
 - (NSImage *)icon {
-    if (@available(macOS 11, *)) {
-        NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithPointSize:32 weight:NSFontWeightRegular];
-        NSImage *image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolBookmark) accessibilityDescription:@"globe"];
-        image = [image imageWithSymbolConfiguration:config];
-        image.size = NSMakeSize(32, 32);
-        return image;
-    }
-    return nil;
+    NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithPointSize:32 weight:NSFontWeightRegular];
+    NSImage *image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolBookmark) accessibilityDescription:@"globe"];
+    image = [image imageWithSymbolConfiguration:config];
+    image.size = NSMakeSize(32, 32);
+    return image;
 }
 
 @end
@@ -162,14 +159,11 @@
 @implementation iTermOpenQuicklyURLItem
 
 - (NSImage *)icon {
-    if (@available(macOS 11, *)) {
-        NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithPointSize:32 weight:NSFontWeightRegular];
-        NSImage *image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolGlobe) accessibilityDescription:@"globe"];
-        image = [image imageWithSymbolConfiguration:config];
-        image.size = NSMakeSize(32, 32);
-        return image;
-    }
-    return nil;
+    NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithPointSize:32 weight:NSFontWeightRegular];
+    NSImage *image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolGlobe) accessibilityDescription:@"globe"];
+    image = [image imageWithSymbolConfiguration:config];
+    image.size = NSMakeSize(32, 32);
+    return image;
 }
 
 @end

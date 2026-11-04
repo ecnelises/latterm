@@ -113,7 +113,6 @@
 		1D407A4414BABE8700BD5035 /* VT100Screen.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D407A3214BABE8700BD5035 /* VT100Screen.h */; };
 		1D407A4514BABE8700BD5035 /* VT100Terminal.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D407A3314BABE8700BD5035 /* VT100Terminal.h */; };
 		1D44218C1290B34500891504 /* TextViewWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D44218A1290B34500891504 /* TextViewWrapper.h */; };
-		1D44CCDB1CC6A1DE00BE5630 /* Loupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D44CCD91CC6A1DE00BE5630 /* Loupe.png */; };
 		1D44CCDC1CC6A1DE00BE5630 /* Loupe@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D44CCDA1CC6A1DE00BE5630 /* Loupe@2x.png */; };
 		1D468BB91B0543E300226083 /* iTermKeyboardNavigatableTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D468BB71B0543E300226083 /* iTermKeyboardNavigatableTableView.h */; };
 		1D468BBA1B0543E300226083 /* iTermKeyboardNavigatableTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D468BB71B0543E300226083 /* iTermKeyboardNavigatableTableView.h */; };
@@ -4744,7 +4743,6 @@
 		1D407A3314BABE8700BD5035 /* VT100Terminal.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = VT100Terminal.h; sourceTree = "<group>"; tabWidth = 4; };
 		1D44218A1290B34500891504 /* TextViewWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = TextViewWrapper.h; sourceTree = "<group>"; tabWidth = 4; };
 		1D44218B1290B34500891504 /* TextViewWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = TextViewWrapper.m; sourceTree = "<group>"; tabWidth = 4; };
-		1D44CCD91CC6A1DE00BE5630 /* Loupe.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = Loupe.png; path = images/Loupe.png; sourceTree = "<group>"; };
 		1D44CCDA1CC6A1DE00BE5630 /* Loupe@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "Loupe@2x.png"; path = "images/Loupe@2x.png"; sourceTree = "<group>"; };
 		1D468BB71B0543E300226083 /* iTermKeyboardNavigatableTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermKeyboardNavigatableTableView.h; sourceTree = "<group>"; };
 		1D468BB81B0543E300226083 /* iTermKeyboardNavigatableTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermKeyboardNavigatableTableView.m; sourceTree = "<group>"; };
@@ -8455,7 +8453,6 @@
 				A60A80E02C4F66B3002C3AA2 /* LatchBio.png */,
 				A6E737172F96D931001349AE /* LIMSIQ.png */,
 				1DA3E2AB1970AC4000001E6E /* LogoParts */,
-				1D44CCD91CC6A1DE00BE5630 /* Loupe.png */,
 				1D44CCDA1CC6A1DE00BE5630 /* Loupe@2x.png */,
 				A68E33391DE78D08003F1D8E /* Man Page Touch Bar Icon.png */,
 				A68E333A1DE78D08003F1D8E /* Man Page Touch Bar Icon@2x.png */,
@@ -15633,7 +15630,6 @@
 				A6CB24AB2C68149100005824 /* it2cat in Resources */,
 				A67F6141214395870093940A /* graphic_http@2x.png in Resources */,
 				A6CB24A12C68149100005824 /* it2api in Resources */,
-				1D44CCDB1CC6A1DE00BE5630 /* Loupe.png in Resources */,
 				A6F7A71F213CB143004DE961 /* StatusBarIconCPU@2x.png in Resources */,
 				1D5FDD7D1208E91100C46BA3 /* config.png in Resources */,
 				A663010819CFCE74004AF81C /* SuppressAllOutput.png in Resources */,

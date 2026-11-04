@@ -838,22 +838,20 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
     if ([command supportsMenuItems]) {
         [self addMenuItemsToItems:items withMatcher:matcher];
     }
-    if (@available(macOS 11, *)) {
 #if DEBUG
-        NSLog(@"Not attempting invocation for open quickly because it throws exceptions");
+    NSLog(@"Not attempting invocation for open quickly because it throws exceptions");
 #else
-        iTermVariableScope *scope = [self scopeForValidInvocation:queryString];
-        if (scope) {
-            [self addInvocation:queryString scope:scope toItems:items withMatcher:matcher];
-        }
+    iTermVariableScope *scope = [self scopeForValidInvocation:queryString];
+    if (scope) {
+        [self addInvocation:queryString scope:scope toItems:items withMatcher:matcher];
+    }
 #endif
-        NSMutableSet<NSURL *> *urls = [NSMutableSet set];
-        if ([command supportsBookmarks]) {
-            [self addBookmarkToItems:items withMatcher:matcher urls:urls];
-        }
-        if ([command supportsURLs]) {
-            [self addURLToItems:items withMatcher:matcher urls:urls];
-        }
+    NSMutableSet<NSURL *> *urls = [NSMutableSet set];
+    if ([command supportsBookmarks]) {
+        [self addBookmarkToItems:items withMatcher:matcher urls:urls];
+    }
+    if ([command supportsURLs]) {
+        [self addURLToItems:items withMatcher:matcher urls:urls];
     }
     // Sort from highest to lowest score.
     [items sortUsingComparator:^NSComparisonResult(iTermOpenQuicklyItem *obj1,
@@ -965,10 +963,8 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
     } else if ([item isKindOfClass:[iTermOpenQuicklyURLItem class]]) {
         return item;
     }
-    if (@available(macOS 11, *)) {
-        if ([item isKindOfClass:[iTermOpenQuicklyInvocationItem class]]) {
-            return item;
-        }
+    if ([item isKindOfClass:[iTermOpenQuicklyInvocationItem class]]) {
+        return item;
     }
     return nil;
 }

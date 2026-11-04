@@ -17,6 +17,8 @@ betas since then.
 Terminal-first fork changes:
 - Remove obsolete Settings and Toolbelt UI
   compatibility paths for macOS before 12.4.
+- Simplify Open Quickly and search field drawing
+  by removing unused legacy UI paths.
 - Remove the bundled Claude Code status hook.
 - Send arrow keys and Tab that an input method
   hands back after committing text.
