@@ -3648,18 +3648,12 @@
 		A6E7352A20EBF3270034FCFD /* iTermSetCurrentTerminalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E7352820EBF3270034FCFD /* iTermSetCurrentTerminalHelper.h */; };
 		A6E7352B20EBF3270034FCFD /* iTermSetCurrentTerminalHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A6E7352920EBF3270034FCFD /* iTermSetCurrentTerminalHelper.m */; };
 		A6E7352C20EC04B40034FCFD /* PTYTab.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D2E802D129DA45A00F3D71E /* PTYTab.m */; };
-		A6E7432E2F98373A001349AE /* clock.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E7432D2F98373A001349AE /* clock.png */; };
-		A6E7432F2F98373A001349AE /* clock.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E7432D2F98373A001349AE /* clock.png */; };
-		A6E743302F98373A001349AE /* clock.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E7432D2F98373A001349AE /* clock.png */; };
 		A6E743322F983794001349AE /* command.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743312F983794001349AE /* command.png */; };
 		A6E743332F983794001349AE /* command.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743312F983794001349AE /* command.png */; };
 		A6E743342F983794001349AE /* command.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743312F983794001349AE /* command.png */; };
 		A6E743362F9837D6001349AE /* CommandIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743352F9837D6001349AE /* CommandIcon.png */; };
 		A6E743372F9837D6001349AE /* CommandIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743352F9837D6001349AE /* CommandIcon.png */; };
 		A6E743382F9837D6001349AE /* CommandIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743352F9837D6001349AE /* CommandIcon.png */; };
-		A6E7433A2F98381D001349AE /* document.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743392F98381D001349AE /* document.png */; };
-		A6E7433B2F98381D001349AE /* document.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743392F98381D001349AE /* document.png */; };
-		A6E7433C2F98381D001349AE /* document.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E743392F98381D001349AE /* document.png */; };
 		A6E7433F2F98389A001349AE /* flowchart.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E7433D2F983899001349AE /* flowchart.png */; };
 		A6E743402F98389A001349AE /* flowchart@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E7433E2F983899001349AE /* flowchart@2x.png */; };
 		A6E743412F98389A001349AE /* flowchart.png in Resources */ = {isa = PBXBuildFile; fileRef = A6E7433D2F983899001349AE /* flowchart.png */; };
@@ -7246,10 +7240,8 @@
 		A6E716D429FDBF540018738D /* NSSet+iTerm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSSet+iTerm.swift"; sourceTree = "<group>"; };
 		A6E7352820EBF3270034FCFD /* iTermSetCurrentTerminalHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSetCurrentTerminalHelper.h; sourceTree = "<group>"; };
 		A6E7352920EBF3270034FCFD /* iTermSetCurrentTerminalHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSetCurrentTerminalHelper.m; sourceTree = "<group>"; };
-		A6E7432D2F98373A001349AE /* clock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = clock.png; path = images/clock.png; sourceTree = "<group>"; };
 		A6E743312F983794001349AE /* command.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = command.png; path = images/command.png; sourceTree = "<group>"; };
 		A6E743352F9837D6001349AE /* CommandIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = CommandIcon.png; path = images/CommandIcon.png; sourceTree = "<group>"; };
-		A6E743392F98381D001349AE /* document.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = document.png; path = images/document.png; sourceTree = "<group>"; };
 		A6E7433D2F983899001349AE /* flowchart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = flowchart.png; path = images/flowchart.png; sourceTree = "<group>"; };
 		A6E7433E2F983899001349AE /* flowchart@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "flowchart@2x.png"; path = "images/flowchart@2x.png"; sourceTree = "<group>"; };
 		A6E74ADD2383AA1D0089004A /* iTermTTYState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermTTYState.h; sourceTree = "<group>"; };
@@ -8328,7 +8320,6 @@
 				A659C9982DAF235C0036BA52 /* Channel@2x.png */,
 				A65B72581B1A630100F947A7 /* CheckMark.png */,
 				A65B72591B1A630100F947A7 /* CheckMark@2x.png */,
-				A6E7432D2F98373A001349AE /* clock.png */,
 				FB094A16033D58B601F955DB /* close.png */,
 				A697101118DFA7D5007E901D /* closebutton.png */,
 				A697101018DFA7D5007E901D /* closebutton@2x.png */,
@@ -8347,7 +8338,6 @@
 				A6F1B3BE2693B82B00546767 /* DebugLogging.png */,
 				A6F1B3BD2693B82B00546767 /* DebugLogging@2x.png */,
 				A64F32132B853CED008EFDC9 /* dice.png */,
-				A6E743392F98381D001349AE /* document.png */,
 				A6069EAD2DEE70B200EE6CC7 /* document.on.document.png */,
 				A6069EAE2DEE70B200EE6CC7 /* document.on.document@2x.png */,
 				A6FE8D06209382C000B5C648 /* download.png */,
@@ -14728,7 +14718,6 @@
 				A686C19A1ADF62F200906FAE /* Zoomed@2x.png in Resources */,
 				A6F18B4C2AE2F39C006C08EE /* uniE0B6_left-half-circle-thick.pdf in Resources */,
 				A67F6163214395990093940A /* graphic_mysql@2x.png in Resources */,
-				A6E7432E2F98373A001349AE /* clock.png in Resources */,
 				A6F18B462AE2F39C006C08EE /* uniE0A3_column-number.pdf in Resources */,
 				A6F31A32295BC41700C1A51E /* uniE0C8_PowerlineExtraSymbols.pdf in Resources */,
 				A67D0D4C1A2EE12A003A8B35 /* configPanel.strings in Resources */,
@@ -14904,7 +14893,6 @@
 				A66351482B659309009B93F7 /* PinnedIndicator@2x.png in Resources */,
 				1D6ED9BD19AEA20D005A7799 /* BroadcastInput.png in Resources */,
 				A67F618C214395A70093940A /* graphic_nginx@2x.png in Resources */,
-				A6E7433C2F98381D001349AE /* document.png in Resources */,
 				A6E7AEB4214394F600DE9F3B /* graphic_ethereum@2x.png in Resources */,
 				A6A3D192281663EE00C0C9E0 /* extensions.json in Resources */,
 				A6FEA28A1CF4DD2700376F28 /* iTermHotkeyPreferencesWindowController.xib in Resources */,
@@ -15287,7 +15275,6 @@
 				A66351472B659309009B93F7 /* PinnedIndicator@2x.png in Resources */,
 				A686C1991ADF62F200906FAE /* Zoomed@2x.png in Resources */,
 				A6A479B92E6E58C000DCF16F /* AppIcon.png in Resources */,
-				A6E7433B2F98381D001349AE /* document.png in Resources */,
 				A65E6F592547F1D5008A4866 /* WindowCornerFull_Square.png in Resources */,
 				A6F31A28295BC41700C1A51E /* uniE0C9_PowerlineExtraSymbols.pdf in Resources */,
 				A6DC98A528A82608009D21C0 /* Window.png in Resources */,
@@ -15436,7 +15423,6 @@
 				A62A7A6C2F988829007CAA0B /* iTermPasswordManager.xib in Resources */,
 				A67F6191214395A70093940A /* graphic_npm.png in Resources */,
 				A67F619C214395B70093940A /* graphic_php@2x.png in Resources */,
-				A6E7432F2F98373A001349AE /* clock.png in Resources */,
 				A6C838B42CB9ACF90062BE68 /* success-sound.mp3 in Resources */,
 				A6C838B52CB9ACF90062BE68 /* error-sound.mp3 in Resources */,
 				A6CCDF002D0E000000000003 /* install-touchid-sudo.sh in Resources */,
@@ -15693,7 +15679,6 @@
 				53C5650C21B8CF65002B3167 /* PowerlineLineLeftArrow.pdf in Resources */,
 				A6E7AE92214394DD00DE9F3B /* graphic_coffee.png in Resources */,
 				A6BEE47A26E0A624009C0C2C /* FilterIndicator.png in Resources */,
-				A6E743302F98373A001349AE /* clock.png in Resources */,
 				A68E33351DE746F5003F1D8E /* Next Mark Touch Bar Icon.png in Resources */,
 				53FF981C20927F1E008688D7 /* template_pyenv_simple.py in Resources */,
 				A686A1151C86A6CB0024C2DE /* NewOutputForDarkTheme.png in Resources */,
@@ -15782,7 +15767,6 @@
 				A629F58D23AF437400C2F16B /* utilities-manifest.txt in Resources */,
 				A67F61F82143976F0093940A /* graphic_icons.json in Resources */,
 				A697101218DFA7D5007E901D /* closebutton@2x.png in Resources */,
-				A6E7433A2F98381D001349AE /* document.png in Resources */,
 				A6F7A725213CB143004DE961 /* StatusBarIconHost.png in Resources */,
 				A6350298229B5F620042B779 /* YosemiteAddTab.png in Resources */,
 				53C5650821B8CDF5002B3167 /* PowerlineSolidLeftArrow.pdf in Resources */,
