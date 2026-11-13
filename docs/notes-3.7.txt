@@ -2,7 +2,7 @@ Latterm 26.11.3
 
 Reviewed through upstream iTerm2 3.7.6.
 Applicable fixes are adapted to the terminal fork.
-Requires macOS 12.4 or later on Apple Silicon.
+Requires macOS 15.0 or later on Apple Silicon.
 
 Version 3.7.0beta1 was built on April 20, 2026
 
@@ -15,6 +15,14 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Raise minimum macOS target to 15.0 and arm64.
+- Remove dead subpixel-AA Metal and AppKit
+  rendering paths, shrinking the ASCII texture
+  atlas to one copy.
+- Drop pre-macOS 15 availability guards, shims,
+  and iTermSystemVersion; migrate eyedropper to
+  NSColorSampler, display links to CADisplayLink,
+  and SCEvents to dispatch queues.
 - Remove obsolete startup, hotkey, clipboard, and
   working-directory paths for macOS before 12.4.
 - Run synthetic directory mapping regressions

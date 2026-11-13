@@ -849,18 +849,8 @@ ambiguousIsDoubleWidth:(BOOL)ambiguousIsDoubleWidth
 }
 
 - (vector_float4)processedDefaultBackgroundColor {
-    float alpha;
-    if (iTermTextIsMonochrome()) {
-        if (_backgroundImage) {
-            alpha = iTermAlphaValueForTopView(1 - _configuration->_renderInputs.transparencyAlpha,
-                                              _configuration->_backgroundImageBlend);
-        } else {
-            alpha = iTermAlphaValueForTopView(1 - _configuration->_renderInputs.transparencyAlpha, 0);
-        }
-    } else {
-        // Can assume transparencyAlpha is 1
-        alpha = iTermAlphaValueForTopView(0, _configuration->_backgroundImageBlend);
-    }
+    const float blend = _backgroundImage ? _configuration->_backgroundImageBlend : 0;
+    const float alpha = iTermAlphaValueForTopView(1 - _configuration->_renderInputs.transparencyAlpha, blend);
     return simd_make_float4((float)_configuration->_processedDefaultBackgroundColor.redComponent,
                             (float)_configuration->_processedDefaultBackgroundColor.greenComponent,
                             (float)_configuration->_processedDefaultBackgroundColor.blueComponent,
@@ -886,7 +876,7 @@ ambiguousIsDoubleWidth:(BOOL)ambiguousIsDoubleWidth
     return _configuration->_buttonsBackgroundRects;
 }
 
-- (NSArray<iTermButtonPillInfo *> *)buttonPillInfos NS_AVAILABLE_MAC(11) {
+- (NSArray<iTermButtonPillInfo *> *)buttonPillInfos {
     return _configuration->_buttonPillInfos;
 }
 
@@ -2771,7 +2761,7 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
     return _inputMethodMarkedRange.length > 0;
 }
 
-- (NSArray<iTermTerminalButton *> *)terminalButtons NS_AVAILABLE_MAC(11) {
+- (NSArray<iTermTerminalButton *> *)terminalButtons {
     return _configuration->_terminalButtons;
 }
 

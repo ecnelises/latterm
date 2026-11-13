@@ -90,7 +90,7 @@ typedef struct {
 #if ENABLE_UNFAMILIAR_TEXTURE_WORKAROUND
     NSInteger unfamiliarTextureCount;
 #endif
-    CGFloat maximumExtendedDynamicRangeColorComponentValue NS_AVAILABLE_MAC(10_15);
+    CGFloat maximumExtendedDynamicRangeColorComponentValue;
     CGFloat legacyScrollbarWidth;
     CGFloat rightExtraPixels;
     CGFloat panelReservationPixels;
@@ -133,7 +133,6 @@ typedef struct {
     iTermCursorRenderer *_blockCursorRenderer;
     iTermCursorRenderer *_frameCursorRenderer;
     iTermCopyModeCursorRenderer *_copyModeCursorRenderer;
-    iTermCopyBackgroundRenderer *_copyBackgroundRenderer;
     iTermImageRenderer *_imageRenderer;
     iTermCopyToDrawableRenderer *_copyToDrawableRenderer;
     iTermBlockRenderer *_blockRenderer;
@@ -229,13 +228,10 @@ typedef struct {
         _blockCursorRenderer = [iTermCursorRenderer newBlockCursorRendererWithDevice:device];
         _frameCursorRenderer = [iTermCursorRenderer newFrameCursorRendererWithDevice:device];
         _copyModeCursorRenderer = [iTermCursorRenderer newCopyModeCursorRendererWithDevice:device];
-        _copyBackgroundRenderer = [[iTermCopyBackgroundRenderer alloc] initWithDevice:device];
         _copyToDrawableRenderer = [[iTermCopyToDrawableRenderer alloc] initWithDevice:device];
         _blockRenderer = [[iTermBlockRenderer alloc] initWithDevice:device];
-        if (@available(macOS 11, *)) {
-            _pillBackgroundRenderer = [[iTermPillBackgroundRenderer alloc] initWithDevice:device];
-            _terminalButtonRenderer = [[iTermTerminalButtonRenderer alloc] initWithDevice:device];
-        }
+        _pillBackgroundRenderer = [[iTermPillBackgroundRenderer alloc] initWithDevice:device];
+        _terminalButtonRenderer = [[iTermTerminalButtonRenderer alloc] initWithDevice:device];
         _rectangleRenderer = [[iTermRectangleRenderer alloc] initWithDevice:device];
         _underlineRenderer = [[iTermUnderlineRenderer alloc] initWithDevice:device];
         _underlineCompositeRenderer = [[iTermUnderlineCompositeRenderer alloc] initWithDevice:device];
@@ -486,7 +482,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
     });
 }
 
-- (MTLCaptureDescriptor *)triggerProgrammaticCapture:(id<MTLDevice>)device NS_AVAILABLE_MAC(10_15) {
+- (MTLCaptureDescriptor *)triggerProgrammaticCapture:(id<MTLDevice>)device {
     MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
     MTLCaptureDescriptor* captureDescriptor = [[MTLCaptureDescriptor alloc] init];
     NSString *filename = [NSString stringWithFormat:@"/tmp/%@.gputrace", [[NSUUID UUID] UUIDString]];
@@ -515,9 +511,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         [self scheduleDrawIfNeededInView:view];
         return NO;
     }
-    if (@available(macOS 10.15, *)) {
-        self.mainThreadState->maximumExtendedDynamicRangeColorComponentValue = view.window.screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
-    }
+    self.mainThreadState->maximumExtendedDynamicRangeColorComponentValue = view.window.screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
 
 #if ENABLE_FLAKY_METAL
 #warning DO NOT SUBMIT - FLAKY MODE ENABLED
@@ -566,9 +560,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
 
     if (self.captureDebugInfoForNextFrame) {
         frameData.debugInfo = [[iTermMetalDebugInfo alloc] init];
-        if (@available(macOS 10.15, *)) {
-            frameData.captureDescriptor = [self triggerProgrammaticCapture:frameData.device];
-        }
+        frameData.captureDescriptor = [self triggerProgrammaticCapture:frameData.device];
         self.captureDebugInfoForNextFrame = NO;
     }
     if (_total > 1) {
@@ -668,9 +660,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                                                   pointInsets.bottom * scale,
                                                   pointInsets.right * scale);
         frameData.vmargin = [iTermPreferences topBottomMargins];
-        if (@available(macOS 10.15, *)) {
-            frameData.maximumExtendedDynamicRangeColorComponentValue = self.mainThreadState->maximumExtendedDynamicRangeColorComponentValue;
-        }
+        frameData.maximumExtendedDynamicRangeColorComponentValue = self.mainThreadState->maximumExtendedDynamicRangeColorComponentValue;
     }];
     return frameData;
 }
@@ -689,15 +679,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
     [frameData measureTimeForStat:iTermMetalFrameDataStatPqBuildRowData ofBlock:^{
         [self addRowDataToFrameData:frameData];
     }];
-
-    // If we're rendering to an intermediate texture because there's something complicated
-    // behind text and we need to use the fancy subpixel antialiasing algorithm, create it now.
-    // This has to be done before updates so the copyBackgroundRenderer's `enabled` flag can be
-    // set properly.
-    if (!iTermTextIsMonochrome()) {
-        [frameData createIntermediateRenderPassDescriptor];
-        [frameData createTemporaryRenderPassDescriptor];
-    }
 
     // Set properties of the renderers for values that tend not to change very often and which
     // are used to create transient states. This must happen before creating transient states
@@ -809,14 +790,10 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
     }
 }
 
-- (BOOL)shouldCreateIntermediateRenderPassDescriptor:(iTermMetalFrameData *)frameData {
-    return !iTermTextIsMonochrome();
-}
-
 - (void)updateRenderersForNewFrameData:(iTermMetalFrameData *)frameData {
     [self updateTextRendererForFrameData:frameData];
     [self updateBackgroundImageRendererForFrameData:frameData];
-    [self updateCopyBackgroundRendererForFrameData:frameData];
+    [self updateCopyToDrawableRendererForFrameData:frameData];
     [self updateBadgeRendererForFrameData:frameData];
     [self updateBroadcastStripesRendererForFrameData:frameData];
     [self updateCursorGuideRendererForFrameData:frameData];
@@ -873,7 +850,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
 - (void)populateTransientStatesWithFrameData:(iTermMetalFrameData *)frameData
                                        range:(NSRange)range {
     [self populateMarginRendererTransientStateWithFrameData:frameData];
-    [self populateCopyBackgroundRendererTransientStateWithFrameData:frameData];
+    [self populateCopyToDrawableRendererTransientStateWithFrameData:frameData];
     [self populateCursorRendererTransientStateWithFrameData:frameData];
     [self populateTextAndBackgroundRenderersTransientStateWithFrameData:frameData];
     [self populateBadgeRendererTransientStateWithFrameData:frameData];
@@ -885,9 +862,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
     [self populateImageRendererTransientStateWithFrameData:frameData];
     [self populateBackgroundImageRendererTransientStateWithFrameData:frameData];
     [self populateBlockRendererTransientStateWithFrameData:frameData];
-    if (@available(macOS 11, *)) {
-        [self populateTerminalButtonRendererTransientStateWithFrameData:frameData];
-    }
+    [self populateTerminalButtonRendererTransientStateWithFrameData:frameData];
     [self populateRectangleRendererTransientStateWithFrameData:frameData];
     [self populateUnderlineRendererTransientStateWithFrameData:frameData];
     [self populateUnderlineCompositeRendererTransientStateWithFrameData:frameData];
@@ -1005,25 +980,10 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                        commandBuffer:(id<MTLCommandBuffer>)commandBuffer {
     DLog(@"  enqueueDrawCallsForFrameData %@", frameData);
 
-    NSString *firstLabel;
-    if (frameData.intermediateRenderPassDescriptor) {
-        firstLabel = @"Draw content behind text";
-    } else {
-        firstLabel = @"Draw bg and text";
-    }
     [self updateRenderEncoderForCurrentPass:frameData
-                                      label:firstLabel];
+                                      label:@"Draw bg and text"];
 
     [self drawContentBehindTextWithFrameData:frameData];
-
-    // If we're using an intermediate render pass, copy from it to the view for final steps.
-    if (frameData.intermediateRenderPassDescriptor) {
-        frameData.currentPass = frameData.currentPass + 1;
-        [self updateRenderEncoderForCurrentPass:frameData label:@"Copy bg and render text"];
-        [self drawRenderer:_copyBackgroundRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueCopyBackground];
-    }
 
     const BOOL useMultiPassUnderlines = ([iTermAdvancedSettingsModel useMultiPassUnderlineRenderer] &&
                                          frameData.hasUnderlines);
@@ -1355,11 +1315,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                                context:frameData.framePoolContext];
 }
 
-- (void)updateCopyBackgroundRendererForFrameData:(iTermMetalFrameData *)frameData {
-    if (_copyBackgroundRenderer.rendererDisabled) {
-        return;
-    }
-    _copyBackgroundRenderer.enabled = (frameData.intermediateRenderPassDescriptor != nil);
+- (void)updateCopyToDrawableRendererForFrameData:(iTermMetalFrameData *)frameData {
     // Enable copy-to-drawable when using deferred drawable acquisition
     _copyToDrawableRenderer.enabled = frameData.deferCurrentDrawable;
     _underlineCompositeRenderer.enabled = [iTermAdvancedSettingsModel useMultiPassUnderlineRenderer];
@@ -1416,21 +1372,12 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
 
 #pragma mark - Populate Transient States
 
-- (void)populateCopyBackgroundRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
-    if (_copyBackgroundRenderer.rendererDisabled) {
-        return;
-    }
-    // Copy state
-    iTermCopyBackgroundRendererTransientState *copyState = [frameData transientStateForRenderer:_copyBackgroundRenderer];
-    copyState.sourceTexture = frameData.intermediateRenderPassDescriptor.colorAttachments[0].texture;
-
+- (void)populateCopyToDrawableRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
     iTermCopyToDrawableRendererTransientState *dState = [frameData transientStateForRenderer:_copyToDrawableRenderer];
-    if (frameData.deferCurrentDrawable && iTermTextIsMonochrome()) {
-        // In monochrome deferred mode, we render to renderPassDescriptor (an offscreen texture)
+    if (frameData.deferCurrentDrawable) {
+        // In deferred mode, we render to renderPassDescriptor (an offscreen texture)
         // and need to copy from it to the drawable.
         dState.sourceTexture = frameData.renderPassDescriptor.colorAttachments[0].texture;
-    } else {
-        dState.sourceTexture = frameData.temporaryRenderPassDescriptor.colorAttachments[0].texture;
     }
 }
 
@@ -1561,9 +1508,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         _expireNonASCIIGlyphs = NO;
         [textState expireNonASCIIGlyphs];
     }
-
-    // Set the background texture if one is available.
-    textState.backgroundTexture = frameData.intermediateRenderPassDescriptor.colorAttachments[0].texture;
 
     // Configure underlines
     iTermMetalUnderlineDescriptor asciiUnderlineDescriptor;
@@ -2241,40 +2185,18 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
 - (void)updateRenderEncoderForCurrentPass:(iTermMetalFrameData *)frameData
                                     label:(NSString *)label {
     const int pass = frameData.currentPass;
+    assert(pass >= 0 && pass <= 2);
 
-    BOOL useTemporaryTexture;
-    if (iTermTextIsMonochrome()) {
-        useTemporaryTexture = NO;
-    } else {
-        useTemporaryTexture = YES;
-    }
-    
-    NSArray<MTLRenderPassDescriptor *> *descriptors;
     iTermMetalFrameDataStat stats[3] = {
         iTermMetalFrameDataStatPqEnqueueDrawCreateFirstRenderEncoder,
         iTermMetalFrameDataStatPqEnqueueDrawCreateSecondRenderEncoder,
         iTermMetalFrameDataStatPqEnqueueDrawCreateThirdRenderEncoder,
     };
-    if (useTemporaryTexture) {
-        assert(pass >= 0 && pass <= 2);
 
-        descriptors =
-            @[ frameData.intermediateRenderPassDescriptor ?: frameData.temporaryRenderPassDescriptor,
-               frameData.temporaryRenderPassDescriptor,
-               frameData.renderPassDescriptor ];
-    } else {
-        // No temporary texture. Pass 2 is still valid for deferred drawable copy.
-        assert(pass >= 0 && pass <= 2);
-        descriptors =
-        @[ frameData.intermediateRenderPassDescriptor ?: frameData.renderPassDescriptor,
-           frameData.renderPassDescriptor,
-           frameData.renderPassDescriptor ];
-    }
-
-    [frameData updateRenderEncoderWithRenderPassDescriptor:descriptors[pass]
+    [frameData updateRenderEncoderWithRenderPassDescriptor:frameData.renderPassDescriptor
                                                       stat:stats[pass]
                                                      label:label];
-    frameData.destinationTexture = [descriptors[pass].colorAttachments[0] texture];
+    frameData.destinationTexture = [frameData.renderPassDescriptor.colorAttachments[0] texture];
 }
 
 - (void)drawCursorBeforeTextWithFrameData:(iTermMetalFrameData *)frameData {
@@ -2396,21 +2318,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
     }
 
     [self drawCursorBeforeTextWithFrameData:frameData];
-
-    if (!iTermTextIsMonochrome()) {
-        // This is weird but intentional! We draw the offscreen background twice. The first one gets
-        // encoded into the background that the second one samples for subpixel AA. Exactly the
-        // same renderer is used both times.
-        [self drawRenderer:_offscreenCommandLineBackgroundRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineBgPre];
-    }
-    
-    if (frameData.intermediateRenderPassDescriptor) {
-        [frameData measureTimeForStat:iTermMetalFrameDataStatPqEnqueueDrawEndEncodingToIntermediateTexture ofBlock:^{
-            [frameData.renderEncoder endEncoding];
-        }];
-    }
 }
 
 // This is horribly slow but it's only for debug capturing a frame.
@@ -2472,11 +2379,7 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
 - (void)finishDrawingWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                              frameData:(iTermMetalFrameData *)frameData {
     DLog(@"Finish drawing frameData %@", frameData);
-    BOOL shouldCopyToDrawable = YES;
-
-    if (iTermTextIsMonochromeOnMojave()) {
-        shouldCopyToDrawable = NO;
-    }
+    BOOL shouldCopyToDrawable = NO;
 
     if (frameData.deferCurrentDrawable) {
         if ([self deferredRequestCurrentDrawableWithCommandBuffer:commandBuffer frameData:frameData]) {
@@ -2574,12 +2477,10 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
         DLog(@"first time completed %@", frameData);
         if (frameData.debugInfo) {
             DLog(@"have debug info %@", frameData);
-            if (@available(macOS 10.15, *)) {
-                if (frameData.captureDescriptor) {
-                    MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
-                    [captureManager stopCapture];
-                    [frameData.debugInfo addMetalCapture:frameData.captureDescriptor.outputURL];
-                }
+            if (frameData.captureDescriptor) {
+                MTLCaptureManager* captureManager = [MTLCaptureManager sharedCaptureManager];
+                [captureManager stopCapture];
+                [frameData.debugInfo addMetalCapture:frameData.captureDescriptor.outputURL];
             }
             NSData *archive = [frameData.debugInfo newArchive];
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -2683,7 +2584,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
     return @[ _backgroundImageRenderer,
               _offscreenCommandLineBackgroundRenderer,
               _badgeRenderer,
-              _copyBackgroundRenderer,
               _underlineCompositeRenderer,
               _indicatorRenderer,
               _flashRenderer,

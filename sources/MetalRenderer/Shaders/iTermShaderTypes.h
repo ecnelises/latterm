@@ -19,9 +19,6 @@ typedef enum iTermTextureIndex {
 
     // A texture containing the background we're drawing over.
     iTermTextureIndexBackground = 1,
-
-    // Texture with subpixel model data for blending.
-    iTermTextureIndexSubpixelModels = 2,
 } iTermTextureIndex;
 
 typedef enum {

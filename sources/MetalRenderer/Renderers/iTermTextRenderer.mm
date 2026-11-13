@@ -17,7 +17,6 @@ extern "C" {
 #import "iTermPIUArray.h"
 #import "iTermTexture.h"
 #import "iTermTexturePageCollection.h"
-#import "iTermSubpixelModelBuilder.h"
 #import "iTermTextRendererTransientState.h"
 #import "iTermTextRendererTransientState+Private.h"
 #import "iTermTextureArray.h"
@@ -38,9 +37,6 @@ static const NSInteger iTermTextAtlasCapacity = 16;
 // non-ascii characters at one time without having to constantly prune and redraw glyphs. That's
 // 64k chars under the current values of 16 and 4096.
 static const int iTermTextRendererMaximumNumberOfTexturePages = 4096;
-
-// True for macOS 10.14+. Means no subpixel antialiasing, so text blending is very simple.
-static BOOL gMonochromeText;
 
 @interface iTermTextRendererCachedQuad : NSObject
 @property (nonatomic, strong) id<MTLBuffer> quad;
@@ -67,7 +63,6 @@ static BOOL gMonochromeText;
 
 @implementation iTermTextRenderer {
     iTermMetalCellRenderer *_cellRenderer;
-    id<MTLTexture> _models;
     iTermASCIITextureGroup *_asciiTextureGroup;
 
     iTermTexturePageCollectionSharedPointer *_texturePageCollectionSharedPointer;
@@ -81,86 +76,6 @@ static BOOL gMonochromeText;
     iTermMetalMixedSizeBufferPool *_piuPool;
 }
 
-/*
- * Input is organized as
- *  Index   Text  Bg   Sample
- *      0     0   0        0
- *                       ...
- *                       255
- *    256         1        0
- *                       ...
- *                       255
- *  256*2         2        0
- *              ...
- * 256*17        17        0
- *                       ...
- *                       255
- * 256*18      1   0       0
- *               ...
- *
- * Output is organized as a 2d texture that lets us use the GPU's bilinear
- * interpolation. It's about 33% faster overall on my iMac.
- *
- *                sample=0 sample=1 ...
- *                text ->  text->
- *  background    0...255  0...255
- *  |        0    XXXXXXX  XXXXXXX     XXXXXXX
- *  V      ...    XXXXXXX  XXXXXXX ... XXXXXXX
- *          17    XXXXXXX  XXXXXXX     XXXXXXX
- *
- * Width = 256 * 18
- * Height = 18
- * Bytes per sample = 1
- */
-+ (NSData *)transformedData:(NSData *)input {
-    const unsigned char *inputBytes = reinterpret_cast<const unsigned char *>(input.bytes);
-    unsigned char (^load)(int, int, int) = ^unsigned char(int text, int background, int bwSample) {
-        const size_t i = 256 * (18 * text + background) + bwSample;
-        return inputBytes[i];
-    };
-
-    NSMutableData *output = [NSMutableData uninitializedDataWithLength:18 * 18 * 256];
-    unsigned char *outputBytes = reinterpret_cast<unsigned char *>(output.mutableBytes);
-    void (^store)(int, int, int, unsigned char) = ^void(int text, int background, int bwSample, unsigned char value) {
-        const size_t i = 18 * (bwSample + 256 * background) + text;
-        outputBytes[i] = value;
-    };
-    for (int t = 0; t < 18; t ++) {
-        for (int b = 0; b < 18; b ++) {
-            for (int s = 0; s < 256; s++) {
-                store(t, b, s, load(t, b, s));
-            }
-        }
-    }
-    return output;
-}
-
-+ (void)enumerateGridOfSubpixelModels:(void (^)(float, float, iTermSubpixelModel *))block {
-    // The fragment function assumes we use the value 17 here. It's
-    // convenient that 17 evenly divides 255 (17 * 15 = 255).
-    float stride = 255.0/17.0;
-    for (float textColor = 0; textColor < 256; textColor += stride) {
-        for (float backgroundColor = 0; backgroundColor < 256; backgroundColor += stride) {
-            iTermSubpixelModel *model = [[iTermSubpixelModelBuilder sharedInstance] modelForForegroundColor:MIN(MAX(0, textColor / 255.0), 1)
-                                                                                           backgroundColor:MIN(MAX(0, backgroundColor / 255.0), 1)];
-            block(textColor, backgroundColor, model);
-        }
-    }
-}
-
-+ (NSData *)subpixelModelData {
-    static NSData *subpixelModelData;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSMutableData *data = [NSMutableData data];
-        [self enumerateGridOfSubpixelModels:^(float textColor, float backgroundColor, iTermSubpixelModel *model) {
-            [data appendData:model.table];
-        }];
-        subpixelModelData = [self transformedData:data];
-    });
-    return subpixelModelData;
-}
-
 - (iTermMetalFrameDataStat)createTransientStateStat {
     return iTermMetalFrameDataStatPqCreateTextTS;
 }
@@ -168,24 +83,11 @@ static BOOL gMonochromeText;
 - (instancetype)initWithDevice:(id<MTLDevice>)device {
     self = [super init];
     if (self) {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            if (iTermTextIsMonochrome()) {
-                gMonochromeText = YES;
-            } else {
-                gMonochromeText = NO;
-            }
-        });
         // NOTE: The vertex and fragment function names get changed later. These aren't used but must be valid.
-        iTermMetalBlending *blending;
-        if (iTermTextIsMonochrome()) {
-            blending = [iTermMetalBlending premultipliedCompositing];
-        } else {
-            blending = [[iTermMetalBlending alloc] init];
-        }
+        iTermMetalBlending *blending = [iTermMetalBlending premultipliedCompositing];
         _cellRenderer = [[iTermMetalCellRenderer alloc] initWithDevice:device
                                                     vertexFunctionName:@"iTermTextVertexShader"
-                                                  fragmentFunctionName:@"iTermTextFragmentShaderWithBlendingEmoji"
+                                                  fragmentFunctionName:@"iTermTextFragmentShaderMonochromeEmoji"
                                                               blending:blending
                                                         piuElementSize:sizeof(iTermTextPIU)
                                                    transientStateClass:[iTermTextRendererTransientState class]];
@@ -207,26 +109,6 @@ static BOOL gMonochromeText;
         _piuPool = [[iTermMetalMixedSizeBufferPool alloc] initWithDevice:device
                                                                 capacity:(maxInstances / capacity) * iTermMetalDriverMaximumNumberOfFramesInFlight
                                                                     name:@"text PIU"];
-
-        if (iTermTextIsMonochrome()) {} else {
-            NSData *subpixelModelData = [iTermTextRenderer subpixelModelData];
-
-            MTLTextureDescriptor *textureDescriptor =
-              [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatR8Unorm
-                                                                 width:18 * 256
-                                                                height:18
-                                                             mipmapped:NO];
-            _models = [_cellRenderer.device newTextureWithDescriptor:textureDescriptor];
-            _models.label = @"Subpixel Models";
-            [_models replaceRegion:MTLRegionMake2D(0, 0, 18 * 256, 18)
-                       mipmapLevel:0
-                         withBytes:subpixelModelData.bytes
-                       bytesPerRow:18 * 256];
-            [iTermTexture setBytesPerRow:18*256
-                             rawDataSize:18 * 256 * 18
-                         samplesPerPixel:1
-                              forTexture:_models];
-        }
     }
     return self;
 }
@@ -338,61 +220,23 @@ static BOOL gMonochromeText;
 static NSString *const FragmentFunctionName(const BOOL &underlined,
                                             const BOOL &emoji) {
     static NSArray<NSString *> *names = @[
-
-        // Subpixel AA
-        @"iTermTextFragmentShaderWithBlending",
-        @"iTermTextFragmentShaderWithBlendingEmoji",
-        @"iTermTextFragmentShaderWithBlendingUnderlined",
-        @"iTermTextFragmentShaderWithBlendingUnderlinedEmoji",
-
-        // Monochrome
-        @"iTermTextFragmentShaderMonochrome",                  // mono regular text
-        @"iTermTextFragmentShaderWithBlendingEmoji",           // mono emoji
-        @"iTermTextFragmentShaderMonochromeUnderlined",        // mono underlined regular text
-        @"iTermTextFragmentShaderMonochromeUnderlinedEmoji" ]; // mono underlined emoji
-    int index = (gMonochromeText ? 4 : 0) | (underlined ? 2 : 0) | (emoji ? 1 : 0);
+        @"iTermTextFragmentShaderMonochrome",                  // regular text
+        @"iTermTextFragmentShaderMonochromeEmoji",             // emoji
+        @"iTermTextFragmentShaderMonochromeUnderlined",        // underlined regular text
+        @"iTermTextFragmentShaderMonochromeUnderlinedEmoji" ]; // underlined emoji
+    const int index = (underlined ? 2 : 0) | (emoji ? 1 : 0);
     return names[index];
 }
 
 static NSString *const VertexFunctionName(const BOOL &underlined,
                                           const BOOL &emoji) {
     static NSArray<NSString *> *names = @[
-        // Subpixel AA (blending=1)
-        @"iTermTextVertexShaderBlending",   // regular text
-        @"iTermTextVertexShaderEmoji",      // emoji
-        @"iTermTextVertexShader",           // underlined regular text
-        @"iTermTextVertexShader",           // underlined emoji
-
-        // Monochrome (10.14+) (blending=0)
-        @"iTermTextVertexShaderMonochrome",  // mono
-        @"iTermTextVertexShaderEmoji",       // mono emoji
-        @"iTermTextVertexShader",            // mono underlined
-        @"iTermTextVertexShader" ];          // mono underlined emoji
-    int index = (gMonochromeText ? 4 : 0) | (underlined ? 2 : 0) | (emoji ? 1 : 0);
+        @"iTermTextVertexShaderMonochrome",  // regular text
+        @"iTermTextVertexShaderEmoji",       // emoji
+        @"iTermTextVertexShader",            // underlined regular text
+        @"iTermTextVertexShader" ];          // underlined emoji
+    const int index = (underlined ? 2 : 0) | (emoji ? 1 : 0);
     return names[index];
-}
-
-- (void)blitFromTemporaryToIntermediateTexture:(iTermMetalFrameData * _Nonnull)frameData {
-    [frameData.renderEncoder endEncoding];
-    
-    id<MTLBlitCommandEncoder> blitter = [frameData.commandBuffer blitCommandEncoder];
-    blitter.label = [NSString stringWithFormat:@"Temporary>Intermediate"];
-    id<MTLTexture> source = frameData.temporaryRenderPassDescriptor.colorAttachments[0].texture;
-    id<MTLTexture> dest = frameData.intermediateRenderPassDescriptor.colorAttachments[0].texture;
-    [blitter copyFromTexture:source
-                 sourceSlice:0
-                 sourceLevel:0
-                sourceOrigin:MTLOriginMake(0, 0, 0)
-                  sourceSize:MTLSizeMake(source.width, source.height, 1)
-                   toTexture:dest
-            destinationSlice:0
-            destinationLevel:0
-           destinationOrigin:MTLOriginMake(0, 0, 0)];
-    [blitter endEncoding];
-    
-    [frameData updateRenderEncoderWithRenderPassDescriptor:frameData.temporaryRenderPassDescriptor
-                                                      stat:iTermMetalFrameDataStatNA
-                                                     label:@"Draw more text"];
 }
 
 - (id<MTLBuffer>)textInfoBufferForTransientState:(iTermTextRendererTransientState *)tState
@@ -453,15 +297,7 @@ static NSString *const VertexFunctionName(const BOOL &underlined,
             piuBuffer = [self piuBufferForPIUs:pius tState:tState instances:instances];
         }];
 
-        NSDictionary *textures;
-        if (iTermTextIsMonochrome()) {
-            textures = @{ @(iTermTextureIndexPrimary): texture };
-        } else {
-            textures = @{ @(iTermTextureIndexPrimary): texture,
-                          @(iTermTextureIndexSubpixelModels): self->_models,
-                          @(iTermTextureIndexBackground): tState.backgroundTexture,
-            };
-        }
+        NSDictionary *textures = @{ @(iTermTextureIndexPrimary): texture };
 
         __block id<MTLBuffer> textureDimensionsBuffer;
         const float underlineThickness = underlineDescriptor.thickness * scale;
@@ -514,17 +350,7 @@ static NSString *const VertexFunctionName(const BOOL &underlined,
                                         fragmentBuffers:fragmentBuffers
                                                textures:textures];
         }];
-    }
-                 copyBlock:^{
-                     if (iTermTextIsMonochrome()) {
-                         // We don't write to a temporary texture on 10.14.
-                         return;
-                     } else {
-                         // Needed for pretty ascii overlap.
-                         [self blitFromTemporaryToIntermediateTexture:frameData];
-                     }
-                 }
-     ];
+    }];
 }
 
 - (void)setASCIICellSize:(CGSize)cellSize
@@ -543,25 +369,6 @@ static NSString *const VertexFunctionName(const BOOL &underlined,
 }
 
 - (void)writeDebugInfoToFolder:(NSURL *)folder {
-    if (iTermTextIsMonochrome()) {
-        return;
-    }
-    NSMutableData *data = [NSMutableData data];
-    [self.class enumerateGridOfSubpixelModels:^(float textColor, float backgroundColor, iTermSubpixelModel *model) {
-        NSString *name = [NSString stringWithFormat:@"SubpixelModelGridBwGlyph.t_%02x.b_%02x.dat",
-                          (int)textColor, (int)backgroundColor];
-        NSURL *url = [folder URLByAppendingPathComponent:name];
-        [model.table writeToURL:url atomically:NO];
-        
-        [data appendData:model.table];
-    }];
-    NSString *name = @"SubpixelModelGridComposite_Untransformed.dat";
-    NSURL *url = [folder URLByAppendingPathComponent:name];
-    [data writeToURL:url atomically:NO];
-    
-    name = @"SubpixelModelGridComposite_Transformed.dat";
-    url = [folder URLByAppendingPathComponent:name];
-    [[self.class transformedData:data] writeToURL:url atomically:NO];
 }
 
 #pragma mark - iTermMetalDebugInfoFormatter

@@ -1541,7 +1541,6 @@
 		A62A794E2F988328007CAA0B /* iTermTextureArray.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A79482F988328007CAA0B /* iTermTextureArray.m */; };
 		A62A794F2F988328007CAA0B /* iTermMetalRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A793F2F988328007CAA0B /* iTermMetalRenderer.m */; };
 		A62A79502F988328007CAA0B /* iTermGlyphCharacterSource.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A791E2F988328007CAA0B /* iTermGlyphCharacterSource.m */; };
-		A62A79512F988328007CAA0B /* iTermSubpixelModelBuilder.mm in Sources */ = {isa = PBXBuildFile; fileRef = A62A79442F988328007CAA0B /* iTermSubpixelModelBuilder.mm */; };
 		A62A79522F988328007CAA0B /* iTermCharacterBitmap.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A792E2F988328007CAA0B /* iTermCharacterBitmap.m */; };
 		A62A79532F988328007CAA0B /* iTermRegularCharacterSource.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A79282F988328007CAA0B /* iTermRegularCharacterSource.m */; };
 		A62A79542F988328007CAA0B /* iTermData.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A79322F988328007CAA0B /* iTermData.m */; };
@@ -1569,7 +1568,6 @@
 		A62A796A2F988328007CAA0B /* iTermTexturePool.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A79492F988328007CAA0B /* iTermTexturePool.h */; };
 		A62A796B2F988328007CAA0B /* iTermCharacterParts.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A792F2F988328007CAA0B /* iTermCharacterParts.h */; };
 		A62A796C2F988328007CAA0B /* iTermMetalPerFrameStateConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A79232F988328007CAA0B /* iTermMetalPerFrameStateConfiguration.h */; };
-		A62A796D2F988328007CAA0B /* iTermSubpixelModelBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A79432F988328007CAA0B /* iTermSubpixelModelBuilder.h */; };
 		A62A796E2F988328007CAA0B /* iTermMetalRowData.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A79402F988328007CAA0B /* iTermMetalRowData.h */; };
 		A62A796F2F988328007CAA0B /* iTermPIUArray.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A79422F988328007CAA0B /* iTermPIUArray.h */; };
 		A62A79702F988328007CAA0B /* GlyphKey.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A792A2F988328007CAA0B /* GlyphKey.h */; };
@@ -2266,7 +2264,6 @@
 		A667193C1DCE36C3000CE608 /* iTermThroughputEstimator.h in Headers */ = {isa = PBXBuildFile; fileRef = A66BFADA1CD072DB00DA2346 /* iTermThroughputEstimator.h */; };
 		A667193E1DCE36C3000CE608 /* NSLocale+iTerm.h in Headers */ = {isa = PBXBuildFile; fileRef = A6EFF21A1D1CA9F800806EEF /* NSLocale+iTerm.h */; };
 		A66719401DCE36C3000CE608 /* iTermOpenQuicklyCommands.h in Headers */ = {isa = PBXBuildFile; fileRef = A66DB8341C8E4CBB00233E88 /* iTermOpenQuicklyCommands.h */; };
-		A66719411DCE36C3000CE608 /* iTermSystemVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = A6FC49841C3A31840061B3BA /* iTermSystemVersion.h */; };
 		A66719441DCE36C3000CE608 /* iTermHotKeyProfileBindingController.h in Headers */ = {isa = PBXBuildFile; fileRef = A67778B21CFD4A7300DEED78 /* iTermHotKeyProfileBindingController.h */; };
 		A66719451DCE36C3000CE608 /* iTermSavePanel.h in Headers */ = {isa = PBXBuildFile; fileRef = A667F3951B4F71AE00705186 /* iTermSavePanel.h */; };
 		A66719471DCE36C3000CE608 /* NSTableColumn+iTerm.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DA1C1F01A2E49A3007381D3 /* NSTableColumn+iTerm.h */; };
@@ -4132,8 +4129,6 @@
 		A6F981CC1C13783C00EE0B80 /* iTermCPS.h in Headers */ = {isa = PBXBuildFile; fileRef = A6F981CB1C13783C00EE0B80 /* iTermCPS.h */; };
 		A6F9821F2CA775E200229070 /* RoundedRectView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D085F9D16F137D900B7FCE9 /* RoundedRectView.m */; };
 		A6FBEFC12C361BAA00FA73BD /* UserDefaultsUnsavedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FBEFC02C361BAA00FA73BD /* UserDefaultsUnsavedController.swift */; };
-		A6FC49861C3A31840061B3BA /* iTermSystemVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = A6FC49841C3A31840061B3BA /* iTermSystemVersion.h */; };
-		A6FC49871C3A31840061B3BA /* iTermSystemVersion.m in Sources */ = {isa = PBXBuildFile; fileRef = A6FC49851C3A31840061B3BA /* iTermSystemVersion.m */; };
 		A6FC49881C3A44390061B3BA /* iTermPrintAccessoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D4BAFEA1BFE77E4004FF52B /* iTermPrintAccessoryViewController.m */; };
 		A6FCAF65250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6FCAF63250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.h */; };
 		A6FCAF66250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A6FCAF64250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.m */; };
@@ -5786,8 +5781,6 @@
 		A62A79402F988328007CAA0B /* iTermMetalRowData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermMetalRowData.h; sourceTree = "<group>"; };
 		A62A79412F988328007CAA0B /* iTermMetalRowData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermMetalRowData.m; sourceTree = "<group>"; };
 		A62A79422F988328007CAA0B /* iTermPIUArray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermPIUArray.h; sourceTree = "<group>"; };
-		A62A79432F988328007CAA0B /* iTermSubpixelModelBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSubpixelModelBuilder.h; sourceTree = "<group>"; };
-		A62A79442F988328007CAA0B /* iTermSubpixelModelBuilder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = iTermSubpixelModelBuilder.mm; sourceTree = "<group>"; };
 		A62A79452F988328007CAA0B /* iTermTexture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermTexture.h; sourceTree = "<group>"; };
 		A62A79462F988328007CAA0B /* iTermTexture.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermTexture.m; sourceTree = "<group>"; };
 		A62A79472F988328007CAA0B /* iTermTextureArray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermTextureArray.h; sourceTree = "<group>"; };
@@ -7587,8 +7580,6 @@
 		A6F7F8052763F47B005E433E /* VT100ScreenState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VT100ScreenState.m; sourceTree = "<group>"; };
 		A6F981CB1C13783C00EE0B80 /* iTermCPS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermCPS.h; sourceTree = "<group>"; };
 		A6FBEFC02C361BAA00FA73BD /* UserDefaultsUnsavedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsUnsavedController.swift; sourceTree = "<group>"; };
-		A6FC49841C3A31840061B3BA /* iTermSystemVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermSystemVersion.h; sourceTree = "<group>"; };
-		A6FC49851C3A31840061B3BA /* iTermSystemVersion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermSystemVersion.m; sourceTree = "<group>"; };
 		A6FCAF63250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermModifyOtherKeysMapper.h; sourceTree = "<group>"; };
 		A6FCAF64250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermModifyOtherKeysMapper.m; sourceTree = "<group>"; };
 		A6FCB6081C6714230019184E /* iTermFullScreenWindowManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermFullScreenWindowManager.h; sourceTree = "<group>"; };
@@ -9802,8 +9793,6 @@
 				A62A79412F988328007CAA0B /* iTermMetalRowData.m */,
 				A696AB3921603A3F000023C3 /* iTermMetalUnavailableReason.h */,
 				A62A79422F988328007CAA0B /* iTermPIUArray.h */,
-				A62A79432F988328007CAA0B /* iTermSubpixelModelBuilder.h */,
-				A62A79442F988328007CAA0B /* iTermSubpixelModelBuilder.mm */,
 				A62A79452F988328007CAA0B /* iTermTexture.h */,
 				A62A79462F988328007CAA0B /* iTermTexture.m */,
 				A62A79472F988328007CAA0B /* iTermTextureArray.h */,
@@ -12427,8 +12416,6 @@
 				5337A314203E065300024BEA /* iTermPowerManager.m */,
 				A636C3AF2288887600A83E2F /* iTermResourceLimitsHelper.h */,
 				A636C3B02288887600A83E2F /* iTermResourceLimitsHelper.c */,
-				A6FC49841C3A31840061B3BA /* iTermSystemVersion.h */,
-				A6FC49851C3A31840061B3BA /* iTermSystemVersion.m */,
 				D55D72FD7220B5B06612565F /* iTermOpenDirectory+MainApp.h */,
 				3C05599DA2E4F97B75124672 /* iTermOpenDirectory+MainApp.m */,
 			);
@@ -13607,7 +13594,6 @@
 				A62A796A2F988328007CAA0B /* iTermTexturePool.h in Headers */,
 				A62A796B2F988328007CAA0B /* iTermCharacterParts.h in Headers */,
 				A62A796C2F988328007CAA0B /* iTermMetalPerFrameStateConfiguration.h in Headers */,
-				A62A796D2F988328007CAA0B /* iTermSubpixelModelBuilder.h in Headers */,
 				A62A796E2F988328007CAA0B /* iTermMetalRowData.h in Headers */,
 				A62A796F2F988328007CAA0B /* iTermPIUArray.h in Headers */,
 				A62A79702F988328007CAA0B /* GlyphKey.h in Headers */,
@@ -13839,7 +13825,6 @@
 				A6024B79254C93DA0036D6CF /* NSSet+iTerm.h in Headers */,
 				A6F22ABF2396326200C5D1A9 /* iTermSyntheticConfParser.h in Headers */,
 				537BFDC920FFB2590098C91F /* iTermProcessCache.h in Headers */,
-				A66719411DCE36C3000CE608 /* iTermSystemVersion.h in Headers */,
 				A61A85AD24F23CBD00B03880 /* iTermGlobalSearchResult.h in Headers */,
 				A653F68B24CF4FE60062377E /* iTermGraphDatabase.h in Headers */,
 				A663196F22FE651D00C502BD /* iTermFileDescriptorMultiClient+MRR.h in Headers */,
@@ -14117,7 +14102,6 @@
 				A6CEC1211DCE8146009F4FD2 /* GPBExtensionRegistry.h in Headers */,
 				A6DC814C285CF45C0050788C /* GPBType.pbobjc.h in Headers */,
 				A6A723652DBAE1F300A8115D /* VT100ByteStream.h in Headers */,
-				A6FC49861C3A31840061B3BA /* iTermSystemVersion.h in Headers */,
 				A6DC8134285CF3E80050788C /* GPBAny.pbobjc.h in Headers */,
 				A6DC8138285CF3E80050788C /* GPBApi.pbobjc.h in Headers */,
 				A67778B41CFD4A7300DEED78 /* iTermHotKeyProfileBindingController.h in Headers */,
@@ -16467,7 +16451,6 @@
 				A62A794E2F988328007CAA0B /* iTermTextureArray.m in Sources */,
 				A62A794F2F988328007CAA0B /* iTermMetalRenderer.m in Sources */,
 				A62A79502F988328007CAA0B /* iTermGlyphCharacterSource.m in Sources */,
-				A62A79512F988328007CAA0B /* iTermSubpixelModelBuilder.mm in Sources */,
 				A62A79522F988328007CAA0B /* iTermCharacterBitmap.m in Sources */,
 				A62A79532F988328007CAA0B /* iTermRegularCharacterSource.m in Sources */,
 				A62A79542F988328007CAA0B /* iTermData.m in Sources */,
@@ -17739,7 +17722,6 @@
 				A6C763581B45C52B00E3C992 /* iTermOpenQuicklyView.m in Sources */,
 				A6C763231B45C52B00E3C992 /* MovePaneController.m in Sources */,
 				A67778CD1CFFAE8D00DEED78 /* NSApplication+iTerm.m in Sources */,
-				A6FC49871C3A31840061B3BA /* iTermSystemVersion.m in Sources */,
 				A6CEBFBC1DCE7E09009F4FD2 /* Api.pbobjc.m in Sources */,
 				A6FF4AF0246D10D900410BA2 /* iTermThreadSafety.m in Sources */,
 				A6C7638D1B45C52B00E3C992 /* ProfileTagsView.m in Sources */,
@@ -18162,11 +18144,11 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CODE_SIGN_FLAGS = "--timestamp";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Nightly;
@@ -18174,7 +18156,7 @@
 		1809E7B11665E2CB0069C439 /* Nightly */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iTerm2 App Icon for Nightly";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
@@ -18225,7 +18207,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_COMPILER_FLAGS = "";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -18249,7 +18231,7 @@
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -18273,7 +18255,7 @@
 					"$(SRCROOT)/ThirdParty/ProtobufRuntime",
 					"$(SRCROOT)/sources/proto",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(SRCROOT)/it2cli/InApp/ProtobufRuntime.modulemap -Xcc -I$(SRCROOT)/ThirdParty/ProtobufRuntime -Xcc -I$(SRCROOT)/sources/proto";
 				PRODUCT_MODULE_NAME = it2core;
@@ -18332,7 +18314,7 @@
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
 				LINK_WITH_STANDARD_LIBRARIES = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				"OTHER_CFLAGS[arch=*]" = "-DITERM_DEBUG=1";
 				OTHER_CODE_SIGN_FLAGS = "";
@@ -18347,7 +18329,7 @@
 				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -18403,7 +18385,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				"OTHER_CFLAGS[arch=*]" = "";
 				OTHER_LDFLAGS = (
@@ -18416,7 +18398,7 @@
 				PRODUCT_NAME = iTerm2ForApplescriptTesting;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -18472,7 +18454,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				OTHER_LDFLAGS = (
 					"-laprutil-1",
@@ -18484,7 +18466,7 @@
 				PRODUCT_NAME = iTerm2ForApplescriptTesting;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -18557,7 +18539,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
@@ -18572,7 +18554,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-shorten-64-to-32",
@@ -18637,7 +18619,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				OTHER_LDFLAGS = (
@@ -18651,7 +18633,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-shorten-64-to-32",
@@ -18716,7 +18698,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				OTHER_LDFLAGS = (
@@ -18730,7 +18712,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-shorten-64-to-32",
@@ -18744,7 +18726,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -18777,13 +18759,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CODE_SIGN_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Development;
 		};
@@ -18791,7 +18773,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -18819,11 +18801,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Deployment;
 		};
@@ -18831,7 +18813,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -18859,11 +18841,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Nightly;
 		};
@@ -18876,7 +18858,7 @@
 					"$(SRCROOT)/ThirdParty/ProtobufRuntime",
 					"$(SRCROOT)/sources/proto",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(SRCROOT)/it2cli/InApp/ProtobufRuntime.modulemap -Xcc -I$(SRCROOT)/ThirdParty/ProtobufRuntime -Xcc -I$(SRCROOT)/sources/proto";
 				PRODUCT_MODULE_NAME = it2core;
@@ -18954,7 +18936,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -18968,7 +18950,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "iTerm2SandboxedWorker/iTerm2SandboxedWorker-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Development;
 		};
@@ -19031,7 +19013,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DSANDBOXED_WORKER";
@@ -19042,7 +19024,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "iTerm2SandboxedWorker/iTerm2SandboxedWorker-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Deployment;
 		};
@@ -19105,7 +19087,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DSANDBOXED_WORKER";
@@ -19116,7 +19098,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "iTerm2SandboxedWorker/iTerm2SandboxedWorker-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Beta;
 		};
@@ -19179,7 +19161,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DSANDBOXED_WORKER";
@@ -19190,7 +19172,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "iTerm2SandboxedWorker/iTerm2SandboxedWorker-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Nightly;
 		};
@@ -19247,7 +19229,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -19255,7 +19237,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Development;
 		};
@@ -19306,13 +19288,13 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Deployment;
 		};
@@ -19363,13 +19345,13 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Beta;
 		};
@@ -19420,13 +19402,13 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Nightly;
 		};
@@ -19472,11 +19454,11 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CODE_SIGN_FLAGS = "--timestamp";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Beta;
@@ -19484,7 +19466,7 @@
 		A656E9891F970C7200158128 /* Beta */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iTerm2 App Icon for Beta";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
@@ -19534,7 +19516,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_COMPILER_FLAGS = "";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -19555,7 +19537,7 @@
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -19625,7 +19607,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				OTHER_CODE_SIGN_FLAGS = "--deep";
 				OTHER_LDFLAGS = (
@@ -19638,7 +19620,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-shorten-64-to-32",
@@ -19652,7 +19634,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -19680,11 +19662,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Beta;
 		};
@@ -19731,7 +19713,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				"OTHER_CFLAGS[arch=*]" = "";
 				OTHER_LDFLAGS = (
@@ -19743,7 +19725,7 @@
 				PRODUCT_NAME = iTerm2ForApplescriptTesting;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -19760,7 +19742,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -19799,7 +19781,7 @@
 					ThirdParty,
 					"$(SRCROOT)/ColorPicker/ColorPicker/include",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				"OTHER_CFLAGS[arch=*]" = "-DBETA=1";
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
@@ -19809,7 +19791,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wpartial-availability",
@@ -19869,7 +19851,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -19878,7 +19860,7 @@
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -19890,7 +19872,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -19935,7 +19917,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CFLAGS = (
 					"-DBETA=1",
 					"-DITERM2_SHARED_ARC=1",
@@ -19953,7 +19935,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -19966,7 +19948,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20015,7 +19997,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -20024,7 +20006,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-gnu-folding-constant",
@@ -20036,7 +20018,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20079,14 +20061,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DITERM_SERVER=1";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-gnu-folding-constant",
@@ -20098,7 +20080,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20141,14 +20123,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DITERM_SERVER=1";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-gnu-folding-constant",
@@ -20160,7 +20142,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20203,14 +20185,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DITERM_SERVER=1";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-gnu-folding-constant",
@@ -20222,7 +20204,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -20271,7 +20253,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DBETA=1",
@@ -20294,7 +20276,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -20307,7 +20289,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -20352,7 +20334,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CFLAGS = "-DITERM2_SHARED_ARC=1";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -20367,7 +20349,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -20380,7 +20362,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -20424,7 +20406,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CFLAGS = (
 					"-DBETA=1",
 					"-DITERM2_SHARED_ARC=1",
@@ -20442,7 +20424,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -20455,7 +20437,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20510,7 +20492,7 @@
 					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)_$(_BOOL_$(SKIP_INSTALL)))",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -20524,7 +20506,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Development;
 		};
@@ -20532,7 +20514,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20582,7 +20564,7 @@
 					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)_$(_BOOL_$(SKIP_INSTALL)))",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
@@ -20594,7 +20576,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Deployment;
 		};
@@ -20602,7 +20584,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20652,7 +20634,7 @@
 					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)_$(_BOOL_$(SKIP_INSTALL)))",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
@@ -20664,7 +20646,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Beta;
 		};
@@ -20672,7 +20654,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -20722,7 +20704,7 @@
 					"$(LD_RUNPATH_SEARCH_PATHS_$(IS_MACCATALYST)_$(_BOOL_$(SKIP_INSTALL)))",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = (
@@ -20734,7 +20716,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Nightly;
 		};
@@ -20808,7 +20790,7 @@
 					"@loader_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -20894,7 +20876,7 @@
 					"@loader_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -20978,7 +20960,7 @@
 					"@loader_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -21062,7 +21044,7 @@
 					"@loader_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
@@ -21146,7 +21128,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -21160,7 +21142,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Development;
 		};
@@ -21222,7 +21204,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -21234,7 +21216,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Deployment;
 		};
@@ -21296,7 +21278,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -21308,7 +21290,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Beta;
 		};
@@ -21370,7 +21352,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -21382,7 +21364,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 			};
 			name = Nightly;
 		};
@@ -21710,7 +21692,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -21753,7 +21735,7 @@
 					ThirdParty,
 					"$(SRCROOT)/ColorPicker/ColorPicker/include",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
 					"-DBETA=1",
@@ -21769,7 +21751,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wpartial-availability",
@@ -21784,7 +21766,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -21823,7 +21805,7 @@
 					ThirdParty,
 					"$(SRCROOT)/ColorPicker/ColorPicker/include",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
 				PRODUCT_NAME = iTerm2Shared;
@@ -21832,7 +21814,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wpartial-availability",
@@ -21847,7 +21829,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -21885,7 +21867,7 @@
 					ThirdParty,
 					"$(SRCROOT)/ColorPicker/ColorPicker/include",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CFLAGS = "-DBETA=1";
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "-no_warning_for_no_symbols";
@@ -21895,7 +21877,7 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 6.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wpartial-availability",
@@ -21962,7 +21944,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CODE_SIGN_FLAGS = "";
@@ -21973,7 +21955,7 @@
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -22030,7 +22012,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -22039,7 +22021,7 @@
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -22096,7 +22078,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -22105,7 +22087,7 @@
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Latterm.app/Contents/MacOS/Latterm";
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -22116,7 +22098,7 @@
 		BB024D36096EE4080021E793 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iTerm2 App Icon for Nightly";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
@@ -22168,7 +22150,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				LINK_WITH_STANDARD_LIBRARIES = YES;
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_COMPILER_FLAGS = "-MO -gline-tables-only";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -22194,7 +22176,7 @@
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -22212,7 +22194,7 @@
 		BB024D37096EE4080021E793 /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD)";
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iTerm2 App Icon for Release";
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
@@ -22262,7 +22244,7 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MARKETING_VERSION = 1.0;
 				MTL_COMPILER_FLAGS = "";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -22283,7 +22265,7 @@
 				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(CONFIGURATION_TEMP_DIR)/iTerm2SharedARC.build/DerivedSources";
 				USE_HEADERMAP = NO;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = (
 					"-Wextra",
 					"-Wall",
@@ -22346,12 +22328,12 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_PROFILING_CODE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CODE_SIGN_FLAGS = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Development;
@@ -22398,12 +22380,12 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				OTHER_CODE_SIGN_FLAGS = "--timestamp";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
+				VALID_ARCHS = arm64;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Deployment;
@@ -22417,7 +22399,7 @@
 					"$(SRCROOT)/ThirdParty/ProtobufRuntime",
 					"$(SRCROOT)/sources/proto",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(SRCROOT)/it2cli/InApp/ProtobufRuntime.modulemap -Xcc -I$(SRCROOT)/ThirdParty/ProtobufRuntime -Xcc -I$(SRCROOT)/sources/proto";
 				PRODUCT_MODULE_NAME = it2core;
@@ -22439,7 +22421,7 @@
 					"$(SRCROOT)/ThirdParty/ProtobufRuntime",
 					"$(SRCROOT)/sources/proto",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(SRCROOT)/it2cli/InApp/ProtobufRuntime.modulemap -Xcc -I$(SRCROOT)/ThirdParty/ProtobufRuntime -Xcc -I$(SRCROOT)/sources/proto";
 				PRODUCT_MODULE_NAME = it2core;

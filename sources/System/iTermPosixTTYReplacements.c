@@ -31,8 +31,7 @@
 
 // https://gitlab.com/gnachman/iterm2/-/issues/10360
 // https://web.archive.org/web/20240208193541/https://www.qt.io/blog/the-curious-case-of-the-responsible-process
-int responsibility_spawnattrs_setdisclaim(posix_spawnattr_t attrs, int disclaim)
-    API_AVAILABLE(macosx(10.14));
+int responsibility_spawnattrs_setdisclaim(posix_spawnattr_t attrs, int disclaim);
 
 const int kNumFileDescriptorsToDup = NUM_FILE_DESCRIPTORS_TO_PASS_TO_SERVER;
 
@@ -471,7 +470,7 @@ static void iTermSpawnInitializeActions(const char *argpath,
                                         posix_spawn_file_actions_t *actionsPtr,
                                         const int *fds,
                                         int numFds,
-                                        const char *initialPwd) API_AVAILABLE(macosx(10.15)) {
+                                        const char *initialPwd) {
     int rc = posix_spawn_file_actions_init(actionsPtr);
     if (rc != 0) {
         iTermSpawnFailed(argpath, errorFd, "posix_spawn_file_actions_init", rc);
@@ -601,7 +600,7 @@ pid_t iTermSpawn(const char *argpath,
                 char **newEnviron,
                 int errorFd,
                 int disclaim,
-                int fork) API_AVAILABLE(macosx(10.15)) {
+                int fork) {
     posix_spawnattr_t attrs;
     if (!iTermSpawnInitializeAttrs(argpath, errorFd, &attrs, disclaim, fork)) {
         _exit(0);

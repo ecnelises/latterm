@@ -198,13 +198,13 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 @property(nonatomic, assign) int ordinal;
 @property(nonatomic, readonly, nullable) iTermAnnouncementViewController *currentAnnouncement;
 @property(nonatomic, weak, nullable) id<iTermSessionViewDelegate> delegate;
-@property(nonatomic, readonly, nullable) iTermSearchResultsMinimapView *searchResultsMinimap NS_AVAILABLE_MAC(10_14);
-@property(nonatomic, readonly, nullable) iTermIncrementalMinimapView *marksMinimap NS_AVAILABLE_MAC(10_14);
+@property(nonatomic, readonly, nullable) iTermSearchResultsMinimapView *searchResultsMinimap;
+@property(nonatomic, readonly, nullable) iTermIncrementalMinimapView *marksMinimap;
 @property(nonatomic, readonly) PTYScrollView *scrollview;
 @property(nonatomic, readonly, nullable) PTYScroller *verticalScroller;
-@property(nonatomic, readonly, nullable) iTermMetalDriver *driver NS_AVAILABLE_MAC(10_11);
-@property(nonatomic, readonly, nullable) iTermMTKView *metalView NS_AVAILABLE_MAC(10_11);
-@property(nonatomic, readonly) BOOL useMetal NS_AVAILABLE_MAC(10_11);
+@property(nonatomic, readonly, nullable) iTermMetalDriver *driver;
+@property(nonatomic, readonly, nullable) iTermMTKView *metalView;
+@property(nonatomic, readonly) BOOL useMetal;
 
 @property(nonatomic, readonly) BOOL isDropDownSearchVisible;
 @property(nonatomic, weak, nullable) id<iTermFindDriverDelegate> findDriverDelegate;
@@ -218,7 +218,7 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 // Clickable toolbar, title or status controls overlapping window coordinates.
 - (BOOL)clickableDecorationIntersectsWindowRect:(NSRect)rect;
 @property(nonatomic, readonly) iTermSessionViewFindDriver findDriverType;
-@property(nonatomic, weak, nullable) id<iTermSearchResultsMinimapViewDelegate> searchResultsMinimapViewDelegate NS_AVAILABLE_MAC(10_14);
+@property(nonatomic, weak, nullable) id<iTermSearchResultsMinimapViewDelegate> searchResultsMinimapViewDelegate;
 @property(nonatomic, strong, nullable) iTermImageWrapper *image;
 @property(nonatomic) iTermBackgroundImageMode imageMode;
 @property(nonatomic, readonly) BOOL statusBarIsInPaneTitleBar;
@@ -229,11 +229,8 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 @property(nonatomic, strong, nullable) NSNumber *preferredWidth;
 @property(nonatomic, readonly) CGFloat desiredRightExtra;
 
-// For macOS 10.14+ when subpixel AA is OFF, this draws the default background color. When there's
-// a background image it will be translucent to effect blending. When subpixel AA is ON or the OS
-// is 10.13 or earlier then this is hidden. It can't be used with subpixel AA because macOS isn't
-// able to take the color it's drawing over into account when choosing the subpixel colors and it
-// looks horrible.
+// This draws the default background color. When there's a background image it will be translucent
+// to effect blending.
 @property(nonatomic, strong) iTermSessionBackgroundColorView *backgroundColorView;
 
 // How far the metal view extends beyond the visible part of the viewport, such as under the title
@@ -270,7 +267,7 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 
 - (void)findViewDidHide;
 - (void)findDriverInvalidateFrame;
-- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource NS_AVAILABLE_MAC(10_11);;
+- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource;
 - (void)didChangeMetalViewAlpha;
 - (void)setTransparencyAlpha:(CGFloat)transparencyAlpha
                        blend:(CGFloat)blend;
@@ -360,7 +357,7 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
 - (void)smearCursorFrom:(NSRect)from to:(NSRect)to color:(NSColor *)color;
 
 // Uses the Metal debug offscreen rendering path to capture a frame as an NSImage.
-- (nullable NSImage *)drawMetalFrameToImage NS_AVAILABLE_MAC(10_11);
+- (nullable NSImage *)drawMetalFrameToImage;
 
 // Session note
 - (void)showSessionNoteWithModel:(iTermSessionNoteModel *)model;

@@ -80,7 +80,7 @@ struct CompanionPlugin {
             throw PluginError(reason: "Companion plugin code is not valid UTF-8")
         }
         let signatureURL = bundleURL.appendingPathComponent("Contents/Resources/iTermCompanionPlugin.sig")
-        guard let signatureB64 = try? String(contentsOf: signatureURL),
+        guard let signatureB64 = try? String(contentsOf: signatureURL, encoding: .utf8),
               let signature = Data(base64Encoded: signatureB64.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             throw PluginError(reason: "Companion plugin signature missing or malformed")
         }

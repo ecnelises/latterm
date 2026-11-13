@@ -167,8 +167,6 @@ static CFStringRef _strip_trailing_slash_from_path(CFStringRef path);
 {
         pthread_mutex_lock(&_eventsLock);
         
-        _runLoop = [runLoop getCFRunLoop];
-        
     if ([paths count] == 0 || _isWatchingPaths) {
                 pthread_mutex_unlock(&_eventsLock);
                 
@@ -179,8 +177,14 @@ static CFStringRef _strip_trailing_slash_from_path(CFStringRef path);
     
         _eventStream = _create_events_stream(self, ((CFArrayRef)_watchedPaths), _notificationLatency, _resumeFromEventId);
     
-    // Schedule the event stream on the supplied run loop
-    FSEventStreamScheduleWithRunLoop(_eventStream, _runLoop, kCFRunLoopDefaultMode);
+    dispatch_queue_t queue;
+    if (runLoop == [NSRunLoop mainRunLoop] || (runLoop == nil && [NSThread isMainThread])) {
+        queue = dispatch_get_main_queue();
+    } else {
+        _dispatchQueue = dispatch_queue_create("com.sc.SCEvents", DISPATCH_QUEUE_SERIAL);
+        queue = _dispatchQueue;
+    }
+    FSEventStreamSetDispatchQueue(_eventStream, queue);
     
     // Start the event stream
     FSEventStreamStart(_eventStream);
@@ -210,10 +214,12 @@ static CFStringRef _strip_trailing_slash_from_path(CFStringRef path);
         }
             
     FSEventStreamStop(_eventStream);
-        
-        if (_runLoop) FSEventStreamUnscheduleFromRunLoop(_eventStream, _runLoop, kCFRunLoopDefaultMode);
-        
+    FSEventStreamSetDispatchQueue(_eventStream, NULL);
     FSEventStreamInvalidate(_eventStream);
+    if (_dispatchQueue) {
+        dispatch_release(_dispatchQueue);
+        _dispatchQueue = NULL;
+    }
         
     if (_eventStream) {
         FSEventStreamRelease(_eventStream);

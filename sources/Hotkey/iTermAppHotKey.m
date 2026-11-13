@@ -72,7 +72,7 @@
         iTermController *controller = [iTermController sharedInstance];
         int numberOfTerminals = [controller numberOfTerminals];
         RLog(@"Activate app");
-        [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+        [NSApp activate];
         if (numberOfTerminals == 0) {
             RLog(@"Make new window");
             [controller newWindow:nil];

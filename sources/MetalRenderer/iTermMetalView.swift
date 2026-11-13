@@ -29,7 +29,7 @@ public class iTermMetalView: NSView {
     private var frameInterval: Int = 0
     private var sizeDirty: Bool = false
     private var drawableScaleFactor: CGSize = .zero
-    private var displayLink: CVDisplayLink?
+    private var displayLink: CADisplayLink?
     private var currentInterval: Int = 0
     private nonisolated let displaySource = MutableAtomicObject<DispatchSourceUserDataAdd?>(nil)
     private static var drawRectSuperIMP: IMP?
@@ -102,15 +102,7 @@ public class iTermMetalView: NSView {
 
     @objc public var paused: Bool = false {
         didSet {
-            if paused {
-                if let displayLink {
-                    CVDisplayLinkStop(displayLink)
-                }
-            } else {
-                if let displayLink {
-                    CVDisplayLinkStart(displayLink)
-                }
-            }
+            displayLink?.isPaused = paused
         }
     }
 
@@ -224,10 +216,9 @@ public class iTermMetalView: NSView {
         // delegate when the display link fires; a dangling delegate causes a
         // NULL-block crash in _Block_copy.
         metalLayerBox?.delegate = nil
-        if let displayLink {
-            CVDisplayLinkStop(displayLink)
-            displaySource.value?.cancel()
-        }
+        displayLink?.invalidate()
+        displayLink = nil
+        displaySource.value?.cancel()
     }
 }
 
@@ -537,7 +528,7 @@ extension iTermMetalView {
             self?.draw()
         }))
         displaySource.value?.resume()
-        createCVDisplayLink()
+        createDisplayLink()
         if Self.drawRectSuperIMP == nil {
             Self.drawRectSuperIMP =  NSView.instanceMethod(for: #selector(draw(_:)))
         }
@@ -550,25 +541,21 @@ extension iTermMetalView {
         resizeDrawable()
     }
 
-    private func createCVDisplayLink() {
-        if displayLink == nil {
-            if CVDisplayLinkCreateWithActiveCGDisplays(&displayLink) == 0 {
-                if let displayLink,
-                   let displaySource = displaySource.value,
-                   CVDisplayLinkSetOutputCallback(displayLink, DisplayLinkCallback, Unmanaged.passUnretained(displaySource).toOpaque()) == 0 {
-                    if CVDisplayLinkSetCurrentCGDisplay(displayLink, CGMainDisplayID()) ==  kCVReturnSuccess {
-                        if !paused {
-                            CVDisplayLinkStart(displayLink)
-                        }
-                        NotificationCenter.default.addObserver(self, selector: #selector(_windowWillClose(_:)), name: NSWindow.willCloseNotification, object: window)
-                        preferredFramesPerSecond = calculateRefreshesPerSecond()
-                        return
-                    }
-                }
-            }
+    private func createDisplayLink() {
+        guard displayLink == nil else {
+            return
         }
-        displayLink = nil
-        return
+        let target = DisplayLinkTarget(self)
+        let link = self.displayLink(target: target, selector: #selector(DisplayLinkTarget.step(_:)))
+        link.isPaused = paused
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+        NotificationCenter.default.addObserver(self, selector: #selector(_windowWillClose(_:)), name: NSWindow.willCloseNotification, object: window)
+        preferredFramesPerSecond = calculateRefreshesPerSecond()
+    }
+
+    fileprivate func displayLinkDidFire(_ sender: CADisplayLink) {
+        displaySource.value?.add(data: 1)
     }
 
     private func pixelSize(fromPointSize pointSize: CGSize) -> CGSize {
@@ -612,9 +599,8 @@ extension iTermMetalView {
         guard notification.object as? NSWindow === window else {
             return
         }
-        if let displayLink {
-            CVDisplayLinkStop(displayLink)
-        }
+        displayLink?.invalidate()
+        displayLink = nil
         displaySource.value?.cancel()
     }
 
@@ -822,13 +808,11 @@ extension iTermMetalView {
     open override func viewWillMove(toWindow newWindow: NSWindow?) {
         super.viewWillMove(toWindow: newWindow)
         if newWindow == nil {
-            // Stop the CVDisplayLink and clear the layer delegate when leaving
+            // Pause the display link and clear the layer delegate when leaving
             // a window. This prevents AppKit's _NSDisplayLinkForwarder (macOS 26)
             // from firing a callback through a stale layer delegate after the
             // view is detached from the window.
-            if let displayLink {
-                CVDisplayLinkStop(displayLink)
-            }
+            displayLink?.isPaused = true
             metalLayerBox?.delegate = nil
         }
     }
@@ -839,9 +823,7 @@ extension iTermMetalView {
             // Restore the layer delegate and restart display link when
             // entering a window.
             metalLayerBox?.delegate = self
-            if !paused, let displayLink {
-                CVDisplayLinkStart(displayLink)
-            }
+            displayLink?.isPaused = paused
         }
         // Recalculate drawable size now that we're in a window, since convertToBacking()
         // uses the main display's scale factor when the view has no window.
@@ -921,19 +903,14 @@ extension iTermMetalView: CALayerDelegate {
     }
 }
 
-fileprivate func DisplayLinkCallback(displayLink: CVDisplayLink,
-                                        inNow: UnsafePointer<CVTimeStamp>,
-                                        inOutputTime: UnsafePointer<CVTimeStamp>,
-                                        flagsIn: CVOptionFlags,
-                                        flagsOut: UnsafeMutablePointer<CVOptionFlags>,
-                                        displayLinkContext: UnsafeMutableRawPointer?) -> CVReturn {
-    guard let context = displayLinkContext else {
-        return kCVReturnError
+private final class DisplayLinkTarget: NSObject {
+    weak var owner: iTermMetalView?
+
+    init(_ owner: iTermMetalView) {
+        self.owner = owner
     }
 
-    let unmanagedDisplaySource = Unmanaged<DispatchSourceUserDataAdd>.fromOpaque(context)
-    let displaySource = unmanagedDisplaySource.takeUnretainedValue()
-
-    displaySource.add(data: 1)
-    return kCVReturnSuccess
+    @MainActor @objc func step(_ sender: CADisplayLink) {
+        owner?.displayLinkDidFire(sender)
+    }
 }

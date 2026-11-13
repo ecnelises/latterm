@@ -13,7 +13,7 @@
 #import "PSMTabStyle.h"
 #import "PSMTabDragWindow.h"
 #import <os/signpost.h>
-#import <CoreVideo/CoreVideo.h>
+#import <QuartzCore/QuartzCore.h>
 #import <sys/time.h>
 
 #if PSM_DEBUG_DRAG_PERFORMANCE
@@ -47,23 +47,17 @@ static os_log_t PSMTabDragLog(void) {
 - (void)displayLinkDidFire;
 @end
 
-// CVDisplayLink callback - runs on a background thread, so we need to get to main thread
-// Using CFRunLoopPerformBlock with event tracking mode since dispatch_async doesn't work well during drags
-static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
-                                    const CVTimeStamp *now,
-                                    const CVTimeStamp *outputTime,
-                                    CVOptionFlags flagsIn,
-                                    CVOptionFlags *flagsOut,
-                                    void *context) {
-    @autoreleasepool {
-        PSMTabDragAssistant *assistant = (__bridge PSMTabDragAssistant *)context;
-        CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, ^{
-            [assistant displayLinkDidFire];
-        });
-        CFRunLoopWakeUp(CFRunLoopGetMain());
-    }
-    return kCVReturnSuccess;
+// Proxy avoids a retain cycle between CADisplayLink (which retains its target) and self.
+@interface PSMTabDragDisplayLinkTarget : NSObject
+@property (nonatomic, assign) PSMTabDragAssistant *assistant;
+@end
+
+@implementation PSMTabDragDisplayLinkTarget
+- (void)step:(CADisplayLink *)sender {
+    (void)sender;
+    [_assistant displayLinkDidFire];
 }
+@end
 
 @implementation PSMTabDragAssistant {
     PSMTabBarControl *_destinationTabBar;
@@ -90,8 +84,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
     BOOL _dragThresholdExceeded;
     BOOL _dragWindowOriginInitialized;
 
-    // CVDisplayLink for tracking mouse during drag (bypasses NSDraggingSession throttling)
-    CVDisplayLinkRef _displayLink;
+    // CADisplayLink for tracking mouse during drag (bypasses NSDraggingSession throttling)
+    CADisplayLink *_displayLink;
+    PSMTabDragDisplayLinkTarget *_displayLinkTarget;
     NSPoint _lastPolledMouseLocation;
 
 #if PSM_DEBUG_DRAG_PERFORMANCE
@@ -134,9 +129,13 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)dealloc {
     if (_displayLink) {
-        CVDisplayLinkStop(_displayLink);
-        CVDisplayLinkRelease(_displayLink);
+        _displayLinkTarget.assistant = nil;
+        [_displayLink invalidate];
+        [_displayLink release];
+        _displayLink = nil;
     }
+    [_displayLinkTarget release];
+    _displayLinkTarget = nil;
     [_sourceTabBar release];
     [_destinationTabBar release];
     [_participatingTabBars release];
@@ -282,13 +281,21 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
 #endif
     _lastPolledMouseLocation = NSZeroPoint;
 
-    // Create CVDisplayLink for display-synchronized mouse tracking
+    // Create CADisplayLink for display-synchronized mouse tracking
 #if PSM_DEBUG_DRAG_PERFORMANCE
-    NSLog(@"[PSMTabDrag] Starting CVDisplayLink for mouse tracking");
+    NSLog(@"[PSMTabDrag] Starting CADisplayLink for mouse tracking");
 #endif
-    CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
-    CVDisplayLinkSetOutputCallback(_displayLink, &DisplayLinkCallback, (__bridge void *)self);
-    CVDisplayLinkStart(_displayLink);
+    if (_displayLink) {
+        _displayLinkTarget.assistant = nil;
+        [_displayLink invalidate];
+        [_displayLink release];
+        _displayLink = nil;
+    }
+    [_displayLinkTarget release];
+    _displayLinkTarget = [[PSMTabDragDisplayLinkTarget alloc] init];
+    _displayLinkTarget.assistant = self;
+    _displayLink = [[control displayLinkWithTarget:_displayLinkTarget selector:@selector(step:)] retain];
+    [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
 
 #if PSM_DEBUG_DRAG_PERFORMANCE
     // Create timestamp overlay window for debugging
@@ -821,17 +828,20 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self closeTimestampWindow];
 #endif
 
-    // Stop CVDisplayLink and log final stats
+    // Stop CADisplayLink and log final stats
     if (_displayLink) {
 #if PSM_DEBUG_DRAG_PERFORMANCE
         double elapsed = _pollingFirstEventTime > 0 ? (CACurrentMediaTime() - _pollingFirstEventTime) : 0;
         double avgRate = elapsed > 0 ? (_pollingEventCount / elapsed) : 0;
-        NSLog(@"[PSMTabDrag] Stopping CVDisplayLink. Total updates: %d over %.2fs (avg %.1f updates/sec)",
+        NSLog(@"[PSMTabDrag] Stopping CADisplayLink. Total updates: %d over %.2fs (avg %.1f updates/sec)",
               _pollingEventCount, elapsed, avgRate);
 #endif
-        CVDisplayLinkStop(_displayLink);
-        CVDisplayLinkRelease(_displayLink);
-        _displayLink = NULL;
+        _displayLinkTarget.assistant = nil;
+        [_displayLink invalidate];
+        [_displayLink release];
+        _displayLink = nil;
+        [_displayLinkTarget release];
+        _displayLinkTarget = nil;
     }
 
     [[self sourceTabBar] dragDidFinish];

@@ -71,7 +71,6 @@ class ConductorRegistry {
     }
 }
 
-@available(macOS 11, *)
 extension ConductorRegistry: SSHFilePanelDataSource {
     func remoteFilePanelSSHEndpoints(for identity: SSHIdentity) -> [SSHEndpoint] {
         return self[identity].filter { $0.delegate != nil }

@@ -175,11 +175,10 @@
     self = [super init];
     if (self) {
         _texturePool = [[iTermTexturePool alloc] init];
-        iTermMetalBlending *blending = [[iTermMetalBlending alloc] init];
 #if ENABLE_TRANSPARENT_METAL_WINDOWS
-        if (iTermTextIsMonochrome()) {
-            blending = [iTermMetalBlending atop];  // IS THIS RIGHT EVERYWEHRE?
-        }
+        iTermMetalBlending *blending = [iTermMetalBlending atop];
+#else
+        iTermMetalBlending *blending = [[iTermMetalBlending alloc] init];
 #endif
         _cellRenderer = [[iTermMetalCellRenderer alloc] initWithDevice:device
                                                     vertexFunctionName:@"iTermTimestampsVertexShader"

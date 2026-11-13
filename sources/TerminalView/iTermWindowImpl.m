@@ -93,34 +93,32 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)preventTitlebarDivider {
-    if (@available(macOS 10.16, *)) {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            static IMP originalImp;
-            originalImp =
-            [iTermSelectorSwizzler permanentlySwizzleSelector:@selector(_updateDividerLayerForController:animated:)
-                                                    fromClass:NSClassFromString(@"NSTitlebarContainerView")
-                                                    withBlock:^(id receiver, id controller, BOOL animated) {
-                void (*f)(id, SEL, id, BOOL) = (void (*)(id, SEL, id, BOOL))originalImp;
-                if (![controller respondsToSelector:@selector(window)]) {
-                    f(receiver, @selector(_updateDividerLayerForController:animated:), controller, animated);
-                    return;
-                }
-                NSWindow<PTYWindow> *window = (NSWindow<PTYWindow> *)[controller window];
-                if (![window conformsToProtocol:@protocol(PTYWindow)]) {
-                    f(receiver, @selector(_updateDividerLayerForController:animated:), controller, animated);
-                    return;
-                }
-
-                [window setUpdatingDividerLayer:YES];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        static IMP originalImp;
+        originalImp =
+        [iTermSelectorSwizzler permanentlySwizzleSelector:@selector(_updateDividerLayerForController:animated:)
+                                                fromClass:NSClassFromString(@"NSTitlebarContainerView")
+                                                withBlock:^(id receiver, id controller, BOOL animated) {
+            void (*f)(id, SEL, id, BOOL) = (void (*)(id, SEL, id, BOOL))originalImp;
+            if (![controller respondsToSelector:@selector(window)]) {
                 f(receiver, @selector(_updateDividerLayerForController:animated:), controller, animated);
-                [window setUpdatingDividerLayer:NO];
-            }];
-        });
-    }
+                return;
+            }
+            NSWindow<PTYWindow> *window = (NSWindow<PTYWindow> *)[controller window];
+            if (![window conformsToProtocol:@protocol(PTYWindow)]) {
+                f(receiver, @selector(_updateDividerLayerForController:animated:), controller, animated);
+                return;
+            }
+
+            [window setUpdatingDividerLayer:YES];
+            f(receiver, @selector(_updateDividerLayerForController:animated:), controller, animated);
+            [window setUpdatingDividerLayer:NO];
+        }];
+    });
 }
 
-- (NSTitlebarSeparatorStyle)titlebarSeparatorStyle NS_AVAILABLE_MAC(10_16) {
+- (NSTitlebarSeparatorStyle)titlebarSeparatorStyle {
     if (_updatingDividerLayer) {
         id<PTYWindow> ptywindow = (id<PTYWindow>)self;
         if ([ptywindow.ptyDelegate terminalWindowShouldHaveTitlebarSeparator]) {
@@ -248,10 +246,8 @@ ITERM_WEAKLY_REFERENCEABLE
     }
     CGSSetWindowBackgroundBlurRadiusFunction* function = GetCGSSetWindowBackgroundBlurRadiusFunction();
     if (function) {
-        if (@available(macOS 10.16, *)) {
-            if (radius >= 1) {
-                _minBlur = 1;
-            }
+        if (radius >= 1) {
+            _minBlur = 1;
         }
         DLog(@"enable blur with radius %@ for window %@", @(MAX(_minBlur, radius)), self);
         function(con, [self windowNumber], (int)MAX(_minBlur, radius));
@@ -581,7 +577,7 @@ ITERM_WEAKLY_REFERENCEABLE
 
 - (void)_resizeFromWindowManagerWithTargetGeometry:(id)geometry
                                       springSettings:(id)springSettings
-                                          completion:(id)completion NS_AVAILABLE_MAC(15_0) {
+                                          completion:(id)completion {
     _resizingForTilingCount += 1;
     RLog(@"incr _resizingForTilingCount to %@", @(_resizingForTilingCount));
     [super _resizeFromWindowManagerWithTargetGeometry:geometry

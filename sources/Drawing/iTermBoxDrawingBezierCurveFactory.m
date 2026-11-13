@@ -858,16 +858,13 @@ typedef NS_OPTIONS(NSUInteger, iTermPowerlineDrawingOptions) {
     }
 
     NSString *path = [[NSBundle bundleForClass:self] pathForResource:pdfName ofType:@"pdf"];
-    NSImage *image;
-    NSImageRep *imageRep;
-
-    if (path) {
-        NSData* pdfData = [NSData dataWithContentsOfFile:path];
-        imageRep = [NSPDFImageRep imageRepWithData:pdfData];
-    } else {
-        path = [[NSBundle bundleForClass:self] pathForResource:pdfName ofType:@"eps"];
-        NSData *data = [NSData dataWithContentsOfFile:path];
-        imageRep = [NSEPSImageRep imageRepWithData:data];
+    if (!path) {
+        return nil;
+    }
+    NSData *pdfData = [NSData dataWithContentsOfFile:path];
+    NSImageRep *imageRep = [NSPDFImageRep imageRepWithData:pdfData];
+    if (!imageRep || imageRep.size.height == 0 || imageRep.size.width == 0) {
+        return nil;
     }
 
     double cellProportion = cellSize.width / cellSize.height;
@@ -883,8 +880,8 @@ typedef NS_OPTIONS(NSUInteger, iTermPowerlineDrawingOptions) {
         cellWidth = cellHeight * imageRep.size.width / imageRep.size.height;
     }
 
-    image = [[NSImage alloc] initWithSize:NSMakeSize(cellWidth,
-                                                     cellHeight)];
+    NSImage *image = [[NSImage alloc] initWithSize:NSMakeSize(cellWidth,
+                                                              cellHeight)];
     [image addRepresentation:imageRep];
 
     return image;

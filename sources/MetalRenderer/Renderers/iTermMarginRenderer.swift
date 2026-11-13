@@ -18,13 +18,11 @@ class iTermMarginRendererTransientState: iTermMetalCellRendererTransientState {
 }
 
 final class iTermMarginRenderer: NSObject, iTermMetalCellRendererProtocol {
-    private let blendingRenderer: iTermMetalCellRenderer
-    private let nonblendingRenderer: iTermMetalCellRenderer?
-    private let compositeOverRenderer: iTermMetalCellRenderer?
+    private let nonblendingRenderer: iTermMetalCellRenderer
+    private let compositeOverRenderer: iTermMetalCellRenderer
 
-    private let blendingRendererForPIUs: iTermMetalCellRenderer
-    private let nonblendingRendererForPIUs: iTermMetalCellRenderer?
-    private let compositeOverRendererForPIUs: iTermMetalCellRenderer?
+    private let nonblendingRendererForPIUs: iTermMetalCellRenderer
+    private let compositeOverRendererForPIUs: iTermMetalCellRenderer
 
     private let colorPool: iTermMetalBufferPool
     private let fourQuadVerticesPool: iTermMetalBufferPool
@@ -34,56 +32,33 @@ final class iTermMarginRenderer: NSObject, iTermMetalCellRendererProtocol {
 
     @objc(initWithDevice:)
     init(device: MTLDevice) {
-        if iTermTextIsMonochrome() {
-            nonblendingRenderer = iTermMetalCellRenderer(
-                device: device,
-                vertexFunctionName: "iTermMarginVertexShader",
-                fragmentFunctionName: "iTermMarginFragmentShader",
-                blending: nil,
-                piuElementSize: 0,
-                transientStateClass: iTermMarginRendererTransientState.self)
-            compositeOverRenderer = iTermMetalCellRenderer(
-                device: device,
-                vertexFunctionName: "iTermMarginVertexShader",
-                fragmentFunctionName: "iTermMarginFragmentShader",
-                blending: iTermMetalBlending.premultipliedCompositing(),
-                piuElementSize: 0,
-                transientStateClass: iTermMarginRendererTransientState.self)
-
-            nonblendingRendererForPIUs = iTermMetalCellRenderer(
-                device: device,
-                vertexFunctionName: "iTermMarginPIUVertexShader",
-                fragmentFunctionName: "iTermMarginPIUFragmentShader",
-                blending: nil,
-                piuElementSize: 0,
-                transientStateClass: iTermMarginRendererTransientState.self)
-            compositeOverRendererForPIUs = iTermMetalCellRenderer(
-                device: device,
-                vertexFunctionName: "iTermMarginPIUVertexShader",
-                fragmentFunctionName: "iTermMarginPIUFragmentShader",
-                blending: iTermMetalBlending.premultipliedCompositing(),
-                piuElementSize: 0,
-                transientStateClass: iTermMarginRendererTransientState.self)
-        } else {
-            nonblendingRenderer = nil
-            compositeOverRenderer = nil
-            nonblendingRendererForPIUs = nil
-            compositeOverRendererForPIUs = nil
-        }
-
-        blendingRenderer = iTermMetalCellRenderer(
+        nonblendingRenderer = iTermMetalCellRenderer(
             device: device,
             vertexFunctionName: "iTermMarginVertexShader",
             fragmentFunctionName: "iTermMarginFragmentShader",
-            blending: iTermMetalBlending(),
+            blending: nil,
+            piuElementSize: 0,
+            transientStateClass: iTermMarginRendererTransientState.self)!
+        compositeOverRenderer = iTermMetalCellRenderer(
+            device: device,
+            vertexFunctionName: "iTermMarginVertexShader",
+            fragmentFunctionName: "iTermMarginFragmentShader",
+            blending: iTermMetalBlending.premultipliedCompositing(),
             piuElementSize: 0,
             transientStateClass: iTermMarginRendererTransientState.self)!
 
-        blendingRendererForPIUs = iTermMetalCellRenderer(
+        nonblendingRendererForPIUs = iTermMetalCellRenderer(
             device: device,
             vertexFunctionName: "iTermMarginPIUVertexShader",
             fragmentFunctionName: "iTermMarginPIUFragmentShader",
-            blending: iTermMetalBlending(),
+            blending: nil,
+            piuElementSize: 0,
+            transientStateClass: iTermMarginRendererTransientState.self)!
+        compositeOverRendererForPIUs = iTermMetalCellRenderer(
+            device: device,
+            vertexFunctionName: "iTermMarginPIUVertexShader",
+            fragmentFunctionName: "iTermMarginPIUFragmentShader",
+            blending: iTermMetalBlending.premultipliedCompositing(),
             piuElementSize: 0,
             transientStateClass: iTermMarginRendererTransientState.self)!
 
@@ -102,23 +77,17 @@ final class iTermMarginRenderer: NSObject, iTermMetalCellRendererProtocol {
 
     func renderer(for configuration: iTermCellRenderConfiguration, forPIUs: Bool) -> iTermMetalCellRenderer {
         if forPIUs {
-            if iTermTextIsMonochrome() {
-                if configuration.hasBackgroundImage {
-                    return compositeOverRendererForPIUs!
-                } else {
-                    return nonblendingRendererForPIUs!
-                }
+            if configuration.hasBackgroundImage {
+                return compositeOverRendererForPIUs
+            } else {
+                return nonblendingRendererForPIUs
             }
-            return blendingRendererForPIUs
         } else {
-            if iTermTextIsMonochrome() {
-                if configuration.hasBackgroundImage {
-                    return compositeOverRenderer!
-                } else {
-                    return nonblendingRenderer!
-                }
+            if configuration.hasBackgroundImage {
+                return compositeOverRenderer
+            } else {
+                return nonblendingRenderer
             }
-            return blendingRenderer
         }
     }
 
@@ -210,11 +179,9 @@ final class iTermMarginRenderer: NSObject, iTermMetalCellRendererProtocol {
         var result = Array<iTermMarginExtensionPIU>()
         for e in sorted {
             var color = e.color
-            if iTermTextIsMonochrome() {
-                color.x *= color.w
-                color.y *= color.w
-                color.z *= color.w
-            }
+            color.x *= color.w
+            color.y *= color.w
+            color.z *= color.w
             result.append(.init(
                 color: color,
                 defaultBackgroundColor: defaultColor,
@@ -237,11 +204,9 @@ final class iTermMarginRenderer: NSObject, iTermMetalCellRendererProtocol {
         }
         let numberOfVertices = initializeRegularVertexBuffer(tState: transientState, draw: draw)
         var color = transientState.regularHorizontalColor
-        if iTermTextIsMonochrome() {
-            color.x *= color.w
-            color.y *= color.w
-            color.z *= color.w
-        }
+        color.x *= color.w
+        color.y *= color.w
+        color.z *= color.w
         let colorBuffer = colorPool.requestBuffer(
             from: transientState.poolContext,
             withBytes: &color,

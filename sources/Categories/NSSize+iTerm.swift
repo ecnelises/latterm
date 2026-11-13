@@ -19,13 +19,6 @@ extension NSSize {
     }
 }
 
-extension NSSize: @retroactive Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(width)
-        hasher.combine(height)
-    }
-}
-
 extension NSSize {
     func multiplied(by other: NSSize) -> NSSize {
         return NSSize(width: width * other.width, height: height * other.height)

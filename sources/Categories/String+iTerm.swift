@@ -102,7 +102,7 @@ extension String {
     }
 
     func linesInFileContents() throws -> [String] {
-        return try String(contentsOf: URL(fileURLWithPath: self)).components(separatedBy: .newlines)
+        return try String(contentsOf: URL(fileURLWithPath: self), encoding: .utf8).components(separatedBy: .newlines)
     }
 
     func trimmingLeadingCharacters(in charset: CharacterSet) -> Substring {

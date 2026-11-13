@@ -48,7 +48,7 @@
     
     BOOL                 _isWatchingPaths;
     BOOL                 _ignoreEventsFromSubDirs;
-	CFRunLoopRef         _runLoop;
+    dispatch_queue_t     _dispatchQueue;
     FSEventStreamRef     _eventStream;
     CFTimeInterval       _notificationLatency;
 	FSEventStreamEventId _resumeFromEventId;

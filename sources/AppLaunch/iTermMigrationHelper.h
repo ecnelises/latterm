@@ -27,10 +27,10 @@ typedef NS_ENUM(NSUInteger, iTermMigrationHelperShouldRemoveDeprecatedKeyMapping
 + (void)recursiveMigrateBookmarks:(NSDictionary*)node path:(NSArray*)path;
 
 // If this was never called before, check if there's anything with a bad keymapping. If there was one and we have never asked, then ask.
-+ (void)askToRemoveDeprecatedKeyMappingsIfNeeded NS_AVAILABLE_MAC(15);
++ (void)askToRemoveDeprecatedKeyMappingsIfNeeded;
 
 // Just ask. Remember the response.
-+ (BOOL)askToRemoveDeprecatedKeyMappings:(NSString *)specialReason NS_AVAILABLE_MAC(15);
++ (BOOL)askToRemoveDeprecatedKeyMappings:(NSString *)specialReason;
 
 // Returns nil if the key mapping is valid or a modified keymapping without deprecated mappings otherwise.
 + (NSDictionary *)keyMappingsByRemovingDeprecatedKeyMappingsFrom:(NSDictionary *)input;

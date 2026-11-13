@@ -111,7 +111,6 @@
 #import "iTermSquash.h"
 #import "iTermSwiftyString.h"
 #import "iTermSwiftyStringGraph.h"
-#import "iTermSystemVersion.h"
 #import "iTermTabBarAccessoryViewController.h"
 #import "iTermTabBarControlView.h"
 #import "iTermTheme.h"
@@ -329,7 +328,7 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
     // the window's frame.
     BOOL hidingToolbeltShouldResizeWindowInitialized_;
 
-    iTermTabBarAccessoryViewController *_titleBarAccessoryTabBarViewController NS_AVAILABLE_MAC(10_14);
+    iTermTabBarAccessoryViewController *_titleBarAccessoryTabBarViewController;
 
     // Number of tabs since last change.
     NSInteger _previousNumberOfTabs;
@@ -5234,7 +5233,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     return [self tabBarInsetsForCompactWindow];
 }
 
-- (NSEdgeInsets)tabBarInsetsForCompactWindow NS_AVAILABLE_MAC(10_14) {
+- (NSEdgeInsets)tabBarInsetsForCompactWindow {
     CGFloat stoplightButtonsWidth = 75;
     if (@available(macOS 26, *)) {
         stoplightButtonsWidth += 3;
@@ -6092,7 +6091,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     } else {
         [CATransaction begin];
         [CATransaction setDisableActions:YES];
-        self.contentView.backgroundImage.hidden = !iTermTextIsMonochrome() || (self.contentView.backgroundImage.image == nil);
+        self.contentView.backgroundImage.hidden = (self.contentView.backgroundImage.image == nil);
         const CGFloat transparency = 1 - self.currentSession.textview.transparencyAlpha;
         self.contentView.backgroundImage.transparency = transparency;
         self.contentView.backgroundImage.blend = self.currentSession.desiredBlend;
@@ -6277,7 +6276,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     [self updateUseMetalInAllTabs];
 }
 
-- (NSTitlebarAccessoryViewController *)titleBarAccessoryTabBarViewController NS_AVAILABLE_MAC(10_14) {
+- (NSTitlebarAccessoryViewController *)titleBarAccessoryTabBarViewController {
     if (!_titleBarAccessoryTabBarViewController) {
         _titleBarAccessoryTabBarViewController = [[iTermTabBarAccessoryViewController alloc] initWithView:[_contentView borrowTabBarControl]];
         _titleBarAccessoryTabBarViewController.layoutAttribute = NSLayoutAttributeBottom;
@@ -6299,26 +6298,15 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
                 RLog(@"kPreferenceKeyFlashTabBarInFullscreen && !kPreferenceKeyShowFullscreenTabBar - return NO");
                 return NO;
             }
-            if (@available(macOS 13.0, *)) {
-                // Starting in macOS 16 and ending at or before Ventura (macOS 13) there was an ugly
-                // shadow under the full-screen titlebar if there was an accessory view. That does
-                // not seem to be a problem in Ventura, so we'll move the tabbar into an accessory
-                // once again! See issue 11038 for how we compare to Safari.
-                // However, it's apparently broken for some users. I have no idea how common of a
-                // problem this is and I don't know of a workaround, so there's an advanced setting
-                // in case it's widespread. Issue 11058.
-                if (![iTermAdvancedSettingsModel placeTabsInTitlebarAccessoryInFullScreen]) {
-                    return NO;
-                }
-            } else {
-                if ([iTermPreferences boolForKey:kPreferenceKeyShowFullscreenTabBar]) {
-                    RLog(@"macOS 11 + kPreferenceKeyShowFullscreenTabBar - return NO");
-                    // This prevents a shadow from being drawn between the tabbar and the rest of the window.
-                    // When the tabbar is hidden, it must be a titlebar accessory vc or else you'd never see it.
-                    // The only downside I see is that when you reveal the titlebar it overlaps the tabbar
-                    // but that doesn't seem like a big problem. Issue 9639.
-                    return NO;
-                }
+            // Starting in macOS 16 and ending at or before Ventura (macOS 13) there was an ugly
+            // shadow under the full-screen titlebar if there was an accessory view. That does
+            // not seem to be a problem in Ventura, so we'll move the tabbar into an accessory
+            // once again! See issue 11038 for how we compare to Safari.
+            // However, it's apparently broken for some users. I have no idea how common of a
+            // problem this is and I don't know of a workaround, so there's an advanced setting
+            // in case it's widespread. Issue 11058.
+            if (![iTermAdvancedSettingsModel placeTabsInTitlebarAccessoryInFullScreen]) {
+                return NO;
             }
             break;
     }
@@ -8064,7 +8052,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     self.window.appearance = appearance;
 }
 
-- (void)setMojaveBackgroundColor:(nullable NSColor *)backgroundColor NS_AVAILABLE_MAC(10_14) {
+- (void)setMojaveBackgroundColor:(nullable NSColor *)backgroundColor {
     switch ((iTermPreferencesTabStyle)[iTermPreferences intForKey:kPreferenceKeyTabStyle]) {
         case TAB_STYLE_AUTOMATIC:
         case TAB_STYLE_COMPACT:
@@ -10757,23 +10745,11 @@ static BOOL iTermApproximatelyEqualRects(NSRect lhs, NSRect rhs, double epsilon)
         return NO;
     }
 
-    if (@available(macOS 13.0, *)) {
-        // macOS 13+: We need to leave an empty area at the top only if the tabbar is NOT
-        // a titlebar accessory (i.e., it's part of the content view instead).
-        const BOOL result = ![self tabBarShouldBeAccessory];
-        RLog(@"macOS 13+: tabBarShouldBeAccessory=%@ so returning %@", @([self tabBarShouldBeAccessory]), @(result));
-        return result;
-    } else {
-        // macOS 12: Preserve old behavior to avoid requiring testing on this deprecated OS.
-        // This had a bug where Minimal and Regular themes behaved differently, but we're
-        // leaving it as-is since macOS 12 support will be dropped eventually.
-        if ([PseudoTerminal windowTypeHasFullSizeContentView:self.savedWindowType]) {
-            RLog(@"macOS 12: YES because saved window type %@ has full size content view", @(self.savedWindowType));
-            return YES;
-        }
-        RLog(@"macOS 12: NO because saved window type %@ does not have full size content view", @(self.savedWindowType));
-        return NO;
-    }
+    // We need to leave an empty area at the top only if the tabbar is NOT
+    // a titlebar accessory (i.e., it's part of the content view instead).
+    const BOOL result = ![self tabBarShouldBeAccessory];
+    RLog(@"tabBarShouldBeAccessory=%@ so returning %@", @([self tabBarShouldBeAccessory]), @(result));
+    return result;
 }
 
 // Generally yes, but not when a fake titlebar is shown *and* the window has transparency.
@@ -13341,12 +13317,12 @@ backgroundColor:(NSColor *)backgroundColor {
 
 - (void)setSharedBackgroundImage:(iTermImageWrapper *)image
                             mode:(iTermBackgroundImageMode)imageMode
-                 backgroundColor:(NSColor *)backgroundColor NS_AVAILABLE_MAC(10_14) {
+                 backgroundColor:(NSColor *)backgroundColor {
     RLog(@"setSharedBackgroundImage:%@", image);
     _contentView.backgroundImage.image = image;
     _contentView.backgroundImage.contentMode = imageMode;
     _contentView.backgroundImage.backgroundColor = backgroundColor;
-    _contentView.backgroundImage.hidden = !iTermTextIsMonochrome() || (image == nil);
+    _contentView.backgroundImage.hidden = (image == nil);
     for (PTYSession *session in self.allSessions) {
         [session.view setNeedsDisplay:YES];
     }

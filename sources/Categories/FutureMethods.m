@@ -133,25 +133,3 @@ MTActuatorIsOpenFunction *iTermGetMTActuatorIsOpenFunction(void) {
 }
 
 @end
-
-@implementation NSValue(Future)
-
-+ (NSValue *)futureValueWithEdgeInsets:(NSEdgeInsets)edgeInsets {
-    return [[[NSValue alloc] initWithBytes:&edgeInsets objCType:@encode(NSEdgeInsets)] autorelease];
-}
-
-- (NSEdgeInsets)futureEdgeInsetsValue {
-    NSEdgeInsets edgeInsets;
-    [self getValue:&edgeInsets];
-    return edgeInsets;
-}
-
-@end
-
-#ifndef MAC_OS_VERSION_12_0
-@implementation NSProcessInfo(iTermMonterey)
-- (BOOL)isLowPowerModeEnabled {
-    return NO;
-}
-@end
-#endif  // MAC_OS_VERSION_12_0

@@ -10,7 +10,6 @@
 #import "iTermTextRendererTransientState+Private.h"
 #import "iTermGCD.h"
 #import "iTermPIUArray.h"
-#import "iTermSubpixelModelBuilder.h"
 #import "iTermTexturePage.h"
 #import "iTermTexturePageCollection.h"
 #import "NSMutableData+iTerm.h"
@@ -37,7 +36,6 @@ static const size_t iTermNumberOfPIUArrays = iTermASCIITextureAttributesMax * 2;
 
 @implementation iTermTextRendererTransientState {
     iTerm2::PIUArray<iTermTextPIU> _asciiPIUArrays[iTermPIUArraySize][iTermNumberOfPIUArrays];
-    iTerm2::PIUArray<iTermTextPIU> _asciiOverflowArrays[iTermPIUArraySize][iTermNumberOfPIUArrays];
 
     // Array of PIUs for each texture page.
     std::map<iTerm2::TexturePage *, iTerm2::PIUArray<iTermTextPIU> *> _pius[iTermPIUArraySize];
@@ -53,7 +51,6 @@ static const size_t iTermNumberOfPIUArrays = iTermASCIITextureAttributesMax * 2;
 namespace {
     struct PIUArrayDeallocCarrier {
         iTerm2::PIUArray<iTermTextPIU> asciiArrays[iTermPIUArraySize][iTermNumberOfPIUArrays];
-        iTerm2::PIUArray<iTermTextPIU> overflowArrays[iTermPIUArraySize][iTermNumberOfPIUArrays];
         std::vector<iTerm2::PIUArray<iTermTextPIU> *> heapArrays;
 
         ~PIUArrayDeallocCarrier() {
@@ -73,7 +70,6 @@ namespace {
     for (size_t i = 0; i < iTermPIUArraySize && totalSize < kAsyncDeallocThreshold; i++) {
         for (size_t j = 0; j < iTermNumberOfPIUArrays && totalSize < kAsyncDeallocThreshold; j++) {
             totalSize += _asciiPIUArrays[i][j].size();
-            totalSize += _asciiOverflowArrays[i][j].size();
         }
         totalSize += _pius[i].size();
     }
@@ -96,7 +92,6 @@ namespace {
     for (size_t i = 0; i < iTermPIUArraySize; i++) {
         for (size_t j = 0; j < iTermNumberOfPIUArrays; j++) {
             carrier->asciiArrays[i][j] = std::move(_asciiPIUArrays[i][j]);
-            carrier->overflowArrays[i][j] = std::move(_asciiOverflowArrays[i][j]);
         }
         for (auto it = _pius[i].begin(); it != _pius[i].end(); it++) {
             carrier->heapArrays.push_back(it->second);
@@ -134,8 +129,6 @@ namespace {
 - (void)writeDebugInfoToFolder:(NSURL *)folder {
     [super writeDebugInfoToFolder:folder];
 
-    [_modelData writeToURL:[folder URLByAppendingPathComponent:@"model.bin"] atomically:NO];
-
     @autoreleasepool {
         for (int k = 0; k < iTermPIUArraySize; k++) {
             for (int i = 0; i < sizeof(_asciiPIUArrays[k]) / sizeof(**_asciiPIUArrays); i++) {
@@ -171,31 +164,6 @@ namespace {
 
     @autoreleasepool {
         for (int k = 0; k < iTermPIUArraySize; k++) {
-            for (int i = 0; i < sizeof(_asciiOverflowArrays[k]) / sizeof(**_asciiOverflowArrays); i++) {
-                NSMutableString *s = [NSMutableString string];
-                const int size = _asciiOverflowArrays[k][i].size();
-                for (int j = 0; j < size; j++) {
-                    const iTermTextPIU &a = _asciiOverflowArrays[k][i].get(j);
-                    [s appendString:[self.class formatTextPIU:a]];
-                }
-                NSMutableString *name = [NSMutableString stringWithFormat:@"asciiPIUs.Overflow."];
-                if (i & iTermASCIITextureAttributesBold) {
-                    [name appendString:@"B"];
-                }
-                if (i & iTermASCIITextureAttributesItalic) {
-                    [name appendString:@"I"];
-                }
-                if (i & iTermASCIITextureAttributesThinStrokes) {
-                    [name appendString:@"T"];
-                }
-                [name appendString:@".txt"];
-                [s writeToURL:[folder URLByAppendingPathComponent:name] atomically:NO encoding:NSUTF8StringEncoding error:nil];
-            }
-        }
-    }
-
-    @autoreleasepool {
-        for (int k = 0; k < iTermPIUArraySize; k++) {
             NSMutableString *s = [NSMutableString string];
             for (auto entry : _pius[k]) {
                 const iTerm2::TexturePage *texturePage = entry.first;
@@ -219,8 +187,7 @@ namespace {
         }
     }
 
-    NSString *s = [NSString stringWithFormat:@"backgroundTexture=%@\nasciiUnderlineDescriptor=%@\nnonAsciiUnderlineDescriptor=%@\nstrikethroughUnderlineDescriptor=%@",
-                   _backgroundTexture,
+    NSString *s = [NSString stringWithFormat:@"asciiUnderlineDescriptor=%@\nnonAsciiUnderlineDescriptor=%@\nstrikethroughUnderlineDescriptor=%@",
                    iTermMetalUnderlineDescriptorDescription(&_asciiUnderlineDescriptor),
                    iTermMetalUnderlineDescriptorDescription(&_nonAsciiUnderlineDescriptor),
                    iTermMetalUnderlineDescriptorDescription(&_strikethroughUnderlineDescriptor)];
@@ -243,24 +210,7 @@ namespace {
                @"text.newPIU",
                @"text.newDims",
                @"text.info",
-               @"text.subpixel",
                @"text.draw" ] objectAtIndex:i];
-}
-
-- (BOOL)haveAsciiOverflow {
-    for (int k = 0; k < iTermPIUArraySize; k++) {
-        for (int i = 0; i < iTermNumberOfPIUArrays; i++) {
-            const int n = _asciiOverflowArrays[k][i].get_number_of_segments();
-            if (n > 0) {
-                for (int j = 0; j < n; j++) {
-                    if (_asciiOverflowArrays[k][i].size_of_segment(j) > 0) {
-                        return YES;
-                    }
-                }
-            }
-        }
-    }
-    return NO;
 }
 
 - (void)enumerateASCIIDrawsFromArrays:(iTerm2::PIUArray<iTermTextPIU> *)piuArrays
@@ -280,12 +230,10 @@ namespace {
     iTermMetalUnderlineDescriptor adjustedASCIIUnderlineDescriptor = _asciiUnderlineDescriptor;
     adjustedASCIIUnderlineDescriptor.offset -= self.asciiOffset.height / self.configuration.scale;
     vector_uint2 augmentedGlyphSize = CGSizeToVectorUInt2(_asciiTextureGroup.glyphSize);
-    if (iTermTextIsMonochrome()) {
-        // There is only a center part for ASCII on Mojave because the glyph size is increased to contain the largest ASCII glyph, notwithstanding the ascii offset.
-        // If we don't account for ascii offset here than glyphs that spill into the right (such as Italic often does) can be truncated.
-        augmentedGlyphSize.x += self.asciiOffset.width;
-        augmentedGlyphSize.y += self.asciiOffset.height;
-    }
+    // There is only a center part for ASCII because the glyph size is increased to contain the largest ASCII glyph, notwithstanding the ascii offset.
+    // If we don't account for ascii offset here than glyphs that spill into the right (such as Italic often does) can be truncated.
+    augmentedGlyphSize.x += self.asciiOffset.width;
+    augmentedGlyphSize.y += self.asciiOffset.height;
     for (int i = 0; i < iTermNumberOfPIUArrays; i++) {
         const int n = piuArrays[i].get_number_of_segments();
         iTermASCIITexture *asciiTexture = [_asciiTextureGroup asciiTextureForAttributes:(iTermASCIITextureAttributes)i];
@@ -369,14 +317,9 @@ namespace {
                                  iTermMetalUnderlineDescriptor,
                                  iTermMetalUnderlineDescriptor,
                                  BOOL underlined,
-                                 BOOL emoji))block
-             copyBlock:(void (^)(void))copyBlock {
+                                 BOOL emoji))block {
     [self enumerateNonASCIIDraws:block];
     [self enumerateASCIIDrawsFromArrays:_asciiPIUArrays block:block];
-    if ([self haveAsciiOverflow]) {
-        copyBlock();
-        [self enumerateASCIIDrawsFromArrays:_asciiOverflowArrays block:block];
-    }
 }
 
 - (void)willDraw {
@@ -437,7 +380,6 @@ static inline int iTermOuterPIUIndex(const bool &annotation, const bool &underli
         texture = [_asciiTextureGroup asciiTextureForAttributes:asciiAttrs];
     }
 
-    iTermASCIITextureParts parts = texture.parts[(size_t)code];
     vector_float4 underlineColor = { 0, 0, 0, 0 };
 
     const BOOL suppressUnderlines = self.suppressUnderlines || _suppressUnderlineForDHL;
@@ -461,41 +403,6 @@ static inline int iTermOuterPIUIndex(const bool &annotation, const bool &underli
         underlineStyle = iTermMetalGlyphAttributesUnderlineSingle;
     }
 
-    if (iTermTextIsMonochrome()) {
-        // There is only a center part for ASCII on Mojave because the glyph size is increased to contain the largest ASCII glyph.
-        iTermTextRendererTransientStateAddASCIIPart(_asciiPIUArrays[outerPIUIndex][asciiAttrs].get_next(),
-                                                    code,
-                                                    w,
-                                                    h,
-                                                    texture,
-                                                    cellWidth,
-                                                    visualColumn,
-                                                    asciiOffset,
-                                                    iTermASCIITextureOffsetCenter,
-                                                    textColor,
-                                                    underlineStyle,
-                                                    underlineColor);
-        return;
-    }
-    // Pre-10.14, ASCII glyphs can get chopped up into multiple parts. This is necessary so subpixel AA will work right.
-    
-    // Add PIU for left overflow
-    if (parts & iTermASCIITexturePartsLeft) {
-        iTermTextRendererTransientStateAddASCIIPart(_asciiOverflowArrays[outerPIUIndex][asciiAttrs].get_next(),
-                                                    code,
-                                                    w,
-                                                    h,
-                                                    texture,
-                                                    cellWidth,
-                                                    visualColumn - 1,
-                                                    asciiOffset,
-                                                    iTermASCIITextureOffsetLeft,
-                                                    textColor,
-                                                    iTermMetalGlyphAttributesUnderlineNone,
-                                                    underlineColor);
-    }
-
-    // Add PIU for center part, which is always present
     iTermTextRendererTransientStateAddASCIIPart(_asciiPIUArrays[outerPIUIndex][asciiAttrs].get_next(),
                                                 code,
                                                 w,
@@ -508,22 +415,6 @@ static inline int iTermOuterPIUIndex(const bool &annotation, const bool &underli
                                                 textColor,
                                                 underlineStyle,
                                                 underlineColor);
-    // Add PIU for right overflow
-    if (parts & iTermASCIITexturePartsRight) {
-
-        iTermTextRendererTransientStateAddASCIIPart(_asciiOverflowArrays[outerPIUIndex][asciiAttrs].get_next(),
-                                                    code,
-                                                    w,
-                                                    h,
-                                                    texture,
-                                                    cellWidth,
-                                                    visualColumn + 1,
-                                                    asciiOffset,
-                                                    iTermASCIITextureOffsetRight,
-                                                    attributes[visualColumn].foregroundColor,
-                                                    iTermMetalGlyphAttributesUnderlineNone,
-                                                    underlineColor);
-    }
 }
 
 static inline BOOL GlyphKeyCanTakeASCIIFastPath(const iTermMetalGlyphKey &glyphKey) {
@@ -843,13 +734,6 @@ typedef struct {
     DLog(@"BEGIN didComplete for %@", self);
     _texturePageCollectionSharedPointer.object->prune_if_needed();  // The static analyzer wrongly says this is a use-after-free.
     DLog(@"END didComplete");
-}
-
-- (nonnull NSMutableData *)modelData  {
-    if (_modelData == nil) {
-        _modelData = [[NSMutableData alloc] initWithUninitializedLength:sizeof(iTermTextPIU) * self.cellConfiguration.gridSize.width * self.cellConfiguration.gridSize.height];
-    }
-    return _modelData;
 }
 
 - (void)expireNonASCIIGlyphs {

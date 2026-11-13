@@ -49,22 +49,13 @@ extern const unsigned char iTermASCIITextureMaximumCharacter;
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_OPTIONS(int, iTermASCIITextureParts) {
-    iTermASCIITexturePartsLeft = (1 << 0),
-    iTermASCIITexturePartsCenter = (1 << 1),
-    iTermASCIITexturePartsRight = (1 << 2)
-};
-
 @class iTermCharacterBitmap;
 @class iTermCharacterSourceDescriptor;
 
-NS_CLASS_AVAILABLE(10_11, NA)
 @interface iTermASCIITexture : NSObject
 
 @property (nonatomic, readonly) iTermTextureArray *textureArray;
 @property (nonatomic, readonly) iTermASCIITextureAttributes attributes;
-// C array that maps an ASCII code to which parts are present
-@property (nonatomic, readonly) iTermASCIITextureParts *parts;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithAttributes:(iTermASCIITextureAttributes)attributes
@@ -75,11 +66,9 @@ NS_CLASS_AVAILABLE(10_11, NA)
 @end
 
 typedef NS_ENUM(int, iTermASCIITextureOffset) {
-    iTermASCIITextureOffsetLeft = 0,
-    iTermASCIITextureOffsetCenter = 1,
-    iTermASCIITextureOffsetRight = 2,
+    iTermASCIITextureOffsetCenter = 0,
 
-    iTermASCIITextureOffsetCount = 3
+    iTermASCIITextureOffsetCount = 1
 };
 
 // Convert a drawable ASCII character into an index into the texture array. Note that control
@@ -91,7 +80,6 @@ NS_INLINE int iTermASCIITextureIndexOfCode(char code, iTermASCIITextureOffset of
 }
 
 // Implements isEqual:
-NS_CLASS_AVAILABLE(10_11, NA)
 @interface iTermASCIITextureGroup : NSObject {
 @public
     iTermASCIITexture *_textures[iTermASCIITextureAttributesMax * 2];

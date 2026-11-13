@@ -38,41 +38,12 @@ typedef struct {
 typedef struct {
     float4 clipSpacePosition [[position]];  // In vector function is normalized. In fragment function is in pixels, with a half pixel offset since it refers to the center of the pixel.
     float2 textureCoordinate;
-    float2 backgroundTextureCoordinate;
-    float4 textColor;
-} iTermTextVertexFunctionOutputBlending;
-
-typedef struct {
-    float4 clipSpacePosition [[position]];  // In vector function is normalized. In fragment function is in pixels, with a half pixel offset since it refers to the center of the pixel.
-    float2 textureCoordinate;
     float4 textColor;
     float4 alphaVector;
 } iTermTextVertexFunctionOutputMonochrome;
 
-// Returns the weight in [0, 1] of underline for a pixel at `clipSpacePosition`.
-// This ignores the alpha channel of the texture and assumes white pixels are
-// background.
-// This assumes dark text on a light background.
-float ComputeWeightOfUnderlineInverted(int underlineStyle,  // iTermMetalGlyphAttributesUnderline
-                                       float2 clipSpacePosition,
-                                       float2 viewportSize,
-                                       float2 cellOffset,
-                                       float2 underlineOffset,
-                                       float underlineThickness,
-                                       float2 textureSize,
-                                       float2 textureOffset,
-                                       float2 textureCoordinate,
-                                       float2 glyphSize,
-                                       float2 cellSize,
-                                       texture2d<float> texture,
-                                       sampler textureSampler,
-                                       float scale,
-                                       bool solid,
-                                       bool predecessorWasUnderlined,
-                                       bool successorWillBeUnderlined);
-
 // Returns the weight in [0, 1] of underline for a pixel at `clipSpacePosition`
-// when drawing underlined emoji or monochrome text in 10.14+ where it's light-on-dark.
+// when drawing underlined emoji or monochrome text.
 // This respects the alpha channel of the texture.
 float ComputeWeightOfUnderlineRegular(int underlineStyle,  // iTermMetalGlyphAttributesUnderline
                                       float2 clipSpacePosition,
@@ -91,26 +62,3 @@ float ComputeWeightOfUnderlineRegular(int underlineStyle,  // iTermMetalGlyphAtt
                                       bool solid,
                                       bool predecessorWasUnderlined,
                                       bool successorWillBeUnderlined);
-
-// For a discussion of this code, see this document:
-// https://docs.google.com/document/d/1vfBq6vg409Zky-IQ7ne-Yy7olPtVCl0dq3PG20E8KDs
-//
-// This simply implements bilinear interpolation using the sampler. See
-// iTermTextRenderer.mm for details on how the texture is structured.
-static inline float4 RemapColor(float4 scaledTextColor,  // scaledTextColor is the text color multiplied by float4(17).
-                               float4 backgroundColor_in,
-                               float4 bwColor_in,
-                               texture2d<float> models) {
-    float4 bwColor = round(bwColor_in * 255) * 18 + 0.5;
-    float4 backgroundColor = backgroundColor_in * 17 + 0.5;
-
-    constexpr sampler s(coord::pixel,
-                        filter::linear);
-    float r = models.sample(s, float2(bwColor.x + scaledTextColor.x,
-                                      backgroundColor.x)).x;
-    float g = models.sample(s, float2(bwColor.y + scaledTextColor.y,
-                                      backgroundColor.y)).x;
-    float b = models.sample(s, float2(bwColor.z + scaledTextColor.z,
-                                      backgroundColor.z)).x;
-    return float4(r, g, b, 1);
-}

@@ -66,7 +66,6 @@
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
 #import "iTermSetCurrentTerminalHelper.h"
-#import "iTermSystemVersion.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
 #import "iTermWebSocketCookieJar.h"

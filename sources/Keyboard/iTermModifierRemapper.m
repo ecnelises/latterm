@@ -38,7 +38,6 @@
 #import "iTermKeyMappings.h"
 #import "iTermKeystroke.h"
 #import "iTermShortcutInputView.h"
-#import "iTermSystemVersion.h"
 #import "NSEvent+iTerm.h"
 
 @interface iTermModifierRemapper()<iTermEventTapRemappingDelegate>

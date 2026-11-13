@@ -15,10 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class iTermCharacterBitmap;
 
-NS_CLASS_AVAILABLE(10_11, NA)
 @interface iTermTextRendererTransientState : iTermMetalCellRendererTransientState
-@property (nonatomic, strong) NSMutableData *modelData;
-@property (nonatomic, strong) id<MTLTexture> backgroundTexture;
 @property (nonatomic) iTermMetalUnderlineDescriptor asciiUnderlineDescriptor;
 @property (nonatomic) iTermMetalUnderlineDescriptor nonAsciiUnderlineDescriptor;
 @property (nonatomic) iTermMetalUnderlineDescriptor strikethroughUnderlineDescriptor;

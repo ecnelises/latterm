@@ -56,8 +56,6 @@
 // Layout constants
 static const int kColumnsPerRow = 8;          // reset + 7 colors = 8 cells per row
 static const int kRowDistanceY = 18;          // vertical spacing between rows
-static const int kOffsetX_BigSur = 24;
-static const int kOffsetX_BigSur_NoneChecked = 10;
 static const int kOffsetX_Sonoma = 24;
 static const int kOffsetX_Sonoma_NoneChecked = 14;
 static const int kOffsetY = 10;
@@ -177,17 +175,10 @@ const CGFloat iTermColorsMenuItemViewDisabledAlpha = 0.3;
 }
 
 - (CGFloat)colorXOffset {
-    if (@available(macOS 14, *)) {
-        if ([self anySiblingIsChecked]) {
-            return kOffsetX_Sonoma;
-        } else {
-            return kOffsetX_Sonoma_NoneChecked;
-        }
-    }
     if ([self anySiblingIsChecked]) {
-        return kOffsetX_BigSur;
+        return kOffsetX_Sonoma;
     }
-    return kOffsetX_BigSur_NoneChecked;
+    return kOffsetX_Sonoma_NoneChecked;
 }
 
 #pragma mark - Cell positioning

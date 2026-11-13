@@ -584,11 +584,7 @@ class CompletionsWindow: NSWindow, NSTableViewDataSource, NSTableViewDelegate {
         let description: String
         switch item.kind {
         case .file:
-            if #available(macOS 15, *) {
-                symbol = .document
-            } else {
-                symbol = .doc
-            }
+            symbol = .document
             description = "File"
         case .history:
             symbol = .clock

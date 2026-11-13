@@ -24,7 +24,7 @@ class ProfileDocument: NSObject {
     static func open(filename: String) {
         do {
             let url = URL(fileURLWithPath: filename)
-            let contents = try String(contentsOf: url)
+            let contents = try String(contentsOf: url, encoding: .utf8)
             let parts = contents.components(separatedBy: "\n")
             guard parts.count >= 2 else {
                 DLog("Invalid content: \(contents)")

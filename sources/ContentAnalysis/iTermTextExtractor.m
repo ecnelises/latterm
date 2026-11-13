@@ -14,7 +14,6 @@
 #import "iTermImageInfo.h"
 #import "iTermLocatedString.h"
 #import "iTermPreferences.h"
-#import "iTermSystemVersion.h"
 #import "iTermURLStore.h"
 #import "iTermUserDefaults.h"
 #import "iTermWordExtractor.h"

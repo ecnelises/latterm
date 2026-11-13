@@ -21,8 +21,7 @@
                                                               cellSize:CGSizeMake(10, 20)
                                                              glyphSize:CGSizeMake(10, 20)
                                                 cellSizeWithoutSpacing:CGSizeMake(10, 20)
-                                                              gridSize:VT100GridSizeMake(80, 24)
-                                                 usingIntermediatePass:NO];
+                                                              gridSize:VT100GridSizeMake(80, 24)];
         _state = [[iTermTextRendererTransientState alloc] initWithConfiguration:config];
     }
     return self;

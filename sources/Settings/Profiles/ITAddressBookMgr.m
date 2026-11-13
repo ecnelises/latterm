@@ -350,9 +350,7 @@ iTermPercentage iTermPercentageFromProfile(Profile *profile, iTermWindowType win
         }
 
         [[iTermHotKeyMigrationHelper sharedInstance] migrateSingleHotkeyToMulti];
-        if (@available(macOS 15, *)) {
-            [iTermMigrationHelper askToRemoveDeprecatedKeyMappingsIfNeeded];
-        }
+        [iTermMigrationHelper askToRemoveDeprecatedKeyMappingsIfNeeded];
         [iTermKeyBindingFormatMigration migrate];
         [[iTermHotKeyProfileBindingController sharedInstance] refresh];
     }

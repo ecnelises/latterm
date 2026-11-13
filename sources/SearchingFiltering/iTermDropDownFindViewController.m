@@ -38,7 +38,6 @@
 #import "iTermPreferences.h"
 #import "iTermProgressIndicator.h"
 #import "iTermSearchFieldCell.h"
-#import "iTermSystemVersion.h"
 #import "NSEvent+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"

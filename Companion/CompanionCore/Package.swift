@@ -19,7 +19,7 @@ import PackageDescription
 let package = Package(
     name: "CompanionCore",
     platforms: [
-        .macOS(.v12),
+        .macOS("15.0"),
         .iOS(.v16)
     ],
     products: [

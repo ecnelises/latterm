@@ -290,14 +290,6 @@ static NSUInteger iTermTextureBytesPerSampleForMetalPixelFormat(MTLPixelFormat p
         case MTLPixelFormatBC6H_RGBUfloat:
         case MTLPixelFormatBC7_RGBAUnorm:
         case MTLPixelFormatBC7_RGBAUnorm_sRGB:
-        case MTLPixelFormatPVRTC_RGB_2BPP:
-        case MTLPixelFormatPVRTC_RGB_2BPP_sRGB:
-        case MTLPixelFormatPVRTC_RGB_4BPP:
-        case MTLPixelFormatPVRTC_RGB_4BPP_sRGB:
-        case MTLPixelFormatPVRTC_RGBA_2BPP:
-        case MTLPixelFormatPVRTC_RGBA_2BPP_sRGB:
-        case MTLPixelFormatPVRTC_RGBA_4BPP:
-        case MTLPixelFormatPVRTC_RGBA_4BPP_sRGB:
         case MTLPixelFormatEAC_R11Unorm:
         case MTLPixelFormatEAC_R11Snorm:
         case MTLPixelFormatEAC_RG11Unorm:

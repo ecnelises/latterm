@@ -1327,9 +1327,7 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
           minimumLineNumber:(int)minimumLineNumber
                  timestamps:(BOOL)timestamps
                   selection:(iTermSelection *)selection {
-    if (@available(macOS 11.0, *)) {
-        [[iTermAsyncSelectionProvider currentProvider] cancel];
-    }
+    [[iTermAsyncSelectionProvider currentProvider] cancel];
     switch (style) {
         case iTermCopyTextStyleAttributed:
             return [[self promisedAttributedStringForSelectedTextCappedAtSize:maxBytes
@@ -1561,12 +1559,10 @@ launchProfileInCurrentTerminal:(Profile *)profile
 }
 
 - (void)showContextMenuForSelection:(id)sender {
-    if (@available(macOS 15, *)) {
-        if ([self.delegate textViewWouldReportControlReturn]) {
-            return;
-        }
-        [super showContextMenuForSelection:sender];
+    if ([self.delegate textViewWouldReportControlReturn]) {
+        return;
     }
+    [super showContextMenuForSelection:sender];
 }
 
 #pragma mark - iTermContextMenuHelperDelegate

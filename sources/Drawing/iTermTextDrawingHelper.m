@@ -450,7 +450,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
 
     iTermPreciseTimerStatsStartTimer(&_stats[TIMER_DRAW_BACKGROUND]);
     // If a background image is in use, draw the whole rect at once.
-    const BOOL enableBlending = !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    const BOOL enableBlending = [NSView iterm_takingSnapshot];
     if (_hasBackgroundImage && enableBlending) {
         [self.delegate drawingHelperDrawBackgroundImageInRect:boundingRect
                                        blendDefaultBackground:NO
@@ -664,7 +664,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
 }
 
 - (BOOL)blendManually {
-    return !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    return [NSView iterm_takingSnapshot];
 }
 
 - (void)drawBackgroundForLine:(int)line
@@ -860,7 +860,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     NSRect excessRect = [self excessRect];
 
     NSColor *color = [self colorForMarginsUsingDominant:YES];
-    const BOOL enableBlending = !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    const BOOL enableBlending = [NSView iterm_takingSnapshot];
 
     [self drawBackgroundColor:color inRect:excessRect enableBlending:enableBlending virtualOffset:virtualOffset];
 
@@ -887,7 +887,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     topMarginRect.size.height = [iTermPreferences topBottomMargins];
 
     NSColor *color = [self colorForMarginsUsingDominant:YES];
-    const BOOL enableBlending = !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    const BOOL enableBlending = [NSView iterm_takingSnapshot];
 
     [self drawBackgroundColor:color inRect:topMarginRect enableBlending:enableBlending virtualOffset:virtualOffset];
 
@@ -904,7 +904,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
         run.bgGreen = _marginColor.bgGreen;
         run.bgColorMode = _marginColor.bgColorMode;
     }
-    const BOOL enableBlending = !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    const BOOL enableBlending = [NSView iterm_takingSnapshot];
     NSColor *color = [self unprocessedColorForBackgroundRun:&run
                                              enableBlending:enableBlending];
     color = [_colorMap processedBackgroundColorForBackgroundColor:color];
@@ -928,7 +928,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     rightMargin.size.height = _cellSize.height;
 
     // Draw background in margins
-    const BOOL enableBlending = !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    const BOOL enableBlending = [NSView iterm_takingSnapshot];
     [self drawBackgroundColor:colors[0] inRect:leftMargin enableBlending:enableBlending virtualOffset:virtualOffset];
     [self drawBackgroundColor:colors[1] inRect:rightMargin enableBlending:enableBlending virtualOffset:virtualOffset];
 }
@@ -1518,41 +1518,39 @@ const CGFloat commandRegionOutlineThickness = 2.0;
     NSColor *foreground = [self.delegate drawingHelperColorForCode:ALTSEM_DEFAULT green:0 blue:0 colorMode:ColorModeAlternate bold:NO faint:NO isBackground:NO];
     NSColor *selectedColor = [self.delegate drawingHelperColorForCode:ALTSEM_SELECTED green:0 blue:0 colorMode:ColorModeAlternate bold:NO faint:NO isBackground:YES];
 
-    if (@available(macOS 11, *)) {
-        // Draw pill-shaped backgrounds for button groups
-        NSArray<iTermButtonPillInfo *> *pillInfos = [self buttonPillInfos];
-        const CGFloat scale = self.isRetina ? 2.0 : 1.0;
-        for (iTermButtonPillInfo *pillInfo in pillInfos) {
-            NSImage *pillImage = [iTermPillBackgroundGenerator generatePillImageWithSize:pillInfo.rect.size
-                                                                       dividerXPositions:pillInfo.dividerXPositions
-                                                                         backgroundColor:background
-                                                                         foregroundColor:foreground
-                                                                     pressedSegmentIndex:pillInfo.pressedButtonIndex
-                                                                                   scale:scale];
-            // Draw at 1:1 scale (the image is already scaled internally)
-            // Adjust y by 2 points to align with Metal renderer
-            NSRect destRect = pillInfo.rect;
-            destRect.origin.y -= virtualOffset;
-            destRect.origin.y -= 2;
-            [pillImage drawInRect:destRect
-                         fromRect:NSMakeRect(0, 0, pillImage.size.width, pillImage.size.height)
-                        operation:NSCompositingOperationSourceOver
-                         fraction:1.0
-                   respectFlipped:YES
-                            hints:nil];
-        }
+    // Draw pill-shaped backgrounds for button groups
+    NSArray<iTermButtonPillInfo *> *pillInfos = [self buttonPillInfos];
+    const CGFloat scale = self.isRetina ? 2.0 : 1.0;
+    for (iTermButtonPillInfo *pillInfo in pillInfos) {
+        NSImage *pillImage = [iTermPillBackgroundGenerator generatePillImageWithSize:pillInfo.rect.size
+                                                                   dividerXPositions:pillInfo.dividerXPositions
+                                                                     backgroundColor:background
+                                                                     foregroundColor:foreground
+                                                                 pressedSegmentIndex:pillInfo.pressedButtonIndex
+                                                                               scale:scale];
+        // Draw at 1:1 scale (the image is already scaled internally)
+        // Adjust y by 2 points to align with Metal renderer
+        NSRect destRect = pillInfo.rect;
+        destRect.origin.y -= virtualOffset;
+        destRect.origin.y -= 2;
+        [pillImage drawInRect:destRect
+                     fromRect:NSMakeRect(0, 0, pillImage.size.width, pillImage.size.height)
+                    operation:NSCompositingOperationSourceOver
+                     fraction:1.0
+               respectFlipped:YES
+                        hints:nil];
+    }
 
-        // Draw buttons (they now have transparent backgrounds since drawsBackground was set to false)
-        for (iTermTerminalButton *button in [self.delegate drawingHelperTerminalButtons]) {
-            if (![self canDrawLine:button.absCoordForDesiredFrame.y - _totalScrollbackOverflow]) {
-                continue;
-            }
-            [button drawWithBackgroundColor:background
-                            foregroundColor:foreground
-                              selectedColor:selectedColor
-                                      frame:button.desiredFrame
-                              virtualOffset:virtualOffset];
+    // Draw buttons (they now have transparent backgrounds since drawsBackground was set to false)
+    for (iTermTerminalButton *button in [self.delegate drawingHelperTerminalButtons]) {
+        if (![self canDrawLine:button.absCoordForDesiredFrame.y - _totalScrollbackOverflow]) {
+            continue;
         }
+        [button drawWithBackgroundColor:background
+                        foregroundColor:foreground
+                          selectedColor:selectedColor
+                                  frame:button.desiredFrame
+                          virtualOffset:virtualOffset];
     }
 }
 
@@ -3538,7 +3536,7 @@ iTermKittyImageDraw *iTermFindKittyImageDrawForVirtualPlaceholder(NSArray<iTermK
 
     [[self offscreenCommandLineOutlineColor] set];
 
-    const BOOL enableBlending = !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    const BOOL enableBlending = [NSView iterm_takingSnapshot];
     const NSCompositingOperation operation = enableBlending ? NSCompositingOperationSourceOver : NSCompositingOperationCopy;
 
     iTermRectFillUsingOperation(NSMakeRect(outline.origin.x, outline.origin.y, outline.size.width, 1),

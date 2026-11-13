@@ -219,21 +219,8 @@ class CRUDTableViewController<Delegate: CRUDTableViewControllerDelegate>: NSObje
 
     private func removeSelected() {
         let indexes = tableView.selectedRowIndexes
-        guard let firstIndex = indexes.min(), let lastIndex = indexes.max() else {
+        guard !indexes.isEmpty else {
             return
-        }
-        let selectedRange = NSRange(firstIndex...lastIndex)
-        if let visibleRows = tableView.rows(in: tableView.visibleRect).intersection(selectedRange),
-           visibleRows.length > 0,
-           let window = tableView.window {
-            let rectInWindowCoords1 = tableView.convert(tableView.frameOfCell(atColumn: 0, row: visibleRows.lowerBound),
-                                                       to: nil)
-            let rectInWindowCoords2 = tableView.convert(tableView.frameOfCell(atColumn: 0, row: visibleRows.upperBound - 1),
-                                                       to: nil)
-            let rectInWindowCoords = rectInWindowCoords1.union(rectInWindowCoords2)
-            let rect = window.convertToScreen(rectInWindowCoords)
-            NSAnimationEffect.poof.show(centeredAt: NSPoint(x: rect.minX + tableView.bounds.width / 2.0, y: rect.midY),
-                                        size: NSSize.zero)
         }
         undoable {
             schema.dataProvider.delete(indexes)

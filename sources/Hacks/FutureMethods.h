@@ -45,42 +45,7 @@ MTActuatorCloseFunction *iTermGetMTActuatorCloseFunction(void);
 MTActuatorActuateFunction *iTermGetMTActuatorActuateFunction(void);
 MTActuatorIsOpenFunction *iTermGetMTActuatorIsOpenFunction(void);
 
-NS_INLINE BOOL iTermTextIsMonochromeOnMojave(void) NS_AVAILABLE_MAC(10_14) {
-    if (@available(macOS 10.16, *)) {
-        // Issue 9209
-        return YES;
-    }
-    static dispatch_once_t onceToken;
-    static BOOL subpixelAAEnabled;
-    dispatch_once(&onceToken, ^{
-        NSNumber *number = [[NSUserDefaults standardUserDefaults] objectForKey:@"CGFontRenderingFontSmoothingDisabled"];
-        if (!number) {
-            subpixelAAEnabled = NO;
-        } else {
-            subpixelAAEnabled = !number.boolValue;
-        }
-    });
-    return !subpixelAAEnabled;
-}
-
-NS_INLINE BOOL iTermTextIsMonochrome(void) {
-    return iTermTextIsMonochromeOnMojave();
-}
-
 @interface NSFont (Future)
 // Does this font look bad without anti-aliasing? Relies on a private method.
 - (BOOL)futureShouldAntialias;
 @end
-
-@interface NSValue (Future)
-
-+ (NSValue *)futureValueWithEdgeInsets:(NSEdgeInsets)edgeInsets;
-- (NSEdgeInsets)futureEdgeInsetsValue;
-
-@end
-
-#ifndef MAC_OS_VERSION_12_0
-@interface NSProcessInfo(iTermMonterey)
-- (BOOL)isLowPowerModeEnabled;
-@end
-#endif  // MAC_OS_VERSION_12_0

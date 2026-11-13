@@ -15,7 +15,6 @@
 #import "iTermPreferences.h"
 #import "iTermSizeRememberingView.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermSystemVersion.h"
 #import "iTermVariableScope.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"

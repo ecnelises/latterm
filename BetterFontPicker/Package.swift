@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "BetterFontPicker",
-    platforms: [.macOS(.v12)],
+    platforms: [.macOS("15.0")],
     products: [
         .library(name: "BetterFontPicker", type: .dynamic, targets: ["BetterFontPicker"])
     ],

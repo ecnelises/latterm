@@ -434,15 +434,23 @@ class iTermWindowCornerRadiusDetector: NSObject {
         return bestRadius
     }
 
-    // Separate function to isolate the deprecation warning
-    @available(macOS, deprecated: 14.0, message: "Use ScreenCaptureKit instead")
+    // Look up CGWindowListCreateImage dynamically so macOS 15+ deployment targets
+    // don't emit a deprecation error: capturing our own window via ScreenCaptureKit
+    // triggers a Screen Recording permission prompt, whereas CGWindowListCreateImage
+    // still captures own-process windows without permission.
     private static func captureWindow(windowID: CGWindowID) -> CGImage? {
-        return CGWindowListCreateImage(
-            .null,
-            .optionIncludingWindow,
-            windowID,
-            [.boundsIgnoreFraming]
-        )
+        typealias CGWindowListCreateImageFn = @convention(c) (
+            CGRect,
+            CGWindowListOption,
+            CGWindowID,
+            CGWindowImageOption
+        ) -> Unmanaged<CGImage>?
+
+        guard let sym = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "CGWindowListCreateImage") else {
+            return nil
+        }
+        let fn = unsafeBitCast(sym, to: CGWindowListCreateImageFn.self)
+        return fn(.null, .optionIncludingWindow, windowID, [.boundsIgnoreFraming])?.takeRetainedValue()
     }
 
     private static func createBitmapContext(width: Int, height: Int) -> CGContext? {

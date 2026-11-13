@@ -6,7 +6,6 @@
 //
 
 #import "iTermGraphicsUtilities.h"
-#import "FutureMethods.h"
 
 extern void CGContextSetFontSmoothingStyle(CGContextRef, int);
 extern int CGContextGetFontSmoothingStyle(CGContextRef);
@@ -20,25 +19,8 @@ int iTermSetSmoothing(CGContextRef ctx,
         CGContextSetShouldSmoothFonts(ctx, YES);
         return -1;
     }
-    BOOL shouldSmooth = useThinStrokes;
-    int style = -1;
-    if (iTermTextIsMonochrome()) {
-        if (useThinStrokes) {
-            shouldSmooth = NO;
-        } else {
-            shouldSmooth = YES;
-        }
-    } else {
-        // User enabled subpixel AA
-        shouldSmooth = YES;
-    }
-    if (shouldSmooth) {
-        if (useThinStrokes) {
-            style = 16;
-        } else {
-            style = 0;
-        }
-    }
+    const BOOL shouldSmooth = !useThinStrokes;
+    const int style = shouldSmooth ? 0 : -1;
     CGContextSetShouldSmoothFonts(ctx, shouldSmooth);
     if (style >= 0) {
         // This seems to be available at least on 10.8 and later. The only reference to it is in

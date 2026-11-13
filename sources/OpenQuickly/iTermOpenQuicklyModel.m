@@ -598,7 +598,7 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 - (void)addInvocation:(NSString *)invocation 
                 scope:(iTermVariableScope *)scope
               toItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
-          withMatcher:(iTermMinimumSubsequenceMatcher *)matcher NS_AVAILABLE_MAC(11_0) {
+          withMatcher:(iTermMinimumSubsequenceMatcher *)matcher {
     iTermOpenQuicklyInvocationItem *item = [[iTermOpenQuicklyInvocationItem alloc] init];
     item.score = 1;
     item.detail = [_delegate openQuicklyModelDisplayStringForFeatureNamed:nil

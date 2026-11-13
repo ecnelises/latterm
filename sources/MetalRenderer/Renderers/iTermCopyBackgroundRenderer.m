@@ -81,17 +81,6 @@
 
 @end
 
-@implementation iTermCopyBackgroundRendererTransientState
-@end
-
-@implementation iTermCopyBackgroundRenderer
-
-- (Class)transientStateClass {
-    return [iTermCopyBackgroundRendererTransientState class];
-}
-
-@end
-
 @implementation iTermCopyOffscreenRendererTransientState
 @end
 

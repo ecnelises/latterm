@@ -72,7 +72,7 @@ static const CGFloat iTermCompactProxyIconRightMargin = 2;
 
 @property(nonatomic, strong) PTYTabView *tabView;
 @property(nonatomic, strong) iTermTabBarControlView *tabBarControl;
-@property(nonatomic, strong) SolidColorView *divisionView;
+@property(nonatomic, strong) NSView<iTermSolidColorView> *divisionView;
 @property(nonatomic, strong) iTermToolbeltView *toolbelt;
 @property(nonatomic, strong) iTermDragHandleView *verticalTabBarDragHandle;
 // How far the stoplight hotbox and everything that moves with it is slid left.
@@ -1072,16 +1072,7 @@ static NSColor *iTermWindowBorderColorFromSetting(NSString *setting) {
             divisionViewFrame.origin.y += iTermGetStatusBarHeight();
         }
         if (!_divisionView) {
-            Class theClass;
-            if (@available(macOS 14.0, *)) {
-                // There's a bug in Sonoma (first seen in 14.0 Beta (23A5301h) which I believe is beta 4)
-                // where using a non-layer-backed division view caused all the other views to disappear, including those over it.
-                // I don't remember why I fell back to a non-layer-backed view for non-metal. Probably bugs in old macOS versions.
-                theClass = [iTermLayerBackedSolidColorView class];
-            } else {
-                theClass = _useMetal ? [iTermLayerBackedSolidColorView class] : [SolidColorView class];
-            }
-            _divisionView = [[theClass alloc] initWithFrame:divisionViewFrame];
+            _divisionView = [[iTermLayerBackedSolidColorView alloc] initWithFrame:divisionViewFrame];
             _divisionView.autoresizingMask = (NSViewWidthSizable | NSViewMinYMargin);
             [self addSubview:_divisionView];
         }

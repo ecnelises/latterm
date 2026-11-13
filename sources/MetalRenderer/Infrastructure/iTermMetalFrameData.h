@@ -127,7 +127,6 @@ extern void iTermMetalFrameDataStatsBundleAdd(iTermPreciseTimerStats *dest, iTer
 @class MTLRenderPassDescriptor;
 @protocol CAMetalDrawable;
 
-NS_CLASS_AVAILABLE(10_11, NA)
 @interface iTermMetalFrameData : NSObject
 @property (atomic, readonly) iTermTexturePool *fullSizeTexturePool;
 @property (atomic, strong, nullable) id<iTermMetalDriverDataSourcePerFrameState> perFrameState;
@@ -166,7 +165,7 @@ NS_CLASS_AVAILABLE(10_11, NA)
 @property (nonatomic) BOOL deferCurrentDrawable;
 // Helper to acquire drawable from any thread and validate context before presentation.
 @property (nonatomic, strong, nullable) iTermDrawableAcquisitionHelper *drawableAcquisitionHelper;
-@property (nonatomic, strong, nullable) MTLCaptureDescriptor *captureDescriptor NS_AVAILABLE_MAC(10_15);
+@property (nonatomic, strong, nullable) MTLCaptureDescriptor *captureDescriptor;
 #if ENABLE_UNFAMILIAR_TEXTURE_WORKAROUND
 @property (nonatomic) BOOL textureIsFamiliar;
 #endif  // ENABLE_UNFAMILIAR_TEXTURE_WORKAROUND
@@ -193,14 +192,6 @@ NS_CLASS_AVAILABLE(10_11, NA)
 // For debugging. Gives an order to the log files.
 @property (nonatomic) int numberOfRenderersDrawn;
 
-// When using subpixel AA, all draw stages prior to Text write to this descriptor.
-@property (nonatomic, strong, nullable) MTLRenderPassDescriptor *intermediateRenderPassDescriptor;
-
-// When using subpixel AA, the intermediate rpd's texture is copied to the temporary rpd's texture
-// and then text is rendered to this rpd while sampling from the intermediate rpd's texture.
-// Eventually this gets copied to the drawable.
-@property (nonatomic, strong, nullable) MTLRenderPassDescriptor *temporaryRenderPassDescriptor;
-
 - (instancetype)initWithView:(iTermMetalView *)view
          fullSizeTexturePool:(iTermTexturePool *)fullSizeTexturePool NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
@@ -209,8 +200,6 @@ NS_CLASS_AVAILABLE(10_11, NA)
 #if ENABLE_PRIVATE_QUEUE
 - (void)dispatchToPrivateQueue:(dispatch_queue_t)queue forPreparation:(void (^)(void))block;
 #endif
-- (void)createIntermediateRenderPassDescriptor;
-- (void)createTemporaryRenderPassDescriptor;
 - (void)createUnderlineOffscreenRenderPassDescriptors;
 - (void)dispatchToQueue:(dispatch_queue_t)queue forCompletion:(void (^)(void))block;
 - (void)enqueueDrawCallsWithBlock:(void (^)(void))block;

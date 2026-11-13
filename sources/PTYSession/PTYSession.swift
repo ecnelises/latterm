@@ -313,7 +313,6 @@ extension PTYSession {
     }
 }
 
-@available(macOS 11.0, *)
 extension PTYSession: PathCompletionHelperDelegate {
     @objc(showCompletionUIForPathMark:)
     func showCompletionUI(pathMark: PathMarkReading) -> PathCompletionHelper? {
