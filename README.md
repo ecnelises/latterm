@@ -45,7 +45,7 @@ More strings can be moved into localization tables incrementally without changin
 
 ### Prerequisites
 
-Official builds require Apple silicon and macOS 12.4 or later.
+Official builds require Apple silicon and macOS 15.0 or later.
 
 Use the existing setup flow from the upstream project:
 

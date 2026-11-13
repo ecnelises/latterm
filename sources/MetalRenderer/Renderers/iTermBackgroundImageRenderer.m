@@ -66,9 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                            blending:nil
                                                 transientStateClass:[iTermBackgroundImageRendererTransientState class]];
 #if ENABLE_TRANSPARENT_METAL_WINDOWS
-        if (iTermTextIsMonochrome()) {
-            _alphaPool = [[iTermMetalBufferPool alloc] initWithDevice:device bufferSize:sizeof(float)];
-        }
+        _alphaPool = [[iTermMetalBufferPool alloc] initWithDevice:device bufferSize:sizeof(float)];
 #endif
         _box1Pool = [[iTermMetalBufferPool alloc] initWithDevice:device bufferSize:sizeof(iTermVertex) * 6];
         _box2Pool = [[iTermMetalBufferPool alloc] initWithDevice:device bufferSize:sizeof(iTermVertex) * 6];

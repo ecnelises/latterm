@@ -3,13 +3,13 @@
 #import "CPKColor.h"
 #import "CPKColorNamer.h"
 #import "CPKControlsView.h"
-#import "CPKEyedropperWindow.h"
 #import "CPKFavorite.h"
 #import "CPKFavoritesView.h"
 #import "CPKFlippedView.h"
 #import "CPKLogging.h"
 #import "CPKSelectionView.h"
 #import "NSColor+CPK.h"
+#import "NSColorSpace+CPK.h"
 
 static CGFloat kDesiredWidth(void) {
     if (@available(macOS 26, *)) {
@@ -131,14 +131,17 @@ static const CGFloat kBottomMargin = 8;
         [weakSelf.favoritesView removeSelectedFavorites];
     };
     self.controlsView.startPickingBlock = ^() {
-        [CPKEyedropperWindow pickColorWithCompletion:^(NSColor *color, NSColorSpace *colorSpace) {
-            if (color) {
-                // Adopt the colorspace from the eyedropper if available
-                if (colorSpace) {
-                    weakSelf.colorSpace = colorSpace;
-                }
-                weakSelf.selectionView.selectedColor = [[CPKColor alloc] initWithColor:color];
+        __block NSColorSampler *sampler = [[NSColorSampler alloc] init];
+        [sampler showSamplerWithSelectionHandler:^(NSColor * _Nullable selectedColor) {
+            sampler = nil;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!selectedColor || !strongSelf) {
+                return;
             }
+            NSColorSpace *supportedColorSpace = [NSColorSpace cpk_supportedColorSpaceForColorSpace:selectedColor.colorSpace];
+            NSColor *convertedColor = [selectedColor colorUsingColorSpace:supportedColorSpace] ?: selectedColor;
+            strongSelf.colorSpace = supportedColorSpace;
+            strongSelf.selectionView.selectedColor = [[CPKColor alloc] initWithColor:convertedColor];
         }];
     };
     self.controlsView.useNativeColorPicker = ^() {

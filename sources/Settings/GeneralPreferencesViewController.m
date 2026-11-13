@@ -891,18 +891,9 @@ enum {
 }
 
 - (IBAction)warning:(id)sender {
-    NSString *message;
-    NSString *action;
-    NSString *path;
-    if (@available(macOS 13, *)) {
-        message = @"System window restoration has been disabled, which prevents Latterm from respecting this setting. Disable ”System Settings > Desktop & Dock > Close windows when quitting an application“ to enable window restoration.";
-        action = @"Open System Settings";
-        path = @"/System/Library/PreferencePanes/Dock.prefPane";
-    } else {
-        message = @"System window restoration has been disabled, which prevents Latterm from respecting this setting. Disable System Settings > General > Close windows when quitting an app to enable window restoration.";
-        action = @"Open System Preferences";
-        path = @"/System/Library/PreferencePanes/Appearance.prefPane";
-    }
+    NSString *const message = @"System window restoration has been disabled, which prevents Latterm from respecting this setting. Disable ”System Settings > Desktop & Dock > Close windows when quitting an application“ to enable window restoration.";
+    NSString *const action = @"Open System Settings";
+    NSString *const path = @"/System/Library/PreferencePanes/Dock.prefPane";
     const iTermWarningSelection selection =
     [iTermWarning showWarningWithTitle:message
                                actions:@[ action, @"OK" ]

@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "it2cli",
     platforms: [
-        .macOS(.v12)
+        .macOS("15.0")
     ],
     products: [
         .executable(name: "it2", targets: ["it2"])

@@ -258,12 +258,7 @@ static BOOL NSStringIsValidURLScheme(NSString *scheme) {
     // percent signs. That turns Test%20Folder into Test%2520Folder, so the link resolves to the
     // wrong path. Restore the old strict behavior so such inputs go through the Impl, which decodes
     // and re-encodes correctly. See issue 12914.
-    NSURL *url;
-    if (@available(macOS 14, *)) {
-        url = [NSURL URLWithString:string encodingInvalidCharacters:NO];
-    } else {
-        url = [NSURL URLWithString:string];
-    }
+    NSURL *url = [NSURL URLWithString:string encodingInvalidCharacters:NO];
     if (url) {
         DLog(@"Seems legit to me. %@", url.absoluteString);
         return url;

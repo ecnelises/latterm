@@ -75,8 +75,6 @@
 @implementation iTermMetalDebugInfo {
     MTLRenderPassDescriptor *_renderPassDescriptor;
     MTLRenderPassDescriptor *_postmultipliedRenderPassDescriptor;
-    MTLRenderPassDescriptor *_intermediateRenderPassDescriptor;
-    MTLRenderPassDescriptor *_temporaryRenderPassDescriptor;
     NSMutableArray<iTermMetalRowData *> *_rowData;
     NSMutableArray<iTermMetalRendererTransientState *> *_transientStates;
     NSMutableArray<id<iTermMetalCellRenderer>> *_cellRenderers;
@@ -102,14 +100,6 @@
 
 - (void)setPostmultipliedRenderPassDescriptor:(MTLRenderPassDescriptor *)renderPassDescriptor {
     _postmultipliedRenderPassDescriptor = renderPassDescriptor;
-}
-
-- (void)setIntermediateRenderPassDescriptor:(MTLRenderPassDescriptor *)renderPassDescriptor {
-    _intermediateRenderPassDescriptor = renderPassDescriptor;
-}
-
-- (void)setTemporaryRenderPassDescriptor:(MTLRenderPassDescriptor *)renderPassDescriptor {
-    _temporaryRenderPassDescriptor = renderPassDescriptor;
 }
 
 - (void)addRowData:(iTermMetalRowData *)rowData {
@@ -179,16 +169,6 @@
     if (_postmultipliedRenderPassDescriptor) {
         [self writeRenderPassDescriptor:_postmultipliedRenderPassDescriptor
                                      to:[self newFolderNamed:@"postmultipliedRenderPassDescriptor"
-                                                        root:root]];
-    }
-    if (_intermediateRenderPassDescriptor) {
-        [self writeRenderPassDescriptor:_intermediateRenderPassDescriptor
-                                     to:[self newFolderNamed:@"IntermediateRenderPassDescriptor"
-                                                        root:root]];
-    }
-    if (_temporaryRenderPassDescriptor) {
-        [self writeRenderPassDescriptor:_temporaryRenderPassDescriptor
-                                     to:[self newFolderNamed:@"TemporaryRenderPassDescriptor"
                                                         root:root]];
     }
     if (_metalCaptureURL) {

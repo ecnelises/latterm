@@ -116,8 +116,6 @@
 #import "iTermServiceProvider.h"
 #import "iTermSessionFactory.h"
 #import "iTermSessionLauncher.h"
-#import "iTermSubpixelModelBuilder.h"
-#import "iTermSystemVersion.h"
 #import "iTermToolbeltView.h"
 #import "iTermURLStore.h"
 #import "iTermUserDefaults.h"
@@ -1543,9 +1541,7 @@ void TurnOnDebugLoggingAutomatically(void) {
                                              selector:@selector(updateCompanionMenuItem)
                                                  name:iTermAdvancedSettingsDidChange
                                                object:nil];
-    if (IsTouchBarAvailable()) {
-        NSApp.automaticCustomizeTouchBarMenuItemEnabled = YES;
-    }
+    NSApp.automaticCustomizeTouchBarMenuItemEnabled = YES;
 
     if ([iTermAdvancedSettingsModel disableAppNap]) {
         [[NSProcessInfo processInfo] setAutomaticTerminationSupportEnabled:YES];

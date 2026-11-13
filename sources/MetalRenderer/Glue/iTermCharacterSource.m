@@ -125,7 +125,7 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
     BOOL _fakeItalic;
 
     // Large enough to hold glyphSize * maxParts in both horizontal and vertical direction.
-    BOOL _postprocessed NS_AVAILABLE_MAC(10_14);
+    BOOL _postprocessed;
 
     // These have size _bytesPerRow * _numberOfRows.
     NSMutableArray<NSMutableData *> *_datas;
@@ -658,12 +658,7 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
     NSString *fontName = CFBridgingRelease(CTFontCopyFamilyName(runFont));
     _isEmoji = ([fontName isEqualToString:@"AppleColorEmoji"] ||
                 [fontName isEqualToString:@"Apple Color Emoji"]);
-    _numberOfIterationsNeeded = 1;
-    if (!_isEmoji) {
-        if (iTermTextIsMonochrome()) {
-            _numberOfIterationsNeeded = 4;
-        }
-    }
+    _numberOfIterationsNeeded = _isEmoji ? 1 : 4;
 
     ITAssertWithMessage(_context, @"context is null for size %@", NSStringFromSize(_size));
     _datas = [NSMutableArray array];
@@ -684,31 +679,10 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
     CGContextSetShouldAntialias(context, _antialiased);
 
     if (_antialiased) {
-        BOOL shouldSmooth;
-        int style = -1;
-        if (iTermTextIsMonochrome()) {
-            if (_attributes.useThinStrokes) {
-                shouldSmooth = NO;
-            } else {
-                shouldSmooth = YES;
-            }
-        } else {
-            // User enabled subpixel AA
-            shouldSmooth = YES;
-        }
-        if (shouldSmooth) {
-            if (_attributes.useThinStrokes) {
-                // This seems to be available at least on 10.8 and later. The only reference to it is in
-                // WebKit. This causes text to render just a little lighter, which looks nicer.
-                // It does not work in Mojave without subpixel AA.
-                style = 16;
-            } else {
-                style = 0;
-            }
-        }
+        const BOOL shouldSmooth = !_attributes.useThinStrokes;
         CGContextSetShouldSmoothFonts(context, shouldSmooth);
-        if (style >= 0) {
-            CGContextSetFontSmoothingStyle(context, style);
+        if (shouldSmooth) {
+            CGContextSetFontSmoothingStyle(context, 0);
         }
     } else {
         CGContextSetFontSmoothingStyle(context, YES);  // Issue 7394.
@@ -726,16 +700,6 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
     [self initializeStateIfNeededWithFont:runFont];
 
     CGContextRef context = _context;
-    // Non-monochrome non-emoji needs white background for subpixel antialiasing.
-    // The context starts transparent and is cleared to transparent after each
-    // iteration, so we need to fill with white before the first draw.
-    // Use frameFlipped:NO because CGContextFillRect uses native CoreGraphics
-    // coordinates (origin at bottom-left), not flipped coordinates.
-    if (iteration == 0 && !iTermTextIsMonochrome() && !_isEmoji) {
-        CGRect rect = [self frameFlipped:NO];
-        CGContextSetRGBFillColor(context, 1, 1, 1, 1);
-        CGContextFillRect(context, rect);
-    }
     [self setTextColorForIteration:iteration
                            context:context];
     if (!haveInitializedThisIteration) {
@@ -747,19 +711,17 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
 }
 
 - (NSColor *)textColorForIteration:(NSInteger)iteration {
-    if (iTermTextIsMonochrome()) {
-        switch (iteration) {
-            case 0:
-                return [NSColor it_colorInDefaultColorSpaceWithRed:0 green:0 blue:0 alpha:1];
-            case 1:
-                return [NSColor it_colorInDefaultColorSpaceWithRed:1 green:0 blue:0 alpha:1];
-            case 2:
-                return [NSColor it_colorInDefaultColorSpaceWithRed:0 green:1 blue:0 alpha:1];
-            case 3:
-                return [NSColor it_colorInDefaultColorSpaceWithRed:1 green:1 blue:1 alpha:1];
-        }
-        ITAssertWithMessage(NO, @"bogus iteration %@", @(iteration));
+    switch (iteration) {
+        case 0:
+            return [NSColor it_colorInDefaultColorSpaceWithRed:0 green:0 blue:0 alpha:1];
+        case 1:
+            return [NSColor it_colorInDefaultColorSpaceWithRed:1 green:0 blue:0 alpha:1];
+        case 2:
+            return [NSColor it_colorInDefaultColorSpaceWithRed:0 green:1 blue:0 alpha:1];
+        case 3:
+            return [NSColor it_colorInDefaultColorSpaceWithRed:1 green:1 blue:1 alpha:1];
     }
+    ITAssertWithMessage(NO, @"bogus iteration %@", @(iteration));
     return [NSColor blackColor];
 }
 
@@ -803,10 +765,8 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
     const NSInteger glyphHeight = ceil(_descriptor.glyphSize.height);
     const NSUInteger length = destRowSize * glyphHeight;
 
-    if (iTermTextIsMonochrome()) {
-        if (!_postprocessed && !_isEmoji) {
-            [self performPostProcessing];
-        }
+    if (!_postprocessed && !_isEmoji) {
+        [self performPostProcessing];
     }
     const unsigned char *bitmapBytes = _postprocessedData.bytes;
     NSInteger sourceLength = ceil(_size.width) * 4 * ceil(_size.height);

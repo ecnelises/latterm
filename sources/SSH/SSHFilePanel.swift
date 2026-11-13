@@ -70,7 +70,6 @@ protocol SSHFilePanelDelegate: AnyObject {
 
 class SSHMainContentView: iTermLayerBackedSolidColorView { }
 
-@available(macOS 11, *)
 class SSHFilePanel: NSWindowController {
     static let connectedHostsDidChangeNotification = Notification.Name("SSHFilePanelConnectedHostsDidChange")
 
@@ -1189,7 +1188,6 @@ extension SSHFilePanel {
 }
 
 // MARK: - NSWindowDelegate
-@available(macOS 11, *)
 extension SSHFilePanel: NSWindowDelegate {
     func show(completionHandler: @escaping (NSApplication.ModalResponse) -> Void) {
         self.completionHandler = completionHandler
@@ -1220,7 +1218,6 @@ extension SSHFilePanel: NSWindowDelegate {
 }
 
 // MARK: - Keyboard Shortcuts Extension
-@available(macOS 11, *)
 extension SSHFilePanel {
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
@@ -1601,7 +1598,6 @@ extension SSHFilePanel {
 }
 
 // MARK: - Window Restoration Extension
-@available(macOS 11, *)
 extension SSHFilePanel {
 
     // MARK: - Window Restoration State Keys
@@ -1671,7 +1667,6 @@ extension SSHFilePanel {
 
 // MARK: - Navigation History Support
 
-@available(macOS 11, *)
 extension SSHFilePanel {
 
     @discardableResult
@@ -1778,7 +1773,6 @@ extension SSHFilePanel {
     }
 }
 
-@available(macOS 11, *)
 extension SSHFilePanel {
     private func createFolderForTemporaryFile(name: String) -> URL? {
         let tempDir = FileManager.default.temporaryDirectory
@@ -1915,7 +1909,6 @@ extension SSHFilePanelFileList.FileNode {
     }
 }
 
-@available(macOS 11, *)
 extension SSHFilePanel: SSHFilePanelFileListDelegate {
     func sshFilePanelListShouldShowHiddenFiles() -> Bool {
         return showsHiddenFiles
@@ -2047,7 +2040,6 @@ extension SSHFilePanel: SSHFilePanelFileListDelegate {
 
 }
 
-@available(macOS 11, *)
 extension SSHFilePanel: SSHFilePanelSidebarDelegate {
     func sidebarDidSelectHost(_ sidebar: SSHFilePanelSidebar, host sshIdentity: SSHIdentity) {
         if ignoreSidebarChange > 0 {

@@ -355,28 +355,6 @@ static NSInteger gNextFrameDataNumber;
     return renderPassDescriptor;
 }
 
-- (void)createIntermediateRenderPassDescriptor {
-    [self measureTimeForStat:iTermMetalFrameDataStatPqCreateIntermediate ofBlock:^{
-        assert(!self.intermediateRenderPassDescriptor);
-
-        self.intermediateRenderPassDescriptor = [self newRenderPassDescriptorWithLabel:@"Intermediate Texture"
-                                                                                  fast:YES];
-
-        [self->_debugInfo setIntermediateRenderPassDescriptor:self.intermediateRenderPassDescriptor];
-    }];
-}
-
-- (void)createTemporaryRenderPassDescriptor {
-    [self measureTimeForStat:iTermMetalFrameDataStatPqCreateTemporary ofBlock:^{
-        assert(!self.temporaryRenderPassDescriptor);
-
-        self.temporaryRenderPassDescriptor = [self newRenderPassDescriptorWithLabel:@"Temporary Texture"
-                                                                               fast:YES];
-
-        [self->_debugInfo setTemporaryRenderPassDescriptor:self.temporaryRenderPassDescriptor];
-    }];
-}
-
 - (void)createUnderlineOffscreenRenderPassDescriptors {
     self.textOffscreenRPD = [self newRenderPassDescriptorWithLabel:@"Text Offscreen (T)" fast:YES];
     // Must clear to transparent so the smear pass can detect text presence by alpha.
@@ -393,12 +371,6 @@ static NSInteger gNextFrameDataNumber;
                                 owner:(NSString *)owner
                            additional:(NSString *)additional {
     self.status = @"complete";
-    if (self.intermediateRenderPassDescriptor) {
-        [self.fullSizeTexturePool returnTexture:self.intermediateRenderPassDescriptor.colorAttachments[0].texture];
-    }
-    if (self.temporaryRenderPassDescriptor) {
-        [self.fullSizeTexturePool returnTexture:self.temporaryRenderPassDescriptor.colorAttachments[0].texture];
-    }
     if (self.textOffscreenRPD) {
         [self.fullSizeTexturePool returnTexture:self.textOffscreenRPD.colorAttachments[0].texture];
     }
@@ -539,8 +511,7 @@ static NSInteger gNextFrameDataNumber;
                                                                                cellSize:self.cellSize
                                                                               glyphSize:self.glyphSize
                                                                  cellSizeWithoutSpacing:self.cellSizeWithoutSpacing
-                                                                               gridSize:self.gridSize
-                                                                  usingIntermediatePass:(self.intermediateRenderPassDescriptor != nil)];
+                                                                               gridSize:self.gridSize];
     }
     return _cellConfiguration;
 }

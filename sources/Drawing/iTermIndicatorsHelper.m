@@ -76,19 +76,8 @@ CGFloat kiTermIndicatorStandardHeight = 20;
     static NSDictionary<NSString *, NSString *> *symbolMap = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        // Handle version-specific SF Symbols
-        NSString *maximizedSymbol;
-        NSString *debugLoggingSymbol;
-
-        if (@available(macOS 14, *)) {
-            // Use newer symbols on macOS 14+
-            maximizedSymbol = SFSymbolGetString(SFSymbolSquareArrowtriangle4Outward);
-            debugLoggingSymbol = SFSymbolGetString(SFSymbolLadybugCircle);
-        } else {
-            // Use older symbols on macOS < 14
-            maximizedSymbol = SFSymbolGetString(SFSymbolArrowUpLeftAndArrowDownRight);
-            debugLoggingSymbol = SFSymbolGetString(SFSymbolAntCircle);
-        }
+        NSString *maximizedSymbol = SFSymbolGetString(SFSymbolSquareArrowtriangle4Outward);
+        NSString *debugLoggingSymbol = SFSymbolGetString(SFSymbolLadybugCircle);
         
         symbolMap = @{
             kiTermIndicatorBell: SFSymbolGetString(SFSymbolBell),
@@ -140,13 +129,10 @@ CGFloat kiTermIndicatorStandardHeight = 20;
                           size:(CGFloat)size
                 darkBackground:(BOOL)darkBackground
                   backgroundless:(BOOL)backgroundless {
-    // Since deployment target is macOS 12+, we always use SF Symbols
+    // Since deployment target is macOS 15+, we always use SF Symbols
     // Create a symbol configuration for the desired size to avoid upscaling
     NSImageSymbolConfiguration *config = [NSImageSymbolConfiguration configurationWithPointSize:size weight:NSFontWeightRegular scale:NSImageSymbolScaleMedium];
-    NSImage *sfSymbolImage = [NSImage imageWithSystemSymbolName:sfSymbol accessibilityDescription:nil];
-    if (@available(macOS 12.0, *)) {
-        sfSymbolImage = [sfSymbolImage imageWithSymbolConfiguration:config];
-    }
+    NSImage *sfSymbolImage = [[NSImage imageWithSystemSymbolName:sfSymbol accessibilityDescription:nil] imageWithSymbolConfiguration:config];
     
     if (backgroundless) {
         // For backgroundless mode, return the SF Symbol as a template image

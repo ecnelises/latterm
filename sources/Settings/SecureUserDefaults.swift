@@ -482,7 +482,7 @@ class SecureUserDefault<T: SecureUserDefaultStringTranscodable & Codable & Equat
             RLog("Not owned by root. attributes=\(attributes)")
             return nil
         }
-        guard let content = try? String(contentsOf: fileURL) else {
+        guard let content = try? String(contentsOf: fileURL, encoding: .utf8) else {
             RLog("Cannot read contents of \(fileURL)")
             return nil
         }

@@ -1545,7 +1545,7 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
 }
 
 - (NSMenuItem *)menuItemWithIdentifier:(NSString *)identifier
-                                inMenu:(NSMenu *)menu NS_AVAILABLE_MAC(10_12) {
+                                inMenu:(NSMenu *)menu {
     for (NSMenuItem *item in [menu itemArray]) {
         if ([item hasSubmenu]) {
             NSMenuItem *result = [self menuItemWithIdentifier:identifier inMenu:item.submenu];
@@ -3007,9 +3007,7 @@ static BOOL iTermAPIHelperLastApplescriptAuthRequiredSetting;
         if (request.activateApp.raiseAllWindows) {
             options |= NSApplicationActivateAllWindows;
         }
-        if (request.activateApp.ignoringOtherApps) {
-            options |= NSApplicationActivateIgnoringOtherApps;
-        }
+        // NSApplicationActivateIgnoringOtherApps has no effect on macOS 14+.
         DLog(@"Activate with options %@", @(options));
         [[NSRunningApplication currentApplication] activateWithOptions:options];
     }

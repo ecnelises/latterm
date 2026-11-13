@@ -41,12 +41,8 @@
 		A6184F131BA8D65B0088EF3C /* CPKFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184F111BA8D65B0088EF3C /* CPKFlippedView.m */; };
 		A6184F161BA8E87B0088EF3C /* CPKFavorite.h in Headers */ = {isa = PBXBuildFile; fileRef = A6184F141BA8E87B0088EF3C /* CPKFavorite.h */; };
 		A6184F171BA8E87B0088EF3C /* CPKFavorite.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184F151BA8E87B0088EF3C /* CPKFavorite.m */; };
-		A6184F1A1BA8F40C0088EF3C /* CPKEyedropperWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A6184F181BA8F40C0088EF3C /* CPKEyedropperWindow.h */; };
-		A6184F1B1BA8F40C0088EF3C /* CPKEyedropperWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184F191BA8F40C0088EF3C /* CPKEyedropperWindow.m */; };
 		A6184F1E1BA90BB40088EF3C /* CPKColorWell.h in Headers */ = {isa = PBXBuildFile; fileRef = A6184F1C1BA90BB40088EF3C /* CPKColorWell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A6184F1F1BA90BB40088EF3C /* CPKColorWell.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184F1D1BA90BB40088EF3C /* CPKColorWell.m */; };
-		A6184F221BA911980088EF3C /* CPKEyedropperView.h in Headers */ = {isa = PBXBuildFile; fileRef = A6184F201BA911980088EF3C /* CPKEyedropperView.h */; };
-		A6184F231BA911980088EF3C /* CPKEyedropperView.m in Sources */ = {isa = PBXBuildFile; fileRef = A6184F211BA911980088EF3C /* CPKEyedropperView.m */; };
 		A6184F3D1BA9D5700088EF3C /* Add.png in Resources */ = {isa = PBXBuildFile; fileRef = A6184F2F1BA9D5700088EF3C /* Add.png */; };
 		A6184F3E1BA9D5700088EF3C /* Add@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A6184F301BA9D5700088EF3C /* Add@2x.png */; };
 		A6184F411BA9D5700088EF3C /* SelectedColorIndicator.png in Resources */ = {isa = PBXBuildFile; fileRef = A6184F351BA9D5700088EF3C /* SelectedColorIndicator.png */; };
@@ -88,8 +84,6 @@
 		A667C232276A8A09006B4DEF /* NSColorSpace+CPK.h in Headers */ = {isa = PBXBuildFile; fileRef = A667C230276A8A09006B4DEF /* NSColorSpace+CPK.h */; };
 		A667C233276A8A09006B4DEF /* NSColorSpace+CPK.m in Sources */ = {isa = PBXBuildFile; fileRef = A667C231276A8A09006B4DEF /* NSColorSpace+CPK.m */; };
 		A6D3985B2BD9A4A600C4C1AD /* CPKLogging.h in Headers */ = {isa = PBXBuildFile; fileRef = A6D398592BD9A4A600C4C1AD /* CPKLogging.h */; };
-		A6E1748E206DD85F00E70F8D /* CPKScreenshot.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E1748C206DD85F00E70F8D /* CPKScreenshot.h */; };
-		A6E1748F206DD85F00E70F8D /* CPKScreenshot.m in Sources */ = {isa = PBXBuildFile; fileRef = A6E1748D206DD85F00E70F8D /* CPKScreenshot.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,12 +154,8 @@
 		A6184F111BA8D65B0088EF3C /* CPKFlippedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKFlippedView.m; sourceTree = "<group>"; };
 		A6184F141BA8E87B0088EF3C /* CPKFavorite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKFavorite.h; sourceTree = "<group>"; };
 		A6184F151BA8E87B0088EF3C /* CPKFavorite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKFavorite.m; sourceTree = "<group>"; };
-		A6184F181BA8F40C0088EF3C /* CPKEyedropperWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKEyedropperWindow.h; sourceTree = "<group>"; };
-		A6184F191BA8F40C0088EF3C /* CPKEyedropperWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKEyedropperWindow.m; sourceTree = "<group>"; };
 		A6184F1C1BA90BB40088EF3C /* CPKColorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPKColorWell.h; path = include/ColorPicker/CPKColorWell.h; sourceTree = "<group>"; };
 		A6184F1D1BA90BB40088EF3C /* CPKColorWell.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = CPKColorWell.m; sourceTree = "<group>"; };
-		A6184F201BA911980088EF3C /* CPKEyedropperView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPKEyedropperView.h; sourceTree = "<group>"; };
-		A6184F211BA911980088EF3C /* CPKEyedropperView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPKEyedropperView.m; sourceTree = "<group>"; };
 		A6184F2F1BA9D5700088EF3C /* Add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Add.png; sourceTree = "<group>"; };
 		A6184F301BA9D5700088EF3C /* Add@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Add@2x.png"; sourceTree = "<group>"; };
 		A6184F351BA9D5700088EF3C /* SelectedColorIndicator.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SelectedColorIndicator.png; sourceTree = "<group>"; };
@@ -206,8 +196,6 @@
 		A667C230276A8A09006B4DEF /* NSColorSpace+CPK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSColorSpace+CPK.h"; sourceTree = "<group>"; };
 		A667C231276A8A09006B4DEF /* NSColorSpace+CPK.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSColorSpace+CPK.m"; sourceTree = "<group>"; };
 		A6D398592BD9A4A600C4C1AD /* CPKLogging.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPKLogging.h; sourceTree = "<group>"; };
-		A6E1748C206DD85F00E70F8D /* CPKScreenshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPKScreenshot.h; sourceTree = "<group>"; };
-		A6E1748D206DD85F00E70F8D /* CPKScreenshot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPKScreenshot.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,10 +280,6 @@
 				A6184F1D1BA90BB40088EF3C /* CPKColorWell.m */,
 				A6184F0C1BA8C3560088EF3C /* CPKControlsView.h */,
 				A6184F0D1BA8C3560088EF3C /* CPKControlsView.m */,
-				A6184F201BA911980088EF3C /* CPKEyedropperView.h */,
-				A6184F211BA911980088EF3C /* CPKEyedropperView.m */,
-				A6184F181BA8F40C0088EF3C /* CPKEyedropperWindow.h */,
-				A6184F191BA8F40C0088EF3C /* CPKEyedropperWindow.m */,
 				A6184F141BA8E87B0088EF3C /* CPKFavorite.h */,
 				A6184F151BA8E87B0088EF3C /* CPKFavorite.m */,
 				A6184F081BA8BCFC0088EF3C /* CPKFavoritesView.h */,
@@ -324,8 +308,6 @@
 				A6184F5F1BAA0BC30088EF3C /* NSObject+CPK.m */,
 				A6184F2D1BA9D55D0088EF3C /* Resources */,
 				A6184EAB1BA874020088EF3C /* Supporting Files */,
-				A6E1748C206DD85F00E70F8D /* CPKScreenshot.h */,
-				A6E1748D206DD85F00E70F8D /* CPKScreenshot.m */,
 				539804D22346F345009165A8 /* CPKColor.h */,
 				539804D32346F345009165A8 /* CPKColor.m */,
 				A667C230276A8A09006B4DEF /* NSColorSpace+CPK.h */,
@@ -505,7 +487,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A6184EAE1BA874020088EF3C /* ColorPicker.h in Headers */,
-				A6E1748E206DD85F00E70F8D /* CPKScreenshot.h in Headers */,
 				A6184F571BAA06DC0088EF3C /* CPKSwatchView.h in Headers */,
 				A6184EFD1BA8814B0088EF3C /* CPKGradientView.h in Headers */,
 				A6D3985B2BD9A4A600C4C1AD /* CPKLogging.h in Headers */,
@@ -513,14 +494,12 @@
 				A6184F791BAA5E1A0088EF3C /* CPKSliderView.h in Headers */,
 				A6184F711BAA20510088EF3C /* NSColor+CPK.h in Headers */,
 				A6184F601BAA0BC30088EF3C /* NSObject+CPK.h in Headers */,
-				A6184F1A1BA8F40C0088EF3C /* CPKEyedropperWindow.h in Headers */,
 				A6184F0A1BA8BCFC0088EF3C /* CPKFavoritesView.h in Headers */,
 				A6184F1E1BA90BB40088EF3C /* CPKColorWell.h in Headers */,
 				A6184F0E1BA8C3560088EF3C /* CPKControlsView.h in Headers */,
 				A6184F161BA8E87B0088EF3C /* CPKFavorite.h in Headers */,
 				A667C232276A8A09006B4DEF /* NSColorSpace+CPK.h in Headers */,
 				A6184EF21BA876E50088EF3C /* CPKSelectionView.h in Headers */,
-				A6184F221BA911980088EF3C /* CPKEyedropperView.h in Headers */,
 				A6184F011BA883A70088EF3C /* CPKColorComponentSliderView.h in Headers */,
 				A6184F641BAA12890088EF3C /* CPKAlphaSliderView.h in Headers */,
 				A6184F4F1BA9EA410088EF3C /* CPKKDTreeNode.h in Headers */,
@@ -703,12 +682,9 @@
 				A6184F0F1BA8C3560088EF3C /* CPKControlsView.m in Sources */,
 				A6184EFE1BA8814B0088EF3C /* CPKGradientView.m in Sources */,
 				A667C233276A8A09006B4DEF /* NSColorSpace+CPK.m in Sources */,
-				A6E1748F206DD85F00E70F8D /* CPKScreenshot.m in Sources */,
 				A6184F7A1BAA5E1A0088EF3C /* CPKSliderView.m in Sources */,
 				A6184F171BA8E87B0088EF3C /* CPKFavorite.m in Sources */,
 				A6184F581BAA06DC0088EF3C /* CPKSwatchView.m in Sources */,
-				A6184F231BA911980088EF3C /* CPKEyedropperView.m in Sources */,
-				A6184F1B1BA8F40C0088EF3C /* CPKEyedropperWindow.m in Sources */,
 				A6184F651BAA12890088EF3C /* CPKAlphaSliderView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -807,7 +783,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -860,7 +836,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -889,7 +865,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 gnu++11";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -917,7 +893,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu99 gnu++11";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -944,7 +920,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -965,7 +941,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -989,7 +965,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1009,7 +985,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.googlecode.iterm2.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

@@ -67,7 +67,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 @end
 
 @implementation iTermHoverContainerView {
-    NSVisualEffectView *_vev NS_AVAILABLE_MAC(10_14);
+    NSVisualEffectView *_vev;
 }
 
 - (instancetype)initWithFrame:(NSRect)frame {
@@ -149,13 +149,9 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     iTermFindDriver *_permanentStatusBarFindDriver;
     iTermFindDriver *_temporaryStatusBarFindDriver;
     iTermGenericStatusBarContainer *_genericStatusBarContainer;
-    iTermImageView *_imageView NS_AVAILABLE_MAC(10_14);
+    iTermImageView *_imageView;
     NSColor *_terminalBackgroundColor;
 
-    // For macOS 10.14+ when subpixel AA is turned on and the scroller style is legacy, this draws
-    // some blended default background color under the vertical scroller. In all other conditions
-    // its frame is 0x0.
-    iTermScrollerBackgroundColorView *_legacyScrollerBackgroundView;
     iTermUnobtrusiveMessage *_unobtrusiveMessage;
     iTermUploadIndicator *_uploadIndicator;
     iTermStatusBarFilterComponent *_temporaryFilterComponent;
@@ -223,14 +219,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 
         // --- Subsequent views appear overtop terminal contents ---
         _contentViewIndex = self.subviews.count;
-
-        _legacyScrollerBackgroundView = [[iTermScrollerBackgroundColorView alloc] init];
-        _legacyScrollerBackgroundView.layer = [[CALayer alloc] init];
-        _legacyScrollerBackgroundView.wantsLayer = YES;
-        _legacyScrollerBackgroundView.frame = NSMakeRect(0, 0, 0, 0);
-        _legacyScrollerBackgroundView.layer.actions = @{@"backgroundColor": [NSNull null]};
-        _legacyScrollerBackgroundView.hidden = YES;
-        [self addSubview:_legacyScrollerBackgroundView];
 
         _smearView = [[iTermCursorSmearView alloc] init];
         [self addSubview:_smearView];
@@ -435,9 +423,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
         _legacyView.hidden = hidden;
     }
     _imageView.hidden = hidden;
-    if (_legacyScrollerBackgroundView) {
-        _legacyScrollerBackgroundView.hidden = hidden;
-    }
     if (_backgroundColorView) {
         _backgroundColorView.hidden = hidden;
     }
@@ -478,19 +463,16 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     [CATransaction setDisableActions:YES];
 
     _imageView.backgroundColor = color;
-    _legacyScrollerBackgroundView.backgroundColor = color;
     _backgroundColorView.backgroundColor = color;
 
     DLog(@"setTerminalBackgroundColor:%@ %@\n%@", color, self.delegate, [NSThread callStackSymbols]);
     if (color && _metalView.alphaValue < 1) {
-        DLog(@"setTerminalBackgroundColor: Set background color view hidden=%@ because metalview is not opaque", @(!iTermTextIsMonochrome()));
-        _backgroundColorView.hidden = !iTermTextIsMonochrome();
-        _legacyScrollerBackgroundView.hidden = iTermTextIsMonochrome();
+        DLog(@"setTerminalBackgroundColor: Set background color view hidden=NO because metalview is not opaque");
+        _backgroundColorView.hidden = NO;
     } else {
         DLog(@"setTerminalBackgroundColor: Set background color view hidden=YES because bg color (%@) is nil or metalView.alphaValue (%@) == 1",
              color, @(_metalView.alphaValue));
         _backgroundColorView.hidden = YES;
-        _legacyScrollerBackgroundView.hidden = YES;
     }
     [self setNeedsDisplay:YES];
     [CATransaction commit];
@@ -505,16 +487,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     [CATransaction setDisableActions:YES];
     _backgroundColorView.transparency = 1 - transparencyAlpha;
     _backgroundColorView.blend = blend;
-    if (![iTermPreferences perPaneBackgroundImage]) {
-        // This is unfortunate but because I can't use an imageview behind everything when
-        // subpixel AA is enabled, I have to draw *something* behind the legacy scrollers.
-        // NSImageView is not equipped to do the job.
-        _legacyScrollerBackgroundView.transparency = 0;
-        _legacyScrollerBackgroundView.blend = 0;
-    } else {
-        _legacyScrollerBackgroundView.transparency = 1 - transparencyAlpha;
-        _legacyScrollerBackgroundView.blend = blend;
-    }
     _imageView.transparency = 1 - transparencyAlpha;
     _imageView.blend = blend;
     [_toolbarView setTransparencyAlpha:transparencyAlpha];
@@ -795,7 +767,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     return _useMetal;
 }
 
-- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource NS_AVAILABLE_MAC(10_11) {
+- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource {
     if (useMetal != _useMetal) {
         _useMetal = useMetal;
         RLog(@"setUseMetal:%@ dataSource:%@", @(useMetal), dataSource);
@@ -814,7 +786,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     }
 }
 
-- (void)preferredMetalDeviceDidChange:(NSNotification *)notification NS_AVAILABLE_MAC(10_11) {
+- (void)preferredMetalDeviceDidChange:(NSNotification *)notification {
     if (_metalView) {
         [self.delegate sessionViewRecreateMetalView];
     }
@@ -892,7 +864,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 #endif
     }
 }
-- (void)installMetalViewWithDataSource:(id<iTermMetalDriverDataSource>)dataSource NS_AVAILABLE_MAC(10_11) {
+- (void)installMetalViewWithDataSource:(id<iTermMetalDriverDataSource>)dataSource {
     if (_metalView) {
         [self removeMetalView];
     }
@@ -901,11 +873,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
                                               device:[self metalDevice]];
     (void)[iTermMTKView layerClass];
 #if ENABLE_TRANSPARENT_METAL_WINDOWS
-    if (iTermTextIsMonochrome()) {
-        _metalView.layer.opaque = NO;
-    } else {
-        _metalView.layer.opaque = YES;
-    }
+    _metalView.layer.opaque = NO;
 #else
     _metalView.layer.opaque = YES;
 #endif
@@ -936,7 +904,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     [self metalViewVisibilityDidChange];
 }
 
-- (void)removeMetalView NS_AVAILABLE_MAC(10_11) {
+- (void)removeMetalView {
     _metalView.delegate = nil;
     [_metalView removeFromSuperview];
     _metalView = nil;
@@ -982,15 +950,12 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     [CATransaction setDisableActions:YES];
     if (_metalView.alphaValue == 0) {
         _imageView.hidden = (_imageView.image == nil);
-        DLog(@"updateImageAndBackgroundViewVisibility: set backgroundColorView.hidden=%@ because metalView.alphaValue=0",
-             @(!iTermTextIsMonochrome()));
-        _backgroundColorView.hidden = !iTermTextIsMonochrome();
-        _legacyScrollerBackgroundView.hidden = iTermTextIsMonochrome();
+        DLog(@"updateImageAndBackgroundViewVisibility: set backgroundColorView.hidden=NO because metalView.alphaValue=0");
+        _backgroundColorView.hidden = NO;
     } else {
         _imageView.hidden = YES;
         DLog(@"updateImageAndBackgroundViewVisibility: Set backgroundColorView.hidden=YES because metalView.alphaValue (%@) != 0", @(_metalView.alphaValue));
         _backgroundColorView.hidden = YES;
-        _legacyScrollerBackgroundView.hidden = YES;
     }
     [self setNeedsDisplay:YES];
     [CATransaction commit];
@@ -1062,14 +1027,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
     [self updateLayout];
     [self updateTrackingAreas];
-}
-
-- (NSRect)frameForLegacyScroller {
-    if (!_scrollview.isLegacyScroller) {
-        return NSZeroRect;
-    }
-    return [_scrollview.verticalScroller convertRect:_scrollview.verticalScroller.bounds
-                                              toView:self];
 }
 
 - (void)colorPreferencesDidDisappear:(NSNotification *)notification {
@@ -1147,7 +1104,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
         _imageView.frame = frame;
         _backgroundColorView.frame = frame;
         _smearView.frame = frame;
-        _legacyScrollerBackgroundView.frame = [self frameForLegacyScroller];
         [CATransaction commit];
         [self updateActivePaneBorder];
     }
@@ -1156,7 +1112,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     _imageView.frame = self.bounds;
     _backgroundColorView.frame = self.bounds;
     _smearView.frame = self.bounds;
-    _legacyScrollerBackgroundView.frame = [self frameForLegacyScroller];
     {
         CGFloat progressBarY = self.bounds.size.height - _progressBar.desiredHeight;
         if (_showTitle) {
@@ -2342,13 +2297,11 @@ typedef NS_OPTIONS(NSUInteger, iTermCornerFlags) {
         frame.origin.x += 5;
     }
     frame = NSInsetRect(frame, 0, 2);
-    if (@available(macOS 10.15, *)) {
-        if ([[NSApp effectiveAppearance] it_isDark]) {
-            // Avoid overlapping the border on the right. It looks ugly
-            // when the window's dark because the part that overlaps the
-            // border is extra bright.
-            frame.size.width -= 1;
-        }
+    if ([[NSApp effectiveAppearance] it_isDark]) {
+        // Avoid overlapping the border on the right. It looks ugly
+        // when the window's dark because the part that overlaps the
+        // border is extra bright.
+        frame.size.width -= 1;
     }
     if (animated) {
         [NSView animateWithDuration:5.0 / 60.0
@@ -2732,11 +2685,11 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 #pragma mark - iTermSearchResultsMinimapViewDelegate
 
-- (NSIndexSet *)searchResultsMinimapViewLocations:(iTermSearchResultsMinimapView *)view NS_AVAILABLE_MAC(10_14) {
+- (NSIndexSet *)searchResultsMinimapViewLocations:(iTermSearchResultsMinimapView *)view {
     return [self.searchResultsMinimapViewDelegate searchResultsMinimapViewLocations:view];
 }
 
-- (NSRange)searchResultsMinimapViewRangeOfVisibleLines:(iTermSearchResultsMinimapView *)view NS_AVAILABLE_MAC(10_14) {
+- (NSRange)searchResultsMinimapViewRangeOfVisibleLines:(iTermSearchResultsMinimapView *)view {
     return [self.searchResultsMinimapViewDelegate searchResultsMinimapViewRangeOfVisibleLines:view];
 }
 

@@ -14,7 +14,6 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplication.h"
 #import "iTermSearchField.h"
-#import "iTermSystemVersion.h"
 #import "iTermUserDefaults.h"
 #import "NSAlert+iTerm.h"
 #import "NSArray+iTerm.h"

@@ -261,7 +261,6 @@ class iTermLogger {
 class iTermCallbackLogging: NSObject {
     @objc static var callback: ((String) -> ())? = nil
 
-    @available(macOS 11.0, *)
     static let logger = iTermLogger()
 }
 
@@ -271,10 +270,8 @@ public class LogContext {
 }
 
 public func log(_ message: String) {
-    if #available(macOS 11.0, *) {
-        let prefix = LogContext.logContexts.joined(separator: " > ")
-        iTermCallbackLogging.logger.info("\(prefix): \(message)")
-    }
+    let prefix = LogContext.logContexts.joined(separator: " > ")
+    iTermCallbackLogging.logger.info("\(prefix): \(message)")
     iTermCallbackLogging.callback?(message)
 }
 
@@ -306,7 +303,6 @@ public extension Data {
     }
 }
 
-@available(macOS 10.15, *)
 public func logging<T>(_ prefix: String, closure: () async throws -> T) async rethrows -> T {
     return try await LogContext.$logContexts.withValue(LogContext.logContexts + [prefix]) {
         log("begin")

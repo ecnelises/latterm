@@ -41,7 +41,7 @@ class NerdFontInstaller {
 
     static var configString: String {
         let path = Bundle(for: SpecialExceptionsWindowController.self).path(forResource: "nerd", ofType: "itse")!
-        return try! String(contentsOf: URL.init(fileURLWithPath: path))
+        return try! String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
     }
 
     static var config: FontTable.Config = {

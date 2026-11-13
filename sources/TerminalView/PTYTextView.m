@@ -677,13 +677,11 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
         DLog(@"super performed it");
         return YES;
     }
-    if (@available(macOS 15, *)) {
-        DLog(@"kPreferenceKeyAllowSymbolicHotKeys=%@", @([iTermPreferences boolForKey:kPreferenceKeyAllowSymbolicHotKeys]));
-        if ([iTermPreferences boolForKey:kPreferenceKeyAllowSymbolicHotKeys] &&
-            [iTermSymbolicHotkeys haveBoundKeyForKeycode:theEvent.keyCode modifiers:theEvent.it_modifierFlags]) {
-            DLog(@"Return NO");
-            return NO;
-        }
+    DLog(@"kPreferenceKeyAllowSymbolicHotKeys=%@", @([iTermPreferences boolForKey:kPreferenceKeyAllowSymbolicHotKeys]));
+    if ([iTermPreferences boolForKey:kPreferenceKeyAllowSymbolicHotKeys] &&
+        [iTermSymbolicHotkeys haveBoundKeyForKeycode:theEvent.keyCode modifiers:theEvent.it_modifierFlags]) {
+        DLog(@"Return NO");
+        return NO;
     }
     if (self.window.firstResponder != self) {
         // Don't let it go to the key mapper if I'm not first responder. This
@@ -1265,46 +1263,38 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         DLog(@"Have visible blocks");
         return YES;
     }
-    if (@available(macOS 11, *)) {
-        if ([self hasTerminalButtons]) {
-            DLog(@"Have terminal buttons");
-            return YES;
-        }
+    if ([self hasTerminalButtons]) {
+        DLog(@"Have terminal buttons");
+        return YES;
     }
     return [_mouseHandler wantsMouseMovementEvents] || [self hasTerminalButtons];
 }
 
 - (BOOL)hasTerminalButtons {
-    if (@available(macOS 11, *)) {
-        return _buttons.count > 0 || _hoverBlockCopyButton != nil || _hoverBlockFoldButton != nil;
-    }
-    return NO;
+    return _buttons.count > 0 || _hoverBlockCopyButton != nil || _hoverBlockFoldButton != nil;
 }
 
 - (BOOL)mouseIsOverButtonInEvent:(NSEvent *)event {
-    if (@available(macOS 11, *)) {
-        const NSPoint point = [self convertPoint:event.locationInWindow fromView:nil];
-        DLog(@"%@", NSStringFromPoint(point));
-        NSArray<iTermTerminalButton *> *buttons = _buttons;
-        if (_hoverBlockFoldButton) {
-            buttons = [buttons arrayByAddingObject:_hoverBlockFoldButton];
-        }
-        if (_hoverBlockCopyButton) {
-            buttons = [buttons arrayByAddingObject:_hoverBlockCopyButton];
-        }
-        DLog(@"Mouse at %@", NSStringFromPoint(point));
-        // Check direct button hits
-        BOOL directHit = [buttons anyWithBlock:^BOOL(iTermTerminalButton *button) {
-            DLog(@"Button %@ at %@", button, NSStringFromRect(button.desiredFrame));
-            return NSPointInRect(point, button.desiredFrame);
-        }];
-        if (directHit) {
-            return YES;
-        }
-        // Also check pill container areas
-        return [self buttonInPillContainerAtPoint:point] != nil;
+    const NSPoint point = [self convertPoint:event.locationInWindow fromView:nil];
+    DLog(@"%@", NSStringFromPoint(point));
+    NSArray<iTermTerminalButton *> *buttons = _buttons;
+    if (_hoverBlockFoldButton) {
+        buttons = [buttons arrayByAddingObject:_hoverBlockFoldButton];
     }
-    return NO;
+    if (_hoverBlockCopyButton) {
+        buttons = [buttons arrayByAddingObject:_hoverBlockCopyButton];
+    }
+    DLog(@"Mouse at %@", NSStringFromPoint(point));
+    // Check direct button hits
+    BOOL directHit = [buttons anyWithBlock:^BOOL(iTermTerminalButton *button) {
+        DLog(@"Button %@ at %@", button, NSStringFromRect(button.desiredFrame));
+        return NSPointInRect(point, button.desiredFrame);
+    }];
+    if (directHit) {
+        return YES;
+    }
+    // Also check pill container areas
+    return [self buttonInPillContainerAtPoint:point] != nil;
 }
 
 // Find the button that should handle a click at the given point if it's within a pill container
@@ -2127,9 +2117,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     }
 
     [_drawingHelper updateCachedMetrics];
-    if (@available(macOS 11, *)) {
-        [self updateTooltipsForButtons:[_drawingHelper updateButtonFrames]];
-    }
+    [self updateTooltipsForButtons:[_drawingHelper updateButtonFrames]];
 
     const VT100GridRange range = [self rangeOfVisibleLines];
     const int topBottomMargin = [iTermPreferences topBottomMargins];
@@ -2164,7 +2152,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     return helper;
 }
 
-- (void)updateTooltipsForButtons:(NSArray<iTermTerminalButton *> *)buttons NS_AVAILABLE_MAC(11_0) {
+- (void)updateTooltipsForButtons:(NSArray<iTermTerminalButton *> *)buttons {
     if (!buttons.count && _haveTooltips) {
         [self removeAllToolTips];
         _haveTooltips = NO;
@@ -3479,23 +3467,21 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
                         absLineRange:(NSRange)absLineRange
                              changed:(out BOOL *)changedPtr {
     *changedPtr = NO;
-    if (@available(macOS 11, *)) {
-        if (!block) {
-            if (_hoverBlockCopyButton != nil || _hoverBlockFoldButton != nil) {
-                *changedPtr = YES;
-            }
-            _hoverBlockCopyButton = nil;
-            _hoverBlockFoldButton = nil;
-        } else {
-            if (![_hoverBlockCopyButton.blockID isEqualToString:block]) {
-                *changedPtr = YES;
-                [self makeBlockCopyButtonForLine:line block:block];
-            }
-            [self makeOrUpdateBlockFoldButtonForLine:line
-                                               block:block
-                                        absLineRange:absLineRange
-                                             changed:changedPtr];
+    if (!block) {
+        if (_hoverBlockCopyButton != nil || _hoverBlockFoldButton != nil) {
+            *changedPtr = YES;
         }
+        _hoverBlockCopyButton = nil;
+        _hoverBlockFoldButton = nil;
+    } else {
+        if (![_hoverBlockCopyButton.blockID isEqualToString:block]) {
+            *changedPtr = YES;
+            [self makeBlockCopyButtonForLine:line block:block];
+        }
+        [self makeOrUpdateBlockFoldButtonForLine:line
+                                           block:block
+                                    absLineRange:absLineRange
+                                         changed:changedPtr];
     }
 }
 
@@ -6422,7 +6408,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     return NO;
 }
 
-- (NSArray<iTermTerminalButton *> *)drawingHelperTerminalButtons  API_AVAILABLE(macos(11)){
+- (NSArray<iTermTerminalButton *> *)drawingHelperTerminalButtons {
     return [self terminalButtons];
 }
 
@@ -6438,7 +6424,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     return _cursorSlideAnimator.animationInProgress;
 }
 
-- (VT100GridAbsCoord)absCoordForButton:(iTermTerminalButton *)button API_AVAILABLE(macos(11)) {
+- (VT100GridAbsCoord)absCoordForButton:(iTermTerminalButton *)button {
     if (!button.mark) {
         NSInteger y = button.transientAbsY;
         if (y >= 0) {
@@ -6575,7 +6561,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 - (NSArray<iTermTerminalButton *> *)commandButtonsForMark:(id<VT100ScreenMarkReading>)mark
                                                      line:(int)markLine
                                               shouldFloat:(BOOL)shouldFloat
-                                                 offByOne:(BOOL)offByOne NS_AVAILABLE_MAC(11)
+                                                 offByOne:(BOOL)offByOne
 {
     const int width = [self.dataSource width];
     const long long offset = self.dataSource.totalScrollbackOverflow;
@@ -6827,48 +6813,46 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 - (void)updateButtonHover:(NSPoint)locationInWindow pressed:(BOOL)pressed {
     NSPoint point = [self convertPoint:locationInWindow fromView:nil];
     DLog(@"updateHover location=%@ pressed=%@", NSStringFromPoint(locationInWindow), @(pressed));
-    if (@available(macOS 11, *)) {
-        BOOL changed = NO;
-        // Find which button the mouse is over (including pill container areas)
-        iTermTerminalButton *buttonUnderMouse = nil;
-        for (iTermTerminalButton *button in self.terminalButtons) {
-            if (NSPointInRect(point, button.desiredFrame)) {
-                buttonUnderMouse = button;
-                break;
-            }
+    BOOL changed = NO;
+    // Find which button the mouse is over (including pill container areas)
+    iTermTerminalButton *buttonUnderMouse = nil;
+    for (iTermTerminalButton *button in self.terminalButtons) {
+        if (NSPointInRect(point, button.desiredFrame)) {
+            buttonUnderMouse = button;
+            break;
         }
-        if (!buttonUnderMouse) {
-            buttonUnderMouse = [self buttonInPillContainerAtPoint:point];
-        }
+    }
+    if (!buttonUnderMouse) {
+        buttonUnderMouse = [self buttonInPillContainerAtPoint:point];
+    }
 
-        for (iTermTerminalButton *button in self.terminalButtons) {
-            if (button == buttonUnderMouse) {
-                DLog(@"mouse is over %@", button);
-                // Mouse over button
-                if (pressed) {
-                    changed = [button mouseDownInside] || changed;
-                } else if (button.pressed) {
-                    DLog(@"button was pressed");
-                    [button mouseUpWithLocationInWindow:locationInWindow];
-                    changed = YES;
-                }
-            } else {
-                // Mouse not over button
-                if (pressed) {
-                    changed = [button mouseDownOutside] || changed;
-                } else if (button.pressed) {
-                    DLog(@"button was pressed");
-                    [button mouseUpWithLocationInWindow:locationInWindow];
-                    changed = YES;
-                }
+    for (iTermTerminalButton *button in self.terminalButtons) {
+        if (button == buttonUnderMouse) {
+            DLog(@"mouse is over %@", button);
+            // Mouse over button
+            if (pressed) {
+                changed = [button mouseDownInside] || changed;
+            } else if (button.pressed) {
+                DLog(@"button was pressed");
+                [button mouseUpWithLocationInWindow:locationInWindow];
+                changed = YES;
+            }
+        } else {
+            // Mouse not over button
+            if (pressed) {
+                changed = [button mouseDownOutside] || changed;
+            } else if (button.pressed) {
+                DLog(@"button was pressed");
+                [button mouseUpWithLocationInWindow:locationInWindow];
+                changed = YES;
             }
         }
-        if ([self updateSuppressedTopRightIndicatorsForMouseAt:point overButton:(buttonUnderMouse != nil)]) {
-            changed = YES;
-        }
-        if (changed) {
-            [self requestDelegateRedraw];
-        }
+    }
+    if ([self updateSuppressedTopRightIndicatorsForMouseAt:point overButton:(buttonUnderMouse != nil)]) {
+        changed = YES;
+    }
+    if (changed) {
+        [self requestDelegateRedraw];
     }
 }
 
@@ -8233,25 +8217,23 @@ dragSemanticHistoryWithEvent:(NSEvent *)event
         DLog(@"TextView handling mouseDown: not in bounds");
         return NO;
     }
-    if (@available(macOS 11, *)) {
-        // First check direct button hits
-        for (iTermTerminalButton *button in self.terminalButtons) {
-            if (NSPointInRect(point, button.desiredFrame)) {
-                if ([button mouseDownInside]) {
-                    [self requestDelegateRedraw];
-                }
-                return YES;
-            }
-            DLog(@"TextView handling mouseDown: not in %@ with frame %@", button.description, NSStringFromRect(button.desiredFrame));
-        }
-        // Check if click is within a pill container but between buttons
-        iTermTerminalButton *buttonInPill = [self buttonInPillContainerAtPoint:point];
-        if (buttonInPill) {
-            if ([buttonInPill mouseDownInside]) {
+    // First check direct button hits
+    for (iTermTerminalButton *button in self.terminalButtons) {
+        if (NSPointInRect(point, button.desiredFrame)) {
+            if ([button mouseDownInside]) {
                 [self requestDelegateRedraw];
             }
             return YES;
         }
+        DLog(@"TextView handling mouseDown: not in %@ with frame %@", button.description, NSStringFromRect(button.desiredFrame));
+    }
+    // Check if click is within a pill container but between buttons
+    iTermTerminalButton *buttonInPill = [self buttonInPillContainerAtPoint:point];
+    if (buttonInPill) {
+        if ([buttonInPill mouseDownInside]) {
+            [self requestDelegateRedraw];
+        }
+        return YES;
     }
     DLog(@"TextView handling mouseDown: not in anything");
     return NO;
@@ -8272,17 +8254,15 @@ dragSemanticHistoryWithEvent:(NSEvent *)event
 
     }
     BOOL clicked = NO;
-    if (@available(macOS 11, *)) {
-        [self updateButtonHover:locationInWindow pressed:NO];
-        for (iTermTerminalButton *button in self.terminalButtons) {
-            if (!button.pressed) {
-                DLog(@"mouseUp: %@ not pressed", button.description);
-                continue;
-            }
-            clicked = clicked || button.pressed;
-            if ([button mouseUpWithLocationInWindow:locationInWindow]) {
-                [self requestDelegateRedraw];
-            }
+    [self updateButtonHover:locationInWindow pressed:NO];
+    for (iTermTerminalButton *button in self.terminalButtons) {
+        if (!button.pressed) {
+            DLog(@"mouseUp: %@ not pressed", button.description);
+            continue;
+        }
+        clicked = clicked || button.pressed;
+        if ([button mouseUpWithLocationInWindow:locationInWindow]) {
+            [self requestDelegateRedraw];
         }
     }
     return clicked;

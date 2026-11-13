@@ -59,7 +59,7 @@ const NSTimeInterval iTermWindowTitleChangeMinimumInterval = 0.1;
 - (void)_moveToScreen:(id)sender;
 - (void)_resizeFromWindowManagerWithTargetGeometry:(id)geometry
                                     springSettings:(id)springSettings
-                                        completion:(id)completion NS_AVAILABLE_MAC(15_0);
+                                        completion:(id)completion;
 @end
 
 @interface NSFrameView : NSView

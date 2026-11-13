@@ -12,7 +12,6 @@
 #import "iTermPreviousState.h"
 #import "iTermProfilePreferences.h"
 #import "iTermShortcutInputView.h"
-#import "iTermSystemVersion.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"

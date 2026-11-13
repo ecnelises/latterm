@@ -12,7 +12,6 @@ typedef NS_ENUM(int, iTermTextRendererStat) {
     iTermTextRendererStatNewPIU,
     iTermTextRendererStatNewDims,
     iTermTextRendererStatNewTextInfo,
-    iTermTextRendererStatSubpixelModel,
     iTermTextRendererStatDraw,
 
     iTermTextRendererStatCount

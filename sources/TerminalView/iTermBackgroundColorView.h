@@ -20,7 +20,4 @@ NS_ASSUME_NONNULL_BEGIN
 @interface iTermSessionBackgroundColorView: iTermBackgroundColorView
 @end
 
-@interface iTermScrollerBackgroundColorView: iTermBackgroundColorView
-@end
-
 NS_ASSUME_NONNULL_END

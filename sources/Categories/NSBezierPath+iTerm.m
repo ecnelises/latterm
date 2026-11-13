@@ -85,7 +85,7 @@
                 CGPathAddLineToPoint(path, NULL, associatedPoints[0].x, associatedPoints[0].y);
                 break;
 
-            case NSBezierPathElementCurveTo:
+            case NSBezierPathElementCubicCurveTo:
                 closed = NO;
                 CGPathAddCurveToPoint(path, NULL,
                                       associatedPoints[0].x, associatedPoints[0].y,

@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "ColorPicker",
-    platforms: [.macOS(.v12)],
+    platforms: [.macOS("15.0")],
     // Only application targets link this product; shared libraries import its headers.
     products: [
         .library(name: "ColorPicker", type: .static, targets: ["ColorPicker"])

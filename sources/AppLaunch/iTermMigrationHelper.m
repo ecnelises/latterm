@@ -236,7 +236,7 @@ static NSString *const iTermMigrationHelperRemoveDeprecatedKeyMappingsUserDefaul
            forKey:iTermMigrationHelperRemoveDeprecatedKeyMappingsUserDefaultKey];
 }
 
-+ (void)askToRemoveDeprecatedKeyMappingsIfNeeded NS_AVAILABLE_MAC(15) {
++ (void)askToRemoveDeprecatedKeyMappingsIfNeeded {
     switch ([self shouldRemoveDeprecatedKeyMappings]) {
         case iTermMigrationHelperShouldRemoveDeprecatedKeyMappingsNoneFound:
             // Didn't find any last time. To avoid slowing launch, assume it hasn't changed.
@@ -263,7 +263,7 @@ static NSString *const iTermMigrationHelperRemoveDeprecatedKeyMappingsUserDefaul
     }
 }
 
-+ (BOOL)askToRemoveDeprecatedKeyMappings:(NSString *)specialReason NS_AVAILABLE_MAC(15) {
++ (BOOL)askToRemoveDeprecatedKeyMappings:(NSString *)specialReason {
     NSString *message = specialReason ?: @"Some profiles have unnecessary key mappings which may interfere with window tiling shortcuts added in macOS Sequoia. These were in the default profile for many years but are no longer needed. Remove the key mappings? It shouldn’t break anything, and it won’t modify the on-disk copy of the dynamic profile.";
 
 

@@ -98,7 +98,6 @@ static const NSInteger iTermASCIITextureCapacity = iTermASCIITextureOffsetCount 
                           creation:(NSDictionary<NSNumber *, iTermCharacterBitmap *> * _Nonnull (^)(char, iTermASCIITextureAttributes))creation {
     self = [super init];
     if (self) {
-        _parts = (iTermASCIITextureParts *)iTermCalloc(128, sizeof(iTermASCIITextureParts));
         _attributes = attributes;
         _textureArray = [[iTermTextureArray alloc] initWithTextureWidth:descriptor.glyphSize.width
                                                           textureHeight:descriptor.glyphSize.height
@@ -112,19 +111,7 @@ static const NSInteger iTermASCIITextureCapacity = iTermASCIITextureOffsetCount 
 
         for (int i = iTermASCIITextureMinimumCharacter; i <= iTermASCIITextureMaximumCharacter; i++) {
             NSDictionary<NSNumber *, iTermCharacterBitmap *> *dict = creation(i, attributes);
-            iTermCharacterBitmap *left = dict[@(iTermImagePartFromDeltas(-1, 0))];
             iTermCharacterBitmap *center = dict[@(iTermImagePartFromDeltas(0, 0))];
-            iTermCharacterBitmap *right = dict[@(iTermImagePartFromDeltas(1, 0))];
-            if (left) {
-                _parts[i] |= iTermASCIITexturePartsLeft;
-                [_textureArray setSlice:iTermASCIITextureIndexOfCode(i, iTermASCIITextureOffsetLeft)
-                              withBitmap:left];
-            }
-            if (right) {
-                _parts[i] |= iTermASCIITexturePartsRight;
-                [_textureArray setSlice:iTermASCIITextureIndexOfCode(i, iTermASCIITextureOffsetRight)
-                              withBitmap:right];
-            }
             if (center) {
                 [_textureArray setSlice:iTermASCIITextureIndexOfCode(i, iTermASCIITextureOffsetCenter)
                               withBitmap:center];
@@ -134,10 +121,6 @@ static const NSInteger iTermASCIITextureCapacity = iTermASCIITextureOffsetCount 
         }
     }
     return self;
-}
-
-- (void)dealloc {
-    free(_parts);
 }
 
 @end

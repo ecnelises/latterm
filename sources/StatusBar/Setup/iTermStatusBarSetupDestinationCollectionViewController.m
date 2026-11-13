@@ -98,14 +98,6 @@
 }
 
 - (void)deleteItemAtIndex:(NSInteger)index {
-    NSRect rectInWindowCoords = [self.collectionView convertRect:[self.collectionView frameForItemAtIndex:index] toView:nil];
-    NSRect rect = [self.collectionView.window convertRectToScreen:rectInWindowCoords];
-    NSShowAnimationEffect(NSAnimationEffectPoof,
-                          NSMakePoint(NSMidX(rect), NSMidY(rect)),
-                          NSZeroSize,
-                          nil,
-                          nil,
-                          NULL);
     [[[self.collectionView itemAtIndex:index] view] setHidden:YES];
     [self.collectionView.animator performBatchUpdates:
      ^{

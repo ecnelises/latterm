@@ -179,7 +179,6 @@
 #import "iTermSwiftyString.h"
 #import "iTermSwiftyStringGraph.h"
 #import "iTermSwipeTracker.h"
-#import "iTermSystemVersion.h"
 #import "iTermTermkeyKeyMapper.h"
 #import "iTermTextExtractor.h"
 #import "iTermTheme.h"
@@ -611,7 +610,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 
     iTermUpdateCadenceController *_cadenceController;
 
-    iTermMetalGlue *_metalGlue NS_AVAILABLE_MAC(10_11);
+    iTermMetalGlue *_metalGlue;
 
     int _updateCount;
     BOOL _metalFrameChangePending;
@@ -1083,9 +1082,7 @@ ITERM_WEAKLY_REFERENCEABLE
     }
     [_view release];
     [_logging stop];
-    if (@available(macOS 10.11, *)) {
-        [_metalGlue release];
-    }
+    [_metalGlue release];
     [_nameController release];
     [_tailFindController stopTailFind];  // This frees the substring in the tail find context, if needed.
     _shell.delegate = nil;
@@ -6080,11 +6077,7 @@ ITERM_WEAKLY_REFERENCEABLE
         _customIcon = [[iTermCacheableImage alloc] init];
     }
     NSString *path = [iTermProfilePreferences stringForKey:KEY_ICON_PATH inProfile:profile];
-    BOOL flipped = YES;
-    if (@available(macOS 10.15, *)) {
-        flipped = NO;
-    }
-    return [_customIcon imageAtPath:path ofSize:NSMakeSize(16, 16) flipped:flipped];
+    return [_customIcon imageAtPath:path ofSize:NSMakeSize(16, 16) flipped:NO];
 }
 
 - (NSString *)windowTitle {
@@ -6260,7 +6253,7 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (BOOL)shouldDrawBackgroundImageManually {
-    return !iTermTextIsMonochrome() || [NSView iterm_takingSnapshot];
+    return [NSView iterm_takingSnapshot];
 }
 
 - (void)updateViewBackgroundImage {
@@ -8439,7 +8432,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     return [self effectiveBlend];
 }
 
-- (void)metalGlueDidDrawFrameAndNeedsRedraw:(BOOL)redrawAsap NS_AVAILABLE_MAC(10_11) {
+- (void)metalGlueDidDrawFrameAndNeedsRedraw:(BOOL)redrawAsap {
     if (_view.useMetal) {
         if (redrawAsap) {
             [_textview requestDelegateRedraw];
@@ -8579,14 +8572,12 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         machineSupportsMetal = devices.count > 0;
         [devices release];
     });
-    if (@available(macOS 12.0, *)) {
-        if ([iTermPreferences boolForKey:kPreferenceKeyDisableInLowPowerMode] &&
-            [[iTermPowerManager sharedInstance] isLowPowerModeEnabled]) {
-            if (reason) {
-                *reason = iTermMetalUnavailableReasonLowerPowerMode;
-            }
-            return NO;
+    if ([iTermPreferences boolForKey:kPreferenceKeyDisableInLowPowerMode] &&
+        [[iTermPowerManager sharedInstance] isLowPowerModeEnabled]) {
+        if (reason) {
+            *reason = iTermMetalUnavailableReasonLowerPowerMode;
         }
+        return NO;
     }
     if (!machineSupportsMetal) {
         if (reason) {
@@ -8666,20 +8657,14 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         return NO;
     }
 #endif
+#if !ENABLE_TRANSPARENT_METAL_WINDOWS
     if (_textview.transparencyAlpha < 1) {
-        BOOL transparencyAllowed = NO;
-#if ENABLE_TRANSPARENT_METAL_WINDOWS
-        if (iTermTextIsMonochrome()) {
-            transparencyAllowed = YES;
+        if (reason) {
+            *reason = iTermMetalUnavailableReasonTransparency;
         }
-#endif
-        if (!transparencyAllowed && _textview.transparencyAlpha < 1) {
-            if (reason) {
-                *reason = iTermMetalUnavailableReasonTransparency;
-            }
-            return NO;
-        }
+        return NO;
     }
+#endif
     return YES;
 }
 
@@ -8692,7 +8677,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     return _useMetal && _view.metalView.alphaValue == 1 && _wrapper.useMetal && _textview.suppressDrawing;
 }
 
-- (BOOL)metalViewSizeIsLegal NS_AVAILABLE_MAC(10_11) {
+- (BOOL)metalViewSizeIsLegal {
     NSSize size = _view.frame.size;
     // See "Maximum 2D texture width and height" in "Implementation Limits". Pick the smallest value
     // among the "Mac" columns.
@@ -8759,7 +8744,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     }
 }
 
-- (void)renderTwoMetalFramesAndShowMetalView NS_AVAILABLE_MAC(10_11) {
+- (void)renderTwoMetalFramesAndShowMetalView {
     // The first frame will be slow to draw. The second frame will be very
     // recent to minimize jitter. For reasons I haven't understood yet it seems
     // the first frame is sometimes transparent. I haven't seen that issue with
@@ -8827,7 +8812,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     _view.metalView.enableSetNeedsDisplay = YES;
 }
 
-- (void)showMetalAndStopDrawingTextView NS_AVAILABLE_MAC(10_11) {
+- (void)showMetalAndStopDrawingTextView {
     // If the legacy view had been visible, hide it. Hiding it before the
     // first frame is drawn causes a flash of gray.
     DLog(@"showMetalAndStopDrawingTextView");
@@ -8852,7 +8837,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     [self.delegate sessionDidChangeMetalViewAlphaValue:self to:alphaValue];
 }
 
-- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource NS_AVAILABLE_MAC(10_11) {
+- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource {
     [_view setUseMetal:useMetal dataSource:dataSource];
     if (!useMetal) {
         _textview.suppressDrawing = NO;
@@ -8861,7 +8846,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     }
 }
 
-- (void)updateMetalDriver NS_AVAILABLE_MAC(10_11) {
+- (void)updateMetalDriver {
     DLog(@"%@", self);
     const CGSize cellSize = CGSizeMake(_textview.charWidth, _textview.lineHeight);
     CGSize glyphSize;
@@ -8897,33 +8882,21 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         // bounds and get clipped in the texture.
         extraGlyphSize.height = -floor(rect.origin.y * scale);
     }
-    if (iTermTextIsMonochrome() && rect.origin.x < 0) {
+    if (rect.origin.x < 0) {
         // AnonymousPro has a similar problem (issue 8185), e.g. with "W".
-        // There is a subtle difference, though! The monochrome code path assumes that glyphs are
-        // left-aligned in their glyphSize-sized chunk of the texture. Setting the asciiOffset here
-        // causes them to all be rendered a few pixels to the right so that this assumption will be
-        // true. The quad is then shifted left by a corresponding amount when rendering so it ends
-        // up drawn in the right place.
-        //
-        // When doing subpixel antialiasing, this is not an issue because it deals with multipart
-        // ASCII glyphs differently. It splits them into pieces and draws them as separate instances.
-        //
-        // Changing the assumption that glyphs are left-aligned would be very complex, and I can't
-        // afford to add more risk right now. This is less than beautiful, but it's quite safe.
+        // The monochrome code path assumes that glyphs are left-aligned in their glyphSize-sized
+        // chunk of the texture. Setting the asciiOffset here causes them to all be rendered a few
+        // pixels to the right so that this assumption will be true. The quad is then shifted left
+        // by a corresponding amount when rendering so it ends up drawn in the right place.
         asciiOffset.width = -floor(rect.origin.x * scale);
         extraGlyphSize.width = fabs(asciiOffset.width);
     }
     DLog(@"Ascii offset is %@", NSStringFromSize(asciiOffset));
-    if (iTermTextIsMonochrome()) {
-        DLog(@"Increase glyph size for monochrome");
-        // Mojave can use a glyph size larger than cell size because compositing is trivial without subpixel AA.
-        glyphSize.width = round(1 + MAX(cellSize.width, NSMaxX(rect)));
-        glyphSize.height = round(1 + MAX(cellSize.height, NSMaxY(rect)));
-        glyphSize.width += extraGlyphSize.width * 2;
-        glyphSize.height += extraGlyphSize.height * 2;
-    } else {
-        glyphSize = cellSize;
-    }
+    DLog(@"Increase glyph size for monochrome");
+    glyphSize.width = round(1 + MAX(cellSize.width, NSMaxX(rect)));
+    glyphSize.height = round(1 + MAX(cellSize.height, NSMaxY(rect)));
+    glyphSize.width += extraGlyphSize.width * 2;
+    glyphSize.height += extraGlyphSize.height * 2;
     DLog(@"cellSize=%@ glyphSize=%@", NSStringFromSize(cellSize), NSStringFromSize(glyphSize));
     [self setMetalContextSize:glyphSize];
     if (!_metalContext) {
@@ -14221,19 +14194,15 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     if (![iTermProfilePreferences boolForKey:KEY_PROMPT_PATH_CLICK_OPENS_NAVIGATOR inProfile:self.profile]) {
         return;
     }
-    if (@available(macOS 11, *)) {
-        [_pathCompletionHelper invalidate];
-        [_pathCompletionHelper autorelease];
-        _pathCompletionHelper = [[self showCompletionUIForPathMark:pathMark] retain];
-    }
+    [_pathCompletionHelper invalidate];
+    [_pathCompletionHelper autorelease];
+    _pathCompletionHelper = [[self showCompletionUIForPathMark:pathMark] retain];
 }
 
 - (void)textViewCancelSingleClick {
-    if (@available(macOS 11, *)) {
-        [_pathCompletionHelper invalidate];
-        [_pathCompletionHelper autorelease];
-        _pathCompletionHelper = nil;
-    }
+    [_pathCompletionHelper invalidate];
+    [_pathCompletionHelper autorelease];
+    _pathCompletionHelper = nil;
 }
 
 - (void)textViewRevealChannelWithUID:(NSString *)uid {
@@ -14579,10 +14548,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)textViewCanUploadOverSSHIntegrationTo:(SCPPath *)path {
-    if (@available(macOS 11, *)) {
-        return [_conductor canTransferFilesTo:path];
-    }
-    return NO;
+    return [_conductor canTransferFilesTo:path];
 }
 
 - (BOOL)textViewCanUseSSHIntegrationFor:(SCPPath *)path {
@@ -17331,20 +17297,8 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         @"hand2": ^{ return[NSCursor pointingHandCursor]; },
         @"left_ptr": ^{ return[NSCursor arrowCursor]; },
         @"left_side": ^{ return[NSCursor resizeLeftCursor]; },
-        @"minus": ^{
-            if (@available(macOS 15.0, *)) {
-                return [NSCursor zoomOutCursor];
-            } else {
-                return [NSCursor crosshairCursor];
-            }
-        },
-        @"plus": ^{
-            if (@available(macOS 15.0, *)) {
-                return [NSCursor zoomInCursor];
-            } else {
-                return [NSCursor crosshairCursor];
-            }
-        },
+        @"minus": ^{ return [NSCursor zoomOutCursor]; },
+        @"plus": ^{ return [NSCursor zoomInCursor]; },
         @"right_side": ^{ return[NSCursor resizeRightCursor]; },
         @"sb_h_double_arrow": ^{ return[NSCursor resizeLeftRightCursor]; },
         @"sb_left_arrow": ^{ return[NSCursor resizeLeftCursor]; },
@@ -20356,7 +20310,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self.delegate sessionUpdateMetalAllowed];
 }
 
-- (id)temporarilyDisableMetal NS_AVAILABLE_MAC(10_11) {
+- (id)temporarilyDisableMetal {
     assert(_useMetal);
     _wrapper.useMetal = NO;
     _textview.suppressDrawing = NO;
@@ -20369,7 +20323,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return token;
 }
 
-- (void)drawFrameAndRemoveTemporarilyDisablementOfMetalForToken:(id)token NS_AVAILABLE_MAC(10_11) {
+- (void)drawFrameAndRemoveTemporarilyDisablementOfMetalForToken:(id)token {
     DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal %@", token);
     if (!_useMetal) {
         DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal returning early because useMetal is off");
@@ -22775,11 +22729,7 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
                                tmuxController:(TmuxController *)tmuxController {
     if (remoteHost.isRemoteHost) {
         // Don't try to complete filenames if not on localhost unless we can ask the conductor.
-        if (@available(macOS 11, *)) {
-            return [_conductor framing];
-        } else {
-            return NO;
-        }
+        return [_conductor framing];
     }
     if (tmuxController) {
         // I haven't implemented this on tmux because it's probably gonna be slow and knowing the
@@ -22792,10 +22742,8 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 - (NSString * _Nullable)composerManager:(iTermComposerManager *)composerManager
              valueOfEnvironmentVariable:(NSString *)name {
     // This is implicitly only for remote hosts.
-    if (@available(macOS 11, *)) {
-        if ([_conductor framing]) {
-            return _conductor.environmentVariables[name];
-        }
+    if ([_conductor framing]) {
+        return _conductor.environmentVariables[name];
     }
     return nil;
 }
@@ -22803,11 +22751,9 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 - (void)composerManager:(iTermComposerManager *)composerManager
        fetchSuggestions:(iTermSuggestionRequest *)request
           byUserRequest:(BOOL)byUserRequest {
-    if (@available(macOS 11, *)) {
-        if ([_conductor framing]) {
-            [_conductor fetchSuggestions:request suggestionOnly:byUserRequest];
-            return;
-        }
+    if ([_conductor framing]) {
+        [_conductor fetchSuggestions:request suggestionOnly:byUserRequest];
+        return;
     }
     [[iTermSlowOperationGateway sharedInstance] findCompletionsWithPrefix:request.prefix
                                                             inDirectories:request.directories
@@ -22825,10 +22771,8 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 }
 
 - (iTermFileChecker *)fileChecker {
-    if (@available(macOS 11, *)) {
-        if (_conductor.canCheckFiles) {
-            return _conductor.fileChecker;
-        }
+    if (_conductor.canCheckFiles) {
+        return _conductor.fileChecker;
     }
     if (!_localFileChecker) {
         _localFileChecker = [[iTermLocalFileChecker alloc] initWithShell:[self bestGuessAtUserShellWithPath:YES]];
@@ -22939,9 +22883,7 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 - (void)composerManagerDidDismissMinimalView:(iTermComposerManager *)composerManager {
     _view.composerHeight = 0;
     [_localFileChecker reset];
-    if (@available(macOS 11, *)) {
-        [_conductor.fileChecker reset];
-    }
+    [_conductor.fileChecker reset];
 }
 
 - (NSAppearance *)composerManagerAppearance:(iTermComposerManager *)composerManager {

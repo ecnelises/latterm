@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "SearchableComboListView",
-    platforms: [.macOS(.v12)],
+    platforms: [.macOS("15.0")],
     products: [
         .library(name: "SearchableComboListView", type: .dynamic, targets: ["SearchableComboListView"])
     ],

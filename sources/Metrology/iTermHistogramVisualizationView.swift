@@ -9,7 +9,6 @@ import SwiftUI
 import AppKit
 import Charts
 
-@available(macOS 13, *)
 @objc
 class iTermHistogramVisualizationView: NSView {
     @objc(initWithHistogram:)
@@ -47,7 +46,6 @@ class iTermHistogramVisualizationView: NSView {
 }
 
 
-@available(macOS 13, *)
 struct iTermHistogramBarChart: View {
     let buckets: [(x: Double, y: Int, range: Range<Double>)]
     let meanValue: Double
@@ -70,61 +68,53 @@ struct iTermHistogramBarChart: View {
 
     var body: some View {
         VStack {
-            Group {
-                if #available(macOS 14, *) {
-                    Chart {
-                        chartContent
-                    }
-                    .chartOverlay { proxy in
-                        GeometryReader { geometry in
-                            if let selectedX = selectedX,
-                               let bucket = buckets.first(where: { $0.x == selectedX }) {
-                                let xPosition = proxy.position(forX: bucket.x) ?? 0
-                                let chartMidpoint = geometry.size.width / 2
-                                
-                                HStack {
-                                    if xPosition < chartMidpoint {
-                                        Spacer()
-                                    }
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Duration: \(bucket.range.lowerBound, specifier: "%.1f")µs–\(bucket.range.upperBound, specifier: "%.1f")µs")
-                                        Text("Count: \(bucket.y)")
-                                    }
-                                    .font(.caption)
-                                    .padding(4)
-                                    .background(Color(NSColor.controlBackgroundColor))
-                                    .foregroundColor(Color(NSColor.labelColor))
-                                    .cornerRadius(4)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .stroke(Color(NSColor.labelColor).opacity(0.5), lineWidth: 1)
-                                    )
-                                    if xPosition >= chartMidpoint {
-                                        Spacer()
-                                    }
-                                }
-                                .padding(8)
-                                .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+            Chart {
+                chartContent
+            }
+            .chartOverlay { proxy in
+                GeometryReader { geometry in
+                    if let selectedX = selectedX,
+                       let bucket = buckets.first(where: { $0.x == selectedX }) {
+                        let xPosition = proxy.position(forX: bucket.x) ?? 0
+                        let chartMidpoint = geometry.size.width / 2
+                        
+                        HStack {
+                            if xPosition < chartMidpoint {
+                                Spacer()
+                            }
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Duration: \(bucket.range.lowerBound, specifier: "%.1f")µs–\(bucket.range.upperBound, specifier: "%.1f")µs")
+                                Text("Count: \(bucket.y)")
+                            }
+                            .font(.caption)
+                            .padding(4)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .foregroundColor(Color(NSColor.labelColor))
+                            .cornerRadius(4)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Color(NSColor.labelColor).opacity(0.5), lineWidth: 1)
+                            )
+                            if xPosition >= chartMidpoint {
+                                Spacer()
                             }
                         }
-                    }
-                    .chartXSelection(value: Binding(
-                        get: { selectedX },
-                        set: { newValue in
-                            if let newValue = newValue {
-                                // Find closest bucket
-                                selectedX = buckets.min(by: { abs($0.x - newValue) < abs($1.x - newValue) })?.x
-                            } else {
-                                selectedX = nil
-                            }
-                        }
-                    ))
-                } else {
-                    Chart {
-                        chartContent
+                        .padding(8)
+                        .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
                     }
                 }
             }
+            .chartXSelection(value: Binding(
+                get: { selectedX },
+                set: { newValue in
+                    if let newValue = newValue {
+                        // Find closest bucket
+                        selectedX = buckets.min(by: { abs($0.x - newValue) < abs($1.x - newValue) })?.x
+                    } else {
+                        selectedX = nil
+                    }
+                }
+            ))
             .padding(.top, 12)
             .chartXAxis {
                 AxisMarks() { value in

@@ -16,7 +16,6 @@
 #import "iTermDragHandleView.h"
 #import "iTermHamburgerButton.h"
 #import "iTermPreferences.h"
-#import "iTermSystemVersion.h"
 #import "iTermToolActions.h"
 #import "iTermToolSnippets.h"
 #import "iTermToolWrapper.h"
@@ -37,7 +36,6 @@ NSString *const kToolbeltShouldHide = @"kToolbeltShouldHide";
 
 static NSString *const iTermToolbeltProportionsUserDefaultsKey = @"NoSyncToolbeltProportions";
 
-NS_CLASS_AVAILABLE_MAC(10_14)
 @interface iTermToolbeltVibrantVisualEffectView : NSVisualEffectView
 @end
 
@@ -53,7 +51,7 @@ NS_CLASS_AVAILABLE_MAC(10_14)
     // Tool name to wrapper
     NSMutableDictionary<NSString *, iTermToolWrapper *> *_tools;
     NSDictionary *_proportions;
-    iTermToolbeltVibrantVisualEffectView *_vev NS_AVAILABLE_MAC(10_14);
+    iTermToolbeltVibrantVisualEffectView *_vev;
     iTermHamburgerButton *_menuButton;
     BOOL _inSplitViewDidResizeSubviews;
     NSTextField *_noToolsMessage;
@@ -260,7 +258,7 @@ static NSString *kToolbeltPrefKey = @"ToolbeltTools";
     [self updateColors];
 }
 
-- (void)updateColors NS_AVAILABLE_MAC(10_14) {
+- (void)updateColors {
     _vev.blendingMode = NSVisualEffectBlendingModeBehindWindow;
     self.layer.backgroundColor = [[self backgroundColor] CGColor];
 }

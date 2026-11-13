@@ -482,7 +482,7 @@ final class SpecialExceptionsWindowController: NSWindowController {
             return
         }
         do {
-            let content = try String(contentsOf: url)
+            let content = try String(contentsOf: url, encoding: .utf8)
             importString(content)
             updateEnabled()
         } catch {

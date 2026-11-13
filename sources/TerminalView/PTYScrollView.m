@@ -203,18 +203,14 @@
 
 // Support for dictation on macOS 14+. Issue 5715.
 - (void)it_scrollViewWillStartLiveScroll:(id)sender {
-    if (@available(macOS 14.0, *)) {
-        NSView<NSTextInputClient> *textInputClient = [self findTextInputClient];
-        [textInputClient.inputContext textInputClientWillStartScrollingOrZooming];
-    }
+    NSView<NSTextInputClient> *textInputClient = [self findTextInputClient];
+    [textInputClient.inputContext textInputClientWillStartScrollingOrZooming];
 }
 
 // Support for dictation on macOS 14+. Issue 5715.
 - (void)it_scrollViewDidEndLiveScroll:(id)sender {
-    if (@available(macOS 14.0, *)) {
-        NSView<NSTextInputClient> *textInputClient = [self findTextInputClient];
-        [textInputClient.inputContext textInputClientDidEndScrollingOrZooming];
-    }
+    NSView<NSTextInputClient> *textInputClient = [self findTextInputClient];
+    [textInputClient.inputContext textInputClientDidEndScrollingOrZooming];
 }
 
 // Find the PTYTextView (which conforms to NSTextInputClient) within our document view hierarchy.

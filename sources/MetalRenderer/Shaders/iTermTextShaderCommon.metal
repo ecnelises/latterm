@@ -37,35 +37,6 @@ void SampleNeighbors(float2 textureSize,
     result[7] = texture.sample(textureSampler, clamp(textureCoordinate + float2( pixel.x,  pixel.y), minTextureCoord, maxTextureCoord));
 }
 
-// Sample eight neighbors of textureCoordinate and returns a value with the minimum components from all of them.
-float4 GetMinimumColorComponentsOfNeighbors(float2 textureSize,
-                                           float2 textureOffset,
-                                           float2 textureCoordinate,
-                                           float2 glyphSize,
-                                           float scale,
-                                           texture2d<float> texture,
-                                           sampler textureSampler) {
-    float4 neighbors[8];
-    SampleNeighbors(textureSize,
-                    textureOffset,
-                    textureCoordinate,
-                    glyphSize,
-                    scale,
-                    texture,
-                    textureSampler,
-                    neighbors);
-
-    const float4 mask = min(neighbors[0],
-                           min(neighbors[1],
-                               min(neighbors[2],
-                                   min(neighbors[3],
-                                       min(neighbors[4],
-                                           min(neighbors[5],
-                                               min(neighbors[6],
-                                                   neighbors[7])))))));
-    return mask;
-}
-
 // Sample eight neighbors of textureCoordinate and returns a value with the maximum components from all of them.
 float4 GetMaximumColorComponentsOfNeighbors(float2 textureSize,
                                            float2 textureOffset,
@@ -231,82 +202,6 @@ float FractionOfPixelThatIntersectsUnderlineForStyle(int underlineStyle,  // iTe
 
     // Shouldn't get here
     return weight;
-}
-
-float ComputeWeightOfUnderlineInverted(int underlineStyle,  // iTermMetalGlyphAttributesUnderline
-                                       float2 clipSpacePosition,
-                                       float2 viewportSize,
-                                       float2 cellOffset,
-                                       float2 underlineOffset,
-                                       float underlineThickness,
-                                       float2 textureSize,
-                                       float2 textureOffset,
-                                       float2 textureCoordinate,
-                                       float2 glyphSize,
-                                       float2 cellSize,
-                                       texture2d<float> texture,
-                                       sampler textureSampler,
-                                       float scale,
-                                       bool solid,
-                                       bool predecessorWasUnderlined,
-                                       bool successorWillBeUnderlined) {
-    float thickness;
-    float offset;
-    switch (underlineStyle) {
-        case iTermMetalGlyphAttributesUnderlineCurly:
-            thickness = scale;
-            offset = scale;
-            break;
-        case iTermMetalGlyphAttributesUnderlineHyperlink:
-        case iTermMetalGlyphAttributesUnderlineDouble:
-            thickness = underlineThickness;
-            offset = scale;
-            break;
-        default:
-            thickness = underlineThickness;
-            offset = underlineOffset.y;
-            break;
-    }
-    float weight = FractionOfPixelThatIntersectsUnderlineForStyle(underlineStyle,
-                                                                  clipSpacePosition,
-                                                                  viewportSize,
-                                                                  cellOffset,
-                                                                  offset,
-                                                                  thickness,
-                                                                  scale);
-    if (weight == 0) {
-        return 0;
-    }
-    const float margin = predecessorWasUnderlined ? 0 : underlineOffset.x;
-    if (clipSpacePosition.x < cellOffset.x + margin) {
-        return 0;
-    }
-    if (!successorWillBeUnderlined && clipSpacePosition.x >= cellOffset.x + cellSize.x) {
-        return 0;
-    }
-    if (clipSpacePosition.x >= cellOffset.x + glyphSize.x) {
-        return 0;
-    }
-    if (underlineStyle == iTermMetalGlyphAttributesUnderlineStrikethrough || solid) {
-        return weight;
-    }
-    float4 mask = GetMinimumColorComponentsOfNeighbors(textureSize,
-                                                      textureOffset,
-                                                      textureCoordinate,
-                                                      glyphSize,
-                                                      scale,
-                                                      texture,
-                                                      textureSampler);
-    float opacity = (mask.x + mask.y + mask.z) / 3.0;
-    if (scale > 1) {
-        if (opacity >= 0.99) {
-            return weight;
-        } else {
-            return 0;
-        }
-    } else {
-        return weight * min(1.0, pow(opacity * 1.1, 10));
-    }
 }
 
 float ComputeWeightOfUnderlineRegular(int underlineStyle,  // iTermMetalGlyphAttributesUnderline

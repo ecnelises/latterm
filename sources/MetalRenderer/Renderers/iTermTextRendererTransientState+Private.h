@@ -28,8 +28,7 @@
                                  iTermMetalUnderlineDescriptor,
                                  iTermMetalUnderlineDescriptor,
                                  BOOL underlined,
-                                 BOOL emoji))block
-             copyBlock:(void (^)(void))copyBlock;
+                                 BOOL emoji))block;
 
 @end
 

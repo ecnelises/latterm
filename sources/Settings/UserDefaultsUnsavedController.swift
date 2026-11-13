@@ -24,7 +24,6 @@ private class ButtonWithCustomCursor: NSButton {
 }
 
 
-@available(macOS, introduced: 11)
 @objc
 fileprivate class UnsavedUserDefaultsViewController: NSViewController {
     private var button: ButtonWithCustomCursor?
@@ -87,7 +86,6 @@ fileprivate class UnsavedUserDefaultsViewController: NSViewController {
 class UserDefaultsUnsavedView: NSView {
 }
 
-@available(macOS, introduced: 11)
 @objc(iTermUserDefaultsUnsavedController)
 class UserDefaultsUnsavedController: NSTitlebarAccessoryViewController {
     private var observer: AnyObject?

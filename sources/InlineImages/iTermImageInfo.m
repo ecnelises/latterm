@@ -68,7 +68,7 @@ NSString *const iTermImageDidLoad = @"iTermImageDidLoad";
     if (self) {
         _size = [dictionary[kImageInfoSizeKey] sizeValue];
         _broken = [dictionary[kImageInfoBrokenKey] boolValue];
-        _inset = [dictionary[kImageInfoInsetKey] futureEdgeInsetsValue];
+        _inset = [dictionary[kImageInfoInsetKey] edgeInsetsValue];
         _data = [dictionary[kImageInfoImageKey] copy];
         _dictionary = [dictionary copy];
         _preserveAspectRatio = [dictionary[kImageInfoPreserveAspectRatioKey] boolValue];
@@ -226,7 +226,7 @@ NSString *const iTermImageDidLoad = @"iTermImageDidLoad";
 - (NSDictionary<NSString *, NSObject<NSCopying> *> *)dictionary {
     @synchronized(self) {
         return @{ kImageInfoSizeKey: [NSValue valueWithSize:_size],
-                  kImageInfoInsetKey: [NSValue futureValueWithEdgeInsets:_inset],
+                  kImageInfoInsetKey: [NSValue valueWithEdgeInsets:_inset],
                   kImageInfoImageKey: _data ?: [NSData data],
                   kImageInfoPreserveAspectRatioKey: @(_preserveAspectRatio),
                   kImageInfoFilenameKey: _filename ?: @"",

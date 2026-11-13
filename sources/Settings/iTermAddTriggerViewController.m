@@ -102,12 +102,7 @@ static const CGFloat kLabelWidth = 124;
     [panel it_setAssociatedObject:vc forKey:"AddTriggerVC"];
     
     // Force view loading to establish proper size
-    if (@available(macOS 14.0, *)) {
-        [vc loadViewIfNeeded];
-    } else {
-        // For macOS 12 compatibility
-        [vc view];
-    }
+    [vc loadViewIfNeeded];
     
     // Set an explicit size for the content since we're using programmatic views
     NSSize contentSize = NSMakeSize(480, 237);
@@ -250,29 +245,25 @@ static const CGFloat kLabelWidth = 124;
     // Show or hide the performance graph row based on whether the trigger has a performance histogram
     BOOL shouldShowGraph = trigger.performanceHistogram.count > 0;
 
-    if (@available(macOS 13, *)) {
-        // Remove any existing chart view
-        [_performanceGraphContainer.subviews.firstObject removeFromSuperview];
+    // Remove any existing chart view
+    [_performanceGraphContainer.subviews.firstObject removeFromSuperview];
+    
+    if (shouldShowGraph) {
+        _performanceRow.hidden = NO;
         
-        if (shouldShowGraph) {
-            _performanceRow.hidden = NO;
+        iTermHistogram *histogram = trigger.performanceHistogram;
+        NSView *chart = [[iTermHistogramVisualizationView alloc] initWithHistogram:histogram];
+        if (chart) {
+            chart.translatesAutoresizingMaskIntoConstraints = NO;
+            [_performanceGraphContainer addSubview:chart];
             
-            iTermHistogram *histogram = trigger.performanceHistogram;
-            NSView *chart = [[iTermHistogramVisualizationView alloc] initWithHistogram:histogram];
-            if (chart) {
-                chart.translatesAutoresizingMaskIntoConstraints = NO;
-                [_performanceGraphContainer addSubview:chart];
-                
-                // Set up constraints to fill the container
-                [NSLayoutConstraint activateConstraints:@[
-                    [chart.leadingAnchor constraintEqualToAnchor:_performanceGraphContainer.leadingAnchor],
-                    [chart.trailingAnchor constraintEqualToAnchor:_performanceGraphContainer.trailingAnchor],
-                    [chart.topAnchor constraintEqualToAnchor:_performanceGraphContainer.topAnchor],
-                    [chart.bottomAnchor constraintEqualToAnchor:_performanceGraphContainer.bottomAnchor]
-                ]];
-            }
-        } else {
-            _performanceRow.hidden = YES;
+            // Set up constraints to fill the container
+            [NSLayoutConstraint activateConstraints:@[
+                [chart.leadingAnchor constraintEqualToAnchor:_performanceGraphContainer.leadingAnchor],
+                [chart.trailingAnchor constraintEqualToAnchor:_performanceGraphContainer.trailingAnchor],
+                [chart.topAnchor constraintEqualToAnchor:_performanceGraphContainer.topAnchor],
+                [chart.bottomAnchor constraintEqualToAnchor:_performanceGraphContainer.bottomAnchor]
+            ]];
         }
     } else {
         _performanceRow.hidden = YES;

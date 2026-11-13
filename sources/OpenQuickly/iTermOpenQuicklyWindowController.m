@@ -343,7 +343,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSRunningApplication *current = NSRunningApplication.currentApplication;
                 if (![NSWorkspace.sharedWorkspace.frontmostApplication isEqual:current]) {
-                    [current activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+                    [current activateWithOptions:0];
                 }
             });
         });
@@ -368,7 +368,7 @@
     // background".
     NSRunningApplication *frontmost = NSWorkspace.sharedWorkspace.frontmostApplication;
     if (!frontmost || ![frontmost isEqual:NSRunningApplication.currentApplication]) {
-        [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+        [NSApp activate];
         // If selecting a session triggers a Space switch (e.g. the user is in
         // another app's fullscreen Space and the chosen session lives on a
         // different Space), macOS often activates some other app once the

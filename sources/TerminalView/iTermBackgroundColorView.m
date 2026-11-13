@@ -93,6 +93,3 @@
 }
 
 @end
-
-@implementation iTermScrollerBackgroundColorView
-@end

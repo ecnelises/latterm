@@ -418,9 +418,6 @@ class Conductor: NSObject, SSHIdentityProvider {
     var currentSearch: Search?
     @objc
     lazy var fileChecker: FileChecker? = {
-        guard #available(macOS 11, *) else {
-            return nil
-        }
         let checker = FileChecker()
         checker.dataSource = self
         return checker
@@ -1633,7 +1630,6 @@ extension Conductor {
         }
     }
 
-    @available(macOS 11, *)
     @objc(download:)
     func download(path: SCPPath) {
         let file = ConductorFileTransfer(path: path,
@@ -1647,13 +1643,11 @@ extension Conductor {
         return stream(remotePath: path.path)
     }
 
-    @available(macOS 11, *)
     @objc(uploadFile:to:)
     func upload(file: String, to destinationPath: SCPPath) {
         _ = upload(file: file, to: destinationPath, completion: { _, _ in })
     }
 
-    @available(macOS 11, *)
     @objc(uploadFile:to:withCompletion:)
     func upload(file: String, to destinationPath: SCPPath, completion: @escaping (Bool, String?) -> Void) -> TransferrableFile? {
         let localPath: String
@@ -1818,7 +1812,6 @@ extension Conductor {
         framerSend(data: data, pid: pid)
     }
 
-    @available(macOS 11, *)
     @objc
     func fetchSuggestions(_ request: SuggestionRequest, suggestionOnly: Bool) {
         // Always run the completion block after a spin of the mainloop because
@@ -1909,7 +1902,6 @@ extension Conductor {
         }
     }
 
-    @available(macOS 11.0, *)
     func framerFile(_ subcommand: FileSubcommand,
                                 highPriority: Bool = false,
                                 completion: @escaping (String, Int32) -> ()) {
@@ -2012,7 +2004,7 @@ extension Conductor {
         if verbose {
             customCode += "\nVERBOSE=1\n"
         }
-        let pythonCode = try! String(contentsOf: path).replacingOccurrences(of: "#{SUB}",
+        let pythonCode = try! String(contentsOf: path, encoding: .utf8).replacingOccurrences(of: "#{SUB}",
                                                                             with: customCode)
         runPython(pythonCode)
         framerVersion = .v2
@@ -2571,23 +2563,21 @@ extension Conductor {
     }
 
     private func handleSearchNotif(_ message: String) {
-        if #available(macOS 11.0, *) {
-            DLog("handleSearchNotif: \(message)")
-            guard let space = message.firstIndex(of: " ") else {
-                DLog("Malformed message lacks space")
-                return
+        DLog("handleSearchNotif: \(message)")
+        guard let space = message.firstIndex(of: " ") else {
+            DLog("Malformed message lacks space")
+            return
+        }
+        let id = message[..<space]
+        if let currentSearch, currentSearch.id == id {
+            let json = String(message[message.index(space, offsetBy: 1)...])
+            if let remoteFile = try? remoteFile(json) {
+                DLog("Yielding \(remoteFile) for search \(currentSearch.id), query \(currentSearch.query)")
+                currentSearch.continuation.yield(remoteFile)
             }
-            let id = message[..<space]
-            if let currentSearch, currentSearch.id == id {
-                let json = String(message[message.index(space, offsetBy: 1)...])
-                if let remoteFile = try? remoteFile(json) {
-                    DLog("Yielding \(remoteFile) for search \(currentSearch.id), query \(currentSearch.query)")
-                    currentSearch.continuation.yield(remoteFile)
-                }
-            }
-            Task {
-                try? await performFileOperation(subcommand: .search(.ack(id: String(id), count: 1)))
-            }
+        }
+        Task {
+            try? await performFileOperation(subcommand: .search(.ack(id: String(id), count: 1)))
         }
     }
 

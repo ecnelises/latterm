@@ -20,8 +20,7 @@ maximumExtendedDynamicRangeColorComponentValue:(CGFloat)maximumExtendedDynamicRa
                             cellSize:(CGSize)cellSize
                            glyphSize:(CGSize)glyphSize
               cellSizeWithoutSpacing:(CGSize)cellSizeWithoutSpacing
-                            gridSize:(VT100GridSize)gridSize
-               usingIntermediatePass:(BOOL)usingIntermediatePass {
+                            gridSize:(VT100GridSize)gridSize {
     self = [super initWithViewportSize:viewportSize
                   legacyScrollbarWidth:legacyScrollbarWidth
                                  scale:scale
@@ -36,13 +35,12 @@ maximumExtendedDynamicRangeColorComponentValue:maximumExtendedDynamicRangeColorC
         _cellSizeWithoutSpacing = cellSizeWithoutSpacing;
         _glyphSize = glyphSize;
         _gridSize = gridSize;
-        _usingIntermediatePass = usingIntermediatePass;
     }
     return self;
 }
 
 - (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"<%@: %p viewportSize=%@x%@ scale=%@ cellSize=%@ cellSizeWithoutSpacing=%@ gridSize=%@ usingIntermediatePass=%@>",
+    return [NSString stringWithFormat:@"<%@: %p viewportSize=%@x%@ scale=%@ cellSize=%@ cellSizeWithoutSpacing=%@ gridSize=%@>",
             NSStringFromClass([self class]),
             self,
             @(self.viewportSize.x),
@@ -50,8 +48,7 @@ maximumExtendedDynamicRangeColorComponentValue:maximumExtendedDynamicRangeColorC
             @(self.scale),
             NSStringFromSize(self.cellSize),
             NSStringFromSize(self.cellSizeWithoutSpacing),
-            VT100GridSizeDescription(self.gridSize),
-            self.usingIntermediatePass ? @"YES" : @"NO"];
+            VT100GridSizeDescription(self.gridSize)];
 }
 
 @end
