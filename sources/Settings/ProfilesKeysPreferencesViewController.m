@@ -75,6 +75,34 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     IBOutlet NSButton *_repairKeyMappingsButton;
 }
 
+- (NSTextField *)optionKeySendsLabel { return _optionKeySendsLabel; }
+- (NSPopUpButton *)leftOptionKeyButton { return _leftOptionKeyButton; }
+- (NSButton *)leftOptionKeyChangeable { return _leftOptionKeyChangeable; }
+- (NSTextField *)rightOptionKeySendsLabel { return _rightOptionKeySendsLabel; }
+- (NSPopUpButton *)rightOptionKeyButton { return _rightOptionKeyButton; }
+- (NSButton *)rightOptionKeyChangeable { return _rightOptionKeyChangeable; }
+- (NSTextField *)leftControlLabel { return _leftControlLabel; }
+- (NSButton *)leftControlButton { return _leftControlButton; }
+- (NSTextField *)rightControlLabel { return _rightControlLabel; }
+- (NSButton *)rightControlButton { return _rightControlButton; }
+- (NSTextField *)leftCommandLabel { return _leftCommandLabel; }
+- (NSButton *)leftCommandButton { return _leftCommandButton; }
+- (NSTextField *)rightCommandLabel { return _rightCommandLabel; }
+- (NSButton *)rightCommandButton { return _rightCommandButton; }
+- (NSTextField *)functionLabel { return _functionLabel; }
+- (NSButton *)functionButton { return _functionButton; }
+- (NSButton *)applicationKeypadAllowed { return _applicationKeypadAllowed; }
+- (NSButton *)useLibTickit { return _useLibTickit; }
+- (NSButton *)allowModifyOtherKeys { return _allowModifyOtherKeys; }
+- (NSButton *)movementKeysScrollOutsideInteractiveApps { return _movementKeysScrollOutsideInteractiveApps; }
+- (NSButton *)treatOptionAsAlt { return _treatOptionAsAlt; }
+- (NSView *)hotKeyContainerView { return _hotKeyContainerView; }
+- (NSButton *)hasHotkey { return _hasHotkey; }
+- (NSButton *)configureHotKey { return _configureHotKey; }
+- (NSButton *)deleteSendsCtrlHButton { return _deleteSendsCtrlHButton; }
+- (NSButton *)repairKeyMappingsButton { return _repairKeyMappingsButton; }
+- (iTermKeyMappingViewController *)keyMappingViewController { return _keyMappingViewController; }
+
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -212,6 +240,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     [iTermFlagsChangedNotification subscribe:self block:^(iTermFlagsChangedNotification * _Nonnull notification) {
         [weakSelf flagsDidChange];
     }];
+    [self installProfileLayout];
 }
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
@@ -445,6 +474,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
 
     // Hide the button
     _repairKeyMappingsButton.hidden = YES;
+    [self.view it_invalidateProfileFormLayout];
 
     // Notify that key bindings changed
     [[NSNotificationCenter defaultCenter] postNotificationName:kReloadAllProfiles object:nil];
@@ -463,18 +493,21 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     // Only offer repair for profiles in the shared instance (not session-specific temporary profiles)
     if ([self.delegate profilePreferencesCurrentModel] != [ProfileModel sharedInstance]) {
         _repairKeyMappingsButton.hidden = YES;
+        [self.view it_invalidateProfileFormLayout];
         return;
     }
 
     Profile *profile = [self.delegate profilePreferencesCurrentProfile];
     if (!profile) {
         _repairKeyMappingsButton.hidden = YES;
+        [self.view it_invalidateProfileFormLayout];
         return;
     }
 
     NSString *guid = profile[KEY_GUID];
     if ([iTermKeyMappingRepair isMitigationDisabledWithSuffix:guid]) {
         _repairKeyMappingsButton.hidden = YES;
+        [self.view it_invalidateProfileFormLayout];
         return;
     }
 
@@ -482,6 +515,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     NSArray<NSString *> *corrupted = [iTermKeyMappingRepair corruptedKeyBindingsIn:keyMappings];
     BOOL hasCorrupted = corrupted.count > 0;
     _repairKeyMappingsButton.hidden = !hasCorrupted;
+    [self.view it_invalidateProfileFormLayout];
 
     // If no corrupted bindings found, disable the mitigation so we don't check again
     if (!hasCorrupted) {

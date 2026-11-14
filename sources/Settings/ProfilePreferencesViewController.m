@@ -234,16 +234,25 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     [_generalViewController organizeSettingsForm];
     [_profilesListView setUnderlyingDatasource:[_delegate profilePreferencesModel]];
     [_profilesListView useSettingsAppearance];
-    [[iTermSettingsProfilesView castFrom:self.view]
-        configureWithProfileList:_profilesListView
-                         details:_tabViewWrapperView
-                         actions:@[_toggleTagsButton, _addProfileButton, _removeProfileButton, _otherActionsPopup]];
+    _tabView.tabViewType = NSNoTabsNoBorder;
+    _tabView.delegate = self;
     [_otherActionsPopup.menu addItem:NSMenuItem.separatorItem];
     NSMenuItem *inspect = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Inspect Profile Settings…", @"Profile action")
                                                   action:@selector(inspectProfileSettings:)
                                            keyEquivalent:@""];
     inspect.target = self;
     [_otherActionsPopup.menu addItem:inspect];
+    [[iTermSettingsProfilesView castFrom:self.view]
+        configureMasterDetailWithProfileList:_profilesListView
+                                       model:[_delegate profilePreferencesModel]
+                              detailsWrapper:_tabViewWrapperView
+                                     tabView:_tabView
+                       noProfileSelectedView:_noProfileSelectedView
+                            toggleTagsButton:_toggleTagsButton
+                                   addButton:_addProfileButton
+                                removeButton:_removeProfileButton
+                                actionsPopup:_otherActionsPopup
+                         copyToProfileButton:_copyToProfileButton];
 
     Profile *profile = [self selectedProfile];
     if (profile) {
@@ -265,24 +274,11 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     for (NSArray *tuple in tabViewTuples) {
         NSTabViewItem *tabViewItem = tuple[0];
         NSView *view = tuple[1];
-
-        // Preserve each page's required size. The section presenter expands
-        // these wrappers into the shared scrolling document after NIB loading.
-        NSSize requiredSize = view.frame.size;
-        if (tabViewItem == _generalTab) {
-            requiredSize.width = 540;
-        }
-        NSRect frame = NSMakeRect(0, 0, requiredSize.width, MIN(requiredSize.height, 492));
-        iTermSizeRememberingView *container = [[iTermSizeRememberingView alloc] initWithFrame:frame];
-        container.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-        iTermSettingsContentView *scrollView = [[iTermSettingsContentView alloc] initWithContent:view];
-        scrollView.frame = container.bounds;
-        [scrollView setMinimumContentSize:requiredSize];
-        [container addSubview:scrollView];
-        tabViewItem.view = container;
+        tabViewItem.view = view;
     }
     _initialized = YES;
     [self refreshWithSideEffects:NO];
+    [[iTermSettingsProfilesView castFrom:self.view] syncCategories];
 }
 
 #pragma mark - APIs
@@ -327,13 +323,9 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     [_terminalViewController layoutSubviewsForEditCurrentSessionMode];
     [_advancedViewController layoutSubviewsForEditCurrentSessionMode];
     [_keysViewController layoutSubviewsForEditCurrentSessionMode];
-    NSRect newFrame = _tabViewWrapperView.superview.bounds;
-    newFrame.size.width -= 13;
-
-    newFrame.size.height -= kExtraMarginBetweenWindowBottomAndTabViewForEditCurrentSessionMode;
-    newFrame.origin.y += kExtraMarginBetweenWindowBottomAndTabViewForEditCurrentSessionMode;
-
-    _tabViewWrapperView.frame = newFrame;
+    [[iTermSettingsProfilesView castFrom:self.view] setEditingSession:YES];
+    [[iTermSettingsProfilesView castFrom:self.view] syncCategories];
+    [self.view setNeedsLayout:YES];
 }
 
 - (void)didLayoutSubviewsForEditCurrentSessionMode {
@@ -460,6 +452,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 
     [self reloadProfileInProfileViewControllers];
+    [[iTermSettingsProfilesView castFrom:self.view] reloadProfilesSidebar];
+    [[iTermSettingsProfilesView castFrom:self.view] invalidateUnifiedSectionsLayout];
 }
 
 - (void)profileTableRowSelected:(id)profileTable {
@@ -576,21 +570,26 @@ andEditComponentWithIdentifier:(NSString *)identifier
             }
         }
     }
+    [[iTermSettingsProfilesView castFrom:self.view] syncCategories];
 }
 
 - (void)updateProfileHeading {
-    NSArray<Profile *> *profiles = [[_delegate profilePreferencesModel] bookmarks];
-    [[iTermSettingsProfilesView castFrom:self.view] updateProfilesWithNames:[profiles valueForKey:KEY_NAME]
-                                                               identifiers:[profiles valueForKey:KEY_GUID]
-                                                        selectedIdentifier:[_profilesListView selectedGuid]];
+    Profile *selected = [self selectedProfile];
+    [[iTermSettingsProfilesView castFrom:self.view] setSelectedProfileTitle:selected[KEY_NAME]];
 }
 
 - (void)reloadData {
     [_profilesListView reloadData];
     [self updateProfileHeading];
+    [[iTermSettingsProfilesView castFrom:self.view] reloadProfilesSidebar];
+    [_terminalViewController updateLocaleDescription];
 }
 
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)tabViewItem animated:(BOOL)animated {
+    if (self.preferencePanel) {
+        [self.preferencePanel preferencePanelSetContentSize:NSZeroSize];
+        return;
+    }
     iTermSizeRememberingView *theView = [iTermSizeRememberingView castFrom:[tabViewItem view]];
     if (theView) {
         [self resizeWindowForView:theView animated:animated];
@@ -600,8 +599,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)resizeWindowForView:(iTermSizeRememberingView *)theView animated:(BOOL)animated {
-    if (self.preferencePanel && [iTermSettingsTabView castFrom:_tabView].presentsSections) {
-        // The profile library stays fixed while the section document scrolls.
+    if (self.preferencePanel) {
+        // The profile library stays fixed while the category document scrolls.
         [self.preferencePanel preferencePanelSetContentSize:NSZeroSize];
         return;
     }
@@ -854,6 +853,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
     [[_delegate profilePreferencesModel] addBookmark:newProfile];
     [_profilesListView reloadData];
     [_profilesListView selectRowByGuid:newProfile[KEY_GUID]];
+    [[iTermSettingsProfilesView castFrom:self.view] reloadProfilesSidebar];
 }
 
 - (IBAction)setAsDefault:(id)sender {
@@ -865,6 +865,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
         return;
     }
     [[ProfileModel sharedInstance] setDefaultByGuid:guid];
+    [[iTermSettingsProfilesView castFrom:self.view] reloadProfilesSidebar];
 }
 
 - (NSString *)jsonForProfile:(Profile *)profile error:(NSError **)error {
@@ -1139,6 +1140,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
             BOOL changing = item != _tabView.selectedTabViewItem;
             if ([_tabView.tabViewItems containsObject:item]) {
                 [_tabView selectTabViewItem:item];
+                [[iTermSettingsProfilesView castFrom:self.view] syncSelectedCategory];
                 return changing;
             }
         }
@@ -1253,7 +1255,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 #pragma mark - NSTabViewDelegate
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
-    [self resizeWindowForTabViewItem:tabViewItem animated:YES];
+    [[iTermSettingsProfilesView castFrom:self.view] syncSelectedCategory];
+    [self.view setNeedsLayout:YES];
     if (tabViewItem == _terminalTab) {
         // The locale description's colors are baked into an attributed string that
         // does not re-resolve if the appearance changed while this tab was hidden.

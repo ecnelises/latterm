@@ -138,7 +138,6 @@ typedef struct {
     iTermBlockRenderer *_blockRenderer;
     iTermPillBackgroundRenderer *_pillBackgroundRenderer;
     iTermTerminalButtonRenderer *_terminalButtonRenderer;
-    iTermRectangleRenderer *_rectangleRenderer;
     iTermUnderlineRenderer *_underlineRenderer;
     iTermUnderlineCompositeRenderer *_underlineCompositeRenderer;
     iTermKittyImageRenderer *_kittyImageRenderer;
@@ -232,7 +231,6 @@ typedef struct {
         _blockRenderer = [[iTermBlockRenderer alloc] initWithDevice:device];
         _pillBackgroundRenderer = [[iTermPillBackgroundRenderer alloc] initWithDevice:device];
         _terminalButtonRenderer = [[iTermTerminalButtonRenderer alloc] initWithDevice:device];
-        _rectangleRenderer = [[iTermRectangleRenderer alloc] initWithDevice:device];
         _underlineRenderer = [[iTermUnderlineRenderer alloc] initWithDevice:device];
         _underlineCompositeRenderer = [[iTermUnderlineCompositeRenderer alloc] initWithDevice:device];
         _kittyImageRenderer = [[iTermKittyImageRenderer alloc] initWithDevice:device];
@@ -863,7 +861,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
     [self populateBackgroundImageRendererTransientStateWithFrameData:frameData];
     [self populateBlockRendererTransientStateWithFrameData:frameData];
     [self populateTerminalButtonRendererTransientStateWithFrameData:frameData];
-    [self populateRectangleRendererTransientStateWithFrameData:frameData];
     [self populateUnderlineRendererTransientStateWithFrameData:frameData];
     [self populateUnderlineCompositeRendererTransientStateWithFrameData:frameData];
     [self populateKittyImageRendererTransientStateWithFrameData:frameData];
@@ -1087,10 +1084,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                      frameData:frameData
                           stat:iTermMetalFrameDataStatPqEnqueueDrawButtons];
     }
-
-    [self drawCellRenderer:_rectangleRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawRectangles];
 
     if (!frameData.perFrameState.haveOffscreenCommandLine) {
         [self drawRenderer:_indicatorRenderer
@@ -1755,17 +1748,8 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
 
 - (void)populateLineStyleMarkRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
     iTermLineStyleMarkRendererTransientState *tState = [frameData transientStateForRenderer:_lineStyleMarkRenderer];
-    const NSRange selectedCommandRegion = frameData.perFrameState.selectedCommandRegion;
     [frameData.rows enumerateObjectsUsingBlock:^(iTermMetalRowData * _Nonnull rowData, NSUInteger idx, BOOL * _Nonnull stop) {
         if (VT100GridRangeContains(frameData.perFrameState.linesToSuppressDrawing, rowData.y)) {
-            return;
-        }
-        if (selectedCommandRegion.length > 0 && NSLocationInRange(rowData.absLine, selectedCommandRegion)) {
-            // Don't draw line-style mark in selected command region.
-            return;
-        }
-        if (selectedCommandRegion.length > 0 && rowData.absLine == NSMaxRange(selectedCommandRegion) + 1) {
-            // Don't draw line-style mark immediately after selected command region.
             return;
         }
         if (rowData.lineStyleMark) {
@@ -1881,67 +1865,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
             [tState addRuns:rowData.kittyImageRuns];
         }
     }];
-}
-
-- (void)populateRectangleRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
-    if (!_rectangleRenderer) {
-        return;
-    }
-    iTermRectangleRendererTransientState *tState = [frameData transientStateForRenderer:_rectangleRenderer];
-    if (frameData.perFrameState.hasSelectedCommand) {
-        VT100GridRect rect = frameData.perFrameState.selectedCommandRect;
-        const CGFloat scale = tState.cellConfiguration.scale;
-        [tState addFrameRectangleWithMinXPixels:0
-                                      minYCells:rect.origin.y
-                                    widthPixels:tState.configuration.viewportSize.x
-                                    heightCells:rect.size.height
-                                thickness:1.0
-                                   insets:NSEdgeInsetsMake(-1, 1, 0, 2)
-                                    color:frameData.perFrameState.selectedCommandOutlineColors[1]];
-        [tState addFrameRectangleWithMinXPixels:0
-                                      minYCells:rect.origin.y
-                                    widthPixels:tState.configuration.viewportSize.x
-                                    heightCells:rect.size.height
-                                thickness:1.0
-                                   insets:NSEdgeInsetsMake(-2, 0, -1, 1)
-                                    color:frameData.perFrameState.selectedCommandOutlineColors[0]];
-        const vector_float4 shadeColor = frameData.perFrameState.shadeColor;
-        if (rect.origin.y > 0) {
-            [tState addRectangleWithMinXPixels:0
-                                     minYCells:0
-                                   widthPixels:tState.configuration.viewportSize.x
-                                   heightCells:rect.origin.y
-                                  insets:NSEdgeInsetsMake(0, 0, 2, 1)
-                                   color:shadeColor];
-        }
-        const int firstRowBeneath = rect.origin.y + rect.size.height;
-        if (firstRowBeneath < tState.cellConfiguration.gridSize.height) {
-            [tState addRectangleWithMinXPixels:0
-                                     minYCells:firstRowBeneath
-                                   widthPixels:tState.configuration.viewportSize.x
-                                   heightCells:tState.cellConfiguration.gridSize.height - firstRowBeneath
-                                  insets:NSEdgeInsetsMake(2, 0, 0, 1)
-                                   color:shadeColor];
-        }
-        if (!frameData.perFrameState.forceRegularBottomMargin) {
-            // Draw shade over bottom margin + excess area
-            const CGFloat bottomMarginPt = (frameData.viewportSize.y - tState.margins.top) / scale;
-            [tState addRectangleWithMinXPixels:0
-                                     minYCells:tState.cellConfiguration.gridSize.height
-                                   widthPixels:tState.configuration.viewportSize.x
-                                   heightCells:1
-                                  insets:NSEdgeInsetsMake(0, 0, -bottomMarginPt, 1)
-                                   color:shadeColor];
-        }
-
-        if (frameData.perFrameState.pointsOnBottomToSuppressDrawing > 0) {
-            const CGFloat y = frameData.perFrameState.pointsOnBottomToSuppressDrawing * frameData.scale;
-            [tState setClipRect:NSMakeRect(0,
-                                           y,
-                                           frameData.viewportSize.x,
-                                           MAX(0, frameData.viewportSize.y - y))];
-        }
-    }
 }
 
 - (void)populateUnderlineRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
@@ -2574,7 +2497,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
                _blockRenderer,
                _pillBackgroundRenderer ?: [NSNull null],
                _terminalButtonRenderer ?: [NSNull null],
-               _rectangleRenderer,
                _underlineRenderer,
                _kittyImageRenderer] arrayByRemovingNulls];
 }

@@ -437,7 +437,7 @@ Gw
                                                         </textField>
                                                     </subviews>
                                                 </customView>
-                                                <tabView fixedFrame="YES" allowsTruncatedLabels="NO" initialItem="2101" translatesAutoresizingMaskIntoConstraints="NO" id="2100" userLabel="Profiles Tab View" customClass="iTermSettingsTabView">
+                                                <tabView fixedFrame="YES" allowsTruncatedLabels="NO" type="noTabsNoBorder" initialItem="2101" translatesAutoresizingMaskIntoConstraints="NO" id="2100" userLabel="Profiles Tab View" customClass="iTermSettingsTabView">
                                                     <rect key="frame" x="-7" y="0.0" width="612" height="450"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <font key="font" metaFont="system"/>
@@ -1217,7 +1217,6 @@ CA
                 <outlet property="_autoHideTmuxClientSession" destination="6366" id="V9B-um-JRL"/>
                 <outlet property="_browseCustomFolder" destination="5618" id="0Ty-gp-K5Q"/>
                 <outlet property="_browseCustomScriptsFolder" destination="dQq-rp-4ax" id="Bhz-HC-MBu"/>
-                <outlet property="_clickToSelectCommand" destination="2Pt-rH-WYj" id="kzN-to-jNw"/>
                 <outlet property="_confirmClosingMultipleSessions" destination="1996" id="1wi-R8-LGb"/>
                 <outlet property="_copyLastNewline" destination="5747" id="y4f-IT-rUT"/>
                 <outlet property="_customScriptsFolder" destination="llA-8R-abf" id="38A-bU-e4J"/>
@@ -1476,6 +1475,12 @@ CA
                 <outlet property="_titleSettingsLabel" destination="iet-o6-fEv" id="pSm-Js-qHS"/>
                 <outlet property="_urlSchemes" destination="5037" id="lLd-os-fwk"/>
                 <outlet property="_windowTitle" destination="DWA-qh-SID" id="C4F-iK-KXg"/>
+                <outlet property="editSessionBadgeLabel" destination="cIR-ir-rfq" id="pOut-001"/>
+                <outlet property="editSessionHotkeyLabel" destination="Ma3-UP-yir" id="pOut-002"/>
+                <outlet property="editSessionNameLabel" destination="12134" id="pOut-003"/>
+                <outlet property="editSessionTabTitleLabel" destination="Odv-78-3aZ" id="pOut-004"/>
+                <outlet property="editSessionTitleLabel" destination="S9t-V1-nTN" id="pOut-005"/>
+                <outlet property="editSessionWindowTitleLabel" destination="Imi-MU-5HO" id="pOut-006"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="KYZ-OC-7cf"/>
                 <outlet property="profileDelegate" destination="HVI-63-mNz" id="0qp-TV-M54"/>
                 <outlet property="view" destination="xGo-ez-mEe" id="fuM-10-WAU"/>
@@ -1556,6 +1561,22 @@ CA
                 <outlet property="_useSmartCursorColor" destination="4889" id="GhQ-EU-ndl"/>
                 <outlet property="_useTabColor" destination="j7F-r8-oes" id="HoY-6m-E99"/>
                 <outlet property="_useUnderlineColor" destination="Cqf-RZ-UnO" id="HoY-6m-xxx"/>
+                <outlet property="ansiBrightHeader" destination="2362" id="pOut-007"/>
+                <outlet property="ansiColorsSectionLabel" destination="2lI-DE-0fT" id="pOut-008"/>
+                <outlet property="ansiNormalHeader" destination="2360" id="pOut-009"/>
+                <outlet property="boldColorLabel" destination="qR2-MX-8sz" id="pOut-010"/>
+                <outlet property="cursorBackgroundHeader" destination="l0A-Yn-QYU" id="pOut-011"/>
+                <outlet property="cursorGuideLabel" destination="oOo-qt-Im1" id="pOut-012"/>
+                <outlet property="defaultsForegroundHeader" destination="l59-YE-cHi" id="pOut-013"/>
+                <outlet property="faintOpaqueLabel" destination="Xf4-qq-KEB" id="pOut-014"/>
+                <outlet property="faintTransparentLabel" destination="YAM-x4-7Rw" id="pOut-015"/>
+                <outlet property="modesSectionLabel" destination="RVN-iv-hsG" id="pOut-016"/>
+                <outlet property="paneColorLabel" destination="gxX-AT-Xux" id="pOut-017"/>
+                <outlet property="presetsLabel" destination="21Z-ka-NoA" id="pOut-018"/>
+                <outlet property="selectionBackgroundHeader" destination="gj0-jM-SsL" id="pOut-019"/>
+                <outlet property="selectionForegroundHeader" destination="cRb-FN-kzp" id="pOut-020"/>
+                <outlet property="tabColorLabel" destination="g7n-RV-Wvu" id="pOut-021"/>
+                <outlet property="underlineColorLabel" destination="J0G-oP-9UN" id="pOut-022"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="NFg-pP-EcM"/>
                 <outlet property="view" destination="SCN-fS-hNB" id="Dla-0M-oa9"/>
             </connections>
@@ -1608,6 +1629,11 @@ CA
                 <outlet property="_useBoldFont" destination="4765" id="GP4-9X-n4Z"/>
                 <outlet property="_useItalicFont" destination="6400" id="OEO-Lb-9mF"/>
                 <outlet property="_useNonAsciiFont" destination="vNf-D5-cU4" id="75w-83-vyN"/>
+                <outlet property="asciiFontLabel" destination="4778" id="pOut-023"/>
+                <outlet property="manageCharacterFontsButton" destination="eDY-76-QLx" id="pOut-024"/>
+                <outlet property="nonAsciiFontLabel" destination="MVz-dE-lcf" id="pOut-025"/>
+                <outlet property="textRenderingLabel" destination="4998" id="pOut-026"/>
+                <outlet property="unicodeLabel" destination="7Qb-bA-qT4" id="pOut-027"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="gfz-ep-Jwt"/>
                 <outlet property="view" destination="G2G-W6-kWa" id="dro-S5-ibW"/>
             </connections>
@@ -1657,6 +1683,19 @@ CA
                 <outlet property="_widthLabel" destination="4912" id="lPV-RC-UcS"/>
                 <outlet property="_windowStyle" destination="4916" id="HIG-WO-wce"/>
                 <outlet property="_windowStyleLabel" destination="4918" id="65O-r4-WZw"/>
+                <outlet property="backgroundImageBlendingLabel" destination="y0U-q0-Kwz" id="pOut-028"/>
+                <outlet property="backgroundImageScalingLabel" destination="LZw-tH-UGW" id="pOut-029"/>
+                <outlet property="backgroundImageSectionLabel" destination="bgI-lbl-001" id="pOut-030"/>
+                <outlet property="backgroundImageSourceLabel" destination="a3F-v4-3mH" id="pOut-031"/>
+                <outlet property="blendBackgroundColorLabel" destination="dRl-iR-ObS" id="pOut-032"/>
+                <outlet property="blendImageLabel" destination="vD5-D9-lB3" id="pOut-033"/>
+                <outlet property="blurLabel" destination="hcE-h5-rBd" id="pOut-034"/>
+                <outlet property="blurMaxLabel" destination="5365" id="pOut-035"/>
+                <outlet property="blurMinLabel" destination="5364" id="pOut-036"/>
+                <outlet property="newTabsLabel" destination="voD-m3-aOu" id="pOut-037"/>
+                <outlet property="newWindowsSizeLabel" destination="4992" id="pOut-038"/>
+                <outlet property="transparencyMaxLabel" destination="4980" id="pOut-039"/>
+                <outlet property="transparencyMinLabel" destination="4979" id="pOut-040"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="7Ch-0z-mdS"/>
                 <outlet property="view" destination="77f-eM-Dma" id="LjX-ea-ide"/>
             </connections>
@@ -1697,6 +1736,27 @@ CA
                 <outlet property="_timestampsEnabled" destination="yTV-fG-vVx" id="uJb-pH-FsM"/>
                 <outlet property="_undoTimeout" destination="ksA-qB-n6W" id="YVr-dx-p2r"/>
                 <outlet property="_warnAboutShortLivedSessions" destination="CRE-cb-4lA" id="SUm-Ig-Zjw"/>
+                <outlet property="afterSessionEndsLabel" destination="Xcd-dg-Jah" id="pOut-041"/>
+                <outlet property="archiveFolderLabel" destination="0uV-48-Gnj" id="pOut-042"/>
+                <outlet property="archivingHelpButton" destination="046-FY-yXO" id="pOut-043"/>
+                <outlet property="archivingSectionLabel" destination="839-YF-wxn" id="pOut-044"/>
+                <outlet property="bufferHelpButton" destination="fD4-dp-lie" id="pOut-045"/>
+                <outlet property="closingSectionLabel" destination="5707" id="pOut-046"/>
+                <outlet property="idleEveryLabel" destination="SKQ-AW-1wN" id="pOut-047"/>
+                <outlet property="idleSecondsLabel" destination="RGW-48-LkR" id="pOut-048"/>
+                <outlet property="logFilenameLabel" destination="9fS-YJ-ldf" id="pOut-049"/>
+                <outlet property="logFolderLabel" destination="Qon-yy-HAh" id="pOut-050"/>
+                <outlet property="logFormatLabel" destination="DN8-7n-rg8" id="pOut-051"/>
+                <outlet property="loggingSectionLabel" destination="5709" id="pOut-052"/>
+                <outlet property="miscSectionLabel" destination="vnQ-jA-U5f" id="pOut-053"/>
+                <outlet property="passwordManagerLabel" destination="Iee-yn-w0U" id="pOut-054"/>
+                <outlet property="progressBarColorSchemeLabel" destination="2T4-TC-L6z" id="pOut-055"/>
+                <outlet property="progressBarHeightLabel" destination="1Kh-70-y9o" id="pOut-056"/>
+                <outlet property="progressBarsSectionLabel" destination="7HD-m2-Z38" id="pOut-057"/>
+                <outlet property="promptBeforeClosingLabel" destination="YAa-fh-c4L" id="pOut-058"/>
+                <outlet property="statusBarSectionLabel" destination="voN-t3-8lg" id="pOut-059"/>
+                <outlet property="undoRevivePrefixLabel" destination="wbj-Xu-M03" id="pOut-060"/>
+                <outlet property="undoSecondsLabel" destination="fn0-X1-OtH" id="pOut-061"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="ctD-Hw-Es8"/>
                 <outlet property="view" destination="ayN-Cl-pQs" id="xvI-1B-ZWf"/>
             </connections>
@@ -1731,6 +1791,12 @@ CA
                 <outlet property="_tabView" destination="gvH-pp-196" id="VXs-g2-ett"/>
                 <outlet property="_treatOptionAsAlt" destination="2jJ-eT-YfX" id="hm8-Qd-f3d"/>
                 <outlet property="_useLibTickit" destination="JI4-WQ-gMX" id="Law-dB-f3B"/>
+                <outlet property="controlRemapHelpButton" destination="ULx-Za-zGO" id="pOut-062"/>
+                <outlet property="csiuHelpButton" destination="2zs-Mo-G3z" id="pOut-063"/>
+                <outlet property="hotkeyWindowLabel" destination="uyq-bp-dt3" id="pOut-064"/>
+                <outlet property="keyBehaviorLabel" destination="o9e-M3-gs6" id="pOut-065"/>
+                <outlet property="keyReportingLabel" destination="7LS-MQ-g3P" id="pOut-066"/>
+                <outlet property="optionAsMetaHelpButton" destination="8Ta-Fg-DNL" id="pOut-067"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="xet-WM-Yj5"/>
                 <outlet property="view" destination="M5G-Dw-0HO" id="7cT-58-ldP"/>
             </connections>
@@ -1774,7 +1840,6 @@ CA
                 <outlet property="_sendAlertsToCompanionStatus" destination="cmp-A2-lbl" id="cmp-A2-out"/>
                 <outlet property="_sessionEndedAlert" destination="Hn1-0h-Vve" id="vQS-d5-b1B"/>
                 <outlet property="_shellIntegrationRequiredButton" destination="Yv4-ze-aYW" id="DbO-2y-TZd"/>
-                <outlet property="_showMarkIndicators" destination="Wi4-0H-Bb4" id="gD6-Fj-f9H"/>
                 <outlet property="_showOffscreenCommandLine" destination="bAl-3O-ik0" id="2QD-PE-Ynt"/>
                 <outlet property="_showOffscreenCommandLineForCurrentCommand" destination="8RE-RE-YOM" id="uio-Vp-EkG"/>
                 <outlet property="_silenceBell" destination="2397" id="qqe-8n-AAy"/>
@@ -1787,6 +1852,14 @@ CA
                 <outlet property="_xtermMouseReporting" destination="2402" id="kB0-i0-VKF"/>
                 <outlet property="_xtermMouseReportingAllowClicksAndDrags" destination="FkF-MP-YU8" id="B6U-yp-UON"/>
                 <outlet property="_xtermMouseReportingAllowMouseWheel" destination="EMG-WL-JwE" id="1Dc-fP-KhQ"/>
+                <outlet property="bellSectionLabel" destination="nHk-sA-Hdn" id="pOut-068"/>
+                <outlet property="emulationSectionLabel" destination="jPD-Hb-F9Q" id="pOut-069"/>
+                <outlet property="environmentSectionLabel" destination="Nkb-Xd-uFb" id="pOut-070"/>
+                <outlet property="historySectionLabel" destination="iIb-2x-lrb" id="pOut-071"/>
+                <outlet property="mouseReportingSectionLabel" destination="g2c-Nh-J4x" id="pOut-072"/>
+                <outlet property="notificationsSectionLabel" destination="kyo-gh-RaL" id="pOut-073"/>
+                <outlet property="terminalMetadataSectionLabel" destination="fQi-F4-Sfd" id="pOut-074"/>
+                <outlet property="tmuxIntegrationSectionLabel" destination="7Wv-zh-baw" id="pOut-075"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="phY-Ve-12F"/>
                 <outlet property="view" destination="0rQ-EK-tyN" id="e2I-lI-Mj1"/>
             </connections>
@@ -1813,6 +1886,12 @@ CA
                 <outlet property="_triggerWindowController" destination="5797" id="s19-Zp-Wt4"/>
                 <outlet property="_triggersButton" destination="5914" id="Jbw-55-ffW"/>
                 <outlet property="_triggersHelp" destination="jkG-0o-728" id="jYM-TS-r5m"/>
+                <outlet property="semanticHistoryHelp" destination="9fz-Kz-dMv" id="pOut-076"/>
+                <outlet property="semanticHistoryLabel" destination="5930" id="pOut-077"/>
+                <outlet property="smartSelectionHelp" destination="azJ-RD-Y6b" id="pOut-078"/>
+                <outlet property="smartSelectionLabel" destination="5837" id="pOut-079"/>
+                <outlet property="snippetsFilterHelp" destination="kLM-Y9-wzj" id="pOut-080"/>
+                <outlet property="triggersLabel" destination="5778" id="pOut-081"/>
                 <outlet property="delegate" destination="HVI-63-mNz" id="XlF-0B-sbO"/>
                 <outlet property="view" destination="prV-vq-Wo2" id="GbH-gF-fmF"/>
             </connections>
@@ -4716,17 +4795,6 @@ CA
                                 <action selector="settingChanged:" target="gMD-DK-gev" id="pb4-wx-Nb4"/>
                             </connections>
                         </button>
-                        <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wi4-0H-Bb4" customClass="iTermSettingsCheckbox">
-                            <rect key="frame" x="156" y="106" width="383" height="18"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="check" title="Show mark indicators" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="uCi-Qa-X8t">
-                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="settingChanged:" target="gMD-DK-gev" id="FXz-3R-jfr"/>
-                            </connections>
-                        </button>
                         <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xsN-qz-rhj" customClass="iTermSettingsCheckbox">
                             <rect key="frame" x="156" y="36" width="383" height="18"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -5411,7 +5479,7 @@ CA
                                 <action selector="removeJob:" target="TG6-06-mq9" id="eUA-iM-ZYA"/>
                             </connections>
                         </button>
-                        <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5658">
+                        <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5658" customClass="iTermSettingsEmbeddedScrollView">
                             <rect key="frame" x="0.0" y="49" width="452" height="97"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <clipView key="contentView" id="ArV-0K-qze">
@@ -6053,7 +6121,7 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                                 </userDefinedRuntimeAttribute>
                             </userDefinedRuntimeAttributes>
                         </button>
-                        <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A9f-o2-dhh">
+                        <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="A9f-o2-dhh" customClass="iTermSettingsEmbeddedScrollView">
                             <rect key="frame" x="206" y="61" width="553" height="78"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <clipView key="contentView" id="FMp-vf-IvG">
@@ -6808,20 +6876,8 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                                                     <action selector="settingChanged:" target="9Se-ld-UJa" id="fMw-UA-Ylc"/>
                                                 </connections>
                                             </button>
-                                            <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Pt-rH-WYj">
-                                                <rect key="frame" x="162" y="43" width="378" height="18"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <string key="toolTip">When this is enabled, you can click on a command or its output to restrict Find and Filter to its output. The selected command gets highlighted and other commands get dimmed. This requires prompt and command metadata.</string>
-                                                <buttonCell key="cell" type="check" title="Clicking on a command selects it to restrict Find and Filter" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="U7X-fp-NxP">
-                                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                    <font key="font" metaFont="system"/>
-                                                </buttonCell>
-                                                <connections>
-                                                    <action selector="settingChanged:" target="9Se-ld-UJa" id="zCk-R7-xJj"/>
-                                                </connections>
-                                            </button>
                                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZlO-15-adn">
-                                                <rect key="frame" x="162" y="19" width="383" height="18"/>
+                                                <rect key="frame" x="162" y="43" width="383" height="18"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <buttonCell key="cell" type="check" title="When pasting a dropped filename, wrap it in double quotes" bezelStyle="regularSquare" imagePosition="left" alignment="left" state="on" inset="2" id="ydH-wX-BJI">
                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -6867,17 +6923,8 @@ See the [documentation](https://iterm2.com/automatic-profile-switching.html) for
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                 </textFieldCell>
                                             </textField>
-                                            <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fGi-yx-uR4">
-                                                <rect key="frame" x="18" y="44" width="137" height="16"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Command selection:" id="d4O-zL-Pp0">
-                                                    <font key="font" usesAppearanceFont="YES"/>
-                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                </textFieldCell>
-                                            </textField>
                                             <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Mop-XS-mGe">
-                                                <rect key="frame" x="18" y="20" width="137" height="16"/>
+                                                <rect key="frame" x="18" y="44" width="137" height="16"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Pasting:" id="qjH-lF-RBX">
                                                     <font key="font" usesAppearanceFont="YES"/>

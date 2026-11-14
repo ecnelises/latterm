@@ -61,6 +61,22 @@
     BOOL _triggersModelHasChanged;
 }
 
+- (NSButton *)triggersButton { return _triggersButton; }
+- (NSView *)triggersHelp { return _triggersHelp; }
+- (NSButton *)enableTriggersInInteractiveApps { return _enableTriggersInInteractiveApps; }
+- (NSButton *)smartSelectionButton { return _smartSelectionButton; }
+- (NSControl *)boundHostLabel { return _boundHostLabel; }
+- (NSControl *)boundHostHelp { return _boundHostHelp; }
+- (NSTableView *)boundHostsTableView { return _boundHostsTableView; }
+- (NSControl *)addBoundHost { return _addBoundHost; }
+- (NSControl *)removeBoundHost { return _removeBoundHost; }
+- (NSControl *)boundHostShellIntegrationWarning { return _boundHostShellIntegrationWarning; }
+- (NSButton *)enableAPSLogging { return _enableAPSLogging; }
+- (NSTextField *)snippetsFilterLabel { return _snippetsFilterLabel; }
+- (NSTokenField *)snippetsFilter { return _snippetsFilter; }
+- (iTermSemanticHistoryPrefsController *)semanticHistoryPrefController { return _semanticHistoryPrefController; }
+- (NSTextField *)disabledTip { return _disabledTip; }
+
 - (void)dealloc {
     _boundHostsTableView.delegate = nil;
     _boundHostsTableView.dataSource = nil;
@@ -103,6 +119,7 @@
                        phrases:@[ @"cmd click", @"open file", @"open url" ]
                            key:nil];
     _enableAPSLogging.state = iTermUserDefaults.enableAutomaticProfileSwitchingLogging ? NSControlStateValueOn : NSControlStateValueOff;
+    [self installProfileLayout];
 }
 
 - (NSArray *)keysForBulkCopy {
@@ -411,6 +428,7 @@
 - (void)updateSemanticHistoryDisabledLabel:(NSNotification *)notification {
     _disabledTip.hidden = [iTermPreferences boolForKey:kPreferenceKeyCmdClickOpensURLs];
     _semanticHistoryPrefController.enabled = _disabledTip.hidden;
+    [self.view it_invalidateProfileFormLayout];
 }
 
 #pragma mark - Actions

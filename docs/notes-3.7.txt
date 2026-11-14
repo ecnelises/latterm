@@ -15,6 +15,15 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Rebuild Settings > Profiles with a native
+  profile sidebar, live color swatches, and one
+  continuous scrollable page for all sections.
+- Remove click-to-select command scopes, warning
+  popover, overlays, and prompt mark triangles.
+- Replace app icons with the geometric Latterm
+  icon set (excluding Split), render α and β
+  cursors on Alpha and Beta builds, and add Light
+  and Dark mode icon pickers under Appearance.
 - Raise minimum macOS target to 15.0 and arm64.
 - Remove dead subpixel-AA Metal and AppKit
   rendering paths, shrinking the ASCII texture

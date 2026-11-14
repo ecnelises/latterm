@@ -120,7 +120,9 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         if let sizePicker = sizePicker {
             sizePicker.removeFromSuperview()
             self.sizePicker = nil
+            invalidateIntrinsicContentSize()
             layoutSubviews()
+            superview?.needsLayout = true
         }
     }
 
@@ -129,7 +131,9 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
             memberPicker.removeFromSuperview()
             self.memberPicker?.delegate = nil
             self.memberPicker = nil
+            invalidateIntrinsicContentSize()
             layoutSubviews()
+            superview?.needsLayout = true
         }
     }
 
@@ -151,6 +155,8 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         }
         optionsButtonController = nil
         updateOptionsMenu()
+        invalidateIntrinsicContentSize()
+        superview?.needsLayout = true
     }
 
     @objc public func addOptionsButton() {
@@ -166,9 +172,12 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
 
     private func temporarilyRemoveOptionsButton() {
         if let i = indexOfOptionsButton {
+            accessories[i].removeFromSuperview()
             accessories.remove(at: i)
             optionsButtonController?.delegate = nil
+            invalidateIntrinsicContentSize()
             layoutSubviews()
+            superview?.needsLayout = true
         }
     }
 
@@ -213,7 +222,9 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         accessories.append(view)
         ensureAccessoryOrder()
         addSubview(view)
+        invalidateIntrinsicContentSize()
         layoutSubviews()
+        superview?.needsLayout = true
     }
 
     private func ensureAccessoryOrder() {
@@ -226,54 +237,198 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         accessories.append(button)
     }
 
+    private struct LayoutGeometry {
+        static let margin: CGFloat = 4.0
+        static let pairSpacing: CGFloat = 3.0
+        static let clusterSpacing: CGFloat = 8.0
+        static let rowSpacing: CGFloat = 6.0
+        static let primaryRowHeight: CGFloat = 27.0
+        static let accessoryRowHeight: CGFloat = 25.0
+        static let minSingleRowAffordanceWidth: CGFloat = 160.0
+    }
+
+    private func accessoryClusters() -> [[NSView]] {
+        var clusters: [[NSView]] = []
+        var i = 0
+        while i < accessories.count {
+            let current = accessories[i]
+            if current is NSImageView,
+               i + 1 < accessories.count,
+               !(accessories[i + 1] is NSImageView) {
+                clusters.append([current, accessories[i + 1]])
+                i += 2
+            } else {
+                clusters.append([current])
+                i += 1
+            }
+        }
+        return clusters
+    }
+
+    private func clusterWidth(_ cluster: [NSView]) -> CGFloat {
+        guard !cluster.isEmpty else { return 0 }
+        let itemsWidth = cluster.reduce(CGFloat(0)) { $0 + max(0, $1.fittingSize.width) }
+        return itemsWidth + CGFloat(cluster.count - 1) * LayoutGeometry.pairSpacing
+    }
+
+    private func accessoryRows(maxWidth: CGFloat) -> [[[NSView]]] {
+        let clusters = accessoryClusters()
+        guard !clusters.isEmpty else { return [] }
+        let limit = max(1, maxWidth)
+        var rows: [[[NSView]]] = [[]]
+        var currentWidth: CGFloat = 0
+        for cluster in clusters {
+            let w = clusterWidth(cluster)
+            if !rows[rows.count - 1].isEmpty && currentWidth + LayoutGeometry.clusterSpacing + w > limit {
+                rows.append([cluster])
+                currentWidth = w
+            } else {
+                if !rows[rows.count - 1].isEmpty {
+                    currentWidth += LayoutGeometry.clusterSpacing
+                }
+                rows[rows.count - 1].append(cluster)
+                currentWidth += w
+            }
+        }
+        return rows
+    }
+
+    private func pickerWidths(forWidth width: CGFloat) -> (member: CGFloat, size: CGFloat) {
+        let baseMember: CGFloat = memberPicker == nil ? 0 : 100.0
+        let baseSize: CGFloat = sizePicker == nil ? 0 : 54.0
+        let gaps = CGFloat((memberPicker == nil ? 0 : 1) + (sizePicker == nil ? 0 : 1)) * LayoutGeometry.margin
+        if width <= 0 {
+            return (baseMember, baseSize)
+        }
+        // Preserve generous affordance space before shrinking secondary pickers.
+        let minAffordance: CGFloat = min(96.0, max(40.0, width * 0.42))
+        let availableForPickers = max(0, width - minAffordance - gaps)
+        var sizeW = min(baseSize, availableForPickers)
+        var memberW = min(baseMember, max(0, availableForPickers - sizeW))
+        if memberPicker != nil && sizePicker != nil && memberW + sizeW > availableForPickers {
+            sizeW = min(baseSize, max(42.0, availableForPickers * 0.38))
+            memberW = max(0, availableForPickers - sizeW)
+        }
+        return (floor(memberW), floor(sizeW))
+    }
+
+    private func singleRowAccessoriesWidth() -> CGFloat {
+        let clusters = accessoryClusters()
+        guard !clusters.isEmpty else { return 0 }
+        let itemsTotal = clusters.reduce(CGFloat(0)) { $0 + clusterWidth($1) }
+        return itemsTotal + CGFloat(clusters.count - 1) * LayoutGeometry.clusterSpacing
+    }
+
+    private func canFitSingleRow(width: CGFloat) -> Bool {
+        if accessories.isEmpty {
+            return true
+        }
+        let pickers = pickerWidths(forWidth: width)
+        let primaryFixed = pickers.member + pickers.size
+        var fixedGaps: CGFloat = 0
+        if memberPicker != nil { fixedGaps += LayoutGeometry.margin }
+        if sizePicker != nil { fixedGaps += LayoutGeometry.margin }
+        let accessoriesWidth = singleRowAccessoriesWidth()
+        let accessoryLeadGap = LayoutGeometry.clusterSpacing
+        let needed = LayoutGeometry.minSingleRowAffordanceWidth + fixedGaps + primaryFixed + accessoryLeadGap + accessoriesWidth
+        return width >= needed
+    }
+
+    @objc public func preferredHeight(forWidth width: CGFloat) -> CGFloat {
+        if accessories.isEmpty || canFitSingleRow(width: width) {
+            return LayoutGeometry.primaryRowHeight
+        }
+        let rows = accessoryRows(maxWidth: width)
+        let extraRows = CGFloat(rows.count)
+        return LayoutGeometry.primaryRowHeight + extraRows * (LayoutGeometry.rowSpacing + LayoutGeometry.accessoryRowHeight)
+    }
+
+    public override var intrinsicContentSize: NSSize {
+        let w = bounds.width > 0 ? bounds.width : 360.0
+        return NSSize(width: NSView.noIntrinsicMetric, height: preferredHeight(forWidth: w))
+    }
+
     private func layoutSubviews() {
-        let margin = CGFloat(3.0)
-        var accessoryWidths: [CGFloat] = []
-        var totalAccessoryWidth = CGFloat(0)
-        var maxAccessoryHeight = CGFloat(0)
-        for accessory in accessories {
-            accessoryWidths.append(accessory.fittingSize.width)
-            maxAccessoryHeight = max(maxAccessoryHeight, accessory.fittingSize.height)
-            totalAccessoryWidth += accessory.fittingSize.width
-        }
-        totalAccessoryWidth += max(0.0, CGFloat(accessories.count - 1)) * margin
+        let width = bounds.width
+        let height = bounds.height
+        guard width > 0 else { return }
 
-        let sizePickerWidth: CGFloat = sizePicker == nil ? CGFloat(0) : CGFloat(54.0)
-        var numViews = 1
-        if sizePicker != nil {
-            numViews += 1
-        }
-        if memberPicker != nil {
-            numViews += 1
-        }
-        let memberPickerWidth: CGFloat = memberPicker == nil ? CGFloat(0) : CGFloat(100.0)
-        let width: CGFloat = bounds.size.width
+        let useSingleRow = accessories.isEmpty || canFitSingleRow(width: width) || height < (LayoutGeometry.primaryRowHeight + LayoutGeometry.rowSpacing + 18.0)
+        let pickers = pickerWidths(forWidth: width)
+        var fixedGaps: CGFloat = 0
+        if memberPicker != nil { fixedGaps += LayoutGeometry.margin }
+        if sizePicker != nil { fixedGaps += LayoutGeometry.margin }
 
-        // This would be a let constant but the Swift compiler can't type check it in a reasonable amount of time.
-        var preferredWidth: CGFloat = width
-        preferredWidth -= sizePickerWidth
-        preferredWidth -= memberPickerWidth
-        preferredWidth -= totalAccessoryWidth
-        preferredWidth -= margin * CGFloat(numViews)
+        let accessoriesWidth = useSingleRow && !accessories.isEmpty ? (LayoutGeometry.clusterSpacing + singleRowAccessoriesWidth()) : 0
+        let remainingForAffordance = width - pickers.member - pickers.size - fixedGaps - accessoriesWidth
+        let affordanceWidth = max(24.0, floor(remainingForAffordance))
 
-        let affordanceWidth = max(200.0, preferredWidth)
-        var x = CGFloat(0)
-        affordance.frame = NSRect(x: x, y: CGFloat(0), width: affordanceWidth, height: CGFloat(25))
-        x += affordanceWidth + margin
-        if let memberPicker = memberPicker {
-            memberPicker.frame = NSRect(x: x, y: CGFloat(0), width: memberPickerWidth, height: CGFloat(25))
-            x += memberPickerWidth + margin
+        // AppKit coordinates here are non-flipped (y = 0 at bottom), so the primary row sits at the top.
+        let primaryY = accessories.isEmpty || useSingleRow
+            ? max(0, floor((height - LayoutGeometry.primaryRowHeight) / 2.0))
+            : max(0, height - LayoutGeometry.primaryRowHeight)
+
+        var x: CGFloat = 0
+        affordance.frame = NSRect(x: x, y: primaryY + 1, width: affordanceWidth, height: 25)
+        x += affordanceWidth
+
+        if let memberPicker {
+            x += LayoutGeometry.margin
+            memberPicker.frame = NSRect(x: x, y: primaryY + 1, width: pickers.member, height: 25)
+            x += pickers.member
         }
-        if let sizePicker = sizePicker {
-            sizePicker.frame =  NSRect(x: x, y: CGFloat(0), width: sizePickerWidth, height: CGFloat(27))
-            x += sizePickerWidth + margin
+        if let sizePicker {
+            x += LayoutGeometry.margin
+            sizePicker.frame = NSRect(x: x, y: primaryY, width: pickers.size, height: 27)
+            x += pickers.size
         }
 
-        for accessory in accessories {
-            (accessory as? AccessoryWrapper)?.layoutSubviews(containerHeight: bounds.height)
-            let size = accessory.fittingSize
-            accessory.frame = NSRect(x: x, y: CGFloat(0), width: size.width, height: size.height)
-            x += size.width + margin
+        guard !accessories.isEmpty else { return }
+
+        if useSingleRow {
+            layoutAccessoryRow(accessoryClusters(),
+                               startX: x + LayoutGeometry.clusterSpacing,
+                               rowY: primaryY,
+                               rowHeight: LayoutGeometry.primaryRowHeight,
+                               maxX: width)
+        } else {
+            let rows = accessoryRows(maxWidth: width)
+            var currentY = primaryY - LayoutGeometry.rowSpacing - LayoutGeometry.accessoryRowHeight
+            for row in rows {
+                layoutAccessoryRow(row,
+                                   startX: 0,
+                                   rowY: max(0, currentY),
+                                   rowHeight: LayoutGeometry.accessoryRowHeight,
+                                   maxX: width)
+                currentY -= (LayoutGeometry.rowSpacing + LayoutGeometry.accessoryRowHeight)
+            }
+        }
+    }
+
+    private func layoutAccessoryRow(_ clusters: [[NSView]],
+                                    startX: CGFloat,
+                                    rowY: CGFloat,
+                                    rowHeight: CGFloat,
+                                    maxX: CGFloat) {
+        var x = startX
+        for (clusterIndex, cluster) in clusters.enumerated() {
+            if clusterIndex > 0 {
+                x += LayoutGeometry.clusterSpacing
+            }
+            for (itemIndex, accessory) in cluster.enumerated() {
+                if itemIndex > 0 {
+                    x += LayoutGeometry.pairSpacing
+                }
+                if let wrapper = accessory as? AccessoryWrapper {
+                    wrapper.layoutSubviews(containerHeight: rowHeight)
+                }
+                let size = accessory.fittingSize
+                let clampedWidth = max(0, min(size.width, maxX - x))
+                let itemHeight = accessory is AccessoryWrapper ? rowHeight : min(rowHeight, max(16.0, size.height))
+                let itemY = rowY + floor((rowHeight - itemHeight) / 2.0)
+                accessory.frame = NSRect(x: x, y: itemY, width: clampedWidth, height: itemHeight)
+                x += clampedWidth
+            }
         }
     }
 
@@ -310,6 +465,10 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
                 optionsButtonController.delegate = self
                 let wrapper = AccessoryWrapper(optionsButton, height: bounds.height)
                 add(accessory: wrapper)
+            } else {
+                invalidateIntrinsicContentSize()
+                layoutSubviews()
+                superview?.needsLayout = true
             }
             return
         }

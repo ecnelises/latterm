@@ -179,7 +179,6 @@ NSString *const kPreferenceKeyTripleClickSelectsFullWrappedLines = @"TripleClick
 NSString *const kPreferenceKeyDoubleClickPerformsSmartSelection = @"DoubleClickPerformsSmartSelection";
 NSString *const kPreferenceKeyEnterCopyModeAutomatically = @"EnterCopyModeAutomatically";
 NSString *const kPreferenceKeyFocusOnRightOrMiddleClick = @"FocusOnRightOrMiddleClick";
-NSString *const kPreferenceKeyClickToSelectCommand = @"ClickToSelectCommand";
 NSString *const kPreferenceKeyWrapDroppedFilenamesInQuotesWhenPasting = @"WrapDroppedFilenamesInQuotesWhenPasting";
 NSString *const kPreferenceKeyReportHorizontalScrollEvents = @"ReportHorizontalScrollEvents";
 NSString *const kPreferenceKeyAppVersion = @"iTerm Version";  // Excluded from syncing
@@ -216,6 +215,8 @@ NSString *const kPreferenceKeyHTMLTabTitles = @"HTMLTabTitles";
 NSString *const kPreferenceKeyDisableTransparencyForKeyWindow = @"DisableTransparencyForKeyWindow";
 NSString *const kPreferenceKeyNeverBlockSystemShutdown = @"NeverBlockSystemShutdown";
 NSString *const kPreferenceKeyMenuActionImages = @"NSMenuEnableActionImages";
+NSString *const kPreferenceKeyLightAppIcon = @"AppIconLight";
+NSString *const kPreferenceKeyDarkAppIcon = @"AppIconDark";
 
 NSString *const kPreferenceKeyAlertOnMarksInOffscreenSessions = @"Alert On Marks in Offscreen Sessions";
 
@@ -574,7 +575,6 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
                   kPreferenceKeyTripleClickSelectsFullWrappedLines: @YES,
                   kPreferenceKeyDoubleClickPerformsSmartSelection: @NO,
                   kPreferenceKeyEnterCopyModeAutomatically: @YES,
-                  kPreferenceKeyClickToSelectCommand: @YES,
                   kPreferenceKeyWrapDroppedFilenamesInQuotesWhenPasting: @NO,
 
                   kPreferenceAutoComposer: @NO,
@@ -606,9 +606,19 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
                   kPreferenceKeyNeverBlockSystemShutdown: @NO,
 
                   kPreferenceKeyMenuActionImages: @YES,
+                  kPreferenceKeyLightAppIcon: @"paper",
+                  kPreferenceKeyDarkAppIcon: @"ink",
               };
     }
     return dict;
+}
+
++ (BOOL)isAlphaOrBetaBuild {
+#if BETA
+    return YES;
+#else
+    return NO;
+#endif
 }
 
 + (id)defaultObjectForKey:(NSString *)key {

@@ -842,35 +842,6 @@ extension VT100GridCoordRange: Equatable {
     }
 }
 
-extension PTYTextView {
-    @objc
-    func copySelectedCommand() {
-        guard let mark = delegate?.textViewSelectedCommandMark() else {
-            return
-        }
-        let selection = selectionForCommandAndOutput(ofMark: mark)
-        copySelection(selection)
-    }
-
-    @objc
-    func copySelectedCommandWithStyles() {
-        guard let mark = delegate?.textViewSelectedCommandMark() else {
-            return
-        }
-        let selection = selectionForCommandAndOutput(ofMark: mark)
-        copySelection(withStyles: selection)
-    }
-
-    @objc
-    func copySelectedCommandWithControlSequences() {
-        guard let mark = delegate?.textViewSelectedCommandMark() else {
-            return
-        }
-        let selection = selectionForCommandAndOutput(ofMark: mark)
-        copySelection(withControlSequences: selection)
-    }
-}
-
 extension PTYTextView: NSViewContentSelectionInfo {
     func clampedRelativeCoord(_ absCoord: VT100GridAbsCoord) -> VT100GridCoord {
         var result = VT100GridCoordMake(0, 0)

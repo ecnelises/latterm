@@ -7,6 +7,7 @@
 //
 
 #import "AppearancePreferencesViewController.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermHotKeyController.h"
 #import "iTermApplicationDelegate.h"
 #import "iTermWarning.h"
@@ -113,6 +114,7 @@ NSString *const iTermProcessTypeDidChangeNotification = @"iTermProcessTypeDidCha
     IBOutlet NSStepper *_topBottomMarginsStepper;
 
     IBOutlet NSButton *_hideMenuItemIcons;
+    iTermAppIconPreferencesView *_appIconView;
 }
 
 - (void)awakeFromNib {
@@ -247,7 +249,7 @@ NSString *const iTermProcessTypeDidChangeNotification = @"iTermProcessTypeDidCha
                    relatedView:nil
                           type:kPreferenceInfoTypeCheckbox];
     info.customSettingChangedHandler = ^(id sender) {
-        BOOL isOn = [sender state] == NSControlStateValueOn;
+        BOOL isOn = [(NSButton *)sender state] == NSControlStateValueOn;
         BOOL didChange = NO;
         if (isOn) {
             iTermWarningSelection selection =
@@ -406,6 +408,41 @@ NSString *const iTermProcessTypeDidChangeNotification = @"iTermProcessTypeDidCha
     if (@available(macOS 26, *)) {} else {
         _hideMenuItemIcons.enabled = NO;
     }
+
+    [self installAppIconSection];
+}
+
+- (void)installAppIconSection {
+    _appIconView = [[iTermAppIconPreferencesView alloc] initWithFrame:NSMakeRect(0, 0, 512, 208)];
+    _appIconView.lightPopupButton.target = self;
+    _appIconView.lightPopupButton.action = @selector(settingChanged:);
+    _appIconView.darkPopupButton.target = self;
+    _appIconView.darkPopupButton.action = @selector(settingChanged:);
+
+    __weak iTermAppIconPreferencesView *weakIconView = _appIconView;
+    PreferenceInfo *info = [self defineControl:_appIconView.lightPopupButton
+                                           key:kPreferenceKeyLightAppIcon
+                                   relatedView:_appIconView.lightLabel
+                                          type:kPreferenceInfoTypeStringPopup];
+    info.onChange = ^{
+        [weakIconView refreshPreviews];
+    };
+
+    info = [self defineControl:_appIconView.darkPopupButton
+                           key:kPreferenceKeyDarkAppIcon
+                   relatedView:_appIconView.darkLabel
+                          type:kPreferenceInfoTypeStringPopup];
+    info.onChange = ^{
+        [weakIconView refreshPreviews];
+    };
+
+    NSTabViewItem *appIconItem = [[NSTabViewItem alloc] initWithIdentifier:@"AppIcon"];
+    appIconItem.label = NSLocalizedString(@"App Icon",
+                                          @"Appearance settings section title for Light and Dark app icons");
+    appIconItem.view = _appIconView;
+    const NSInteger insertIndex = MIN((NSInteger)_tabView.numberOfTabViewItems, 1);
+    [_tabView insertTabViewItem:appIconItem atIndex:insertIndex];
+    [_appIconView refreshPreviews];
 }
 
 - (void)dealloc {

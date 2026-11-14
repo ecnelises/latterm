@@ -622,18 +622,6 @@ class TerminalUnfoldButton: TerminalMarkButton {
     }
 }
 
-@objc(iTermTerminalSettingsButton)
-class TerminalSettingsButton: TerminalMarkButton {
-    @objc(initWithMark:dx:)
-    init?(mark: VT100ScreenMarkReading, dx: Int32) {
-        super.init(identifier: -2, mark: mark, fgName: SFSymbol.switch2.rawValue, bgName: SFSymbol.switch2.rawValue, dx: dx, tooltip: "Command Settings…")
-    }
-
-    required init?(_ original: TerminalButton) {
-        super.init(original)
-    }
-}
-
 extension NSImage {
     static func roundedRect(size: NSSize, radius: CGFloat, color: NSColor) -> NSImage {
         return NSImage(size: size, flipped: false) { rect in

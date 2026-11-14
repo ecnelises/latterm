@@ -656,9 +656,9 @@ extension AsyncFilter: ContentSubscriber {
         }
     }
 
-    func updateMetadata(selectedCommandRange: NSRange, cumulativeOverflow: Int64) {
-        DLog("\(it_addressString): AsyncFilter: updateMetadata: selectedCommandRange<-\(selectedCommandRange), cumulativeOverflow=\(cumulativeOverflow)")
-        updater.updateMetadata(absLineRange: Range(selectedCommandRange)!,
+    func updateMetadata(absLineRange: NSRange, cumulativeOverflow: Int64) {
+        DLog("\(it_addressString): AsyncFilter: updateMetadata: absLineRange<-\(absLineRange), cumulativeOverflow=\(cumulativeOverflow)")
+        updater.updateMetadata(absLineRange: Range(absLineRange)!,
                                cumulativeOverflow: cumulativeOverflow)
     }
 }

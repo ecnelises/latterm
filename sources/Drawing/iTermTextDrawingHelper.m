@@ -334,11 +334,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
         visibleLines:visibleLines
        virtualOffset:virtualOffset];
 
-    if (_selectedCommandRegion.length > 0) {
-        [self drawOutlineAroundSelectedCommand:virtualOffset];
-        [self drawShadeOverNonSelectedCommands:virtualOffset];
-    }
-
     if (_showDropTargets) {
         [self drawDropTargetsWithVirtualOffset:virtualOffset];
     }
@@ -753,10 +748,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     }
 }
 
-- (BOOL)lineIsInDeselectedRegion:(int)line {
-    return _selectedCommandRegion.length > 0 && (line < 0 || !NSLocationInRange(line, _selectedCommandRegion));
-}
-
 - (NSColor *)unprocessedColorForBackgroundRun:(const iTermBackgroundColorRun *)run
                                enableBlending:(BOOL)enableBlending {
     NSColor *color;
@@ -969,84 +960,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
         [self drawMarkIfNeededOnLine:line
                       leftMarginRect:leftMargin
                        virtualOffset:virtualOffset];
-    }
-}
-
-- (NSArray<NSColor *> *)selectedCommandOutlineColors {
-    NSColor *selectedColor = [self.delegate drawingHelperColorForCode:ALTSEM_SELECTED
-                                                                green:0
-                                                                 blue:0
-                                                            colorMode:ColorModeAlternate
-                                                                 bold:NO
-                                                                faint:NO
-                                                         isBackground:YES];
-    if (!selectedColor) {
-        selectedColor = [NSColor colorWithDisplayP3Red:0.2 green:0.2 blue:1 alpha:1];
-    }
-    NSColor *bg = [[self defaultBackgroundColor] colorWithAlphaComponent:1.0];
-    return @[
-        selectedColor,
-        [selectedColor blendedWithColor:bg weight:0.25],
-    ];
-}
-
-const CGFloat commandRegionOutlineThickness = 2.0;
-
-- (NSColor *)shadeColor {
-    const CGFloat alpha = [iTermAdvancedSettingsModel alphaForDeselectedCommandShade];
-    if ([[self defaultBackgroundColor] isDark]) {
-        return [NSColor colorWithDisplayP3Red:1 green:1 blue:1 alpha:alpha];
-    }
-    return [NSColor colorWithDisplayP3Red:0 green:0 blue:0 alpha:alpha];
-}
-
-- (void)drawShadeOverNonSelectedCommands:(CGFloat)virtualOffset {
-    const NSRange visibleRange = [self rangeOfVisibleRows];
-    const NSRange visibleSelectedRange = NSIntersectionRange(visibleRange, _selectedCommandRegion);
-
-    NSColor *color = self.shadeColor;
-    [color set];
-
-    const CGFloat topHeight = visibleSelectedRange.location * _cellSize.height - commandRegionOutlineThickness - _scrollViewDocumentVisibleRect.origin.y;
-    CGFloat y = _scrollViewDocumentVisibleRect.origin.y;
-
-    NSRect rect = NSMakeRect(0,
-                             y,
-                             _scrollViewDocumentVisibleRect.size.width,
-                             MAX(0, topHeight));
-    y += topHeight;
-    iTermRectFillUsingOperation(rect, NSCompositingOperationSourceOver, virtualOffset);
-
-    const CGFloat selectedHeight = MAX(0, visibleSelectedRange.length * _cellSize.height + commandRegionOutlineThickness * 2);
-    y += selectedHeight;
-
-    CGFloat savedBottom = 0;
-    if (_forceRegularBottomMargin) {
-        savedBottom = self.excessRect.size.height;
-    }
-    rect = NSMakeRect(0,
-                      y,
-                      _scrollViewDocumentVisibleRect.size.width,
-                      _scrollViewDocumentVisibleRect.size.height - topHeight - selectedHeight - savedBottom);
-    iTermRectFillUsingOperation(rect, NSCompositingOperationSourceOver, virtualOffset);
-
-    DLog(@"rect.origin.y=%@ because document origin=%@ + topHeight=%@ + selectedHeight=%@. Cell height is %@",
-          @(rect.origin.y-virtualOffset), @(_scrollViewDocumentVisibleRect.origin.y-virtualOffset), @(topHeight), @(selectedHeight), @(self.cellSize.height));
-}
-
-- (void)drawOutlineAroundSelectedCommand:(CGFloat)virtualOffset {
-    const CGFloat y = _selectedCommandRegion.location * _cellSize.height;
-
-    NSRect rect = NSMakeRect(0,
-                             y - commandRegionOutlineThickness,
-                             _scrollViewDocumentVisibleRect.size.width,
-                             _selectedCommandRegion.length * _cellSize.height + commandRegionOutlineThickness * 2);
-
-    NSArray<NSColor *> *colors = self.selectedCommandOutlineColors;
-    for (NSColor * color in colors) {
-        [color set];
-        iTermFrameRect(rect, virtualOffset);
-        rect = NSInsetRect(rect, 1, 1);
     }
 }
 
@@ -1326,40 +1239,26 @@ const CGFloat commandRegionOutlineThickness = 2.0;
     }
     id<VT100ScreenMarkReading> mark = [self.delegate drawingHelperMarkOnLine:line];
     const BOOL folded = [_folds containsIndex:line];
-    BOOL shouldDrawRegularMark = folded;
-    if (mark != nil && (self.drawMarkIndicators || mark.name.length > 0)) {
-        if (mark.lineStyle) {
-            if (_selectedCommandRegion.length > 0 && NSLocationInRange(line, _selectedCommandRegion)) {
-                // Don't draw line-style mark in selected command region.
-                return;
-            }
-            if (_selectedCommandRegion.length > 0 && line == NSMaxRange(_selectedCommandRegion) + 1) {
-                // Don't draw line-style mark immediately after selected command region.
-                return;
-            }
-            NSColor *bgColor = [self defaultBackgroundColor];
-            NSColor *merged = [iTermTextDrawingHelper colorForLineStyleMark:[iTermTextDrawingHelper markIndicatorTypeForMark:mark
-                                                                                                                      folded:folded]
-                                                            backgroundColor:bgColor];
-            [merged set];
-            NSRect rect;
-            rect.origin.x = 0;
-            int buttonCells = iTermTextDrawingHelperLineStyleMarkRightInsetCells;
-            if (!mark.hasNonEmptyCommand) {
-                buttonCells = 0;
-            }
-            rect.size.width = leftMargin.size.width + self.cellSize.width * (self.gridSize.width - buttonCells);
-            rect.size.height = 1;
-            const CGFloat y = (((CGFloat)line) - 0.5) * _cellSize.height;
-            rect.origin.y = round(y);
-            iTermRectFill(rect, virtualOffset);
+    if (mark != nil && mark.lineStyle) {
+        NSColor *bgColor = [self defaultBackgroundColor];
+        NSColor *merged = [iTermTextDrawingHelper colorForLineStyleMark:[iTermTextDrawingHelper markIndicatorTypeForMark:mark
+                                                                                                                  folded:folded]
+                                                        backgroundColor:bgColor];
+        [merged set];
+        NSRect rect;
+        rect.origin.x = 0;
+        int buttonCells = iTermTextDrawingHelperLineStyleMarkRightInsetCells;
+        if (!mark.hasNonEmptyCommand) {
+            buttonCells = 0;
         }
-        if (!mark.lineStyle || folded) {
-            shouldDrawRegularMark = YES;
-        }
+        rect.size.width = leftMargin.size.width + self.cellSize.width * (self.gridSize.width - buttonCells);
+        rect.size.height = 1;
+        const CGFloat y = (((CGFloat)line) - 0.5) * _cellSize.height;
+        rect.origin.y = round(y);
+        iTermRectFill(rect, virtualOffset);
     }
 
-    if (shouldDrawRegularMark) {
+    if (folded) {
         NSRect insetLeftMargin = leftMargin;
         insetLeftMargin.origin.x += 1;
         insetLeftMargin.size.width -= 1;
@@ -1643,14 +1542,7 @@ const CGFloat commandRegionOutlineThickness = 2.0;
                                         cellSize:_cellSize];
         [buttons addObject:button];
         DLog(@"Set desired frame of %@ to %@", button, NSStringFromRect(button.desiredFrame));
-        if (_selectedCommandRegion.length > 0 && absCoord.y - self.totalScrollbackOverflow == NSMaxRange(_selectedCommandRegion)) {
-            NSRect frame = button.desiredFrame;
-            button.shift = 2;
-            frame.origin.y += button.shift;
-            button.desiredFrame = frame;
-        } else {
-            button.shift = 0;
-        }
+        button.shift = 0;
         absCoord.x = proposedX;
         absCoord.y = effectiveAbsY;
         button.absCoordForDesiredFrame = absCoord;

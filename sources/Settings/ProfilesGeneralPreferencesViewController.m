@@ -141,6 +141,50 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     iTermSSHConfigurationWindowController *_sshConfigurationWindowController;
 }
 
+- (NSTextField *)profileNameFieldLabel { return _profileNameFieldLabel; }
+- (NSTextField *)shortcutLabel { return _shortcutLabel; }
+- (NSPopUpButton *)profileShortcut { return _profileShortcut; }
+- (NSTextField *)tagsLabel { return _tagsLabel; }
+- (NSTokenField *)tagsTokenField { return _tagsTokenField; }
+- (NSTextField *)subtitleLabel { return _subtitleLabel; }
+- (NSTextField *)subtitleText { return _subtitleText; }
+- (NSView *)tallTabBarRequestView { return _tallTabBarRequestView; }
+- (NSTextField *)iconLabel { return _iconLabel; }
+- (NSPopUpButton *)icon { return _icon; }
+- (NSImageView *)imageWell { return _imageWell; }
+- (NSTextField *)badgeLabel { return _badgeLabel; }
+- (NSTextField *)badgeText { return _badgeText; }
+- (NSButton *)editBadgeButton { return _editBadgeButton; }
+- (NSTextField *)titleSettingsLabel { return _titleSettingsLabel; }
+- (NSPopUpButton *)titleSettings { return _titleSettings; }
+- (NSButton *)customTitleHelp { return _customTitleHelp; }
+- (NSButton *)allowTitleSetting { return _allowTitleSetting; }
+- (NSTextField *)commandLabel { return _commandLabel; }
+- (NSPopUpButton *)commandType { return _commandType; }
+- (NSTextField *)customCommand { return _customCommand; }
+- (NSButton *)configureSSHButton { return _configureSSHButton; }
+- (NSButton *)runCommandInLoginShell { return _runCommandInLoginShell; }
+- (NSImageView *)commandWarningImageView { return _commandWarningImageView; }
+- (NSTextField *)sendTextAtStartLabel { return _sendTextAtStartLabel; }
+- (NSTextField *)sendTextAtStart { return _sendTextAtStart; }
+- (NSTextField *)directoryLabel { return _directoryLabel; }
+- (NSMatrix *)initialDirectoryType { return _initialDirectoryType; }
+- (NSTextField *)customDirectory { return _customDirectory; }
+- (NSButton *)editAdvancedConfigButton { return _editAdvancedConfigButton; }
+- (NSTextField *)schemesLabel { return _schemesLabel; }
+- (NSPopUpButton *)urlSchemes { return _urlSchemes; }
+- (NSView *)editCurrentSessionView { return _editCurrentSessionView; }
+- (NSButton *)locked { return _locked; }
+- (NSTextField *)badgeTextForEditCurrentSession { return _badgeTextForEditCurrentSession; }
+- (NSPopUpButton *)titleSettingsForEditCurrentSession { return _titleSettingsForEditCurrentSession; }
+- (NSTextField *)tabTitle { return _tabTitle; }
+- (NSTextField *)windowTitle { return _windowTitle; }
+- (ProfileListView *)profiles { return _profiles; }
+- (NSButton *)copySettingsToProfile { return _copySettingsToProfile; }
+- (NSButton *)copyProfileToSession { return _copyProfileToSession; }
+- (NSView *)sessionHotkeyInputView { return _sessionHotkeyInputView; }
+- (NSButton *)preventAutomaticProfileSwitching { return _preventAutomaticProfileSwitching; }
+
 - (void)dealloc {
     _profileNameFieldForEditCurrentSession.delegate = nil;
 }
@@ -427,27 +471,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
 }
 
 - (void)organizeSettingsForm {
-    NSView *legacyContainer = _tagsLabel.superview;
-    NSArray<NSString *> *titles = @[
-        NSLocalizedString(@"Profile Identity", @"Profile settings section"),
-        NSLocalizedString(@"Shell & Startup", @"Profile settings section"),
-        NSLocalizedString(@"Titles & Icon", @"Profile settings section")
-    ];
-    NSArray<NSArray<NSView *> *> *groups = @[
-        @[_profileNameFieldLabel, _profileNameField, _shortcutLabel, _profileShortcut,
-          _tagsLabel, _tagsTokenField],
-        @[_commandType.superview, _initialDirectoryType.superview, _schemesLabel, _urlSchemes],
-        @[_titleSettings.superview, _subtitleLabel, _subtitleText, _tallTabBarRequestView, _iconContainer]
-    ];
-    iTermSettingsFormView *form = [[iTermSettingsFormView alloc] initWithContainer:self.view
-                                                                        titles:titles groups:groups];
-    if (legacyContainer.subviews.count == 0) {
-        [legacyContainer removeFromSuperview];
-    }
-    [self.view setFrameSize:NSMakeSize(NSWidth(self.view.frame), form.preferredHeight)];
-    [(iTermSizeRememberingView *)self.view setOriginalSize:self.view.frame.size];
-    form.frame = self.view.bounds;
-    [self.view addSubview:form];
+    [self installProfileLayout];
 }
 
 - (void)updateSubtitlesAllowed {
@@ -464,6 +488,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     _subtitleText.hidden = !subtitlesAllowed;
     [_subtitleLabel setLabelEnabled:subtitlesAllowed];
     _tallTabBarRequestView.hidden = subtitlesAllowed;
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (BOOL)onUpdateTitle {
@@ -500,6 +525,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     } else {
         _imageWell.hidden = NO;
     }
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)updateImageWell {
@@ -545,6 +571,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
 - (void)updateImageWellHidden {
     _imageWell.hidden = ([self unsignedIntegerForKey:KEY_ICON] != iTermProfileIconCustom ||
                          _imageWell.image == nil);
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)windowWillClose {
@@ -578,6 +605,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         [weakSelf toggleLock];
     };
     [self updateLockImage];
+    [self installEditSessionLayout];
 }
 
 - (void)toggleLock {
@@ -714,19 +742,24 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         _customCommand.stringValue = self.loginShell ?: @"";
     }
     if ([[self stringForKey:KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeSSHValue]) {
-        NSRect frame = _customCommand.frame;
-        frame.size.width = NSMinX(_configureSSHButton.frame) - NSMinX(frame);
-        _customCommand.frame = frame;
+        if (![self.view it_hasProfileForm]) {
+            NSRect frame = _customCommand.frame;
+            frame.size.width = NSMinX(_configureSSHButton.frame) - NSMinX(frame);
+            _customCommand.frame = frame;
+        }
         _configureSSHButton.hidden = NO;
     } else {
-        NSRect frame = _customCommand.frame;
-        frame.size.width = NSMaxX(_configureSSHButton.frame) - NSMinX(frame) - 7;
-        _customCommand.frame = frame;
+        if (![self.view it_hasProfileForm]) {
+            NSRect frame = _customCommand.frame;
+            frame.size.width = NSMaxX(_configureSSHButton.frame) - NSMinX(frame) - 7;
+            _customCommand.frame = frame;
+        }
         _configureSSHButton.hidden = YES;
     }
     _customDirectory.enabled = ([[self stringForKey:KEY_CUSTOM_DIRECTORY] isEqualToString:kProfilePreferenceInitialDirectoryCustomValue]);
     const BOOL isCustomCommand = [[self stringForKey:KEY_CUSTOM_COMMAND] isEqualToString:kProfilePreferenceCommandTypeCustomValue];
     _runCommandInLoginShell.hidden = !isCustomCommand;
+    [self.view it_invalidateProfileFormLayout];
 }
 
 #pragma mark - SSH
@@ -979,6 +1012,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     }
     _commandWarningImageView.hidden = isExecutableRegularFile;
     [self updateCustomCommandRightInset];
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)updateCustomCommandRightInset {
@@ -996,6 +1030,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         case iTermGeneralProfilePreferenceCustomCommandTagLoginShell:
             _commandWarningImageView.hidden = YES;
             [self updateCustomCommandRightInset];
+            [self.view it_invalidateProfileFormLayout];
             break;
         case iTermGeneralProfilePreferenceCustomCommandTagCustomShell:
             [self checkIfCommandLineIsValid];
@@ -1003,6 +1038,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         case iTermGeneralProfilePreferenceCustomCommandTagSSH:
             _commandWarningImageView.hidden = YES;
             [self updateCustomCommandRightInset];
+            [self.view it_invalidateProfileFormLayout];
             break;
     }
 }
@@ -1288,6 +1324,10 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
                                                                                    components:value
                                                                                 isWindowTitle:NO];
 
+    if ([titleSettings.superview it_enclosingProfileFormDocument]) {
+        [titleSettings.superview it_invalidateProfileFormLayout];
+        return;
+    }
     [titleSettings sizeToFit];
     NSRect frame = titleSettings.frame;
     CGFloat maxWidth = frame.size.width;

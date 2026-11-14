@@ -49,7 +49,6 @@
     IBOutlet NSTextField *_localeName;
     IBOutlet NSButton *_changeLocale;
     IBOutlet NSButton *_forceCommandPromptToFirstColumn;
-    IBOutlet NSButton *_showMarkIndicators;
     IBOutlet NSButton *_promptPathClickOpensNavigator;
     IBOutlet NSButton *_showOffscreenCommandLine;
     IBOutlet NSButton *_showOffscreenCommandLineForCurrentCommand;
@@ -77,6 +76,47 @@
 
     IBOutlet NSButton *_tmuxNewline;
 }
+
+- (NSTextField *)numScrollbackLines { return _numScrollbackLines; }
+- (NSTextField *)numScrollbackLinesLabel { return _numScrollbackLinesLabel; }
+- (NSButton *)unlimitedScrollback { return _unlimitedScrollback; }
+- (NSButton *)scrollbackWithStatusBar { return _scrollbackWithStatusBar; }
+- (NSButton *)scrollbackInAlternateScreen { return _scrollbackInAlternateScreen; }
+- (NSButton *)dragToScrollInAlternateScreenModeDisabled { return _dragToScrollInAlternateScreenModeDisabled; }
+- (NSPopUpButton *)characterEncoding { return _characterEncoding; }
+- (NSTextField *)characterEncodingLabel { return _characterEncodingLabel; }
+- (NSComboBox *)terminalType { return _terminalType; }
+- (NSTextField *)terminalTypeLabel { return _terminalTypeLabel; }
+- (NSTextField *)answerBackString { return _answerBackString; }
+- (NSTextField *)answerBackStringLabel { return _answerBackStringLabel; }
+- (NSButton *)xtermMouseReporting { return _xtermMouseReporting; }
+- (NSButton *)xtermMouseReportingAllowMouseWheel { return _xtermMouseReportingAllowMouseWheel; }
+- (NSButton *)xtermMouseReportingAllowClicksAndDrags { return _xtermMouseReportingAllowClicksAndDrags; }
+- (NSButton *)allowAlternateMouseScroll { return _allowAlternateMouseScroll; }
+- (NSButton *)automaticallyEnableAlternatemouseScroll { return _automaticallyEnableAlternatemouseScroll; }
+- (NSButton *)restrictAlternateMouseScrollToVertical { return _restrictAlternateMouseScrollToVertical; }
+- (NSButton *)restrictMouseReportingToAlternateScreenMode { return _restrictMouseReportingToAlternateScreenMode; }
+- (NSButton *)allowTitleReporting { return _allowTitleReporting; }
+- (NSButton *)allowCursorBlinkControlSequence { return _allowCursorBlinkControlSequence; }
+- (NSButton *)disablePrinting { return _disablePrinting; }
+- (NSButton *)disableAltScreen { return _disableAltScreen; }
+- (NSButton *)disableWindowResizing { return _disableWindowResizing; }
+- (NSButton *)disableUnfocusedWindowResizing { return _disableUnfocusedWindowResizing; }
+- (NSButton *)allowPasteBracketing { return _allowPasteBracketing; }
+- (NSButton *)flashingBell { return _flashingBell; }
+- (NSButton *)bellIconInTabs { return _bellIconInTabs; }
+- (NSButton *)silenceBell { return _silenceBell; }
+- (NSButton *)postNotifications { return _postNotifications; }
+- (NSButton *)filterAlertsButton { return _filterAlertsButton; }
+- (NSPopUpButton *)localeVars { return _localeVars; }
+- (NSButton *)changeLocale { return _changeLocale; }
+- (NSTextField *)localeName { return _localeName; }
+- (NSButton *)forceCommandPromptToFirstColumn { return _forceCommandPromptToFirstColumn; }
+- (NSButton *)showOffscreenCommandLine { return _showOffscreenCommandLine; }
+- (NSButton *)showOffscreenCommandLineForCurrentCommand { return _showOffscreenCommandLineForCurrentCommand; }
+- (NSButton *)promptPathClickOpensNavigator { return _promptPathClickOpensNavigator; }
+- (NSButton *)shellIntegrationRequiredButton { return _shellIntegrationRequiredButton; }
+- (NSButton *)tmuxNewline { return _tmuxNewline; }
 
 - (void)awakeFromNib {
     PreferenceInfo *info;
@@ -314,10 +354,6 @@
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
 
-    [self defineControl:_showMarkIndicators
-                    key:KEY_SHOW_MARK_INDICATORS
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
     [self defineControl:_promptPathClickOpensNavigator
                     key:KEY_PROMPT_PATH_CLICK_OPENS_NAVIGATOR
             relatedView:nil
@@ -352,6 +388,7 @@
     if ([self.view isKindOfClass:[iTermSizeRememberingView class]]) {
         ((iTermSizeRememberingView *)self.view).delegate = self;
     }
+    [self installProfileLayout];
 }
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
@@ -435,6 +472,7 @@
             _localeName.stringValue = @"$LANG will not be set.";
             break;
     }
+    [self.view it_invalidateProfileFormLayout];
 }
 
 #pragma mark - Character Encoding

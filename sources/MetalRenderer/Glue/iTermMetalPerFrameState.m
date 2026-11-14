@@ -868,10 +868,6 @@ ambiguousIsDoubleWidth:(BOOL)ambiguousIsDoubleWidth
     return [self processedDefaultBackgroundColor];
 }
 
-- (const vector_float4 *)selectedCommandOutlineColors {
-    return _configuration->_selectedCommandOutlineColors;
-}
-
 - (iTermRectArray *)buttonsBackgroundRects {
     return _configuration->_buttonsBackgroundRects;
 }
@@ -886,10 +882,6 @@ ambiguousIsDoubleWidth:(BOOL)ambiguousIsDoubleWidth
 
 - (BOOL)softAlternateScreenMode {
     return _configuration->_softAlternateScreenMode;
-}
-
-- (vector_float4)shadeColor {
-    return _configuration->_shadeColor;
 }
 
 - (BOOL)forceRegularBottomMargin {
@@ -919,28 +911,6 @@ ambiguousIsDoubleWidth:(BOOL)ambiguousIsDoubleWidth
 
 - (iTermLineStyleMarkColors)lineStyleMarkColors {
     return _configuration->_lineStyleMarkColors;
-}
-
-- (BOOL)hasSelectedCommand {
-    return _configuration->_selectedCommandRegion.length > 0;
-}
-
-- (VT100GridRect)selectedCommandRect {
-    long long minY = ((long long)_configuration->_selectedCommandRegion.location) - _visibleRange.start.y;
-    minY -= _configuration->_totalScrollbackOverflow;
-    long long maxY = ((long long)NSMaxRange(_configuration->_selectedCommandRegion)) - _visibleRange.start.y;
-    maxY -= _configuration->_totalScrollbackOverflow;
-    minY = MAX(-1, minY);
-    maxY = MIN(_configuration->_gridSize.height + 1, maxY);
-
-    return VT100GridRectMake(0,
-                             minY,
-                             _configuration->_gridSize.width,
-                             MAX(0, maxY - minY));
-}
-
-- (NSRange)selectedCommandRegion {
-    return _configuration->_selectedCommandRegion;
 }
 
 // Private queue

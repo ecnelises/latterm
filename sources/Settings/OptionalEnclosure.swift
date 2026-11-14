@@ -104,6 +104,24 @@ extension NSView {
                 return true
             }
         }
+        let isProfileForm = (tabViewItemView is ProfileFormDocumentView) || tabViewItemView.it_hasProfileForm
+        if isProfileForm {
+            let state = savedFrames(stateStorage: stateStorage) ?? SavedFrames()
+            state.configuration = configuration
+            stateStorage[key] = state
+            for enclosure in reveal {
+                enclosure.isHidden = false
+            }
+            for enclosure in remove {
+                enclosure.isHidden = true
+            }
+            tabViewItemView.it_invalidateProfileFormLayout()
+            if let shrinkage {
+                shrinkage.pointee = .zero
+            }
+            return hasVisibleControls(tabViewItemView)
+        }
+
         // On the first call, save a bunch of state. On subsequent calls, restore it.
         saveOrRestoreFrames(enclosures,
                             nestedTabViews,

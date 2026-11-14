@@ -124,6 +124,78 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     NSTimer *_timer;
 }
 
+- (NSButton *)useSeparateColorsForLightAndDarkMode { return _useSeparateColorsForLightAndDarkMode; }
+- (NSButton *)modeWarning { return _modeWarning; }
+- (NSTextField *)modeLabel { return _modeLabel; }
+- (NSPopUpButton *)mode { return _mode; }
+- (NSPopUpButton *)presetsPopupButton { return _presetsPopupButton; }
+- (NSView *)foregroundColor { return _foregroundColor; }
+- (NSTextField *)foregroundColorLabel { return _foregroundColorLabel; }
+- (NSView *)backgroundColor { return _backgroundColor; }
+- (NSTextField *)backgroundColorLabel { return _backgroundColorLabel; }
+- (NSView *)boldColor { return _boldColor; }
+- (NSView *)linkColor { return _linkColor; }
+- (NSTextField *)linkColorLabel { return _linkColorLabel; }
+- (NSView *)selectionColor { return _selectionColor; }
+- (NSTextField *)selectionColorLabel { return _selectionColorLabel; }
+- (NSView *)selectedTextColor { return _selectedTextColor; }
+- (NSButton *)selectedTextColorEnabledButton { return _selectedTextColorEnabledButton; }
+- (NSView *)matchColor { return _matchColor; }
+- (NSTextField *)matchColorLabel { return _matchColorLabel; }
+- (NSView *)cursorColor { return _cursorColor; }
+- (NSTextField *)cursorColorLabel { return _cursorColorLabel; }
+- (NSView *)cursorTextColor { return _cursorTextColor; }
+- (NSTextField *)cursorTextColorLabel { return _cursorTextColorLabel; }
+- (NSView *)imeCursorColor { return _imeCursorColor; }
+- (NSTextField *)imeCursorColorLabel { return _imeCursorColorLabel; }
+- (NSView *)ansi0Color { return _ansi0Color; }
+- (NSView *)ansi1Color { return _ansi1Color; }
+- (NSView *)ansi2Color { return _ansi2Color; }
+- (NSView *)ansi3Color { return _ansi3Color; }
+- (NSView *)ansi4Color { return _ansi4Color; }
+- (NSView *)ansi5Color { return _ansi5Color; }
+- (NSView *)ansi6Color { return _ansi6Color; }
+- (NSView *)ansi7Color { return _ansi7Color; }
+- (NSView *)ansi8Color { return _ansi8Color; }
+- (NSView *)ansi9Color { return _ansi9Color; }
+- (NSView *)ansi10Color { return _ansi10Color; }
+- (NSView *)ansi11Color { return _ansi11Color; }
+- (NSView *)ansi12Color { return _ansi12Color; }
+- (NSView *)ansi13Color { return _ansi13Color; }
+- (NSView *)ansi14Color { return _ansi14Color; }
+- (NSView *)ansi15Color { return _ansi15Color; }
+- (NSTextField *)ansi0ColorLabel { return _ansi0ColorLabel; }
+- (NSTextField *)ansi1ColorLabel { return _ansi1ColorLabel; }
+- (NSTextField *)ansi2ColorLabel { return _ansi2ColorLabel; }
+- (NSTextField *)ansi3ColorLabel { return _ansi3ColorLabel; }
+- (NSTextField *)ansi4ColorLabel { return _ansi4ColorLabel; }
+- (NSTextField *)ansi5ColorLabel { return _ansi5ColorLabel; }
+- (NSTextField *)ansi6ColorLabel { return _ansi6ColorLabel; }
+- (NSTextField *)ansi7ColorLabel { return _ansi7ColorLabel; }
+- (NSView *)hueVisualization { return _hueVisualization; }
+- (NSSlider *)minimumContrast { return _minimumContrast; }
+- (NSTextField *)minimumContrastLabel { return _minimumContrastLabel; }
+- (NSView *)bwWarning1 { return _bwWarning1; }
+- (NSView *)bwWarning2 { return _bwWarning2; }
+- (NSSlider *)faintTextAlpha { return _faintTextAlpha; }
+- (NSTextField *)faintTextAlphaLabel { return _faintTextAlphaLabel; }
+- (NSSlider *)cursorBoost { return _cursorBoost; }
+- (NSTextField *)cursorBoostLabel { return _cursorBoostLabel; }
+- (NSButton *)harmonize256 { return _harmonize256; }
+- (NSButton *)brightenBoldText { return _brightenBoldText; }
+- (NSButton *)useBrightBold { return _useBrightBold; }
+- (NSButton *)useTabColor { return _useTabColor; }
+- (NSView *)tabColor { return _tabColor; }
+- (NSButton *)useUnderlineColor { return _useUnderlineColor; }
+- (NSView *)underlineColor { return _underlineColor; }
+- (NSButton *)useGuide { return _useGuide; }
+- (NSView *)guideColor { return _guideColor; }
+- (NSButton *)useSmartCursorColor { return _useSmartCursorColor; }
+- (NSView *)badgeColor { return _badgeColor; }
+- (NSTextField *)badgeColorLabel { return _badgeColorLabel; }
+- (NSButton *)useActivePaneBorder { return _useActivePaneBorder; }
+- (NSView *)activePaneBorderColor { return _activePaneBorderColor; }
+
 + (NSArray<NSString *> *)presetNames {
     NSArray<NSString *> *builtInNames = [[iTermColorPresets builtInColorPresets] allKeys];
     NSArray<NSString *> *customNames = [[iTermColorPresets customColorPresets] allKeys];
@@ -321,6 +393,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     [self maybeWarnAboutExcessiveContrast];
     [self updateColorControlsEnabled];
     _hueVisualization.delegate = self;
+    [self installProfileLayout];
 }
 
 - (void)viewWillAppear {
@@ -356,6 +429,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
         _modeLabel.labelEnabled = NO;
         _modeWarning.hidden = YES;
         DLog(@"Do not copy");
+        [self.view it_invalidateProfileFormLayout];
         return;
     }
     _mode.enabled = YES;
@@ -375,7 +449,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
             _modeWarning.hidden = NO;
             break;
     }
-
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)copySharedColorsToModalColorsIfNeeded:(BOOL)useModes {
@@ -430,6 +504,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     const BOOL hidden = ([self floatForKey:KEY_MINIMUM_CONTRAST] < 0.97);
     _bwWarning1.hidden = hidden;
     _bwWarning2.hidden = hidden;
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)updateColorControlsEnabled {

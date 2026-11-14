@@ -119,11 +119,7 @@ static char iTermSliderEnabledKVOKey;
     } else {
         _stepper.increment = 1;
     }
-    NSRect rect = _slider.frame;
-    rect.origin.x = 0;
-    const CGFloat margin = 0;
-    rect.size.width = NSMinX(_textField.frame) - margin;
-    _slider.frame = rect;
+    [self layoutSliderAndControls];
     _target = _slider.target;
     _action = _slider.action;
     [_slider addObserver:self
@@ -135,6 +131,37 @@ static char iTermSliderEnabledKVOKey;
                  options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
                  context:(void *)&iTermSliderEnabledKVOKey];
     [self loadFromSlider];
+}
+
+- (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
+    [super resizeSubviewsWithOldSize:oldSize];
+    [self layoutSliderAndControls];
+}
+
+- (void)layoutSliderAndControls {
+    const CGFloat width = NSWidth(self.bounds);
+    const CGFloat height = NSHeight(self.bounds);
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+    const CGFloat margin = 2.0;
+    NSRect stepperFrame = _stepper.frame;
+    stepperFrame.origin.x = MAX(0, width - NSWidth(stepperFrame));
+    stepperFrame.origin.y = floor((height - NSHeight(stepperFrame)) / 2.0);
+    _stepper.frame = stepperFrame;
+
+    NSRect textFrame = _textField.frame;
+    textFrame.origin.x = MAX(0, NSMinX(stepperFrame) - NSWidth(textFrame) - margin);
+    textFrame.origin.y = floor((height - NSHeight(textFrame)) / 2.0);
+    _textField.frame = textFrame;
+
+    if (_slider) {
+        NSRect sliderFrame = _slider.frame;
+        sliderFrame.origin.x = 0;
+        sliderFrame.size.width = MAX(20.0, NSMinX(textFrame) - margin);
+        sliderFrame.origin.y = floor((height - NSHeight(sliderFrame)) / 2.0);
+        _slider.frame = sliderFrame;
+    }
 }
 
 - (void)dealloc {

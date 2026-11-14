@@ -331,8 +331,8 @@ extern NSString *const SESSION_ARRANGEMENT_SERVER_DICT;
         PTYSessionPublishRequest *request = _pendingPublishRequests.firstObject;
         [_pendingPublishRequests removeObjectAtIndex:0];
         for (id<iTermContentSubscriber> subscriber in self.contentSubscribers) {
-            [subscriber updateMetadataWithSelectedCommandRange:self.textview.findOnPageHelper.absLineRange
-                                            cumulativeOverflow:self.screen.totalScrollbackOverflow];
+            [subscriber updateMetadataWithAbsLineRange:self.textview.findOnPageHelper.absLineRange
+                                    cumulativeOverflow:self.screen.totalScrollbackOverflow];
             [subscriber deliver:request.array
                        metadata:request.metadata
            lineBufferGeneration:request.lineBufferGeneration];

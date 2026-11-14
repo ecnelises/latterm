@@ -11,7 +11,8 @@ final class SettingsContentView: NSScrollView {
     private let content: NSView
     private let document = Document()
     private var minimumContentSize = NSSize(width: minimumPageWidth, height: 600)
-    var requiredWidth: CGFloat { minimumContentSize.width }
+    private var fitsViewport = false
+    var requiredWidth: CGFloat { fitsViewport ? 0 : minimumContentSize.width }
 
     @objc init(content: NSView) {
         self.content = content
@@ -32,7 +33,33 @@ final class SettingsContentView: NSScrollView {
         it_fatalError("SettingsContentView requires its content")
     }
 
+    @objc func setFitsViewport(_ fits: Bool) {
+        fitsViewport = fits
+        hasVerticalScroller = !fits
+        hasHorizontalScroller = !fits
+        horizontalScrollElasticity = fits ? .none : .automatic
+        verticalScrollElasticity = fits ? .none : .automatic
+        if fits {
+            minimumContentSize = .zero
+            scrollToTop()
+        }
+        needsLayout = true
+        layoutSubtreeIfNeeded()
+    }
+
+    override func scrollWheel(with event: NSEvent) {
+        if fitsViewport {
+            return
+        }
+        super.scrollWheel(with: event)
+    }
+
     @objc func setMinimumContentSize(_ size: NSSize) {
+        if fitsViewport {
+            minimumContentSize = .zero
+            needsLayout = true
+            return
+        }
         minimumContentSize = size
         needsLayout = true
         layoutSubtreeIfNeeded()
@@ -54,8 +81,13 @@ final class SettingsContentView: NSScrollView {
 
     override func layout() {
         super.layout()
-        let size = NSSize(width: max(contentSize.width, minimumContentSize.width),
+        let size: NSSize
+        if fitsViewport {
+            size = contentSize
+        } else {
+            size = NSSize(width: max(contentSize.width, minimumContentSize.width),
                           height: max(contentSize.height, minimumContentSize.height))
+        }
         document.frame = NSRect(origin: .zero, size: size)
         content.frame = document.bounds
         // A selected page must fill the tab even when the outer size did not

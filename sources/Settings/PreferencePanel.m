@@ -169,6 +169,9 @@ static PreferencePanel *gSessionsPreferencePanel;
     NSScrollView *outermostScrollview = nil;
     while (temp.enclosingScrollView) {
         outermostScrollview = temp.enclosingScrollView;
+        if ([outermostScrollview isKindOfClass:[iTermProfileUnifiedScrollView class]]) {
+            break;
+        }
         temp = outermostScrollview;
     }
     _enclosingClipView = outermostScrollview.contentView;
@@ -570,6 +573,9 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     }
 
     for (iTermSettingsPage *page in _settingsPages) {
+        if (page.tabViewItem == _profilesTabViewItem) {
+            continue;
+        }
         [iTermSettingsTabView presentSectionsIn:page.tabViewItem.view];
     }
     [self resizeWindowForTabViewItem:_tabView.selectedTabViewItem animated:NO];
@@ -619,6 +625,8 @@ static iTermPreferencesSearchEngine *gSearchEngine;
         self.window.backgroundColor = NSColor.windowBackgroundColor;
     }
     _settingsContent.frame = frame;
+    [_settingsContent setFitsViewport:(_editCurrentSessionMode ||
+                                       _tabView.selectedTabViewItem == _profilesTabViewItem)];
     [self.window.contentView addSubview:_settingsContent];
 }
 
@@ -1065,6 +1073,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
     [self synchronizeNavigationForTabViewItem:tabViewItem];
     [_settingsContent scrollToTop];
+    [_settingsContent setFitsViewport:(_editCurrentSessionMode ||
+                                       tabViewItem == _profilesTabViewItem)];
     if (tabViewItem == _profilesTabViewItem) {
         if (_disableResize == 0) {
             [_profilesViewController resizeWindowForCurrentTabAnimated:YES];
@@ -1255,6 +1265,10 @@ andEditComponentWithIdentifier:(NSString *)identifier
     [self.window.contentView layoutSubtreeIfNeeded];
     NSView *target = _scrim.cutoutView;
     for (NSView *ancestor = target.superview; ancestor; ancestor = ancestor.superview) {
+        if ([ancestor isKindOfClass:[iTermProfileUnifiedScrollView class]]) {
+            [(iTermProfileUnifiedScrollView *)ancestor scrollControlToVisible:target];
+            break;
+        }
         if ([ancestor isKindOfClass:[NSScrollView class]]) {
             NSScrollView *scrollView = (NSScrollView *)ancestor;
             NSView *document = scrollView.documentView;
@@ -1336,14 +1350,14 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)preferencePanelSetContentSize:(NSSize)size {
-    if (!_editCurrentSessionMode) {
-        // Legacy panes remember their old wide NIB size, but resize cleanly
-        // at the page minimum. Keep horizontal scrolling for smaller windows.
-        size.width = MIN(size.width, iTermSettingsContentView.minimumPageWidth);
+    if (_editCurrentSessionMode || _tabView.selectedTabViewItem == _profilesTabViewItem) {
+        [_settingsContent setFitsViewport:YES];
+        return;
     }
-    if (_tabView.selectedTabViewItem == _profilesTabViewItem) {
-        size.width = MAX(size.width, 800);
-    }
+    // Legacy panes remember their old wide NIB size, but resize cleanly
+    // at the page minimum. Keep horizontal scrolling for smaller windows.
+    size.width = MIN(size.width, iTermSettingsContentView.minimumPageWidth);
+    [_settingsContent setFitsViewport:NO];
     [_settingsContent setMinimumContentSize:size];
 }
 
