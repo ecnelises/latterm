@@ -103,19 +103,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) VT100GridRange linesToSuppressDrawing;
 @property (nonatomic, readonly) CGFloat pointsOnBottomToSuppressDrawing;
 @property (nonatomic, readonly) NSArray<iTermTerminalButton *> *terminalButtons;
-@property (nonatomic, readonly) BOOL hasSelectedCommand;
-@property (nonatomic, readonly) VT100GridRect selectedCommandRect;
-@property (nonatomic, readonly) NSRange selectedCommandRegion;  // absolute line numbers
 @property (nonatomic, readonly) BOOL forceRegularBottomMargin;
-@property (nonatomic, readonly) const vector_float4 *selectedCommandOutlineColors;  // array of length 2
 @property (nonatomic, readonly) long long totalScrollbackOverflow;
 @property (nonatomic, readonly) iTermRectArray *buttonsBackgroundRects;
 @property (nonatomic, readonly) NSArray<iTermButtonPillInfo *> *buttonPillInfos;
 @property (nonatomic, readonly) BOOL shouldDrawCursorGuideBelowText;
 @property (nonatomic, readonly) BOOL softAlternateScreenMode;
-
-// When a command is selected this color is drawn over other regions.
-@property (nonatomic, readonly) vector_float4 shadeColor;
 
 @property (nonatomic, readonly) NSString *statisticsString;
 

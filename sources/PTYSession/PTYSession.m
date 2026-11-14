@@ -726,7 +726,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     // Run this when the composer connects.
     void (^_pendingConductor)(PTYSession *);
 
-    __weak id<VT100ScreenMarkReading> _selectedScreenMark;
     NSMutableArray<PTYSessionHostState *> *_hostStack;
     NSDictionary *_originatingArrangement;
     NSString *_originatingArrangementName;
@@ -8196,10 +8195,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
                                                 progress:^(double progress) {
         [weakSelf setFilterProgress:progress];
     }];
-    if (sourceSession.textview.findOnPageHelper.absLineRange.length == 0 ||
-        (_selectedScreenMark == [_screen lastPromptMark] && sourceSession.selectedCommandMark.isRunning)) {
-        [self.liveSession addContentSubscriber:_asyncFilter];
-    }
+    [self.liveSession addContentSubscriber:_asyncFilter];
     if (replacingFilter) {
         DLog(@"%@: Clear buffer because there is a pre-existing filter (was '%@'). Discarding %@ pending filter updates", self, _filter, @(_pendingFilterUpdates.count));
         // Discard any pending filter updates from the previous query since we're clearing the buffer
@@ -8210,13 +8206,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         }];
     }
     [_asyncFilter start];
-}
-
-- (id<VT100ScreenMarkReading>)selectedCommandMark {
-    if (!_selectedScreenMark.isPrompt) {
-        return nil;
-    }
-    return _selectedScreenMark;
 }
 
 - (void)setFilterProgress:(double)progress {
@@ -9725,12 +9714,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         if ([obj isKindOfClass:[VT100ScreenMark class]]) {
             id<VT100ScreenMarkReading> mark = (id<VT100ScreenMarkReading>)obj;
             hasErrorCode = mark.code != 0;
-            if (mark.firstLineOfCommand != nil) {
-                [self selectCommandWithMarkIfSafe:mark];
-            } else {
-                // Remove the selected command (and its abs line range)
-                [self selectScreenMark:mark];
-            }
         }
         [_textview highlightMarkOnLine:VT100GridRangeMax([_screen lineNumberRangeOfInterval:obj.entry.interval])
                           hasErrorCode:hasErrorCode];
@@ -9768,10 +9751,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
 - (void)previousMarkOrNote:(BOOL)annotationsOnly {
     NSArray *objects = nil;
-    if (_selectedScreenMark && !annotationsOnly) {
-        [self selectPreviousScreenMark];
-        return;
-    }
     if (self.currentMarkOrNotePosition == nil) {
         if (annotationsOnly) {
             objects = [_screen lastAnnotations];
@@ -9806,27 +9785,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             [mark isKindOfClass:[PTYAnnotation class]]);
 }
 
-- (void)selectPreviousScreenMark {
-    id<VT100ScreenMarkReading> mark = [_screen screenMarkBeforeScreenMark:_selectedScreenMark] ?: [_screen lastScreenMark];
-    if (mark) {
-        [self selectScreenMark:mark];
-        [self setCurrentMarkOrNote:mark];
-    }
-}
-
-- (void)selectNextScreenMark {
-    id<VT100ScreenMarkReading> mark = [_screen screenMarkAfterScreenMark:_selectedScreenMark] ?: [_screen firstScreenMark];
-    if (mark) {
-        [self selectScreenMark:mark];
-        [self setCurrentMarkOrNote:mark];
-    }
-}
-
 - (void)nextMarkOrNote:(BOOL)annotationsOnly {
-    if (_selectedScreenMark && !annotationsOnly) {
-        [self selectNextScreenMark];
-        return;
-    }
     NSArray<id<IntervalTreeImmutableObject>> *objects = nil;
     if (self.currentMarkOrNotePosition == nil) {
         if (annotationsOnly) {
@@ -10639,7 +10598,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)textViewShouldAcceptKeyDownEvent:(NSEvent *)event {
-    [self removeSelectedCommandRange];
     [self enableOffscreenMarkAlertsIfNeeded];
     const BOOL accept = [self shouldAcceptKeyDownEvent:event];
     if (accept) {
@@ -13508,10 +13466,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         return NO;
     }
     return !profileHotkey.autoHides;
-}
-
-- (BOOL)textViewShouldShowMarkIndicators {
-    return [iTermProfilePreferences boolForKey:KEY_SHOW_MARK_INDICATORS inProfile:_profile];
 }
 
 - (void)textViewThinksUserIsTryingToSendArrowKeysWithScrollWheel:(BOOL)isTrying {
@@ -18409,7 +18363,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self.tmuxForegroundJobMonitor updateOnce];
     [self.variablesScope setValue:@(showing)
                  forVariableNamed:iTermVariableKeySessionShowingAlternateScreen];
-    [self removeSelectedCommandRange];
 }
 
 - (void)screenReportKeyUpDidChange:(BOOL)reportKeyUp {
@@ -20013,78 +19966,8 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return !(alt && bottom);
 }
 
-- (id<VT100ScreenMarkReading>)textViewSelectedCommandMark {
-    return self.selectedCommandMark;
-}
-
-- (void)textViewReloadSelectedCommand {
-    if ([iTermPreferences boolForKey:kPreferenceKeyClickToSelectCommand] == NO) {
-        if (self.selectedCommandMark) {
-            _selectedScreenMark = nil;
-        }
-    }
-    [self updateSearchRange];
-}
-
 - (id<VT100ScreenMarkReading>)textViewMarkForCommandAt:(VT100GridCoord)coord {
     return [_screen commandMarkAtOrBeforeLine:coord.y];
-}
-
-- (void)textViewSelectCommandRegionAtCoord:(VT100GridCoord)coord {
-    id<VT100ScreenMarkReading> mark = [_screen commandMarkAtOrBeforeLine:coord.y];
-    if (mark == _selectedScreenMark) {
-        mark = nil;
-    }
-    const BOOL allowed = [iTermPreferences boolForKey:kPreferenceKeyClickToSelectCommand];
-    if (!allowed) {
-        mark = nil;
-    }
-    [self selectCommandWithMarkIfSafe:mark];
-    if (allowed && mark != nil) {
-        NSString *const warningKey = @"NoSyncUserHasSelectedCommand";
-        if (mark != nil && ![[iTermUserDefaults userDefaults] boolForKey:warningKey]) {
-            [[iTermUserDefaults userDefaults] setBool:YES forKey:warningKey];
-            [self showCommandSelectionInfo];
-        }
-    }
-}
-
-// Does nothing if the selected command would include the mutable part of the alternate screen.
-- (void)selectCommandWithMarkIfSafe:(id<VT100ScreenMarkReading>)mark {
-    if (mark && _screen.terminalSoftAlternateScreenMode) {
-        const VT100GridAbsCoordRange absRange = [self rangeOfCommandAndOutputForMark:mark
-                                                              includeSucessorDivider:YES];
-        const NSRange markRange = NSMakeRange(absRange.start.y, MAX(0, absRange.end.y - absRange.start.y + 1));
-        const NSRange screenRange = NSMakeRange(_screen.numberOfScrollbackLines + _screen.totalScrollbackOverflow,
-                                                _screen.height);
-        if (NSIntersectionRange(markRange, screenRange).length > 0) {
-            DLog(@"Not allowing selection that includes screen in alternate screen mode. markRange=%@ screenRange=%@", NSStringFromRange(markRange), NSStringFromRange(screenRange));
-            return;
-        }
-    }
-    if (!mark || mark.isPrompt) {
-        [self selectCommandWithMark:mark];
-    }
-}
-
-- (void)selectScreenMark:(id<VT100ScreenMarkReading>)mark {
-    if (_selectedScreenMark.isPrompt && (mark == nil || mark.isPrompt)) {
-        [self selectCommandWithMark:mark];
-    } else {
-        [self selectCommandWithMark:nil];
-        _selectedScreenMark = mark;
-    }
-}
-
-- (void)selectCommandWithMark:(id<VT100ScreenMarkReading>)mark {
-    assert(mark == nil || mark.isPrompt);
-    id<VT100ScreenMarkReading> previous = _selectedScreenMark;
-    _selectedScreenMark = mark;
-    [self updateSearchRange];
-    _screen.savedFindContextAbsPos = 0;
-    if (previous != _selectedScreenMark) {
-        [_textview requestDelegateRedraw];
-    }
 }
 
 - (VT100GridAbsCoordRange)textViewCoordRangeForCommandAndOutputAtMark:(id<iTermMark>)mark {
@@ -20093,17 +19976,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                              includeSucessorDivider:YES];
     }
     return [_screen absCoordRangeForInterval:mark.entry.interval];
-}
-
-- (void)showCommandSelectionInfo {
-    const NSPoint point = [_view convertPoint:NSApp.currentEvent.locationInWindow
-                                     fromView:nil];
-    NSString *html = @"You’ve selected a command by clicking on it. This restricts Find, Filter, and Select All to the content of the command. You can turn this feature off in Settings > General > Selection. <a href=\"iterm2:disable-command-selection\">Click here to disable this feature.</a>";
-    NSAttributedString *attributedString = [NSAttributedString attributedStringWithHTML:html
-                                                                                   font:[NSFont systemFontOfSize:[NSFont systemFontSize]]
-                                                                         paragraphStyle:[NSParagraphStyle defaultParagraphStyle]];
-    [_view it_showWarningWithAttributedString:attributedString
-                                         rect:NSMakeRect(point.x, point.y, 1, 1)];
 }
 
 - (void)showHorizontalScrollInfo {
@@ -20140,13 +20012,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     }];
     [self queueAnnouncement:announcement identifier:identifier];
 
-}
-
-- (void)textViewRemoveSelectedCommand {
-    if (![self selectedCommandMark]) {
-        return;
-    }
-    [self removeSelectedCommandRange];
 }
 
 - (NSCursor *)textViewDefaultPointer {
@@ -20220,33 +20085,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)textViewToggleBufferInput {
     [self toggleBufferInput];
-}
-
-- (void)removeSelectedCommandRange {
-    if (!self.selectedCommandMark) {
-        return;
-    }
-    _selectedScreenMark = nil;
-    [self updateSearchRange];
-    _screen.savedFindContextAbsPos = 0;
-    [_textview requestDelegateRedraw];
-}
-
-- (void)updateSearchRange {
-    if (!self.selectedCommandMark) {
-        _textview.findOnPageHelper.absLineRange = NSMakeRange(0, 0);
-        _view.findDriver.viewController.hasLineRange = NO;
-        return;
-    }
-    VT100GridAbsCoordRange range = [self rangeOfCommandAndOutputForMark:self.selectedCommandMark
-                                                 includeSucessorDivider:YES];
-    if (self.selectedCommandMark.lineStyle) {
-        _textview.findOnPageHelper.absLineRange = NSMakeRange(MAX(0, range.start.y - 1),
-                                                              range.end.y - range.start.y + 1);
-    } else {
-        _textview.findOnPageHelper.absLineRange = NSMakeRange(range.start.y, range.end.y - range.start.y + 1);
-    }
-    _view.findDriver.viewController.hasLineRange = YES;
 }
 
 - (VT100GridAbsCoordRange)rangeOfCommandAndOutputForMark:(id<VT100ScreenMarkReading>)mark
@@ -22517,7 +22355,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)composerManagerAutoComposerTextDidChange:(iTermComposerManager *)composerManager {
-    [self removeSelectedCommandRange];
 }
 
 - (void)composerManager:(iTermComposerManager *)composerManager desiredHeightDidChange:(CGFloat)desiredHeight {
@@ -22534,7 +22371,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)screenDidSynchronize {
     [self updateAutoComposerFrame];
-    [self updateSearchRange];
     if (_view.progress != _screen.progress) {
         BOOL wasVisible = VT100ScreenProgressIsVisible(_view.progress);
         BOOL isVisible = VT100ScreenProgressIsVisible(_screen.progress);

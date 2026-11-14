@@ -76,10 +76,11 @@ final class SettingsSidebarView: NSVisualEffectView, NSTableViewDataSource, NSTa
 
     override func layout() {
         super.layout()
+        guard bounds.width > 0, bounds.height > 0 else { return }
         // Keep the native traffic lights unobstructed in the unified titlebar.
-        brand.frame = NSRect(x: 84, y: bounds.height - 30, width: bounds.width - 100, height: 18)
-        searchField.frame = NSRect(x: 16, y: bounds.height - 83, width: bounds.width - 32, height: 28)
-        scrollView.frame = NSRect(x: 10, y: 16, width: bounds.width - 20, height: max(0, bounds.height - 113))
+        brand.frame = NSRect(x: 84, y: max(0, bounds.height - 30), width: max(0, bounds.width - 100), height: 18)
+        searchField.frame = NSRect(x: 16, y: max(0, bounds.height - 83), width: max(0, bounds.width - 32), height: 28)
+        scrollView.frame = NSRect(x: 10, y: 16, width: max(0, bounds.width - 20), height: max(0, bounds.height - 113))
         tableView.frame.size.width = scrollView.contentSize.width
         tableView.tableColumns.first?.width = scrollView.contentSize.width
     }

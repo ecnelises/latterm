@@ -390,7 +390,6 @@ DEFINE_FLOAT(scrollWheelAcceleration, 1, SECTION_MOUSE @"Speed up scroll gesture
 DEFINE_FLOAT(fractionOfCharacterSelectingNextNeighbor, 0.35, SECTION_MOUSE @"Fraction of character’s width on its right side that can be used to select the character to its right.");
 DEFINE_BOOL(naturalScrollingAffectsHorizontalMouseReporting, NO, SECTION_MOUSE @"Horizontal scrolling is reversed when “Natural scrolling” is enabled in System Settings");
 DEFINE_FLOAT(horizontalScrollingSensitivity, 0.1, SECTION_MOUSE @"Sensitivity of mouse wheel for horizontal scrolling.\nUse 0 to disable. Value should be between 0 and 1. Changes to this setting only affect new sessions.");
-DEFINE_BOOL(useDoubleClickDelayForCommandSelection, NO, SECTION_MOUSE @"Wait to be sure it's not a double click before selecting a command");
 DEFINE_BOOL(requireOptionToDragSplitPaneTitleBar, NO, SECTION_MOUSE @"Require Option to be pressed to drag a split pane by its title bar?\nThis helps prevent accidental drags.");
 
 #pragma mark Terminal
@@ -534,7 +533,6 @@ DEFINE_STRING(lastpassGroups, @"", SECTION_GENERAL @"Comma-separated list of Las
 DEFINE_SETTABLE_STRING(onePasswordAccount, OnePasswordAccount, @"", SECTION_GENERAL @"1Password account name.\nThis is used if you’ve enabled the 1Password integration in the password manager. Use `op account list` to get the list of accounts. This can be an account shorthand, sign-in address, account ID, or user ID.");
 DEFINE_BOOL(excludeUtunFromNetworkUtilization, YES, SECTION_GENERAL @"Exclude utun interfaces from network utilization?\nThis is useful if you use a VPN and only want to see the traffic that goes over Wi-Fi or Ethernet.");
 DEFINE_FLOAT(noSyncDownloadPrefsTimeout, 5.0, SECTION_GENERAL @"Timeout for downloading settings");
-DEFINE_BOOL(showButtonsForSelectedCommand, YES, SECTION_GENERAL @"Show buttons at the top of a selected command?\nWhen you select a command by single clicking the command line or its output, buttons are shown on the top right with options like Copy and Share. Note that this setting only applies when marks are not “line style” such as when using Auto Composer.")
 DEFINE_BOOL(enableZoomMenu, YES, SECTION_GENERAL @"Allow the standard system menu on window Zoom buttons to open?\nmacOS has a bug that makes the app hang. Since this is a rarely used menu, it is disabled by default.");
 #if ITERM2_SHARED_ARC
 DEFINE_SECURE_STRING(browserBundleID, BrowserBundleID, SECTION_GENERAL @"Bundle ID of browser to open URLs with.\nLeave empty to use system default.");
@@ -583,7 +581,6 @@ DEFINE_BOOL(animateGraphStatusBarComponents, YES, SECTION_DRAWING @"Animate grap
 DEFINE_BOOL(disableTopRightIndicators, NO, SECTION_DRAWING @"Disable indicator icons that appear in the top right of a session?\nThis includes the following indicators: maximized pane, broadcast input, coprocess running, alert on next mark, output suppression, zoom, copy mode, and debug logging.");
 DEFINE_BOOL(supportPowerlineExtendedSymbols, YES, SECTION_DRAWING @"Include extended symbols when drawing Powerline natively.");
 DEFINE_BOOL(alwaysUseLineStyleMarks, NO, SECTION_DRAWING @"Always use line-style marks?");
-DEFINE_FLOAT(alphaForDeselectedCommandShade, 0.25, SECTION_DRAWING @"Alpha value for shade that covers areas outside the currently selected command.");
 DEFINE_BOOL(showURLPreviewForSemanticHistory, YES, SECTION_DRAWING @"Show URL preview on cmd-hover for semantic history matches.");
 DEFINE_FLOAT(cursorAnimationMinDistance, 150.0, SECTION_DRAWING @"When animated cursor movement is enabled, only perform animation if the cursor moves at least this distance in points.");
 DEFINE_FLOAT(cursorSmearAnimationDuration, 0.1, SECTION_DRAWING @"Duration in seconds for the “Animate large movements” cursor animation.");

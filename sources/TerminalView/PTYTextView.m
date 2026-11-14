@@ -198,7 +198,7 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
     BOOL _cursorVisible;
     BOOL _haveVisibleBlock;
 
-    NSTimer *_selectCommandTimer;
+    NSTimer *_singleClickTimer;
 
     iTermTerminalCopyButton *_hoverBlockCopyButton;
     iTermTerminalFoldBlockButton *_hoverBlockFoldButton;
@@ -416,8 +416,8 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
     [_hoverBlockCopyButton release];
     [_hoverBlockFoldButton release];
     [_buttons release];
-    [_selectCommandTimer invalidate];
-    [_selectCommandTimer release];
+    [_singleClickTimer invalidate];
+    [_singleClickTimer release];
     [_marginColorWidthBuffer release];
     [_marginColorTwiceHeightBuffer release];
     _cursorSlideAnimator.delegate = nil;
@@ -1232,9 +1232,9 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (void)mouseDown:(NSEvent *)event {
-    [_selectCommandTimer invalidate];
-    [_selectCommandTimer release];
-    _selectCommandTimer = nil;
+    [_singleClickTimer invalidate];
+    [_singleClickTimer release];
+    _singleClickTimer = nil;
     
     [self.delegate textViewWillHandleMouseDown:event];
     [_mouseHandler mouseDown:event superCaller:^{ [super mouseDown:event]; }];
@@ -2036,7 +2036,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.isInKeyWindow = NO;
         helper.shouldDrawFilledInCursor = NO;
         helper.isFrontTextView = NO;
-        helper.drawMarkIndicators = NO;
         helper.showSearchingCursor = NO;
         helper.copyMode = NO;
         helper.copyModeSelecting = NO;
@@ -2050,7 +2049,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.linesToSuppress = VT100GridRangeMake(-1, 0);
         helper.pointsOnBottomToSuppressDrawing = 0;
         helper.forceRegularBottomMargin = NO;
-        helper.selectedCommandRegion = NSMakeRange(NSNotFound, 0);
         helper.folds = nil;
         helper.rightExtra = 0;
         helper.panelReservation = 0;
@@ -2077,7 +2075,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.isInKeyWindow = [self isInKeyWindow];
         helper.shouldDrawFilledInCursor = [[iTermPaneFocusFollowsMouse shared] hasStolenKeyFocusForView:self];
         helper.isFrontTextView = (self == [[iTermController sharedInstance] frontTextView]);
-        helper.drawMarkIndicators = [_delegate textViewShouldShowMarkIndicators];
         helper.showSearchingCursor = _showSearchingCursor;
         helper.copyMode = _delegate.textViewCopyMode;
         helper.copyModeSelecting = _delegate.textViewCopyModeSelecting;
@@ -2092,7 +2089,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.linesToSuppress = self.delegate.textViewLinesToSuppressDrawing;
         helper.pointsOnBottomToSuppressDrawing = self.delegate.textViewPointsOnBottomToSuppressDrawing;
         helper.forceRegularBottomMargin = autoComposerOpen;
-        helper.selectedCommandRegion = [self relativeRangeFromAbsLineRange:self.findOnPageHelper.absLineRange];
         const VT100GridRange range = [self rangeOfVisibleLines];
         helper.folds = [self.dataSource foldsInRange:range];
         helper.rightExtra = self.delegate.textViewRightExtra;
@@ -3729,15 +3725,8 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (IBAction)selectAll:(id)sender {
-    NSRange absRangeToSelect;
-
-    if (_findOnPageHelper.absLineRange.length > 0 &&
-        _findOnPageHelper.absLineRange.location != NSNotFound) {
-        absRangeToSelect = _findOnPageHelper.absLineRange;
-    } else {
-        const long long overflow = _dataSource.totalScrollbackOverflow;
-        absRangeToSelect = NSMakeRange(overflow, [_dataSource numberOfLines]);
-    }
+    const long long overflow = _dataSource.totalScrollbackOverflow;
+    const NSRange absRangeToSelect = NSMakeRange(overflow, [_dataSource numberOfLines]);
     // Set the selection region to the whole text.
     [_selection beginSelectionAtAbsCoord:VT100GridAbsCoordMake(0, absRangeToSelect.location)
                                     mode:kiTermSelectionModeCharacter
@@ -4034,16 +4023,12 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (BOOL)canCopy {
-    return [_selection hasSelection] || [self anyPortholeHasSelection] || [self.delegate textViewSelectedCommandMark] != nil;
+    return [_selection hasSelection] || [self anyPortholeHasSelection];
 }
 
 - (void)copy:(id)sender {
     if ([self anyPortholeHasSelection]) {
         [self copyFromPortholeAsPlainText];
-        return;
-    }
-    if (!_selection.hasSelection && [self.delegate textViewSelectedCommandMark] != nil) {
-        [self copySelectedCommand];
         return;
     }
     [self copySelection:self.selection];
@@ -4103,10 +4088,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         [self copyFromPortholeAsAttributedString];
         return;
     }
-    if (!_selection.hasSelection && [self.delegate textViewSelectedCommandMark] != nil) {
-        [self copySelectedCommandWithStyles];
-        return;
-    }
     [self copySelectionWithStyles:self.selection];
 }
 
@@ -4152,10 +4133,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 - (IBAction)copyWithControlSequences:(id)sender {
     if ([self anyPortholeHasSelection]) {
         [self copyFromPortholeWithControlSequences];
-        return;
-    }
-    if (!_selection.hasSelection && [self.delegate textViewSelectedCommandMark] != nil) {
-        [self copySelectedCommandWithControlSequences];
         return;
     }
     [self copySelectionWithControlSequences:_selection];
@@ -6467,25 +6444,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         [updated addObject:_hoverBlockCopyButton];
     }
 
-    {
-        id<VT100ScreenMarkReading> mark = [_delegate textViewSelectedCommandMark];
-        DLog(@"mark=%@", mark);
-        if (!mark.lineStyle && mark.hasNonEmptyCommand && [iTermAdvancedSettingsModel showButtonsForSelectedCommand]) {
-            const NSRange intersectionRange = NSIntersectionRange(self.findOnPageHelper.absLineRange,
-                                                                  [self visibleAbsoluteRangeIncludingOffscreenCommandLineIfVisible:NO]);
-            if (intersectionRange.length > 0) {
-                [updated addObjectsFromArray:[self commandButtonsForMark:mark
-                                                                    line:intersectionRange.location - _dataSource.totalScrollbackOverflow + 1
-                                                             shouldFloat:YES
-                                                                offByOne:NO]];
-            } else {
-                DLog(@"No intersection between find on page helper's lineRange %@ and the visible absolute range %@",
-                     NSStringFromRange(self.findOnPageHelper.absLineRange),
-                     NSStringFromRange([self visibleAbsoluteRangeIncludingOffscreenCommandLineIfVisible:NO]));
-            }
-        }
-    }
-
     NSArray<iTermTerminalButtonPlace *> *places = [self.dataSource buttonsInRange:self.rangeOfVisibleLines];
     __weak __typeof(self) weakSelf = self;
     [places enumerateObjectsUsingBlock:^(iTermTerminalButtonPlace * _Nonnull place, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -6588,11 +6546,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         x -= 3;
     };
 
-    // Settings button.
-    addButtonForClass([iTermTerminalSettingsButton class], ^(NSPoint locationInWindow, id<VT100ScreenMarkReading> weakMark) {
-        [weakSelf popCommandSettingsButtonAt:locationInWindow for:weakMark];
-    });
-
     // Copy command button.
     addButtonForClass([iTermTerminalCopyCommandButton class], ^(NSPoint locationInWindow, id<VT100ScreenMarkReading> weakMark) {
         [weakSelf popCommandCopyMenuAt:locationInWindow for:weakMark];
@@ -6642,30 +6595,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     }
 
     return updated;
-}
-
-- (void)popCommandSettingsButtonAt:(NSPoint)locationInWindow for:(id<VT100ScreenMarkReading>)mark {
-    iTermSimpleContextMenu *menu = [[[iTermSimpleContextMenu alloc] init] autorelease];
-    __weak __typeof(self) weakSelf = self;
-    [menu addItemWithTitle:@"Disable Command Selection" action:^{
-        [iTermPreferences setBool:NO forKey:kPreferenceKeyClickToSelectCommand];
-        [weakSelf.delegate textViewReloadSelectedCommand];
-    }];
-    [menu addItemWithTitle:@"Help" action:^{
-        if (!weakSelf) {
-            return;
-        }
-        NSString *filePath = [[NSBundle bundleForClass:[weakSelf class]] pathForResource:@"CommandSelectionHelp" ofType:@"md"];
-        NSError *error = nil;
-        NSString *content = [NSString stringWithContentsOfFile:filePath
-                                                      encoding:NSUTF8StringEncoding
-                                                         error:&error];
-        if (content) {
-            [weakSelf it_showWarningWithMarkdown:content];
-        }
-    }];
-
-    [menu showInView:self forEvent:NSApp.currentEvent];
 }
 
 - (void)popCommandCopyMenuAt:(NSPoint)locationInWindow for:(id<VT100ScreenMarkReading>)mark {
@@ -6806,7 +6735,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (void)didFoldOrUnfold {
-    [self.delegate textViewReloadSelectedCommand];
     [self.selection clearSelection];
 }
 
@@ -7704,9 +7632,9 @@ static NSString *iTermStringFromRange(NSRange range) {
             return VT100GridCoordMake(-1, -1);
         } else if (pathMark) {
             __weak __typeof(self) weakSelf = self;
-            [_selectCommandTimer release];
-            _selectCommandTimer = nil;
-            _selectCommandTimer = [[NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval]
+            [_singleClickTimer release];
+            _singleClickTimer = nil;
+            _singleClickTimer = [[NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval]
                                                                    repeats:NO
                                                                      block:^(NSTimer * _Nonnull timer) {
                 [weakSelf openPathMark:pathMark];
@@ -7720,27 +7648,6 @@ static NSString *iTermStringFromRange(NSRange range) {
                 DLog(@"mouseUp: reveal annotation");
                 return VT100GridCoordMake(-1, -1);
             }
-            const NSPoint temp =
-            [self clickPoint:event allowRightMarginOverflow:allowRightMarginOverflow];
-            const VT100GridCoord selectAtCoord = VT100GridCoordMake(temp.x, temp.y);
-
-            [_selectCommandTimer invalidate];
-            [_selectCommandTimer release];
-            _selectCommandTimer = nil;
-
-            if ([iTermAdvancedSettingsModel useDoubleClickDelayForCommandSelection] &&
-                [_delegate textViewMarkForCommandAt:selectAtCoord] != [_delegate textViewSelectedCommandMark]) {
-                DLog(@"mouseUp: start timer for command selection");
-                __weak __typeof(self) weakSelf = self;
-                _selectCommandTimer = [[NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval]
-                                                                       repeats:NO
-                                                                         block:^(NSTimer * _Nonnull timer) {
-                    [weakSelf selectCommandAt:selectAtCoord];
-                }] retain];
-            } else if (!handler.lastMouseDownRemovedSelection) {
-                DLog(@"mouseUp: select a command");
-                [self selectCommandAt:selectAtCoord];
-            }
         }
     }
     const NSPoint temp =
@@ -7749,21 +7656,15 @@ static NSString *iTermStringFromRange(NSRange range) {
 }
 
 - (void)openPathMark:(id<iTermPathMarkReading>)pathMark {
-    [_selectCommandTimer release];
-    _selectCommandTimer = nil;
+    [_singleClickTimer release];
+    _singleClickTimer = nil;
     [self.delegate textViewUserDidClickPathMark:pathMark];
 }
 
 - (void)mouseHandlerCancelSingleClick:(PTYMouseHandler *)sender {
-    [_selectCommandTimer release];
-    _selectCommandTimer = nil;
+    [_singleClickTimer release];
+    _singleClickTimer = nil;
     [self.delegate textViewCancelSingleClick];
-}
-
-- (void)selectCommandAt:(VT100GridCoord)coord {
-    [_delegate textViewSelectCommandRegionAtCoord:coord];
-    [_selectCommandTimer release];
-    _selectCommandTimer = nil;
 }
 
 - (void)mouseHandler:(PTYMouseHandler *)sender handleCommandShiftClickAtCoord:(VT100GridCoord)coord {
@@ -8243,7 +8144,6 @@ dragSemanticHistoryWithEvent:(NSEvent *)event
     DLog(@"mouseUp: mouseHandlerMouseUp");
     if (event.clickCount != 1) {
         DLog(@"mouseUp: not a single click");
-        [self.delegate textViewRemoveSelectedCommand];
         return NO;
     }
     const NSPoint locationInWindow = event.locationInWindow;

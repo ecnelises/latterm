@@ -14,6 +14,9 @@
 		0217C679449D51D40F337F5E /* PaneFocusFollowsMouse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C7765AF1CE494D7E2A7091 /* PaneFocusFollowsMouse.swift */; };
 		0277DCA424D4359E736F9E65 /* CompanionAlertBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8B8B423791410F363E9D3A /* CompanionAlertBridge.swift */; };
 		02B907EBABFCDE0B68A178AF /* iTermDockBadgeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1179CD897A4780286BB29AAC /* iTermDockBadgeController.swift */; };
+		A7D100022EC0000100000001 /* LattermAppIconArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100012EC0000100000001 /* LattermAppIconArtwork.swift */; };
+		A7D100042EC0000100000001 /* LattermAppIconController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100032EC0000100000001 /* LattermAppIconController.swift */; };
+		A7D100062EC0000100000001 /* AppIconPreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100052EC0000100000001 /* AppIconPreferencesView.swift */; };
 		0332201C625EE2E12BEAFA81 /* WorkgroupPeerSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E989D59E1FC6B8DAF227C7 /* WorkgroupPeerSegmentedControl.swift */; };
 		035F0DC62B0099E102FBDF19 /* iTermAsyncStringConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2AE5DA2AD1C35F1397A53D /* iTermAsyncStringConversion.swift */; };
 		037739337EBEA62A59866733 /* iTermSplitTreeRebuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C811516EBB14A113E1C7B83 /* iTermSplitTreeRebuilder.swift */; };
@@ -978,6 +981,9 @@
 		7822303C5D0B67588F07F281 /* CompanionStreamPacer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B577B7726D9E6991593F0069 /* CompanionStreamPacer.swift */; };
 		7889196D8646277EB77FCAE7 /* iTermSessionPreviewPanel.h in Sources */ = {isa = PBXBuildFile; fileRef = 330E8619FD42B5DC2EDA60D0 /* iTermSessionPreviewPanel.h */; };
 		79847A3B13949FEE4A886746 /* SettingsProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669407D849E8D4A8B5E8EA86 /* SettingsProfilesView.swift */; };
+		8B41F9C20E734AD19C5418E2 /* ProfilesSidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E92D3A17B5843F0A82C91D4 /* ProfilesSidebarView.swift */; };
+		79847A3D13949FEE4A886702 /* ProfileFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79847A3D13949FEE4A886701 /* ProfileFormView.swift */; };
+		79847A3D13949FEE4A886704 /* ProfilePagesLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79847A3D13949FEE4A886703 /* ProfilePagesLayout.swift */; };
 		79F784C0D62EE69089FB4CD2 /* WorkgroupToolbarShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2C2044C323A7D2F314F6C1 /* WorkgroupToolbarShortcut.swift */; };
 		7A0FE23B33980379355635C8 /* iTermTmuxControlModeKeyName.h in Sources */ = {isa = PBXBuildFile; fileRef = 4F11062666A3520744C1AC2B /* iTermTmuxControlModeKeyName.h */; };
 		7AA2B3375FB3024E4A954222 /* CompanionStreamBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F62823957A3CEEC1DB72C718 /* CompanionStreamBudget.swift */; };
@@ -2767,9 +2773,6 @@
 		A697CEC72D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */; };
 		A697CEC82D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */; };
 		A697CEC92D98CEB00031583F /* OpenQuicklyMenuItem.png in Resources */ = {isa = PBXBuildFile; fileRef = A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */; };
-		A697CECF2D9B0FB60031583F /* CommandSelectionHelp.md in Resources */ = {isa = PBXBuildFile; fileRef = A697CECD2D9B0FB60031583F /* CommandSelectionHelp.md */; };
-		A697CED02D9B0FB60031583F /* CommandSelectionHelp.md in Resources */ = {isa = PBXBuildFile; fileRef = A697CECD2D9B0FB60031583F /* CommandSelectionHelp.md */; };
-		A697CED12D9B0FB60031583F /* CommandSelectionHelp.md in Resources */ = {isa = PBXBuildFile; fileRef = A697CECD2D9B0FB60031583F /* CommandSelectionHelp.md */; };
 		A697CED32D9D8E590031583F /* VimKeyParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A697CED22D9D8E540031583F /* VimKeyParser.swift */; };
 		A697E27B1B42501000E175DA /* iTermMinimumSubsequenceMatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = A697E2791B42501000E175DA /* iTermMinimumSubsequenceMatcher.h */; };
 		A697E27C1B42501000E175DA /* iTermMinimumSubsequenceMatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = A697E2791B42501000E175DA /* iTermMinimumSubsequenceMatcher.h */; };
@@ -4583,6 +4586,8 @@
 		104C821988B6D8E0FCCC5700 /* PTYSession+CodeReviewPrompt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "PTYSession+CodeReviewPrompt.swift"; sourceTree = "<group>"; };
 		10914CB04BC4D2847EC8EB23 /* ToolStatusCellView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ToolStatusCellView.swift; sourceTree = "<group>"; };
 		1179CD897A4780286BB29AAC /* iTermDockBadgeController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermDockBadgeController.swift; sourceTree = "<group>"; };
+		A7D100012EC0000100000001 /* LattermAppIconArtwork.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LattermAppIconArtwork.swift; sourceTree = "<group>"; };
+		A7D100032EC0000100000001 /* LattermAppIconController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LattermAppIconController.swift; sourceTree = "<group>"; };
 		11C735CA9A1AF5E864EC718E /* iTermStreamingPNGWriter.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermStreamingPNGWriter.m; sourceTree = "<group>"; };
 		11FDA9247035DE0FCCE7D23D /* iTermCursorBlinkFadeCurveIcon.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermCursorBlinkFadeCurveIcon.h; sourceTree = "<group>"; };
 		13A6B1D037AF894E662A0EFC /* iTermWorkgroup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermWorkgroup.swift; sourceTree = "<group>"; };
@@ -4952,6 +4957,7 @@
 		288808F99DB33274E4751B98 /* CompanionPluginClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CompanionPluginClient.swift; sourceTree = "<group>"; };
 		28AF992AB875E6786421227B /* iTermScreenshotOnDemandPreview.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermScreenshotOnDemandPreview.swift; sourceTree = "<group>"; };
 		2A38927FC949FA545C4526F8 /* SettingsFormView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsFormView.swift; sourceTree = "<group>"; };
+		A7D100052EC0000100000001 /* AppIconPreferencesView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIconPreferencesView.swift; sourceTree = "<group>"; };
 		2AEB275FE345E8480B41FAEF /* iTermImageComparison.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = iTermImageComparison.m; sourceTree = "<group>"; };
 		2B9A9D7BB06953CE9297F1FC /* iTermStreamingScreenshotEncoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermStreamingScreenshotEncoder.swift; sourceTree = "<group>"; };
 		2BEC73A1AD922FFE7ECF6F29 /* iTermSubSelection+ExcludedSubranges.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "iTermSubSelection+ExcludedSubranges.swift"; sourceTree = "<group>"; };
@@ -5248,6 +5254,9 @@
 		6518C4017AD4275634FA34AA /* iTermRightGutterPanelRegistry.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermRightGutterPanelRegistry.h; sourceTree = "<group>"; };
 		661E5805B84C416AC63454AC /* iTermKeyCodeZeroCharacters.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermKeyCodeZeroCharacters.swift; sourceTree = "<group>"; };
 		669407D849E8D4A8B5E8EA86 /* SettingsProfilesView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsProfilesView.swift; sourceTree = "<group>"; };
+		4E92D3A17B5843F0A82C91D4 /* ProfilesSidebarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfilesSidebarView.swift; sourceTree = "<group>"; };
+		79847A3D13949FEE4A886701 /* ProfileFormView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileFormView.swift; sourceTree = "<group>"; };
+		79847A3D13949FEE4A886703 /* ProfilePagesLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfilePagesLayout.swift; sourceTree = "<group>"; };
 		669A7368A85279F81ADA8C9D /* TmuxPaneKeyMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TmuxPaneKeyMode.swift; sourceTree = "<group>"; };
 		67233FA25C3C82AA22B62E01 /* WorkgroupAnimalNames.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkgroupAnimalNames.swift; sourceTree = "<group>"; };
 		677BAE3BF6167A6719904C54 /* iTermJobTerminationMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermJobTerminationMonitor.swift; sourceTree = "<group>"; };
@@ -6608,7 +6617,6 @@
 		A697CEB62D987C5A0031583F /* OpenQuicklyNamedMark.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = OpenQuicklyNamedMark.png; path = images/icons/OpenQuicklyNamedMark.png; sourceTree = "<group>"; };
 		A697CEB72D987C5A0031583F /* OpenQuicklyNamedMark@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "OpenQuicklyNamedMark@2x.png"; path = "images/icons/OpenQuicklyNamedMark@2x.png"; sourceTree = "<group>"; };
 		A697CEC62D98CEB00031583F /* OpenQuicklyMenuItem.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = OpenQuicklyMenuItem.png; path = images/icons/OpenQuicklyMenuItem.png; sourceTree = "<group>"; };
-		A697CECD2D9B0FB60031583F /* CommandSelectionHelp.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CommandSelectionHelp.md; sourceTree = "<group>"; };
 		A697CED22D9D8E540031583F /* VimKeyParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VimKeyParser.swift; sourceTree = "<group>"; };
 		A697E2791B42501000E175DA /* iTermMinimumSubsequenceMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iTermMinimumSubsequenceMatcher.h; sourceTree = "<group>"; };
 		A69833EF2F6B6CA500156A99 /* iTermLocalNetworkPermissionPrompter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iTermLocalNetworkPermissionPrompter.swift; sourceTree = "<group>"; };
@@ -9008,7 +9016,6 @@
 		A629F57123AF2DD900C2F16B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				A697CECE2D9B0FB60031583F /* Help */,
 				A6C838B02CB9ACF90062BE68 /* success-sound.mp3 */,
 				A6C838B12CB9ACF90062BE68 /* error-sound.mp3 */,
 				A6CCDF002D0E000000000001 /* install-touchid-sudo.sh */,
@@ -9070,6 +9077,8 @@
 				20D5CC6404E7AA0500000106 /* iTermApplicationDelegate.m */,
 				A697CD702D973E370031583F /* iTermApplicationDelegate.swift */,
 				1179CD897A4780286BB29AAC /* iTermDockBadgeController.swift */,
+				A7D100012EC0000100000001 /* LattermAppIconArtwork.swift */,
+				A7D100032EC0000100000001 /* LattermAppIconController.swift */,
 				1D407A2614BABE8700BD5035 /* iTerm.h */,
 				E8CF757F026DDAD703A80106 /* main.m */,
 				A6D441C62A91306400CA76E9 /* ProfileDocument.swift */,
@@ -10739,14 +10748,6 @@
 			path = PorterStemmer;
 			sourceTree = "<group>";
 		};
-		A697CECE2D9B0FB60031583F /* Help */ = {
-			isa = PBXGroup;
-			children = (
-				A697CECD2D9B0FB60031583F /* CommandSelectionHelp.md */,
-			);
-			path = Help;
-			sourceTree = "<group>";
-		};
 		A69CCB13211BC284008ADA71 /* GZIP */ = {
 			isa = PBXGroup;
 			children = (
@@ -11183,8 +11184,12 @@
 				7C3FA23CE1316B7F1FE8E1FD /* SettingsPageHeaderView.swift */,
 				C5E45F211527A640E684B1C6 /* SettingsContentView.swift */,
 				669407D849E8D4A8B5E8EA86 /* SettingsProfilesView.swift */,
+				4E92D3A17B5843F0A82C91D4 /* ProfilesSidebarView.swift */,
+				79847A3D13949FEE4A886701 /* ProfileFormView.swift */,
+				79847A3D13949FEE4A886703 /* ProfilePagesLayout.swift */,
 				1545F60D64197B76FE39C0F1 /* SettingsTabView.swift */,
 				2A38927FC949FA545C4526F8 /* SettingsFormView.swift */,
+				A7D100052EC0000100000001 /* AppIconPreferencesView.swift */,
 				7D3DFD4BA35B189A51AF37C6 /* SettingDefinition.swift */,
 				4C2BA956A6AF0CF3230962EB /* ProfileSettingsInspector.swift */,
 				21CA65CA25DE5DE0532A6FAE /* SettingsEmptyStateView.swift */,
@@ -14867,7 +14872,6 @@
 				5308BF9A22828A28004BECAC /* StatusBarIconCharging@2x.png in Resources */,
 				53FF980D20918D23008688D7 /* template_basic_simple.py in Resources */,
 				A62DBBA120F47CFA008B63D1 /* GoForward@2x.png in Resources */,
-				A697CED02D9B0FB60031583F /* CommandSelectionHelp.md in Resources */,
 				A65B72571B1A5D7500F947A7 /* WarningSign@2x.png in Resources */,
 				A67F614F214395870093940A /* graphic_java@2x.png in Resources */,
 				1D6ED9BC19AEA20D005A7799 /* closebutton.png in Resources */,
@@ -15301,7 +15305,6 @@
 				A6F7A747213CB143004DE961 /* StatusBarIconPaste@2x.png in Resources */,
 				53FF981D20927F1E008688D7 /* template_pyenv_simple.py in Resources */,
 				A67F6151214395870093940A /* graphic_less.png in Resources */,
-				A697CECF2D9B0FB60031583F /* CommandSelectionHelp.md in Resources */,
 				A6F7A711213CB143004DE961 /* StatusBarIconFolder@2x.png in Resources */,
 				A6A64E622508BE650040490B /* StatusBarIconSnippet.png in Resources */,
 				A62A78BF2F987E31007CAA0B /* iTermOptionalComponentDownloadWindowController.xib in Resources */,
@@ -15709,7 +15712,6 @@
 				A68E33341DE746F5003F1D8E /* Add Mark Touch Bar Icon@2x.png in Resources */,
 				A67D0D6E1A2EE12A003A8B35 /* MainMenu.strings in Resources */,
 				A6CB24A52C68149100005824 /* it2copy in Resources */,
-				A697CED12D9B0FB60031583F /* CommandSelectionHelp.md in Resources */,
 				A6CB24AD2C68149100005824 /* it2profile in Resources */,
 				A62A78602F987DCA007CAA0B /* iTermScriptConsole.xib in Resources */,
 				A66A882224DFCCC30043728B /* graphic_elixir.png in Resources */,
@@ -17396,6 +17398,9 @@
 				38C1ECCA9DCF67E64C50E1BC /* iTermRenderingComparer.swift in Sources */,
 				D3D470D34777DFA2474E14DC /* iTermSessionTabStatus.swift in Sources */,
 				02B907EBABFCDE0B68A178AF /* iTermDockBadgeController.swift in Sources */,
+				A7D100022EC0000100000001 /* LattermAppIconArtwork.swift in Sources */,
+				A7D100042EC0000100000001 /* LattermAppIconController.swift in Sources */,
+				A7D100062EC0000100000001 /* AppIconPreferencesView.swift in Sources */,
 				616ABD699141533212F458CF /* ToolStatusCellView.swift in Sources */,
 				B2CA85E23B4CCCC3391BA025 /* NotifyingDictionary.swift in Sources */,
 				C6CFF825AECC6B31CD732D23 /* iTermSessionNameBuiltInFunction.swift in Sources */,
@@ -17559,6 +17564,9 @@
 				E73A66BB34E38AFCE0E874A5 /* SettingsPageHeaderView.swift in Sources */,
 				7E4A4132D68590D6646FDFF6 /* SettingsContentView.swift in Sources */,
 				79847A3B13949FEE4A886746 /* SettingsProfilesView.swift in Sources */,
+				8B41F9C20E734AD19C5418E2 /* ProfilesSidebarView.swift in Sources */,
+				79847A3D13949FEE4A886702 /* ProfileFormView.swift in Sources */,
+				79847A3D13949FEE4A886704 /* ProfilePagesLayout.swift in Sources */,
 				5FDDDC1E767D8D0DFC5DD1E5 /* SettingsTabView.swift in Sources */,
 				B03E0EE9ADB1F15C86EB8140 /* SettingsFormView.swift in Sources */,
 				81ECA18CD6E4C588A25C91B2 /* iTermProfileSearchToken.swift in Sources */,

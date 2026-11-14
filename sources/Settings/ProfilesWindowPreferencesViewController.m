@@ -97,6 +97,50 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     NSString *_lastGuid;
 }
 
+- (NSSlider *)transparency { return _transparency; }
+- (NSTextField *)transparencyLabel { return _transparencyLabel; }
+- (NSTextField *)transparencyOverrideNotice { return _transparencyOverrideNotice; }
+- (NSButton *)transparencyAffectsOnlyDefaultBackgroundColor { return _transparencyAffectsOnlyDefaultBackgroundColor; }
+- (NSButton *)useBlur { return _useBlur; }
+- (NSSlider *)blurRadius { return _blurRadius; }
+- (NSTextField *)largeBlurRadiusWarning { return _largeBlurRadiusWarning; }
+- (NSButton *)useBackgroundImage { return _useBackgroundImage; }
+- (NSPopUpButton *)backgroundImageSourceMode { return _backgroundImageSourceMode; }
+- (NSTextField *)backgroundImageLabel { return _backgroundImageLabel; }
+- (NSTextField *)backgroundImageTextField { return _backgroundImageTextField; }
+- (NSTextField *)backgroundImageFolderTextField { return _backgroundImageFolderTextField; }
+- (NSTextField *)backgroundImageFolderIntervalLabel { return _backgroundImageFolderIntervalLabel; }
+- (NSTextField *)backgroundImageFolderIntervalField { return _backgroundImageFolderIntervalField; }
+- (NSTextField *)rotationIntervalUnitsLabel { return _rotationIntervalUnitsLabel; }
+- (NSView *)backgroundImagePreview { return _backgroundImagePreview; }
+- (NSView *)backgroundImageMode { return _backgroundImageMode; }
+- (NSSlider *)blendAmount { return _blendAmount; }
+- (NSView *)settingsForNewWindows { return _settingsForNewWindows; }
+- (NSTextField *)columnsField { return _columnsField; }
+- (NSTextField *)percentageWidthField { return _percentageWidthField; }
+- (NSTextField *)widthLabel { return _widthLabel; }
+- (NSTextField *)byLabel { return _byLabel; }
+- (NSTextField *)rowsField { return _rowsField; }
+- (NSTextField *)percentageHeightField { return _percentageHeightField; }
+- (NSTextField *)heightLabel { return _heightLabel; }
+- (NSPopUpButton *)rowsUnitsButton { return _rowsUnitsButton; }
+- (NSPopUpButton *)columnsUnitsButton { return _columnsUnitsButton; }
+- (NSPopUpButton *)windowStyle { return _windowStyle; }
+- (NSTextField *)windowStyleLabel { return _windowStyleLabel; }
+- (NSPopUpButton *)screen { return _screen; }
+- (NSTextField *)screenLabel { return _screenLabel; }
+- (NSPopUpButton *)space { return _space; }
+- (NSTextField *)spaceLabel { return _spaceLabel; }
+- (NSButton *)openToolbelt { return _openToolbelt; }
+- (NSButton *)hideAfterOpening { return _hideAfterOpening; }
+- (NSButton *)lockSizeAutomatically { return _lockSizeAutomatically; }
+- (NSButton *)preventTab { return _preventTab; }
+- (NSButton *)initialUseTransparency { return _initialUseTransparency; }
+- (NSButton *)useCustomTabTitle { return _useCustomTabTitle; }
+- (NSTextField *)customTabTitle { return _customTabTitle; }
+- (NSButton *)useCustomWindowTitle { return _useCustomWindowTitle; }
+- (NSTextField *)customWindowTitle { return _customWindowTitle; }
+
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -161,6 +205,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
         strongSelf->_blurRadius.enabled = (strongSelf->_useBlur.state == NSControlStateValueOn) && haveTransparency;
         strongSelf->_useBlur.enabled = haveTransparency;
         strongSelf->_transparencyOverrideNotice.hidden = !haveTransparency;
+        [strongSelf.view it_invalidateProfileFormLayout];
     };
 
     [self defineControl:_initialUseTransparency
@@ -370,6 +415,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
                    displayName:@"Background image source mode"
                        phrases:@[]
                            key:nil];
+    [self installProfileLayout];
 }
 
 - (NSDictionary *)dictionaryToSaveWindowType:(iTermWindowType)windowType {
@@ -659,6 +705,10 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
                                   _heightLabel,            // "rows"
                                   _rowsUnitsButton          // Popup [Rows / % of screen height]
     ];
+    if ([self.view it_hasProfileForm]) {
+        [self.view it_invalidateProfileFormLayout];
+        return YES;
+    }
     CGFloat x = 0;
     for (NSView *view in views) {
         if (view.isHidden) {
@@ -702,11 +752,8 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
 
 - (void)updateBlurRadiusWarning {
     // It seems to get slow around this point on some machines circa 2017.
-    if ([self boolForKey:KEY_BLUR] && [self floatForKey:KEY_BLUR_RADIUS] > 26) {
-        _largeBlurRadiusWarning.hidden = NO;
-        return;
-    }
-    _largeBlurRadiusWarning.hidden = YES;
+    _largeBlurRadiusWarning.hidden = !([self boolForKey:KEY_BLUR] && [self floatForKey:KEY_BLUR_RADIUS] > 26);
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)updateCustomWindowTitleEnabled {
@@ -719,10 +766,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
     _settingsForNewWindows.hidden = YES;
-    iTermSizeRememberingView *sizeRememberingView = (iTermSizeRememberingView *)self.view;
-    CGSize size = sizeRememberingView.originalSize;
-    size.height -= NSHeight(_settingsForNewWindows.frame);
-    sizeRememberingView.originalSize = size;
+    [self.view it_invalidateProfileFormLayout];
 }
 
 #pragma mark - Notifications
@@ -873,6 +917,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     _backgroundImageFolderIntervalLabel.labelEnabled = usesFolderRotation;
     _rotationIntervalUnitsLabel.labelEnabled = usesFolderRotation;
     _backgroundImageFolderIntervalField.enabled = usesFolderRotation;
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)synchronizeBackgroundImageEnabledState {

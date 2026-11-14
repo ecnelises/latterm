@@ -80,10 +80,15 @@ class AccessoryWrapper: NSView {
     }
 
     override var fittingSize: NSSize {
-        return NSSize(width: child.fittingSize.width, height: child.frame.height)
+        let childSize = child.fittingSize
+        return NSSize(width: max(childSize.width, child.bounds.width), height: max(childSize.height, child.frame.height))
     }
 
     func layoutSubviews(containerHeight height: CGFloat) {
-        child.frame = NSRect(x: 0, y: 0, width: child.bounds.width, height: height)
+        let childSize = child.fittingSize
+        let width = max(childSize.width, child.bounds.width)
+        let childHeight = min(height, childSize.height > 0 ? childSize.height : height)
+        let y = max(0, (height - childHeight) / 2.0)
+        child.frame = NSRect(x: 0, y: y, width: width, height: childHeight)
     }
 }

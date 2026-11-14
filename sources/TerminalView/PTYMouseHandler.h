@@ -149,7 +149,6 @@ dragSemanticHistoryWithEvent:(NSEvent *)event
 @property (nonatomic, readonly) BOOL semanticHistoryDragged;
 @property (nonatomic, readonly) BOOL terminalWantsMouseReports;
 @property (nonatomic, readonly) BOOL wantsMouseMovementEvents;
-@property (nonatomic, readonly) BOOL lastMouseDownRemovedSelection;
 
 - (instancetype)initWithSelectionScrollHelper:(iTermSelectionScrollHelper *)selectionScrollHelper
               threeFingerTapGestureRecognizer:(ThreeFingerTapGestureRecognizer *)threeFingerTapGestureRecognizer

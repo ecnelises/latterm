@@ -57,6 +57,7 @@ final class SettingsTabView: NSTabView {
 
     static func expandSections(in view: NSView) -> CGFloat {
         if let layouts = view as? SettingsArrangementsView { return layouts.preferredHeight }
+        if let appIcon = view as? AppIconPreferencesView { return appIcon.preferredHeight }
         if let scroll = view as? SettingsContentView {
             return scroll.expandForSection()
         }
@@ -84,6 +85,7 @@ final class SettingsTabView: NSTabView {
     /// enclosing document. Hiding their own scrollers must not clip controls.
     static func minimumWidth(in view: NSView) -> CGFloat {
         if let scroll = view as? SettingsContentView { return scroll.requiredWidth }
+        if let appIcon = view as? AppIconPreferencesView { return appIcon.preferredWidth }
         if let tabs = view as? SettingsTabView { return tabs.preferredWidth }
         return view.subviews.map { $0.frame.minX + minimumWidth(in: $0) }.max() ?? 0
     }
@@ -106,7 +108,8 @@ final class SettingsTabView: NSTabView {
             document.addSubview(heading)
             document.addSubview(view)
             let fillsWidth = ["ActionCustomView", "SnippetCustomView"].contains(body?.identifier?.rawValue ?? "")
-            let bodyWidth = fillsWidth ? CGFloat.greatestFiniteMagnitude : (body?.frame.width ?? 0)
+            let fallbackWidth = (view as? AppIconPreferencesView)?.preferredWidth ?? 0
+            let bodyWidth = fillsWidth ? CGFloat.greatestFiniteMagnitude : (body?.frame.width ?? fallbackWidth)
             let minimumWidth = fillsWidth ? 0 : (body?.frame.width ?? Self.minimumWidth(in: view))
             return Section(item: item, heading: heading, height: height, compactBody: body,
                            preferredBodyWidth: existing?.preferredBodyWidth ?? bodyWidth,

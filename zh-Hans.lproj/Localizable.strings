@@ -330,7 +330,6 @@
 "Silence bell" = "静音响铃";
 "English (US) UTF-8" = "英语（美国）UTF-8";
 "Insert newline before start of command prompt if needed" = "必要时在命令提示符前插入换行";
-"Show mark indicators" = "显示标记指示符";
 "Click on a path in a shell prompt to open Navigator" = "点击提示符中的路径打开导航器";
 "Show offscreen command line at top of session" = "在会话顶部显示已滚出视野的命令行";
 "…even for the currently running command" = "…包括正在运行的命令";
@@ -448,12 +447,10 @@
 "Allow sending of clipboard contents?" = "允许发送剪贴板内容？";
 "Ask Each Time" = "每次询问";
 "Triple-click selects entire wrapped lines" = "三击选中整个折行段落";
-"Clicking on a command selects it to restrict Find and Filter" = "点击命令以限制查找和筛选范围";
 "When pasting a dropped filename, wrap it in double quotes" = "粘贴拖入的文件名时用双引号包围";
 "Copy:" = "复制：";
 "Access:" = "访问：";
 "Copy Mode:" = "复制模式：";
-"Command selection:" = "命令选择：";
 "Pasting:" = "粘贴：";
 "Automatically enter copy mode on Shift+Arrow key with selection" = "有选区时按 Shift+方向键自动进入复制模式";
 "List of Characters" = "字符列表";
@@ -945,7 +942,6 @@
 "Horizontal scrolling is reversed when “Natural scrolling” is enabled in System Settings" = "系统启用“自然滚动”时反转水平鼠标滚动报告。";
 "Sensitivity of mouse wheel for horizontal scrolling.\nUse 0 to disable. Value should be between 0 and 1. Changes to this setting only affect new sessions." = "鼠标滚轮的水平滚动灵敏度。\n范围为 0–1，0 表示禁用；仅对新建会话生效。";
 "Sensitivity of mouse wheel for horizontal scrolling." = "鼠标滚轮的水平滚动灵敏度。";
-"Wait to be sure it's not a double click before selecting a command" = "选择命令前等待双击判定完成。";
 "Require Option to be pressed to drag a split pane by its title bar?\nThis helps prevent accidental drags." = "按住 Option 才能拖动分屏标题栏。\n用于防止意外拖动。";
 "Require Option to be pressed to drag a split pane by its title bar?" = "按住 Option 才能拖动分屏标题栏。";
 "Bounce dock icon when the bell rings while another app is active?" = "其他应用激活时，响铃使程序坞图标跳动。";
@@ -1190,7 +1186,6 @@
 "Disable indicator icons that appear in the top right of a session?" = "隐藏会话右上角的状态指示图标。";
 "Include extended symbols when drawing Powerline natively." = "原生绘制 Powerline 时包含扩展符号。";
 "Always use line-style marks?" = "始终使用线条样式的标记。";
-"Alpha value for shade that covers areas outside the currently selected command." = "选中命令之外区域的遮罩不透明度。";
 "Show URL preview on cmd-hover for semantic history matches." = "按住 ⌘ 悬停语义历史匹配项时预览 URL。";
 "When animated cursor movement is enabled, only perform animation if the cursor moves at least this distance in points." = "光标动画所需的最小移动距离（点）。";
 "Duration in seconds for the “Animate large movements” cursor animation." = "光标“大幅移动动画”的时长（秒）。";
@@ -1540,7 +1535,6 @@
 "Hide stuck tooltips.\nWhen you hide Latterm using a hotkey while a tooltip is fading out it gets stuck because of an OS bug. Work around it with a nasty hack by enabling this feature." = "隐藏卡住的工具提示。\n使用热键隐藏 Latterm 时，正在淡出的工具提示可能因系统问题而停留在屏幕上。启用此变通措施可隐藏它。";
 "Rate limit for Alert triggers.\nIf the same trigger fires with less than this time interval (in seconds) between firings, it will be suppressed." = "警告触发器的最短触发间隔（秒）。\n同一触发器在此间隔内再次触发时将被忽略。";
 "Rate limit for Notification triggers.\nIf the same trigger fires with less than this time interval (in seconds) between firings, it will be suppressed." = "通知触发器的最短触发间隔（秒）。\n同一触发器在此间隔内再次触发时将被忽略。";
-"Show buttons at the top of a selected command?\nWhen you select a command by single clicking the command line or its output, buttons are shown on the top right with options like Copy and Share. Note that this setting only applies when marks are not “line style” such as when using Auto Composer." = "在选中的命令上方显示操作按钮？\n单击命令行或其输出以选中命令时，在右上角显示复制、共享等按钮。此设置仅适用于非“线条样式”的标记，例如使用自动撰写器时。";
 "Only consider a two+ part domain-name to be a URL if it also contains a slash.\nThis setting is used when guessing if a string is a URL for semantic history. When enabled, `example.com` would not be considered a URL but `example.com/` would be." = "仅当包含斜杠时，才将由两部分或更多部分组成的域名识别为 URL。\n此设置用于语义历史的 URL 推断。启用后，example.com 不会被识别为 URL，而 example.com/ 会。";
 "Format for automatic session log filenames.\nSee the Badges documentation for supported substitutions." = "自动会话日志的文件名格式。\n支持的替换变量见徽标文档。";
 "When restoring a window arrangement, ensure windows are entirely within the bounds of the current displays." = "恢复窗口布局时，确保窗口完全位于当前显示器的范围内。";
@@ -2476,3 +2470,60 @@
 "Illegal Man Page URL" = "不允许的 man 手册页 URL";
 "The man page URL contained a disallowed character. The set of allowed characters is limited for security reasons." = "此 man 手册页 URL 包含不允许的字符。出于安全考虑，允许使用的字符受到限制。";
 "The man page URL did not name a man page or search term." = "此 man 手册页 URL 没有指定手册页或搜索词。";
+
+/* Profile settings section titles. */
+"Identity" = "基本信息";
+"Badge & Title" = "角标与标题";
+"Command & Working Directory" = "命令与工作目录";
+"Switch or Copy Profile" = "切换或拷贝配置";
+"Session Shortcut & Switching" = "会话快捷键与切换";
+"Basic Colors" = "基本颜色";
+"Contrast & Alpha" = "对比度与透明度";
+"Tab & Pane" = "标签与窗格";
+"Cursor" = "光标";
+"Typography" = "字体与排版";
+"Modifier Keys" = "修饰键";
+"Triggers & Smart Selection" = "触发器与智能选择";
+"Snippets & Semantic History" = "片段与语义历史";
+
+/* App icon settings and variants. */
+"App Icon" = "应用图标";
+"Light mode icon:" = "浅色模式图标：";
+"Dark mode icon:" = "深色模式图标：";
+"Switches automatically when macOS or theme appearance changes." = "跟随 macOS 或主题外观变化自动切换。";
+"Switches automatically with appearance. Alpha builds use an α cursor." = "跟随外观自动切换。Alpha 版本会将图标光标显示为 α。";
+"Switches automatically with appearance. Beta builds use a β cursor." = "跟随外观自动切换。Beta 版本会将图标光标显示为 β。";
+"Concepts" = "主视觉图标";
+"Prompt Glyphs" = "提示符字形";
+"Ink (>_)" = "Ink（>_）";
+"Paper (>_)" = "Paper（>_）";
+"Flame (>_)" = "Flame（>_）";
+"Cobalt (>_)" = "Cobalt（>_）";
+"Block Cursor" = "方块光标";
+"Monogram (L_)" = "Monogram（L_）";
+"Dollar — Ink ($_)" = "Dollar — Ink（$_）";
+"Dollar — Paper ($_)" = "Dollar — Paper（$_）";
+"Hash — Ink (#_)" = "Hash — Ink（#_）";
+"Hash — Paper (#_)" = "Hash — Paper（#_）";
+"Percent — Ink (%_)" = "Percent — Ink（%_）";
+"Percent — Paper (%_)" = "Percent — Paper（%_）";
+"Lambda — Ink (λ_)" = "Lambda — Ink（λ_）";
+"Lambda — Paper (λ_)" = "Lambda — Paper（λ_）";
+"Less Than (<_)" = "小于号（<_）";
+
+/* Modern Profiles sidebar and continuous editor. */
+"No matching profiles" = "没有匹配的配置";
+"Clear Filter" = "清除筛选";
+"New" = "新建";
+"Create a new profile" = "新建配置方案";
+"Duplicate selected profile" = "复制所选配置";
+"Delete Profile" = "删除配置";
+"Delete Profile…" = "删除配置…";
+"Delete selected profile" = "删除所选配置";
+"More profile actions" = "更多配置操作";
+"Login shell" = "登录 Shell";
+"All" = "全部";
+"Default Profile" = "默认配置";
+"Select a profile from the sidebar to edit its settings." = "从左侧边栏选择一个配置以编辑其设置。";
+"Section" = "跳转分区";
+"Current Session" = "当前会话";

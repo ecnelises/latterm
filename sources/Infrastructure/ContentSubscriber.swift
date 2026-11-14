@@ -10,5 +10,5 @@ import Foundation
 @objc(iTermContentSubscriber)
 protocol ContentSubscriber {
     @objc func deliver(_ array: ScreenCharArray, metadata: iTermImmutableMetadata, lineBufferGeneration: Int64)
-    @objc func updateMetadata(selectedCommandRange: NSRange, cumulativeOverflow: Int64)
+    @objc func updateMetadata(absLineRange: NSRange, cumulativeOverflow: Int64)
 }

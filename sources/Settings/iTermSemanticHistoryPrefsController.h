@@ -55,6 +55,10 @@ extern NSString *kSemanticHistorySendTextAction;
 @property(nonatomic, copy) NSString *guid;
 @property(nonatomic, weak) IBOutlet id<iTermSemanticHistoryPrefsControllerDelegate> delegate;
 @property(nonatomic, readonly) NSDictionary *prefs;
+@property(nonatomic, readonly) NSPopUpButton *actionPopup;
+@property(nonatomic, readonly) NSTextField *textField;
+@property(nonatomic, readonly) NSPopUpButton *editorsPopup;
+@property(nonatomic, readonly) NSTextField *caveatField;
 
 + (NSString *)bestEditor;
 + (NSString *)schemeForEditor:(NSString *)editor;

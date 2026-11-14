@@ -1327,6 +1327,7 @@ void TurnOnDebugLoggingAutomatically(void) {
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
     DLog(@"Begin");
     [[iTermApplication sharedApplication] updateAppearance];
+    [[iTermAppIconController shared] start];
     [[iTermUserDefaults userDefaults] it_addObserverForKey:kPreferenceKeyTabStyle
                                                      block:^(id _Nonnull newValue) {
         [[iTermApplication sharedApplication] updateAppearance];
@@ -1849,12 +1850,6 @@ static iTermKeyEventReplayer *gReplayer;
         [self runCommandFromURL:components internal:internal];
         return YES;
     }
-    if (internal) {
-        if ([components.path isEqualToString:@"disable-command-selection"]) {
-            [self disableCommandSelection];
-            return YES;
-        }
-    }
     if ([components.path isEqualToString:@"triggers"]) {
         [TriggerController importTriggersFromURL:url];
         return YES;
@@ -1872,11 +1867,6 @@ static iTermKeyEventReplayer *gReplayer;
         [self popChannel:url];
     }
     return NO;
-}
-
-- (void)disableCommandSelection {
-    [iTermPreferences setBool:NO forKey:kPreferenceKeyClickToSelectCommand];
-    [[PreferencePanel sharedInstance] openToPreferenceWithKey:kPreferenceKeyClickToSelectCommand];
 }
 
 - (void)popChannel:(NSURL *)url {

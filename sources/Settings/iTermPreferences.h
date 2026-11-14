@@ -230,7 +230,6 @@ extern NSString *const kPreferenceKeyFocusFollowsMouseIncludingSubviews;
 extern NSString *const kPreferenceKeyTripleClickSelectsFullWrappedLines;
 extern NSString *const kPreferenceKeyDoubleClickPerformsSmartSelection;
 extern NSString *const kPreferenceKeyEnterCopyModeAutomatically;
-extern NSString *const kPreferenceKeyClickToSelectCommand;
 extern NSString *const kPreferenceKeyWrapDroppedFilenamesInQuotesWhenPasting;
 extern NSString *const kPreferenceKeyFocusOnRightOrMiddleClick;
 extern NSString *const kPreferenceKeyReportHorizontalScrollEvents;
@@ -282,6 +281,8 @@ extern NSString *const kPreferenceKeySnippets;
 extern NSString *const kPreferenceKeyDisableTransparencyForKeyWindow;
 extern NSString *const kPreferenceKeyNeverBlockSystemShutdown;
 extern NSString *const kPreferenceKeyMenuActionImages;
+extern NSString *const kPreferenceKeyLightAppIcon;
+extern NSString *const kPreferenceKeyDarkAppIcon;
 
 @interface iTermPreferences : NSObject
 
@@ -343,6 +344,7 @@ extern NSString *const kPreferenceKeyMenuActionImages;
 #if DEBUG
 + (NSURL *)gitlabURLOnPasteboard;
 #endif
++ (BOOL)isAlphaOrBetaBuild;
 
 @end
 

@@ -46,7 +46,6 @@
 // history can recall. This looks nicer to my eyes.
 static const float kAnimationDuration = 0.2;
 static const CGFloat kFilterHeight = 30;
-static const CGFloat kLineRangeHeight = 24;
 
 @interface iTermDropDownFindViewController()<iTermFocusReportingSearchFieldDelegate, MinimalFindViewDelegate>
 @end
@@ -55,7 +54,6 @@ static const CGFloat kLineRangeHeight = 24;
     IBOutlet iTermFocusReportingSearchField *findBarTextField_;
     IBOutlet NSSearchField *_filterField;
     IBOutlet NSView *_filterWrapper;
-    IBOutlet NSView *_selectionNoticeWrapper;
     IBOutlet NSView *_searchWrapper;
 
     // Fades out the progress indicator.
@@ -97,25 +95,10 @@ static const CGFloat kLineRangeHeight = 24;
     [self.view makeBackingLayer];
     self.view.shadow = shadow;
     [self setFilterHidden:YES];
-    [self updateSelectionNoticeVisibility];
     [self.minimalFindView setDelegate:self];
 }
 
 #pragma mark - iTermFindViewController
-
-- (void)updateSelectionNoticeVisibility {
-    const BOOL hidden = !self.hasLineRange;
-    if (hidden == _selectionNoticeWrapper.hidden) {
-        return;
-    }
-    _selectionNoticeWrapper.hidden = hidden;
-    [self.driver invalidateFrame];
-}
-
-- (void)setHasLineRange:(BOOL)hasLineRange {
-    _hasLineRange = hasLineRange;
-    [self updateSelectionNoticeVisibility];
-}
 
 - (BOOL)filterIsVisible {
     [self view];
@@ -140,21 +123,11 @@ static const CGFloat kLineRangeHeight = 24;
     if (!self.filterIsVisible) {
         height -= kFilterHeight;
     }
-    if (!self.hasLineRange) {
-        height -= kLineRangeHeight;
-    }
     return NSMakeSize(NSWidth(self.view.bounds), height);
 }
 
 - (void)layoutSubviews {
     CGFloat y = 19;
-    if (self.hasLineRange) {
-        NSRect rect = _selectionNoticeWrapper.frame;
-        rect.origin.y = y;
-        _selectionNoticeWrapper.frame = rect;
-        y += rect.size.height;
-
-    }
     if (!_filterWrapper.isHidden) {
         NSRect rect = _filterWrapper.frame;
         rect.origin.y = y;

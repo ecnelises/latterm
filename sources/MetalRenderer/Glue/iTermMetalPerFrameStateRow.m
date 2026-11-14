@@ -85,9 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         const long long absoluteLine = totalScrollbackOverflow + i;
         _underlinedRange = [drawingHelper underlinedRangeOnLine:absoluteLine];
-        _x_inDeselectedRegion = drawingHelper.selectedCommandRegion.length > 0 && !NSLocationInRange(i, drawingHelper.selectedCommandRegion);
         _markStyle = @([self markStyleForLine:i
-                                      enabled:drawingHelper.drawMarkIndicators
                                      textView:textView
                           allowOtherMarkStyle:allowOtherMarkStyle
                                       hasFold:[drawingHelper.folds containsIndex:i]
@@ -99,7 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (iTermMarkStyle)markStyleForLine:(int)i
-                           enabled:(BOOL)enabled
                           textView:(PTYTextView *)textView
                allowOtherMarkStyle:(BOOL)allowOtherMarkStyle
                            hasFold:(BOOL)folded
@@ -109,14 +106,10 @@ NS_ASSUME_NONNULL_BEGIN
     id<VT100ScreenMarkReading> mark = (id<VT100ScreenMarkReading>)genericMark;
     *lineStyleMarkRightInset = 0;
     *lineStyleMark = NO;
-    if (mark != nil && enabled) {
-        if (mark.lineStyle) {
-            // Don't draw line-style mark in selected command region or immediately after selected command region.
-            // Note: that logic is in populateLineStyleMarkRendererTransientStateWithFrameData.
-            *lineStyleMark = YES;
-            if (mark.hasNonEmptyCommand) {
-                *lineStyleMarkRightInset = iTermTextDrawingHelperLineStyleMarkRightInsetCells;
-            }
+    if (mark != nil && mark.lineStyle) {
+        *lineStyleMark = YES;
+        if (mark.hasNonEmptyCommand) {
+            *lineStyleMarkRightInset = iTermTextDrawingHelperLineStyleMarkRightInsetCells;
         }
     }
     if (!mark) {
@@ -127,10 +120,8 @@ NS_ASSUME_NONNULL_BEGIN
             return iTermMarkStyleNone;
         }
     }
-    if (mark.name.length == 0) {
-        if (!enabled && !folded) {
-            return iTermMarkStyleNone;
-        }
+    if (!folded && !*lineStyleMark) {
+        return iTermMarkStyleNone;
     }
     if (mark.code == 0) {
         return folded ? iTermMarkStyleFoldedSuccess : iTermMarkStyleRegularSuccess;

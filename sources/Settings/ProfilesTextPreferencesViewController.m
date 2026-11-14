@@ -91,20 +91,47 @@
     // Hide this view to hide all non-ASCII font settings.
     IBOutlet NSView *_nonAsciiFontView;
 
-    CGFloat _heightWithNonAsciiControls;
-    CGFloat _heightWithoutNonAsciiControls;
-
     SpecialExceptionsWindowController *_specialExceptionsWindowController;
 }
+
+- (NSMatrix *)cursorType { return _cursorType; }
+- (NSTextField *)cursorTypeLabel { return _cursorTypeLabel; }
+- (NSButton *)blinkingCursor { return _blinkingCursor; }
+- (NSButton *)cursorSmoothBlink { return _cursorSmoothBlink; }
+- (NSButton *)cursorSmoothBlinkConfigureButton { return _cursorSmoothBlinkConfigureButton; }
+- (NSButton *)cursorSmoothSlide { return _cursorSmoothSlide; }
+- (NSButton *)shadow { return _shadow; }
+- (NSButton *)hideOnLostFocus { return _hideOnLostFocus; }
+- (NSButton *)animateMovement { return _animateMovement; }
+- (NSButton *)animateMovementOnlyInInteractiveApps { return _animateMovementOnlyInInteractiveApps; }
+- (NSView *)asciiFontPicker { return _asciiFontPicker; }
+- (NSButton *)asciiAntiAliased { return _asciiAntiAliased; }
+- (NSTextField *)normalFontWantsAntialiasing { return _normalFontWantsAntialiasing; }
+- (NSButton *)asciiLigatures { return _asciiLigatures; }
+- (NSTextField *)ligatureWarning { return _ligatureWarning; }
+- (NSPopUpButton *)thinStrokes { return _thinStrokes; }
+- (NSTextField *)thinStrokesLabel { return _thinStrokesLabel; }
+- (NSButton *)useNonAsciiFont { return _useNonAsciiFont; }
+- (NSView *)nonAsciiFontView { return _nonAsciiFontView; }
+- (NSView *)nonASCIIFontPicker { return _nonASCIIFontPicker; }
+- (NSButton *)nonasciiAntiAliased { return _nonasciiAntiAliased; }
+- (NSTextField *)nonasciiFontWantsAntialiasing { return _nonasciiFontWantsAntialiasing; }
+- (NSButton *)nonAsciiLigatures { return _nonAsciiLigatures; }
+- (NSTextField *)ligatureWarningNonAscii { return _ligatureWarningNonAscii; }
+- (NSButton *)useBoldFont { return _useBoldFont; }
+- (NSButton *)blinkAllowed { return _blinkAllowed; }
+- (NSButton *)useItalicFont { return _useItalicFont; }
+- (NSButton *)powerline { return _powerline; }
+- (NSPopUpButton *)normalization { return _normalization; }
+- (NSTextField *)normalizationLabel { return _normalizationLabel; }
+- (NSButton *)unicodeVersion9 { return _unicodeVersion9; }
+- (NSButton *)ambiguousIsDoubleWidth { return _ambiguousIsDoubleWidth; }
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)awakeFromNib {
-    _heightWithNonAsciiControls = self.view.frame.size.height;
-    _heightWithoutNonAsciiControls = _heightWithNonAsciiControls - _nonAsciiFontView.frame.size.height - _nonAsciiFontView.frame.origin.y;
-
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadProfiles)
                                                  name:kReloadAllProfiles
@@ -371,6 +398,7 @@
     [self updateFontsDescriptionsIncludingSpacing:YES];
     [self updateNonAsciiFontViewVisibility];
     [self updateLigatureWarning];
+    [self installProfileLayout];
 }
 
 - (void)updateLigatureWarning {
@@ -394,6 +422,7 @@
     } else {
         [_nonASCIIFontPicker removeOptionsButton];
     }
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (BOOL)shouldShowASCIILigaturesWarning {
@@ -453,16 +482,7 @@
 
 - (void)updateNonAsciiFontViewVisibility {
     _nonAsciiFontView.hidden = ![self boolForKey:KEY_USE_NONASCII_FONT];
-    ((iTermSizeRememberingView *)self.view).originalSize = self.myPreferredContentSize;
-    [self.delegate profilePreferencesContentViewSizeDidChange:(iTermSizeRememberingView *)self.view];
-}
-
-- (NSSize)myPreferredContentSize {
-    if ([self boolForKey:KEY_USE_NONASCII_FONT]) {
-        return NSMakeSize(((iTermSizeRememberingView *)self.view).originalSize.width, _heightWithNonAsciiControls);
-    } else {
-        return NSMakeSize(((iTermSizeRememberingView *)self.view).originalSize.width, _heightWithoutNonAsciiControls);
-    }
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)updateFontsDescriptionsIncludingSpacing:(BOOL)includingSpacing {
@@ -705,6 +725,7 @@
 - (void)updateWarnings {
     [_normalFontWantsAntialiasing setHidden:!self.normalFont.futureShouldAntialias];
     [_nonasciiFontWantsAntialiasing setHidden:!self.nonAsciiFont.futureShouldAntialias];
+    [self.view it_invalidateProfileFormLayout];
 }
 
 

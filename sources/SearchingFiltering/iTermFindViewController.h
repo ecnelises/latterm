@@ -38,7 +38,6 @@ NS_INLINE BOOL iTermFilterModeIsRegularExpression(iTermFindMode mode) {
 @property (nonatomic, readonly) BOOL filterIsVisible;
 @property (nonatomic, readonly) BOOL searchIsVisible;
 @property (nonatomic, readonly) BOOL shouldSearchAutomatically;
-@property (nonatomic) BOOL hasLineRange;
 
 - (void)close;
 - (void)open;

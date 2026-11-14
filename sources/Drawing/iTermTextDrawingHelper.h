@@ -320,9 +320,6 @@ extern const CGFloat iTermCursorGuideAlphaThreshold;
 @property(nonatomic, assign) BOOL isRetina;
 @property(nonatomic, assign) BOOL forceAntialiasingOnRetina;
 
-// Draw mark indicators?
-@property(nonatomic, assign) BOOL drawMarkIndicators;
-
 // Use light font smoothing?
 @property(nonatomic, assign) iTermThinStrokesSetting thinStrokes;
 
@@ -386,15 +383,9 @@ extern const CGFloat iTermCursorGuideAlphaThreshold;
 @property (nonatomic, strong) iTermFontTable *fontTable;
 @property (nonatomic) VT100GridRange linesToSuppress;
 @property (nonatomic) CGFloat pointsOnBottomToSuppressDrawing;
-// NOTE: This is a relative line range.
-@property (nonatomic) NSRange selectedCommandRegion;
-@property (nonatomic) BOOL selectedCommandHasLineStyleMarks;
 @property (nonatomic) BOOL forceRegularBottomMargin;
-@property (nonatomic, readonly) NSArray<NSColor *> *selectedCommandOutlineColors;
 @property (nonatomic) NSEdgeInsets extraMargins;
 
-// Color for shade over deselected commands
-@property (nonatomic, readonly) NSColor *shadeColor;
 @property (nonatomic, copy) NSArray<iTermKittyImageDraw *> *kittyImageDraws;
 @property (nonatomic, copy) NSIndexSet *folds;
 @property (nonatomic, readonly) iTermAttributedStringBuilder *attributedStringBuilder;

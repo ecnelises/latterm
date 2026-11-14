@@ -39,7 +39,6 @@ class TextClipDrawing: NSObject {
         var shouldDrawFilledInCursor: Bool
         var isFrontTextView: Bool
         var transparencyAlpha: Double
-        var drawMarkIndicators: Bool
         var showSearchingCursor: Bool
         var copyMode: Bool
         var shouldShowTimestamps: Bool
@@ -61,7 +60,6 @@ class TextClipDrawing: NSObject {
             shouldDrawFilledInCursor = helper.shouldDrawFilledInCursor
             isFrontTextView = helper.isFrontTextView
             transparencyAlpha = helper.transparencyAlpha
-            drawMarkIndicators = helper.drawMarkIndicators
             showSearchingCursor = helper.showSearchingCursor
             copyMode = helper.copyMode
             shouldShowTimestamps = helper.shouldShowTimestamps
@@ -84,7 +82,6 @@ class TextClipDrawing: NSObject {
             helper.shouldDrawFilledInCursor = shouldDrawFilledInCursor
             helper.isFrontTextView = isFrontTextView
             helper.transparencyAlpha = transparencyAlpha
-            helper.drawMarkIndicators = drawMarkIndicators
             helper.showSearchingCursor = showSearchingCursor
             helper.copyMode = copyMode
             helper.shouldShowTimestamps = shouldShowTimestamps
@@ -197,7 +194,6 @@ class TextClipDrawing: NSObject {
         drawingHelper.shouldDrawFilledInCursor = true
         drawingHelper.isFrontTextView = true
         drawingHelper.transparencyAlpha = 1.0
-        drawingHelper.drawMarkIndicators = false
         drawingHelper.showSearchingCursor = false
         drawingHelper.copyMode = false
         drawingHelper.shouldShowTimestamps = false

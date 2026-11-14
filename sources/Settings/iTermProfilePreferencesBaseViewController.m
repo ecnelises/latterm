@@ -323,6 +323,18 @@
 }
 
 - (void)scrollViewToVisible:(NSView *)view {
+    if (!view) {
+        return;
+    }
+    for (NSView *ancestor = view.superview; ancestor; ancestor = ancestor.superview) {
+        if ([ancestor isKindOfClass:[iTermProfileUnifiedScrollView class]]) {
+            iTermProfileUnifiedScrollView *unifiedScroll = (iTermProfileUnifiedScrollView *)ancestor;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [unifiedScroll scrollControlToVisible:view];
+            });
+            return;
+        }
+    }
     if (!view.enclosingScrollView) {
         return;
     }

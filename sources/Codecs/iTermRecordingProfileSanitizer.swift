@@ -79,7 +79,6 @@ class iTermRecordingProfileSanitizer: NSObject {
         KEY_UNICODE_VERSION,
 
         // Marks, timestamps, and other drawing aids
-        KEY_SHOW_MARK_INDICATORS,
         KEY_TIMESTAMPS_STYLE,
         KEY_TIMESTAMPS_VISIBLE,
         KEY_SHOW_OFFSCREEN_COMMANDLINE,

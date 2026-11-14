@@ -78,7 +78,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (BOOL)alternateMouseScroll;
 + (BOOL)alwaysUseLineStyleMarks;
 + (BOOL)alwaysUseStatusBarComposer;
-+ (double)alphaForDeselectedCommandShade;
 #if DEBUG
 + (NSString *)alternateSSHIntegrationScript;
 #endif
@@ -408,7 +407,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (BOOL)shouldSetTerminfoDirs;
 + (BOOL)showAutomaticProfileSwitchingBanner;
 + (BOOL)showBlockBoundaries;
-+ (BOOL)showButtonsForSelectedCommand;
 + (BOOL)showDirtyRectsInLegacyRenderer;
 + (BOOL)showHintsInSplitPaneMenuItems;
 + (BOOL)showMetalFPSmeter;
@@ -510,7 +508,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (BOOL)underlineHyperlinks;
 + (double)updateScreenParamsDelay;
 + (BOOL)useCustomTabBarFontSize;
-+ (BOOL)useDoubleClickDelayForCommandSelection;
 + (BOOL)usePosixSpawn;
 + (BOOL)useRestorableStateController;
 + (BOOL)useSequoiaStyleTabs;

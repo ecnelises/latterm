@@ -7,6 +7,7 @@
 //
 
 #import "iTermSemanticHistoryPrefsController.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "ITAddressBookMgr.h"
 #import "iTermFunctionCallTextFieldDelegate.h"
 #import "iTermSemanticHistoryController.h"
@@ -109,6 +110,11 @@ enum {
 };
 
 @synthesize guid = guid_;
+
+- (NSPopUpButton *)actionPopup { return action_; }
+- (NSTextField *)textField { return text_; }
+- (NSPopUpButton *)editorsPopup { return editors_; }
+- (NSTextField *)caveatField { return caveat_; }
 
 + (NSDictionary *)defaultPrefs {
     return @{ kSemanticHistoryActionKey: kSemanticHistoryBestEditorAction };
@@ -523,6 +529,7 @@ enum {
     if (editors_.isHidden != hideEditors) {
         [editors_ setHidden:hideEditors];
     }
+    [action_ it_invalidateProfileFormLayout];
     if (sender) {
         if (![text_ isHidden]) {
             NSString *stringValue = self.prefs[kSemanticHistoryTextKey];

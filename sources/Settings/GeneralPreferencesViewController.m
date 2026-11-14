@@ -155,7 +155,6 @@ enum {
     IBOutlet NSButton *_warningButton;
     iTermUserDefaultsObserver *_observer;
 
-    IBOutlet NSButton *_clickToSelectCommand;
     IBOutlet NSButton *_wrapDroppedFilenamesInQuotesWhenPasting;
 
     IBOutlet NSPopUpButton *_allowsSendingClipboardContents;
@@ -570,10 +569,6 @@ enum {
     };
     [self defineControl:_enterCopyModeAutomatically
                     key:kPreferenceKeyEnterCopyModeAutomatically
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
-    [self defineControl:_clickToSelectCommand
-                    key:kPreferenceKeyClickToSelectCommand
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
     [self defineControl:_wrapDroppedFilenamesInQuotesWhenPasting

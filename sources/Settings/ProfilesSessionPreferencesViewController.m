@@ -111,6 +111,41 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
     PreferenceInfo *_progressBarHeightInfo;
 }
 
+- (NSPopUpButton *)promptBeforeClosing { return _promptBeforeClosing; }
+- (NSButton *)warnAboutShortLivedSessions { return _warnAboutShortLivedSessions; }
+- (NSTextField *)undoTimeout { return _undoTimeout; }
+- (NSPopUpButton *)onEndAction { return _onEndAction; }
+- (NSTableView *)jobsTable { return _jobsTable; }
+- (NSButton *)addJob { return _addJob; }
+- (NSButton *)removeJob { return _removeJob; }
+- (NSButton *)autoLog { return _autoLog; }
+- (NSPopUpButton *)loggingStyle { return _loggingStyle; }
+- (NSTextField *)logDir { return _logDir; }
+- (NSImageView *)logDirWarning { return _logDirWarning; }
+- (NSButton *)changeLogDir { return _changeLogDir; }
+- (NSTextField *)logFilenameFormat { return _logFilenameFormat; }
+- (NSButton *)archive { return _archive; }
+- (NSTextField *)archiveDir { return _archiveDir; }
+- (NSImageView *)archiveDirWarning { return _archiveDirWarning; }
+- (NSButton *)changeArchiveDir { return _changeArchiveDir; }
+- (NSButton *)timestampsEnabled { return _timestampsEnabled; }
+- (NSTextField *)showTimestampsLabel { return _showTimestampsLabel; }
+- (NSPopUpButton *)showTimestampsPopup { return _showTimestampsPopup; }
+- (NSButton *)openPasswordManagerAutomatically { return _openPasswordManagerAutomatically; }
+- (NSButton *)statusBarEnabled { return _statusBarEnabled; }
+- (NSButton *)configureStatusBar { return _configureStatusBar; }
+- (NSButton *)enableProgressBars { return _enableProgressBars; }
+- (NSTextField *)progressBarHeight { return _progressBarHeight; }
+- (NSStepper *)progressBarHeightStepper { return _progressBarHeightStepper; }
+- (NSPopUpButton *)progressBarColorScheme { return _progressBarColorScheme; }
+- (NSButton *)sendCodeWhenIdle { return _sendCodeWhenIdle; }
+- (NSTextField *)idleCode { return _idleCode; }
+- (NSTextField *)idlePeriod { return _idlePeriod; }
+- (NSButton *)reduceFlicker { return _reduceFlicker; }
+- (NSButton *)defaultPaneLocked { return _defaultPaneLocked; }
+- (NSButton *)bufferByDefault { return _bufferByDefault; }
+- (NSTextField *)bufferWarning { return _bufferWarning; }
+
 - (void)dealloc {
     _jobsTable.dataSource = nil;
     _jobsTable.delegate = nil;
@@ -449,6 +484,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
                        phrases:@[]
                            key:nil];
     [self commitControls];
+    [self installProfileLayout];
 }
 
 - (void)populateProgressBarColorSchemes {
@@ -484,6 +520,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
 
 - (void)updateBufferWarning {
     _bufferWarning.hidden = !([self boolForKey:KEY_BUFFER_BY_DEFAULT] && ![self hasUnbufferTrigger]);
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (BOOL)hasUnbufferTrigger {
@@ -828,6 +865,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
 - (void)updateArchiveDirWarning {
     if ([_archive state] == NSControlStateValueOff) {
         _archiveDirWarning.hidden = YES;
+        [self.view it_invalidateProfileFormLayout];
         return;
     }
     _archiveDirWarning.hidden = NO;
@@ -836,6 +874,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
     } else {
         _archiveDirWarning.image = [NSImage it_imageNamed:@"WarningSign" forClass:self.class];
     }
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (BOOL)archiveDirIsWritable {
@@ -872,6 +911,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
 - (void)updateLogDirWarning {
     if ([_autoLog state] == NSControlStateValueOff) {
         _logDirWarning.hidden = YES;
+        [self.view it_invalidateProfileFormLayout];
         return;
     }
     _logDirWarning.hidden = NO;
@@ -880,6 +920,7 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
     } else {
         _logDirWarning.image = [NSImage it_imageNamed:@"WarningSign" forClass:self.class];
     }
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (BOOL)logDirIsWritable {

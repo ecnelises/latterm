@@ -90,11 +90,6 @@ static vector_float4 VectorForColor(NSColor *color) {
                                        (float)selectionColor.greenComponent,
                                        (float)selectionColor.blueComponent,
                                        1.0);
-    NSArray<NSColor *> *scoc = drawingHelper.selectedCommandOutlineColors;
-    _selectedCommandOutlineColors[0] = scoc[0].vector;
-    _selectedCommandOutlineColors[1] = scoc[1].vector;
-    _shadeColor = drawingHelper.shadeColor.vector;
-    _shadeColor.xyz *= _shadeColor.w;
     const CGFloat vmargin = [iTermPreferences topBottomMargins];
     _buttonsBackgroundRects = [drawingHelper.buttonsBackgroundRects shiftedBy:NSMakePoint(0, -textView.visibleRect.origin.y - vmargin)];
 
@@ -174,8 +169,6 @@ static vector_float4 VectorForColor(NSColor *color) {
         _offscreenCommandLineOutlineColor = [textView.drawingHelper.offscreenCommandLineOutlineColor colorUsingColorSpace:_colorSpace];
     }
 
-    _selectedCommandRegion = drawingHelper.selectedCommandRegion;
-    _selectedCommandRegion.location += drawingHelper.totalScrollbackOverflow;
     _totalScrollbackOverflow = drawingHelper.totalScrollbackOverflow;
 
     // All row-build inputs are populated. Derive a per-textview config
