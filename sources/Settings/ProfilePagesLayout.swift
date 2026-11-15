@@ -195,7 +195,7 @@ extension ProfilesGeneralPreferencesViewController {
     @objc func installProfileLayout() {
         let sections: [ProfileSectionCard] = [
             ProfileSectionCard(
-                title: ProfilePageHelpers.localizedSection("Identity"),
+                title: ProfilePageHelpers.localizedSection("Profile Identity"),
                 rows: [
                     ProfileFormRow(label: profileNameFieldLabel,
                                    content: .single(profileNameField, fillsWidth: true, minWidth: 140, maxWidth: .greatestFiniteMagnitude)),
@@ -281,24 +281,38 @@ extension ProfilesGeneralPreferencesViewController {
                         label: directoryLabel,
                         content: .custom(hostedViews: [initialDirectoryType, customDirectory, editAdvancedConfigButton]) { x, availableWidth, y, _ in
                             let matrixSize = self.initialDirectoryType.fittingSize
-                            let matrixW = min(availableWidth, max(160, ceil(matrixSize.width)))
-                            let matrixH = max(72, ceil(matrixSize.height))
+                            let naturalMatrixW = (self.initialDirectoryType.cells.map { ceil($0.cellSize.width) }.max() ?? 160) + 8
+                            let matrixW = min(availableWidth, max(132, naturalMatrixW))
+                            let matrixH = max(84, ceil(matrixSize.height))
                             self.initialDirectoryType.frame = NSRect(x: x, y: y, width: matrixW, height: matrixH)
 
                             var bottomY = y + matrixH
-                            let canPlaceSideBySide = (matrixW + 12 + 150 <= availableWidth)
+                            let sideRowMaxW = (2..<self.initialDirectoryType.cells.count)
+                                .map { ceil(self.initialDirectoryType.cells[$0].cellSize.width) }
+                                .max() ?? matrixW
+                            let sideAnchorW = min(matrixW, max(96, sideRowMaxW + 12))
+                            let canPlaceSideBySide = (sideAnchorW + 12 + 150 <= availableWidth)
                             if canPlaceSideBySide {
-                                let fieldX = x + matrixW + 12
-                                let fieldW = max(120, availableWidth - matrixW - 12)
+                                let fieldX = x + sideAnchorW + 8
+                                let fieldW = max(120, availableWidth - sideAnchorW - 8)
+                                let rowCount = self.initialDirectoryType.numberOfRows
+                                let dirRowY: CGFloat = rowCount > 2
+                                    ? self.initialDirectoryType.cellFrame(atRow: 2, column: 0).midY - 11
+                                    : 42
+                                let advRowMidY: CGFloat = rowCount > 3
+                                    ? self.initialDirectoryType.cellFrame(atRow: 3, column: 0).midY
+                                    : matrixH - 11
                                 if !self.customDirectory.isHidden {
-                                    self.customDirectory.frame = NSRect(x: fieldX, y: y + 22, width: fieldW, height: 22)
+                                    self.customDirectory.frame = NSRect(x: fieldX, y: y + max(0, round(dirRowY)), width: fieldW, height: 22)
                                 }
                                 if !self.editAdvancedConfigButton.isHidden {
                                     let btnSize = ProfileFormMeasurement.measureControl(self.editAdvancedConfigButton, maxWidth: fieldW)
+                                    let btnY = y + max(0, round(advRowMidY - btnSize.height * 0.5))
                                     self.editAdvancedConfigButton.frame = NSRect(x: fieldX,
-                                                                                 y: y + matrixH - btnSize.height,
+                                                                                 y: btnY,
                                                                                  width: btnSize.width,
                                                                                  height: btnSize.height)
+                                    bottomY = max(bottomY, btnY + btnSize.height)
                                 }
                             } else {
                                 if !self.customDirectory.isHidden {
@@ -792,8 +806,12 @@ extension ProfilesWindowPreferencesViewController {
                                 if v is NSTextField && (v as? NSTextField)?.isEditable == true {
                                     w = 54
                                     h = 22
-                                } else if v is NSPopUpButton {
-                                    w = min(availableWidth, max(88, ceil(v.fittingSize.width)))
+                                } else if let popup = v as? NSPopUpButton {
+                                    let selectedTitle = popup.selectedItem?.title ?? popup.title
+                                    let titleW = ceil((selectedTitle as NSString).size(withAttributes: [
+                                        .font: popup.font ?? NSFont.systemFont(ofSize: NSFont.systemFontSize)
+                                    ]).width)
+                                    w = min(availableWidth, max(68, min(ceil(popup.fittingSize.width), titleW + 40)))
                                     h = 24
                                 } else {
                                     let fit = v.fittingSize
@@ -1174,5 +1192,123 @@ extension ProfilesAdvancedPreferencesViewController {
         ]
 
         ProfilePageHelpers.installDocument(sections, on: view)
+    }
+}
+
+
+/// Uses the same responsive SwiftUI form for the global keyboard preferences.
+@objc(iTermKeyboardFormLayout)
+final class KeyboardFormLayout: NSObject {
+    @objc static func install(in tabs: NSTabView, controls: [String: NSView]) {
+        func control<T: NSView>(_ key: String) -> T {
+            guard let view = controls[key] as? T else {
+                it_fatalError("Missing keyboard editor: \(key)")
+            }
+            return view
+        }
+        func field(_ title: String) -> NSTextField {
+            NSTextField(labelWithString: NSLocalizedString(title, comment: "Keyboard form label"))
+        }
+        func single(_ key: String, label: String? = nil, fillsWidth: Bool = true, maxWidth: CGFloat = 320) -> ProfileFormRow {
+            ProfileFormRow(label: label.map { control($0) },
+                           content: .single(control(key), fillsWidth: fillsWidth, minWidth: 60, maxWidth: maxWidth))
+        }
+        func button(_ key: String, label: NSTextField? = nil) -> ProfileFormRow {
+            ProfileFormRow(label: label,
+                           content: .single(control(key), fillsWidth: false, minWidth: 60, maxWidth: 320))
+        }
+        func checkbox(_ key: String, trailing: [NSView] = [], indent: CGFloat = 0, suppressSeparatorAfter: Bool = false) -> ProfileFormRow {
+            ProfileFormRow(content: .checkbox(control(key), trailing: trailing),
+                           indent: indent,
+                           suppressSeparatorAfter: suppressSeparatorAfter)
+        }
+        let known = Set(controls.values.map(ObjectIdentifier.init))
+        func unownedHelpButtons(in root: NSView?) -> [NSButton] {
+            guard let root, !known.contains(ObjectIdentifier(root)) else { return [] }
+            if let btn = root as? NSButton, btn.bezelStyle == .helpButton || btn is PopoverHelpButton {
+                return [btn]
+            }
+            return root.subviews.flatMap { unownedHelpButtons(in: $0) }
+        }
+        func unownedNotes(in root: NSView?) -> [NSTextField] {
+            guard let root, !known.contains(ObjectIdentifier(root)) else { return [] }
+            if let lbl = root as? NSTextField, !lbl.isEditable, lbl.stringValue.count > 40 {
+                return [lbl]
+            }
+            return root.subviews.flatMap { unownedNotes(in: $0) }
+        }
+
+        let mapping: NSView = control("mapping")
+        let global: NSView = control("global")
+        let globalViews = global is NSButton ? [global] : global.subviews
+        let navHelp = tabs.tabViewItems.indices.contains(1) ? unownedHelpButtons(in: tabs.tabViewItems[1].view) : []
+        let hotkeyNotes = tabs.tabViewItems.indices.contains(2) ? unownedNotes(in: tabs.tabViewItems[2].view) : []
+
+        var claimed = known
+        navHelp.forEach { claimed.insert(ObjectIdentifier($0)) }
+        hotkeyNotes.forEach { claimed.insert(ObjectIdentifier($0)) }
+
+        var groups: [[ProfileFormRow]] = [
+            [ProfileFormRow(content: .custom(hostedViews: [mapping]) { x, width, y, _ in
+                let height = ProfilePageHelpers.naturalTableContainerHeight(in: mapping,
+                    minHeight: 240, maxHeight: 400, extraChrome: 40)
+                mapping.frame = NSRect(x: x, y: y, width: width, height: height)
+                return height
+            }, fullCardWidth: true),
+             checkbox("physical"),
+             button("repair"),
+             ProfileFormRow(label: field("Leader:"), content: .wrappingLine([
+                .fill(control("leader"), minWidth: 120, maxWidth: 260),
+                .fixed(control("leaderHelp"), width: 22)]))],
+            [single("window", label: "windowLabel", fillsWidth: false, maxWidth: 260),
+             single("tab", label: "tabLabel", fillsWidth: false, maxWidth: 260),
+             single("pane", label: "paneLabel", fillsWidth: false, maxWidth: 260),
+             checkbox("emulate", trailing: navHelp)],
+            [checkbox("hotkeyEnabled", suppressSeparatorAfter: true),
+             ProfileFormRow(label: control("hotkeyLabel"),
+                            content: .single(control("hotkey"), fillsWidth: true, minWidth: 120, maxWidth: 280),
+                            helperViews: [control("warning")]),
+             ProfileFormRow(label: field("Open Quickly hotkey:"),
+                            content: .single(control("quickly"), fillsWidth: true, minWidth: 120, maxWidth: 280),
+                            helperViews: hotkeyNotes),
+             button("configure", label: field("Hotkey Window:"))],
+            [single("leftControl", label: "leftControlLabel", fillsWidth: false, maxWidth: 260),
+             single("rightControl", label: "rightControlLabel", fillsWidth: false, maxWidth: 260),
+             single("leftOption", label: "leftOptionLabel", fillsWidth: false, maxWidth: 260),
+             single("rightOption", label: "rightOptionLabel", fillsWidth: false, maxWidth: 260),
+             single("leftCommand", label: "leftCommandLabel", fillsWidth: false, maxWidth: 260),
+             single("rightCommand", label: "rightCommandLabel", fillsWidth: false, maxWidth: 260),
+             single("function", label: "functionLabel", fillsWidth: false, maxWidth: 260),
+             ProfileFormRow(content: .wrappingLine(globalViews.map { .natural($0) }), suppressSeparatorAfter: true),
+             button("reset")],
+            [ProfileFormRow(content: .wrappingLine([
+                .natural(control("force")),
+                .natural(control("locale"), minWidth: 140, maxWidth: 280)
+             ]), suppressSeparatorAfter: true),
+             checkbox("once", indent: 20),
+             checkbox("symbolic")]
+        ]
+        // Preserve any remaining help actions or explanatory text that have no controller outlet.
+        func supplementalRows(in root: NSView) -> [ProfileFormRow] {
+            if claimed.contains(ObjectIdentifier(root)) { return [] }
+            if let btn = root as? NSButton,
+               btn.bezelStyle == .helpButton || btn is PopoverHelpButton {
+                return [ProfileFormRow(content: .single(btn, fillsWidth: false, minWidth: 22, maxWidth: 22))]
+            }
+            if let label = root as? NSTextField, !label.isEditable, label.stringValue.count > 60 {
+                return [ProfileFormRow(content: .note(label))]
+            }
+            return root.subviews.flatMap { supplementalRows(in: $0) }
+        }
+        for (index, item) in tabs.tabViewItems.enumerated() {
+            if let root = item.view, groups.indices.contains(index) {
+                groups[index].append(contentsOf: supplementalRows(in: root))
+            }
+        }
+        it_assert(tabs.numberOfTabViewItems == groups.count, "Keyboard form categories must match their controllers")
+        for (item, rows) in zip(tabs.tabViewItems, groups) {
+            guard let root = item.view else { continue }
+            ProfilePageHelpers.installDocument([ProfileSectionCard(title: nil, rows: rows)], on: root)
+        }
     }
 }

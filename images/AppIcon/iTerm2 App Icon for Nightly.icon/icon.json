@@ -1,7 +1,7 @@
 {
   "color-space-for-untagged-svg-colors" : "display-p3",
   "fill" : {
-    "solid" : "srgb:0.06667,0.06667,0.06667,1.00000"
+    "solid" : "srgb:0.96078,0.94902,0.92549,1.00000"
   },
   "groups" : [
     {
@@ -16,7 +16,7 @@
             }
           ],
           "glass" : false,
-          "image-name" : "foreground.png",
+          "image-name" : "foreground-light.png",
           "name" : "foreground",
           "position" : {
             "scale" : 1.2427,
@@ -24,7 +24,13 @@
               0,
               0
             ]
-          }
+          },
+          "image-name-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "foreground.png"
+            }
+          ]
         }
       ],
       "lighting" : "combined",
@@ -43,5 +49,13 @@
     "squares" : [
       "macOS"
     ]
-  }
+  },
+  "fill-specializations" : [
+    {
+      "appearance" : "dark",
+      "value" : {
+        "solid" : "srgb:0.06667,0.06667,0.06667,1.00000"
+      }
+    }
+  ]
 }

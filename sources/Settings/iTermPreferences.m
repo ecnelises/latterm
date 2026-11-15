@@ -606,8 +606,8 @@ static void iTermPreferencesRefreshFastCachesForKey(NSString *key);
                   kPreferenceKeyNeverBlockSystemShutdown: @NO,
 
                   kPreferenceKeyMenuActionImages: @YES,
-                  kPreferenceKeyLightAppIcon: @"paper",
-                  kPreferenceKeyDarkAppIcon: @"ink",
+                  kPreferenceKeyLightAppIcon: @"glyph-hash-paper",
+                  kPreferenceKeyDarkAppIcon: @"glyph-hash",
               };
     }
     return dict;

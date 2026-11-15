@@ -185,6 +185,10 @@ class SettingsLocalizationTests(unittest.TestCase):
                 key = json.loads('"' + literal + '"')
                 if key not in localized:
                     missing.append(f"{path.relative_to(ROOT)}: {key}")
+            for literal in re.findall(r'localizedSection\(\s*"((?:[^"\\]|\\.)*)"\s*\)', source):
+                key = json.loads('"' + literal + '"')
+                if key not in localized:
+                    missing.append(f"{path.relative_to(ROOT)}: {key}")
         self.assertEqual(missing, [])
 
     def test_trigger_editor_row_labels_are_translated(self):

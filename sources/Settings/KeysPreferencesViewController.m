@@ -266,6 +266,7 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
     [self updateKeyboardLocaleEnabled];
 
     [self updateDuplicateWarning];
+    [self updateRepairKeyMappingsButtonVisibility];
 
     [self defineControl:_emulateUSKeyboard
                     key:kPreferenceKeyEmulateUSKeyboard
@@ -276,6 +277,28 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
                    displayName:@"Global key bindings"
                        phrases:@[ @"mapping", @"shortcuts", @"touch bar", @"preset", @"xterm", @"natural", @"terminal.app compatibility", @"numeric keypad" ]
                            key:nil];
+
+    [iTermKeyboardFormLayout installIn:_tabView controls:@{
+        @"mapping": _keyMappingView, @"leader": _leader, @"leaderHelp": _leaderHelpButton,
+        @"physical": _languageAgnosticKeyBindings, @"repair": _repairKeyMappingsButton,
+        @"window": _switchWindowModifierButton, @"windowLabel": _switchWindowModifierButtonLabel,
+        @"tab": _switchTabModifierButton, @"tabLabel": _switchTabModifierButtonLabel,
+        @"pane": _switchPaneModifierButton, @"paneLabel": _switchPaneModifierButtonLabel,
+        @"emulate": _emulateUSKeyboard,
+        @"hotkeyEnabled": _hotkeyEnabled, @"hotkey": _hotkeyField,
+        @"hotkeyLabel": _hotkeyLabel, @"warning": _shortcutOverloaded,
+        @"quickly": _openQuicklyHotkeyField, @"configure": _configureHotKeyWindow,
+        @"leftControl": _leftControlButton, @"leftControlLabel": _leftControlButtonLabel,
+        @"rightControl": _rightControlButton, @"rightControlLabel": _rightControlButtonLabel,
+        @"leftOption": _leftOptionButton, @"leftOptionLabel": _leftOptionButtonLabel,
+        @"rightOption": _rightOptionButton, @"rightOptionLabel": _rightOptionButtonLabel,
+        @"leftCommand": _leftCommandButton, @"leftCommandLabel": _leftCommandButtonLabel,
+        @"rightCommand": _rightCommandButton, @"rightCommandLabel": _rightCommandButtonLabel,
+        @"function": _functionButton, @"functionLabel": _functionButtonLabel,
+        @"reset": _resetRemappingButton, @"global": _remapModifiersGlobally,
+        @"force": _forceKeyboard, @"locale": _keyboardLocale,
+        @"once": _forceKeyboardOncePerSession, @"symbolic": _allowSymbolicHotKeys
+    }];
 
 }
 
@@ -353,7 +376,11 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
 
 - (void)updateDuplicateWarning {
     NSArray<iTermHotKeyDescriptor *> *descriptors = [[iTermHotKeyController sharedInstance] descriptorsForProfileHotKeysExcept:nil];
-    _shortcutOverloaded.hidden = ![descriptors containsObject:[self hotkeyDescriptor]];
+    const BOOL shouldHide = ![descriptors containsObject:[self hotkeyDescriptor]];
+    if (_shortcutOverloaded.hidden != shouldHide) {
+        _shortcutOverloaded.hidden = shouldHide;
+        [self.view it_invalidateProfileFormLayout];
+    }
 }
 
 - (void)ensureUniquenessOfModifierForButton:(NSPopUpButton *)buttonThatChanged
@@ -861,6 +888,7 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
 
     // Hide the button
     _repairKeyMappingsButton.hidden = YES;
+    [self.view it_invalidateProfileFormLayout];
 
     // Notify that key bindings changed
     [[NSNotificationCenter defaultCenter] postNotificationName:kKeyBindingsChangedNotification

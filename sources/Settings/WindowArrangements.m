@@ -79,6 +79,10 @@ static NSString *const kSavedArrangementWillChangeNotification = @"kSavedArrange
                                                  name:kSavedArrangementWillChangeNotification
                                                object:nil];
     if (_workgroupsViewController && _workgroupsContainer) {
+        if (_workgroupsContainer.superview) {
+            _workgroupsContainer.frame = _workgroupsContainer.superview.bounds;
+            _workgroupsContainer.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+        }
         [_workgroupsViewController defineControlsInContainerView:_workgroupsContainer];
     }
 }

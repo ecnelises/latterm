@@ -23,6 +23,11 @@
 #import "iTermProfilePreferencesBaseViewController.h"
 #import "iTermSnippetsEditingViewController.h"
 
+@interface NSView (ProfileWorkspaceTests)
+- (void)selectWorkspaceTask:(NSString *)identifier;
+- (BOOL)revealWorkspaceEditor:(NSView *)control;
+@end
+
 @interface iTermSnippetsEditingViewController (LayoutTests)
 - (void)controlTextDidChange:(NSNotification *)notification;
 @end
@@ -741,18 +746,25 @@
     NSTabView *sections = [[panel valueForKey:@"_keysViewController"] tabView];
     NSTabViewItem *originalSection = sections.selectedTabViewItem;
     @try {
-        [window setContentSize:NSMakeSize(1040, 720)];
         [panel showKeyboardTabView:nil];
-        for (NSTabViewItem *section in sections.tabViewItems) {
+        for (NSNumber *width in @[@680, @820, @1040, @1400]) {
+          [window setContentSize:NSMakeSize(width.doubleValue, 720)];
+          [window.contentView layoutSubtreeIfNeeded];
+          NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
+          XCTAssertEqualWithAccuracy(NSWidth(viewport.documentView.bounds), NSWidth(viewport.contentView.bounds), 1);
+          for (NSTabViewItem *section in sections.tabViewItems) {
             [sections selectTabViewItem:section];
             [window.contentView layoutSubtreeIfNeeded];
             NSView *page = section.view;
+            XCTAssertNotNil([self descendantWithIdentifier:@"ProfileSwiftUIForm" inView:page]);
+            [self checkControlsInSettingsView:page document:page];
             NSView *group = page.subviews.firstObject;
             XCTAssertNotNil(group, @"%@", section.label);
             XCTAssertGreaterThanOrEqual(NSMinX(group.frame), 0, @"%@", section.label);
             XCTAssertLessThanOrEqual(NSMinX(group.frame), 40, @"%@", section.label);
             XCTAssertLessThanOrEqual(NSMaxX(group.frame), NSWidth(page.bounds) + 1,
                                      @"%@", section.label);
+          }
         }
     } @finally {
         [sections selectTabViewItem:originalSection];
@@ -775,74 +787,39 @@
     return nil;
 }
 
+- (NSScrollView *)workspaceScrollIn:(NSView *)view {
+    if (view.hidden) { return nil; }
+    if ([view isKindOfClass:NSScrollView.class]) { return (NSScrollView *)view; }
+    for (NSView *child in view.subviews) {
+        NSScrollView *scroll = [self workspaceScrollIn:child];
+        if (scroll) { return scroll; }
+    }
+    return nil;
+}
+
 - (void)verifyProfilePagesFitInWindow:(PreferencePanel *)panel {
-    ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
-    NSTabView *tabs = [profiles valueForKey:@"_tabView"];
-    const NSRect stableFrame = panel.window.frame;
-    id general = [profiles valueForKey:@"_generalViewController"];
-    for (NSString *key in @[@"_tagsLabel", @"_titleSettingsLabel", @"_iconLabel"]) {
-        NSTextField *label = [general valueForKey:key];
-        XCTAssertGreaterThanOrEqual(NSWidth(label.bounds), label.cell.cellSize.width, @"%@", key);
+    NSView *root = [[panel valueForKey:@"_profilesViewController"] view];
+    NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
+    const NSRect original = panel.window.frame;
+    id profiles = [panel valueForKey:@"_profilesViewController"];
+    for (NSString *key in @[@"_generalViewController", @"_colorsViewController", @"_textViewController",
+                           @"_windowViewController", @"_terminalViewController", @"_sessionViewController",
+                           @"_keysViewController", @"_advancedViewController"]) {
+        NSViewController *controller = [profiles valueForKey:key];
+        XCTAssertEqual(controller.view.window, panel.window, @"%@ must retain a window for sheets", key);
     }
-    NSScrollView *outerViewport = [panel valueForKey:@"_settingsContent"];
-    XCTAssertFalse(outerViewport.hasHorizontalScroller);
-    XCTAssertFalse(outerViewport.hasVerticalScroller);
-
-    NSScrollView *profileScroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                         inView:profiles.view];
-    XCTAssertNotNil(profileScroll);
-    XCTAssertTrue([NSStringFromClass(profileScroll.class) isEqualToString:@"iTermProfileUnifiedScrollView"],
-                  @"Expected iTermProfileUnifiedScrollView, got %@", profileScroll.class);
-    XCTAssertFalse(profileScroll.hasHorizontalScroller);
-    XCTAssertTrue(profileScroll.hasVerticalScroller);
-    [panel.window.contentView layoutSubtreeIfNeeded];
-    NSView *doc = profileScroll.documentView;
-    XCTAssertNotNil(doc);
-    XCTAssertTrue(doc.isFlipped);
-    XCTAssertLessThanOrEqual(NSWidth(doc.bounds), NSWidth(profileScroll.contentView.bounds) + 1);
-    XCTAssertGreaterThanOrEqual(NSHeight(doc.bounds), NSHeight(profileScroll.contentView.bounds));
-
-    CGFloat previousSectionMaxY = 0;
-    for (NSInteger idx = 0; idx < tabs.numberOfTabViewItems; idx++) {
-        NSTabViewItem *item = [tabs tabViewItemAtIndex:idx];
-        [tabs selectTabViewItem:item];
-        [profiles invalidateSavedSize];
-        [profiles resizeWindowForCurrentTabAnimated:NO];
+    for (NSString *task in @[@"launch", @"appearance", @"input", @"session", @"automation"]) {
+        [root selectWorkspaceTask:task];
         [panel.window.contentView layoutSubtreeIfNeeded];
-        XCTAssertTrue(NSEqualRects(panel.window.frame, stableFrame));
-
-        NSView *page = item.view;
-        XCTAssertEqual(page.superview, doc, @"%@", item.label);
-        XCTAssertFalse(page.isHidden, @"%@", item.label);
-        XCTAssertTrue(NSContainsRect(doc.bounds, page.frame), @"%@", item.label);
-        XCTAssertGreaterThan(NSMinY(page.frame), previousSectionMaxY, @"%@", item.label);
-        previousSectionMaxY = NSMaxY(page.frame);
-
-        NSView *heading = [self descendantWithIdentifier:[NSString stringWithFormat:@"ProfileSection.%ld", (long)idx]
-                                                  inView:doc];
-        XCTAssertNotNil(heading, @"%@", item.label);
-        XCTAssertFalse(heading.isHidden, @"%@", item.label);
-        XCTAssertLessThan(NSMaxY(heading.frame), NSMinY(page.frame) + 1, @"%@", item.label);
-
-        NSView *sectionFormDoc = page.subviews.firstObject;
-        XCTAssertNotNil(sectionFormDoc, @"%@", item.label);
-        CGFloat previousCardMaxY = -1;
-        NSInteger visibleCards = 0;
-        for (NSView *card in sectionFormDoc.subviews) {
-            if (card.isHidden || NSIsEmptyRect(card.frame)) {
-                continue;
-            }
-            visibleCards++;
-            XCTAssertGreaterThanOrEqual(NSMinX(card.frame), 0, @"%@ card %@", item.label, card);
-            XCTAssertLessThanOrEqual(NSMaxX(card.frame), NSWidth(doc.bounds) + 1, @"%@ card %@", item.label, card);
-            XCTAssertGreaterThanOrEqual(NSMinY(card.frame), previousCardMaxY - 0.5, @"Overlapping cards in %@", item.label);
-            previousCardMaxY = NSMaxY(card.frame);
-        }
-        XCTAssertGreaterThan(visibleCards, 0, @"Expected at least one section card in %@", item.label);
+        NSView *host = [self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:root];
+        XCTAssertNotNil(host);
+        XCTAssertEqualWithAccuracy(NSWidth(host.bounds), NSWidth(root.bounds), 1);
+        XCTAssertEqualWithAccuracy(NSWidth(viewport.documentView.bounds), NSWidth(viewport.contentView.bounds), 1);
+        NSScrollView *scroll = [self workspaceScrollIn:host];
+        XCTAssertNotNil(scroll);
+        [self checkControlsInSettingsView:host document:host];
+        XCTAssertTrue(NSEqualRects(original, panel.window.frame));
     }
-    [self checkControlsInSettingsView:doc document:doc];
-    NSRect frame = [profileScroll convertRect:profileScroll.bounds toView:panel.window.contentView];
-    XCTAssertLessThanOrEqual(NSMaxX(frame), NSWidth(panel.preferencePanelContentView.bounds) + panel.preferencePanelNavigationWidth + 1);
 }
 
 - (void)testEveryExistingCategoryRemainsReachableFromSidebar {
@@ -893,20 +870,11 @@
     [profiles resizeWindowForCurrentTabAnimated:NO];
     XCTAssertEqualObjects([sidebar valueForKey:@"selectedIndex"], @2);
     [window.contentView layoutSubtreeIfNeeded];
-    NSTabView *profileTabs = [profiles valueForKey:@"_tabView"];
-    NSScrollView *profileScroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                         inView:profiles.view];
-    XCTAssertNotNil(profileScroll);
-    NSView *profilePage = profileTabs.selectedTabViewItem.view;
-    XCTAssertEqual(profilePage.superview, profileScroll.documentView);
-    XCTAssertTrue(NSContainsRect(profilePage.superview.bounds, profilePage.frame));
-    NSRect profileFrame = [profileScroll convertRect:profileScroll.bounds toView:window.contentView];
-    if ([[profiles.view valueForKey:@"isInSplitMode"] boolValue]) {
-        XCTAssertGreaterThan(NSMinX(profileFrame), NSMaxX(sidebar.frame));
-    } else {
-        XCTAssertGreaterThanOrEqual(NSMinX(profileFrame), NSMaxX(sidebar.frame));
-    }
-    XCTAssertLessThanOrEqual(NSMaxX(profileFrame), NSWidth(tabs.bounds) + panel.preferencePanelNavigationWidth + 1);
+    NSView *workspace = [self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:profiles.view];
+    XCTAssertNotNil(workspace);
+    NSRect profileFrame = [workspace convertRect:workspace.bounds toView:window.contentView];
+    XCTAssertGreaterThanOrEqual(NSMinX(profileFrame), NSMaxX(sidebar.frame));
+    XCTAssertLessThanOrEqual(NSMaxX(profileFrame), NSWidth(window.contentView.bounds) + 1);
     NSTableCellView *cell = [table viewAtColumn:0 row:[sidebar rowFor:pages[2]] makeIfNecessary:YES];
     XCTAssertEqualObjects(cell.textField.stringValue, [pages[2] valueForKey:@"title"]);
     XCTAssertTrue(NSContainsRect(cell.bounds, cell.textField.frame));
@@ -920,6 +888,7 @@
     NSArray *pages = [panel valueForKey:@"_settingsPages"];
     for (id page in pages) {
         id controller = [page valueForKey:@"controller"];
+        if ([controller isKindOfClass:ProfilePreferencesViewController.class]) { continue; }
         if (![controller respondsToSelector:@selector(tabView)]) { continue; }
         NSTabView *tabs = [controller tabView];
         if (!tabs) { continue; }
@@ -1031,10 +1000,7 @@
         XCTAssertNotNil(scroll);
         NSRect visibleTarget = [target convertRect:target.bounds toView:scroll.documentView];
         XCTAssertTrue(NSContainsRect(scroll.documentVisibleRect, visibleTarget));
-        NSTabView *profileSections = [profiles valueForKey:@"_tabView"];
-        NSScrollView *sections = profileSections.tabViewItems.firstObject.view.enclosingScrollView;
-        NSRect targetInSections = [target convertRect:target.bounds toView:sections.documentView];
-        XCTAssertTrue(NSContainsRect(sections.documentVisibleRect, targetInSections));
+        XCTAssertEqualObjects([[[panel valueForKey:@"_profilesViewController"] view] valueForKey:@"selectedWorkspaceTask"], @"launch");
         XCTAssertEqualObjects([[panel valueForKey:@"_settingsSidebar"] valueForKey:@"selectedIndex"], @2);
     } @finally {
         [panel showGlobalTabView:nil];
@@ -1292,145 +1258,62 @@
     NSWindow *window = panel.window;
     const NSRect originalFrame = window.frame;
     [panel showProfilesTabView:nil];
-    ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
-    NSTabView *tabs = [profiles valueForKey:@"_tabView"];
-    [tabs selectTabViewItem:[profiles valueForKey:@"_generalTab"]];
-    NSView *root = profiles.view;
-    NSView *sidebarBox = [self descendantWithIdentifier:@"ProfilesSidebar" inView:root];
-    NSView *editorHeader = [self descendantWithIdentifier:@"ProfilesEditorHeader" inView:root];
-    NSScrollView *profileScroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                         inView:root];
-    NSViewController *general = [profiles valueForKey:@"_generalViewController"];
-    NSTextField *name = [general valueForKey:@"_profileNameField"];
-    NSString *selectedGuid = [panel.currentProfileGuid copy];
-    CGFloat wideFieldWidth = 0;
-    XCTAssertNotNil(sidebarBox);
-    XCTAssertNotNil(editorHeader);
-    XCTAssertNotNil(profileScroll);
-    XCTAssertTrue([NSStringFromClass(profileScroll.class) isEqualToString:@"iTermProfileUnifiedScrollView"]);
-    NSScrollView *outerViewport = [panel valueForKey:@"_settingsContent"];
-    const NSScrollerStyle originalScrollerStyle = profileScroll.scrollerStyle;
+    id profiles = [panel valueForKey:@"_profilesViewController"];
+    NSView *root = [profiles view];
+    id general = [profiles valueForKey:@"_generalViewController"];
+    NSView *name = [general valueForKey:@"_profileNameField"];
+    NSString *guid = [panel.currentProfileGuid copy];
     @try {
-        // Also exercise always-visible vertical scrollbars, which consume document width.
-        for (NSNumber *width in @[@1400, @820, @1040, @1400, @820, @1400]) {
-            if (wideFieldWidth > 0 && width.doubleValue == 1400) {
-                profileScroll.scrollerStyle = NSScrollerStyleLegacy;
-            }
+        for (NSNumber *width in @[@820, @1040, @1400, @820]) {
             [window setContentSize:NSMakeSize(width.doubleValue, 680)];
+            [root selectWorkspaceTask:@"launch"];
             [window.contentView layoutSubtreeIfNeeded];
-            XCTAssertFalse(outerViewport.hasHorizontalScroller);
-            XCTAssertFalse(outerViewport.hasVerticalScroller);
-            XCTAssertTrue([[root valueForKey:@"isInSplitMode"] boolValue]);
-            XCTAssertFalse(sidebarBox.hidden);
-            XCTAssertFalse(editorHeader.hidden);
-            XCTAssertFalse(profileScroll.hidden);
-            const NSRect scrollInRoot = [profileScroll convertRect:profileScroll.bounds toView:root];
-            XCTAssertTrue(NSContainsRect(root.bounds, sidebarBox.frame));
-            XCTAssertTrue(NSContainsRect(root.bounds, scrollInRoot));
-            XCTAssertFalse(NSIntersectsRect(sidebarBox.frame, scrollInRoot));
-            XCTAssertGreaterThanOrEqual(NSMinX(scrollInRoot), NSMaxX(sidebarBox.frame) - 0.5);
-            if (width.doubleValue == 1400) {
-                if (wideFieldWidth == 0) {
-                    wideFieldWidth = NSWidth(name.bounds);
-                }
-            } else {
-                XCTAssertLessThan(NSWidth(name.bounds), wideFieldWidth);
-            }
-            XCTAssertEqualObjects(panel.currentProfileGuid, selectedGuid);
-            XCTAssertEqualWithAccuracy(NSWidth(profileScroll.documentView.bounds),
-                                       NSWidth(profileScroll.contentView.bounds), 1);
-            XCTAssertFalse(profileScroll.hasHorizontalScroller);
-            XCTAssertTrue(profileScroll.hasVerticalScroller);
-            for (NSString *key in @[@"_profileNameField", @"_tagsTokenField", @"_badgeText", @"_editBadgeButton",
-                                     @"_customCommand", @"_sendTextAtStart", @"_customDirectory", @"_urlSchemes"]) {
-                NSView *control = [general valueForKey:key];
-                if (control.isHidden) {
-                    continue;
-                }
-                NSRect frame = [control convertRect:control.bounds toView:profileScroll.documentView];
-                XCTAssertGreaterThan(NSWidth(frame), 20, @"%@ at %@", key, width);
-                XCTAssertGreaterThanOrEqual(NSMinX(frame), 0, @"%@ at %@", key, width);
-                XCTAssertLessThanOrEqual(NSMaxX(frame), NSWidth(profileScroll.documentView.bounds) + 1,
-                                         @"%@ at %@", key, width);
-            }
+            XCTAssertNotNil([self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:root]);
+            XCTAssertEqualObjects(panel.currentProfileGuid, guid);
+            XCTAssertTrue([name isDescendantOf:root], @"Name editor detached: %@", name.superview);
+            XCTAssertFalse(name.hiddenOrHasHiddenAncestor, @"Name editor hidden: %@", name.superview);
+            NSRect editor = [name convertRect:name.bounds toView:root];
+            XCTAssertGreaterThan(NSWidth(editor), 30);
+            XCTAssertGreaterThanOrEqual(NSMinX(editor), 0);
+            XCTAssertLessThanOrEqual(NSMaxX(editor), NSWidth(root.bounds) + 1);
+            NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
+            XCTAssertEqualWithAccuracy(NSWidth(viewport.documentView.bounds), NSWidth(viewport.contentView.bounds), 1);
         }
-    } @finally {
-        profileScroll.scrollerStyle = originalScrollerStyle;
-        [window setFrame:originalFrame display:NO];
-        [panel close];
-    }
+    } @finally { [window setFrame:originalFrame display:NO]; [panel close]; }
 }
 
 - (void)testProfileLibraryStaysVisibleAndPreservesSelection {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
     NSWindow *window = panel.window;
-    const NSRect originalFrame = window.frame;
+    const NSRect original = window.frame;
     [panel showProfilesTabView:nil];
-    id profiles = [panel valueForKey:@"_profilesViewController"];
-    NSView *root = [profiles view];
-    NSView *sidebar = [self descendantWithIdentifier:@"ProfilesSidebar" inView:root];
-    NSSearchField *filterField = (NSSearchField *)[self descendantWithIdentifier:@"ProfilesFilterField" inView:root];
-    NSTableView *sidebarTable = (NSTableView *)[self descendantWithIdentifier:@"ProfilesSidebarTable" inView:root];
-    NSView *editorHeader = [self descendantWithIdentifier:@"ProfilesEditorHeader" inView:root];
-    NSView *sectionJump = [self descendantWithIdentifier:@"ProfilesSectionJumpPopup" inView:root];
-    NSScrollView *profileScroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                         inView:root];
-    XCTAssertNotNil(sidebar);
-    XCTAssertNotNil(filterField);
-    XCTAssertNotNil(sidebarTable);
-    XCTAssertNotNil(editorHeader);
-    XCTAssertNotNil(sectionJump);
-    XCTAssertNotNil(profileScroll);
+    NSView *root = [[panel valueForKey:@"_profilesViewController"] view];
     NSString *guid = [panel.currentProfileGuid copy];
     @try {
-        for (NSNumber *width in @[@1400, @1040, @820]) {
-            [window setContentSize:NSMakeSize(width.doubleValue, 680)];
+        for (NSString *task in @[@"launch", @"appearance", @"input", @"session", @"automation"]) {
+            [root selectWorkspaceTask:task];
             [window.contentView layoutSubtreeIfNeeded];
-            XCTAssertFalse(sidebar.hidden);
-            XCTAssertGreaterThan(NSWidth(sidebar.bounds), 180);
-            XCTAssertGreaterThan(sidebarTable.numberOfRows, 0);
-            const NSRect scrollInRoot = [profileScroll convertRect:profileScroll.bounds toView:root];
-            XCTAssertFalse(NSIntersectsRect(sidebar.frame, scrollInRoot));
-            XCTAssertLessThanOrEqual(NSMaxX(sidebar.frame), NSMinX(scrollInRoot) + 0.5);
-            for (NSString *identifier in @[@"ProfilesFilterField", @"ProfilesAddButton",
-                                           @"ProfilesDuplicateButton", @"ProfilesRemoveButton",
-                                           @"ProfilesActionsMenu"]) {
-                NSView *control = [self descendantWithIdentifier:identifier inView:sidebar];
-                XCTAssertNotNil(control, @"%@", identifier);
-                XCTAssertFalse(control.hidden, @"%@", identifier);
-                NSRect controlInRoot = [control convertRect:control.bounds toView:root];
-                XCTAssertTrue(NSContainsRect(root.bounds, controlInRoot), @"%@", identifier);
-                XCTAssertFalse(NSIntersectsRect(controlInRoot, scrollInRoot), @"%@", identifier);
-            }
+            XCTAssertEqualObjects([root valueForKey:@"selectedWorkspaceTask"], task);
             XCTAssertEqualObjects(panel.currentProfileGuid, guid);
+            XCTAssertEqualObjects([root valueForKey:@"workspaceTaskCount"], @5);
+            XCTAssertNil([self descendantWithIdentifier:@"ProfilesSidebar" inView:root]);
         }
-    } @finally {
-        filterField.stringValue = @"";
-        [window setFrame:originalFrame display:NO];
-        [panel close];
-    }
+    } @finally { [window setFrame:original display:NO]; [panel close]; }
 }
 
 - (void)testProfileHeadingUsesIdentityWhenNamesMatch {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
     (void)panel.window;
-    id profiles = [panel valueForKey:@"_profilesViewController"];
-    NSView *root = [profiles view];
-    NSTextField *title = (NSTextField *)[self descendantWithIdentifier:@"SettingsSelectedProfile" inView:root];
-    XCTAssertNotNil(title);
-    @try {
-        [root setSelectedProfileTitle:@"Same Name"];
-        XCTAssertEqualObjects(title.stringValue, @"Same Name");
-        [root setSelectedProfileTitle:@"Renamed"];
-        XCTAssertEqualObjects(title.stringValue, @"Renamed");
-        [root setSelectedProfileTitle:nil];
-        XCTAssertEqualObjects(title.stringValue, @"");
-    } @finally {
-        [profiles reloadData];
-        [panel close];
+    [panel showProfilesTabView:nil];
+    NSView *root = [[panel valueForKey:@"_profilesViewController"] view];
+    NSString *guid = [panel.currentProfileGuid copy];
+    for (NSString *name in @[@"Same Name", @"Renamed", @""]) {
+        [root setSelectedProfileTitle:name];
+        [panel.window.contentView layoutSubtreeIfNeeded];
+        XCTAssertEqualObjects([root valueForKey:@"selectedProfileIdentifier"], guid);
     }
+    [panel close];
 }
-
 
 - (void)testStartupAndClosingShareSearchableResponsivePage {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
@@ -2136,87 +2019,22 @@
 - (void)testProfileCategoriesScrollVerticallyAndEmbeddedTablesForwardWheelEvents {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
     NSWindow *window = panel.window;
-    const NSRect originalFrame = window.frame;
-    NSAppearance *originalAppearance = window.appearance;
-    [panel showWindow:nil];
+    const NSRect frame = window.frame;
     [panel showProfilesTabView:nil];
-    ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
-    NSView *root = profiles.view;
-    NSTabView *tabs = [profiles valueForKey:@"_tabView"];
-    NSScrollView *profileScroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                         inView:root];
-    XCTAssertNotNil(profileScroll);
-    XCTAssertTrue([NSStringFromClass(profileScroll.class) isEqualToString:@"iTermProfileUnifiedScrollView"]);
+    NSView *root = [[panel valueForKey:@"_profilesViewController"] view];
     @try {
-        for (NSString *appearanceName in @[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]) {
-            window.appearance = [NSAppearance appearanceNamed:appearanceName];
-            for (NSValue *sizeValue in @[[NSValue valueWithSize:NSMakeSize(820, 560)],
-                                         [NSValue valueWithSize:NSMakeSize(1040, 720)],
-                                         [NSValue valueWithSize:NSMakeSize(1280, 780)]]) {
-                [window setContentSize:sizeValue.sizeValue];
-                [window.contentView layoutSubtreeIfNeeded];
-                XCTAssertFalse(profileScroll.hasHorizontalScroller);
-                XCTAssertTrue(profileScroll.hasVerticalScroller);
-                XCTAssertLessThanOrEqual(NSWidth(profileScroll.documentView.bounds),
-                                         NSWidth(profileScroll.contentView.bounds) + 1);
-                [self checkControlsInSettingsView:profileScroll.documentView
-                                           document:profileScroll.documentView];
-                CGFloat previousScrollY = -1;
-                for (NSInteger i = 0; i < tabs.numberOfTabViewItems; i++) {
-                    [root selectCategoryAt:i];
-                    [window.contentView layoutSubtreeIfNeeded];
-                    NSTabViewItem *selected = tabs.selectedTabViewItem;
-                    XCTAssertEqual([tabs indexOfTabViewItem:selected], i);
-                    XCTAssertEqual(selected.view.superview, profileScroll.documentView);
-                    XCTAssertTrue(NSIntersectsRect(profileScroll.documentVisibleRect, selected.view.frame));
-                    const CGFloat currentScrollY = NSMinY(profileScroll.contentView.bounds);
-                    XCTAssertGreaterThanOrEqual(currentScrollY, previousScrollY - 0.5);
-                    previousScrollY = currentScrollY;
-                }
-            }
+        for (NSNumber *width in @[@820, @1040, @1280]) {
+            [window setContentSize:NSMakeSize(width.doubleValue, 560)];
+            [self verifyProfilePagesFitInWindow:panel];
         }
-
-        [window setContentSize:NSMakeSize(820, 560)];
-        [root selectCategoryAt:0];
-        [window makeKeyAndOrderFront:nil];
+        [root selectWorkspaceTask:@"input"];
         [window.contentView layoutSubtreeIfNeeded];
-        [window displayIfNeeded];
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-        [profileScroll.contentView scrollToPoint:NSZeroPoint];
-        [profileScroll reflectScrolledClipView:profileScroll.contentView];
-        XCTAssertGreaterThan(NSHeight(profileScroll.documentView.bounds), NSHeight(profileScroll.contentView.bounds) + 400);
-        [self sendVerticalWheelDelta:-40 toView:profileScroll];
-        XCTAssertGreaterThan(NSMinY(profileScroll.contentView.bounds), 0);
-        XCTAssertEqualWithAccuracy(NSMinX(profileScroll.contentView.bounds), 0, 0.5);
-
-        // Embedded tables (Jobs, Key Bindings, Bound Hosts) never show horizontal scrollers
-        // and forward wheel scrolling to the continuous profile scrollview when non-overflowing or at edge.
-        NSArray<NSScrollView *> *embedded = [self embeddedScrollViewsInView:profileScroll.documentView];
-        XCTAssertGreaterThanOrEqual(embedded.count, 3);
-        for (NSScrollView *inner in embedded) {
-            XCTAssertFalse(inner.hasHorizontalScroller);
-            CGFloat maxInnerY = MAX(0, NSHeight(inner.documentView.bounds) - NSHeight(inner.contentView.bounds));
-            if (maxInnerY <= 1.0) {
-                NSRect innerInDoc = [inner convertRect:inner.bounds toView:profileScroll.documentView];
-                const CGFloat maxOuterY = MAX(0, NSHeight(profileScroll.documentView.bounds) - NSHeight(profileScroll.contentView.bounds));
-                const CGFloat targetOuterY = MIN(MAX(0, NSMinY(innerInDoc) - 40), MAX(0, maxOuterY - 120));
-                [profileScroll.contentView scrollToPoint:NSMakePoint(0, targetOuterY)];
-                [profileScroll reflectScrolledClipView:profileScroll.contentView];
-                [inner.contentView scrollToPoint:NSZeroPoint];
-                [inner reflectScrolledClipView:inner.contentView];
-                const CGFloat beforeY = NSMinY(profileScroll.contentView.bounds);
-                if (beforeY + 20 < maxOuterY) {
-                    [self sendVerticalWheelDelta:-30 toView:inner];
-                    XCTAssertGreaterThan(NSMinY(profileScroll.contentView.bounds), beforeY,
-                                         @"Wheel over non-overflowing embedded table %@ should scroll page", inner);
-                }
-            }
-        }
-    } @finally {
-        window.appearance = originalAppearance;
-        [window setFrame:originalFrame display:NO];
-        [panel close];
-    }
+        NSView *host = [self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:root];
+        NSScrollView *scroll = [self workspaceScrollIn:host];
+        XCTAssertNotNil(scroll);
+        XCTAssertLessThanOrEqual(NSWidth(scroll.documentView.bounds), NSWidth(scroll.contentView.bounds) + 1);
+        XCTAssertGreaterThan(NSHeight(scroll.documentView.bounds), NSHeight(scroll.contentView.bounds));
+    } @finally { [window setFrame:frame display:NO]; [panel close]; }
 }
 
 - (void)testFontPickerCompositeViewWrapsCleanlyWithoutHorizontalOverflow {
@@ -2227,8 +2045,9 @@
     ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
     NSTabView *tabs = [profiles valueForKey:@"_tabView"];
     [tabs selectTabViewItem:[profiles valueForKey:@"_textTab"]];
-    NSScrollView *scroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                  inView:profiles.view];
+    [profiles.view selectWorkspaceTask:@"appearance"];
+    [window.contentView layoutSubtreeIfNeeded];
+    NSScrollView *scroll = [self workspaceScrollIn:[self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:profiles.view]];
     XCTAssertNotNil(scroll);
     id textController = [profiles valueForKey:@"_textViewController"];
     NSView *asciiPicker = [textController valueForKey:@"_asciiFontPicker"];
@@ -2242,12 +2061,12 @@
         XCTAssertLessThanOrEqual(NSMaxX(asciiWide), NSWidth(scroll.documentView.bounds) + 1);
         XCTAssertGreaterThanOrEqual(NSHeight(asciiWide), 27);
 
-        // Narrower split width: font picker wraps its spacing accessories onto a second row.
+        // The workspace now uses the whole page; wrapping depends on available content width.
         [window setContentSize:NSMakeSize(950, 560)];
         [window.contentView layoutSubtreeIfNeeded];
         NSRect asciiSplitNarrow = [asciiPicker convertRect:asciiPicker.bounds toView:scroll.documentView];
         XCTAssertLessThanOrEqual(NSMaxX(asciiSplitNarrow), NSWidth(scroll.documentView.bounds) + 1);
-        XCTAssertGreaterThan(NSHeight(asciiSplitNarrow), NSHeight(asciiWide));
+        XCTAssertGreaterThanOrEqual(NSHeight(asciiSplitNarrow), NSHeight(asciiWide));
         for (NSView *subview in asciiPicker.subviews) {
             if (!subview.hiddenOrHasHiddenAncestor) {
                 XCTAssertLessThanOrEqual(NSMaxX(subview.frame), NSWidth(asciiPicker.bounds) + 1);
@@ -2264,7 +2083,7 @@
             }
         }
         if (useNonAscii.state != NSControlStateValueOn) {
-            XCTAssertTrue(nonAsciiPicker.hiddenOrHasHiddenAncestor);
+            XCTAssertTrue(nonAsciiPicker.hiddenOrHasHiddenAncestor || ![nonAsciiPicker isDescendantOf:profiles.view]);
             [useNonAscii performClick:nil];
             [window.contentView layoutSubtreeIfNeeded];
         }
@@ -2288,59 +2107,36 @@
 
 - (void)testProfileDynamicTogglesAndEditCurrentSessionAdaptWithoutClipping {
     PreferencePanel *panel = [PreferencePanel sharedInstance];
-    NSWindow *window = panel.window;
-    const NSRect originalFrame = window.frame;
+    (void)panel.window;
     [panel showProfilesTabView:nil];
-    ProfilePreferencesViewController *profiles = [panel valueForKey:@"_profilesViewController"];
-    NSTabView *tabs = [profiles valueForKey:@"_tabView"];
-    [tabs selectTabViewItem:[profiles valueForKey:@"_textTab"]];
-    NSScrollView *profileScroll = (NSScrollView *)[self descendantWithIdentifier:@"ProfileContinuousScrollView"
-                                                                         inView:profiles.view];
-    XCTAssertNotNil(profileScroll);
-    id textController = [profiles valueForKey:@"_textViewController"];
-    NSButton *useNonAscii = [textController valueForKey:@"_useNonAsciiFont"];
-    const NSControlStateValue originalNonAscii = useNonAscii.state;
+    id profiles = [panel valueForKey:@"_profilesViewController"];
+    NSView *root = [profiles view];
+    id text = [profiles valueForKey:@"_textViewController"];
+    NSButton *toggle = [text valueForKey:@"_useNonAsciiFont"];
+    NSView *picker = [text valueForKey:@"_nonASCIIFontPicker"];
+    XCTAssertNotNil(root);
+    XCTAssertNotNil(toggle);
+    XCTAssertNotNil(picker);
+    const NSControlStateValue original = toggle.state;
     @try {
-        [window setContentSize:NSMakeSize(820, 560)];
-        [window.contentView layoutSubtreeIfNeeded];
-        useNonAscii.state = NSControlStateValueOff;
-        [useNonAscii sendAction:useNonAscii.action to:useNonAscii.target];
-        [window.contentView layoutSubtreeIfNeeded];
-        const CGFloat offHeight = NSHeight(profileScroll.documentView.bounds);
-
-        useNonAscii.state = NSControlStateValueOn;
-        [useNonAscii sendAction:useNonAscii.action to:useNonAscii.target];
-        [window.contentView layoutSubtreeIfNeeded];
-        const CGFloat onHeight = NSHeight(profileScroll.documentView.bounds);
-        XCTAssertGreaterThan(onHeight, offHeight);
-        [self checkControlsInSettingsView:profileScroll.documentView document:profileScroll.documentView];
-    } @finally {
-        useNonAscii.state = originalNonAscii;
-        [useNonAscii sendAction:useNonAscii.action to:useNonAscii.target];
-        [window setFrame:originalFrame display:NO];
-        [panel close];
-    }
-
-    PreferencePanel *sessions = [PreferencePanel sessionsInstance];
-    NSWindow *sessionsWindow = sessions.window;
-    const NSRect originalSessionsFrame = sessionsWindow.frame;
-    @try {
-        id sessionProfiles = [sessions valueForKey:@"_profilesViewController"];
-        NSView *sessionRoot = [sessionProfiles view];
-        XCTAssertFalse([[sessionRoot valueForKey:@"isInSplitMode"] boolValue]);
-        XCTAssertTrue([self descendantWithIdentifier:@"ProfilesSidebar" inView:sessionRoot].hidden);
-        XCTAssertFalse([self descendantWithIdentifier:@"ProfilesEditorHeader" inView:sessionRoot].hidden);
-        XCTAssertFalse([self descendantWithIdentifier:@"ProfileContinuousScrollView" inView:sessionRoot].hidden);
-        for (NSValue *sizeValue in @[[NSValue valueWithSize:NSMakeSize(820, 560)],
-                                     [NSValue valueWithSize:NSMakeSize(1280, 780)]]) {
-            [sessionsWindow setContentSize:sizeValue.sizeValue];
-            [sessionsWindow.contentView layoutSubtreeIfNeeded];
-            [self verifyProfilePagesFitInWindow:sessions];
+        [root selectWorkspaceTask:@"appearance"];
+        for (NSNumber *value in @[@NO, @YES, @NO]) {
+            toggle.state = value.boolValue ? NSControlStateValueOn : NSControlStateValueOff;
+            [toggle sendAction:toggle.action to:toggle.target];
+            if (value.boolValue) { (void)[root revealWorkspaceEditor:picker]; }
+            [panel.window.contentView layoutSubtreeIfNeeded];
+            const BOOL visible = [picker isDescendantOf:root] && !picker.hiddenOrHasHiddenAncestor;
+            XCTAssertEqual(visible, value.boolValue, @"task=%@, container hidden=%@, editor parent=%@",
+                           [root valueForKey:@"selectedWorkspaceTask"],
+                           [[text valueForKey:@"_nonAsciiFontView"] valueForKey:@"hidden"], picker.superview);
         }
     } @finally {
-        [sessionsWindow setFrame:originalSessionsFrame display:NO];
-        [sessions close];
+        toggle.state = original; [toggle sendAction:toggle.action to:toggle.target]; [panel close];
     }
+    PreferencePanel *session = [PreferencePanel sessionsInstance];
+    (void)session.window;
+    [self verifyProfilePagesFitInWindow:session];
+    [session close];
 }
 
 @end

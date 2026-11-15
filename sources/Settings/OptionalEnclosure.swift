@@ -261,6 +261,11 @@ extension NSView {
         if view.isHidden {
             return false
         }
+        // Hosting views create their AppKit editors during SwiftUI layout.
+        // Determine page visibility from the form, even before those editors exist.
+        if let form = view.it_childProfileFormDocument() {
+            return form.hasVisibleFormRows
+        }
         var result = false
         view.walk { either in
             switch either {

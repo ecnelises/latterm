@@ -84,6 +84,7 @@ final class SettingsTabView: NSTabView {
     /// Expanded legacy forms must contribute their minimum width to the one
     /// enclosing document. Hiding their own scrollers must not clip controls.
     static func minimumWidth(in view: NSView) -> CGFloat {
+        if view.it_hasProfileForm { return 0 }
         if let scroll = view as? SettingsContentView { return scroll.requiredWidth }
         if let appIcon = view as? AppIconPreferencesView { return appIcon.preferredWidth }
         if let tabs = view as? SettingsTabView { return tabs.preferredWidth }
@@ -137,8 +138,8 @@ final class SettingsTabView: NSTabView {
 
     override func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
         // NSTabView expects to detach its previous item from itself.
-        if presentsSections, let previous = selectedTabViewItem?.view,
-           previous.superview !== self {
+        if let previous = selectedTabViewItem?.view, previous.superview !== self,
+           presentsSections || previous.superview?.accessibilityIdentifier() == "ProfileControllerStorage" {
             addSubview(previous)
         }
         super.selectTabViewItem(tabViewItem)
@@ -181,6 +182,16 @@ final class SettingsTabView: NSTabView {
                                 height: max(scrollView.contentSize.height, preferredHeight))
         var top: CGFloat = 16
         for section in sections {
+            if let page = section.item.view, let form = page.it_childProfileFormDocument() {
+                let width = max(0, scrollView.contentSize.width - 64)
+                form.updateFormLayout(forWidth: width)
+                let height = form.computedHeight
+                section.heading.frame = NSRect(x: 32, y: top, width: width, height: 24)
+                page.frame = NSRect(x: 32, y: top + 36, width: width, height: height)
+                form.frame = page.bounds
+                top += height + 64
+                continue
+            }
             // A wide legacy section may require horizontal scrolling, but it
             // must not stretch responsive sibling forms beyond the viewport.
             let resizesToViewport = section.item.view?.subviews.first is SettingsContentView
@@ -196,5 +207,6 @@ final class SettingsTabView: NSTabView {
             }
             top += section.height + 64
         }
+        document.frame.size.height = max(scrollView.contentSize.height, top + 16)
     }
 }

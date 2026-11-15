@@ -15,9 +15,24 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
-- Rebuild Settings > Profiles with a native
-  profile sidebar, live color swatches, and one
-  continuous scrollable page for all sections.
+- Use the #_ prompt glyph as the default app icon
+  across Light and Dark appearances.
+- Refine Settings card alignment on wide windows,
+  icon preview layout, Workgroups column spacing,
+  and Chinese Settings translations.
+- Replace the profile sidebar and long editor
+  with a profile picker and task-based native
+  SwiftUI forms. Regroup startup, appearance,
+  input, session, and automation settings.
+- Keep the Alpha mark to the left of the prompt.
+- Make global keyboard forms adapt to narrow
+  windows without horizontal overflow.
+- Match the About icon to the current Dock icon.
+- Provide light and dark startup icon artwork.
+- Use SwiftUI for profile form groups, aligned
+  labels, adaptive rows, and editor placement.
+- Keep the profile editor header at the top and
+  simplify profile list and default indicators.
 - Remove click-to-select command scopes, warning
   popover, overlays, and prompt mark triangles.
 - Replace app icons with the geometric Latterm

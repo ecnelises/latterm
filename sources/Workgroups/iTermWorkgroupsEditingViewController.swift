@@ -21,9 +21,10 @@ import AppKit
 // recomputes frames every time the outer view resizes.
 @objc(iTermWorkgroupsEditingViewController)
 class iTermWorkgroupsEditingViewController: NSViewController {
-    private let listColumnWidth: CGFloat = 180
+    private let listColumnWidth: CGFloat = 220
+    private let columnGap: CGFloat = 24
     private let buttonStripHeight: CGFloat = 26
-    private let margin: CGFloat = 8
+    private let verticalMargin: CGFloat = 8
 
     private static let helpURL =
         "https://iterm2.com/documentation-workgroups.html"
@@ -127,35 +128,31 @@ class iTermWorkgroupsEditingViewController: NSViewController {
     private func layoutAll() {
         let bounds = view.bounds
         let segmentedWidth: CGFloat = 60
-        let detailX = margin + listColumnWidth + margin
+        let detailX = listColumnWidth + columnGap
 
-        // Left column: shift the whole column 3pt down so the table ends
-        // up 3pt taller (its top stays at the top margin; its bottom and
-        // the segmented strip below it both move 3pt closer to the
-        // container's bottom edge).
-        let leftColumnBottom = margin - 3
-        let tableBottomGap: CGFloat = 2
+        let leftColumnBottom: CGFloat = 4
+        let tableBottomGap: CGFloat = 6
         segmented.frame = NSRect(
-            x: margin, y: leftColumnBottom,
+            x: 0, y: leftColumnBottom,
             width: segmentedWidth, height: buttonStripHeight)
         let presetSize = presetPopup.fittingSize
         presetPopup.frame = NSRect(
-            x: segmented.frame.maxX + 4,
+            x: segmented.frame.maxX + 6,
             y: leftColumnBottom,
             width: presetSize.width,
             height: buttonStripHeight)
         let tableY = leftColumnBottom + buttonStripHeight + tableBottomGap
         tableScroll.frame = NSRect(
-            x: margin,
+            x: 0,
             y: tableY,
             width: listColumnWidth,
-            height: max(0, bounds.height - margin - tableY))
+            height: max(0, bounds.height - verticalMargin - tableY))
 
         // Help button in the bottom-right corner, vertically centered in
         // the same strip as the segmented/preset controls.
         let helpSize = helpButton.fittingSize
         helpButton.frame = NSRect(
-            x: bounds.width - margin - helpSize.width,
+            x: max(0, bounds.width - helpSize.width),
             y: leftColumnBottom + (buttonStripHeight - helpSize.height) / 2,
             width: helpSize.width,
             height: helpSize.height)
@@ -166,8 +163,8 @@ class iTermWorkgroupsEditingViewController: NSViewController {
         detailContainer.frame = NSRect(
             x: detailX,
             y: tableY,
-            width: max(0, bounds.width - detailX - margin),
-            height: max(0, bounds.height - margin - tableY))
+            width: max(0, bounds.width - detailX),
+            height: max(0, bounds.height - verticalMargin - tableY))
         detailViewController.view.frame = detailContainer.bounds
         // Table column width follows the scroll view.
         tableView.tableColumns.first?.width =
