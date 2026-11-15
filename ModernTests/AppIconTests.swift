@@ -12,8 +12,8 @@ final class AppIconTests: XCTestCase {
         XCTAssertEqual(variants.count, 15)
         XCTAssertNil(AppIconVariant(rawValue: "split"))
         XCTAssertEqual(Set(variants.map(\.rawValue)).count, 15)
-        XCTAssertEqual(AppIconVariant.defaultLight, .paper)
-        XCTAssertEqual(AppIconVariant.defaultDark, .ink)
+        XCTAssertEqual(AppIconVariant.defaultLight, .glyphHashPaper)
+        XCTAssertEqual(AppIconVariant.defaultDark, .glyphHash)
         XCTAssertEqual(variants.filter { $0.group == .concept }.count, 6)
         XCTAssertEqual(variants.filter { $0.group == .promptGlyph }.count, 9)
     }
@@ -31,19 +31,19 @@ final class AppIconTests: XCTestCase {
     func testLightAndDarkVariantResolution() {
         XCTAssertEqual(
             LattermAppIconController.resolvedVariant(lightRawValue: nil, darkRawValue: nil, isDarkAppearance: false),
-            .paper
+            .glyphHashPaper
         )
         XCTAssertEqual(
             LattermAppIconController.resolvedVariant(lightRawValue: nil, darkRawValue: nil, isDarkAppearance: true),
-            .ink
+            .glyphHash
         )
         XCTAssertEqual(
             LattermAppIconController.resolvedVariant(lightRawValue: "split", darkRawValue: "invalid", isDarkAppearance: false),
-            .paper
+            .glyphHashPaper
         )
         XCTAssertEqual(
             LattermAppIconController.resolvedVariant(lightRawValue: "split", darkRawValue: "invalid", isDarkAppearance: true),
-            .ink
+            .glyphHash
         )
         XCTAssertEqual(
             LattermAppIconController.resolvedVariant(lightRawValue: "cobalt", darkRawValue: "flame", isDarkAppearance: false),
@@ -55,9 +55,31 @@ final class AppIconTests: XCTestCase {
         )
     }
 
+    func testAlphaMarkerPrecedesChevron() {
+        for variant in [AppIconVariant.ink, .paper] {
+            let image = LattermAppIconRenderer.makeIconImage(variant: variant, channel: .alpha,
+                logicalSize: CGSize(width: 128, height: 128), pixelSizes: [128])
+            guard let bitmap = image.representations.first as? NSBitmapImageRep else {
+                XCTFail("Missing bitmap"); return
+            }
+            var leftOrange = 0
+            var rightOrange = 0
+            for y in 0..<128 {
+                for x in 0..<128 {
+                    guard let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { continue }
+                    if color.redComponent > 0.8 && color.greenComponent < 0.6 && color.blueComponent < 0.3 {
+                        if x < 64 { leftOrange += 1 } else { rightOrange += 1 }
+                    }
+                }
+            }
+            XCTAssertGreaterThan(leftOrange, 50)
+            XCTAssertEqual(rightOrange, 0)
+        }
+    }
+
     func testPreferenceDefaultsAreRegistered() {
-        XCTAssertEqual(iTermPreferences.defaultObject(forKey: kPreferenceKeyLightAppIcon) as? String, "paper")
-        XCTAssertEqual(iTermPreferences.defaultObject(forKey: kPreferenceKeyDarkAppIcon) as? String, "ink")
+        XCTAssertEqual(iTermPreferences.defaultObject(forKey: kPreferenceKeyLightAppIcon) as? String, "glyph-hash-paper")
+        XCTAssertEqual(iTermPreferences.defaultObject(forKey: kPreferenceKeyDarkAppIcon) as? String, "glyph-hash")
     }
 
     func testAllVariantsRenderAndChannelCursorsDifferWithoutCornerBadge() {
@@ -92,6 +114,12 @@ final class AppIconTests: XCTestCase {
             XCTAssertNotNil(foreground)
             XCTAssertEqual(foreground?.width, 256)
             XCTAssertEqual(foreground?.height, 256)
+            let lightForeground = LattermAppIconRenderer.makeIconComposerForegroundCGImage(
+                artwork: artwork, pixelSize: 256, variant: .glyphHashPaper)
+            XCTAssertNotNil(lightForeground)
+            let darkPNG = foreground.flatMap { NSBitmapImageRep(cgImage: $0).representation(using: .png, properties: [:]) }
+            let lightPNG = lightForeground.flatMap { NSBitmapImageRep(cgImage: $0).representation(using: .png, properties: [:]) }
+            XCTAssertNotEqual(darkPNG, lightPNG)
 
             let raster = LattermAppIconRenderer.makeBundleRasterCGImage(artwork: artwork, pixelSize: 256)
             XCTAssertNotNil(raster)

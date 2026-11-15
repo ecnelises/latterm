@@ -64,10 +64,10 @@ public enum AppIconVariant: String, CaseIterable, Identifiable {
     case monogram = "monogram"
 
     // Prompt glyphs
-    case glyphDollar = "glyph-dollar"
-    case glyphDollarPaper = "glyph-dollar-paper"
     case glyphHash = "glyph-hash"
     case glyphHashPaper = "glyph-hash-paper"
+    case glyphDollar = "glyph-dollar"
+    case glyphDollarPaper = "glyph-dollar-paper"
     case glyphPercent = "glyph-percent"
     case glyphPercentPaper = "glyph-percent-paper"
     case glyphLambda = "glyph-lambda"
@@ -76,8 +76,8 @@ public enum AppIconVariant: String, CaseIterable, Identifiable {
 
     public var id: String { rawValue }
 
-    public static var defaultLight: AppIconVariant { .paper }
-    public static var defaultDark: AppIconVariant { .ink }
+    public static var defaultLight: AppIconVariant { .glyphHashPaper }
+    public static var defaultDark: AppIconVariant { .glyphHash }
 
     public var group: AppIconGroup {
         switch self {
@@ -209,14 +209,15 @@ public enum LattermAppIconRenderer {
     /// Creates a crisp transparent foreground CGImage mapped to Icon Composer's `[100..924]` interior
     /// (`bodySize = 824` within `1024` canvas -> scaled to full-bleed `pixelSize` with `scale = 1.2427`).
     public static func makeIconComposerForegroundCGImage(artwork: AppIconBundleArtwork,
-                                                         pixelSize: Int = 1024) -> CGImage? {
+                                                         pixelSize: Int = 1024,
+                                                         variant: AppIconVariant = .glyphHash) -> CGImage? {
         guard let rep = makeBitmapRep(pixelSize: pixelSize, draw: { ctx in
             let scale = CGFloat(pixelSize) / 1024.0
             ctx.saveGState()
             // Flip into SVG top-left y-down coordinate system.
             ctx.translateBy(x: 0, y: CGFloat(pixelSize))
             ctx.scaleBy(x: scale, y: -scale)
-            drawBundleForeground(in: ctx, artwork: artwork)
+            drawBundleForeground(in: ctx, artwork: artwork, variant: variant)
             ctx.restoreGState()
         }) else {
             return nil
@@ -229,10 +230,10 @@ public enum LattermAppIconRenderer {
                                                pixelSize: Int = 1024) -> CGImage? {
         guard let rep = makeBitmapRep(pixelSize: pixelSize, draw: { ctx in
             if artwork == .release {
-                drawVariantIcon(in: ctx, size: CGFloat(pixelSize), variant: .ink, channel: .stable)
+                drawVariantIcon(in: ctx, size: CGFloat(pixelSize), variant: .glyphHash, channel: .stable)
             } else {
                 drawStyledBody(in: ctx, size: CGFloat(pixelSize), bodyColor: Palette.ink) { svgCtx in
-                    drawBundleForeground(in: svgCtx, artwork: artwork)
+                    drawBundleForeground(in: svgCtx, artwork: artwork, variant: .glyphHash)
                 }
             }
         }) else {
@@ -343,15 +344,17 @@ public enum LattermAppIconRenderer {
 
     // MARK: - Foreground Artwork (1024x1024 SVG Y-Down Coordinate Space)
 
-    private static func drawBundleForeground(in ctx: CGContext, artwork: AppIconBundleArtwork) {
-        let inkPalette = colors(for: .ink)
+    private static func drawBundleForeground(in ctx: CGContext,
+                                            artwork: AppIconBundleArtwork,
+                                            variant: AppIconVariant = .glyphHash) {
+        let inkPalette = colors(for: variant)
         switch artwork {
         case .release:
-            drawVariantForeground(in: ctx, variant: .ink, channel: .stable, palette: inkPalette)
+            drawVariantForeground(in: ctx, variant: variant, channel: .stable, palette: inkPalette)
         case .nightly:
-            drawVariantForeground(in: ctx, variant: .ink, channel: .alpha, palette: inkPalette)
+            drawVariantForeground(in: ctx, variant: variant, channel: .alpha, palette: inkPalette)
         case .beta:
-            drawVariantForeground(in: ctx, variant: .ink, channel: .beta, palette: inkPalette)
+            drawVariantForeground(in: ctx, variant: variant, channel: .beta, palette: inkPalette)
         }
     }
 
@@ -361,8 +364,17 @@ public enum LattermAppIconRenderer {
                                               palette: VariantColors) {
         switch variant {
         case .ink, .paper, .flame, .cobalt:
-            drawChevronRight(in: ctx, color: palette.glyph)
-            drawCursor(in: ctx, channel: channel, cursorX: 556, glyphCursorX: 584, baselineY: 740, color: palette.cursor)
+            if channel == .alpha {
+                drawAlphaGlyph(in: ctx, inRect: CGRect(x: 220, y: 387, width: 248, height: 250),
+                               strokeWidth: 56, color: palette.cursor)
+                ctx.saveGState()
+                ctx.translateBy(x: 280, y: 0)
+                drawChevronRight(in: ctx, color: palette.glyph)
+                ctx.restoreGState()
+            } else {
+                drawChevronRight(in: ctx, color: palette.glyph)
+                drawCursor(in: ctx, channel: channel, cursorX: 556, glyphCursorX: 584, baselineY: 740, color: palette.cursor)
+            }
 
         case .block:
             ctx.setFillColor(palette.cursor)

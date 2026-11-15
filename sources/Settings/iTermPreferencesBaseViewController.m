@@ -998,6 +998,17 @@ NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues = @"iTermPrefe
 }
 
 - (NSArray<iTermSetting *> *)allSettingsWithPathComponents:(NSArray<NSString *> *)pathComponents {
+    if ([self isKindOfClass:[iTermProfilePreferencesBaseViewController class]] && self.view.it_hasProfileForm) {
+        // Native forms move editors between task pages. The settings registry,
+        // rather than the currently rendered view tree, owns the complete list.
+        NSMutableArray<iTermSetting *> *settings = [NSMutableArray array];
+        for (NSView *control in _keyMap) {
+            PreferenceInfo *info = [_keyMap objectForKey:control];
+            NSArray<NSString *> *path = [self.view it_workspacePathForControl:control] ?: pathComponents;
+            [settings addObject:[[iTermSetting alloc] initWithInfo:info isProfile:YES pathComponents:path]];
+        }
+        return settings;
+    }
     NSDictionary<NSArray<NSString *> *, NSArray<NSView *> *> *dict = [self.view descendantsTabviewTreeWithBelongingToKeysIn:_keyMap];
     NSMutableArray<iTermSetting *> *settings = [NSMutableArray array];
     const BOOL isProfile = [self isKindOfClass:[iTermProfilePreferencesBaseViewController class]];

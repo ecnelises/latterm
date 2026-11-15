@@ -2997,6 +2997,8 @@ static iTermKeyEventReplayer *gReplayer;
     NSString *version = shortVersion.length > 0 ? shortVersion : buildVersion;
 
     NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    [[iTermAppIconController shared] updateApplicationIcon];
+    options[NSAboutPanelOptionApplicationIcon] = NSApp.applicationIconImage;
     options[NSAboutPanelOptionApplicationName] = iTermApplicationDisplayName();
     if (version.length > 0) {
         options[NSAboutPanelOptionApplicationVersion] = version;

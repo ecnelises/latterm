@@ -7,15 +7,19 @@ import Cocoa
 
 @objc(iTermAppIconPreferencesView)
 public final class AppIconPreferencesView: NSView {
+    private final class FlippedView: NSView {
+        override var isFlipped: Bool { true }
+    }
+
     @objc public let lightLabel: NSTextField
     @objc public let darkLabel: NSTextField
     @objc public let lightPopupButton: NSPopUpButton
     @objc public let darkPopupButton: NSPopUpButton
 
-    private let lightCard = NSView(frame: .zero)
-    private let darkCard = NSView(frame: .zero)
-    private let lightStage = NSView(frame: .zero)
-    private let darkStage = NSView(frame: .zero)
+    private let lightCard = FlippedView(frame: .zero)
+    private let darkCard = FlippedView(frame: .zero)
+    private let lightStage = FlippedView(frame: .zero)
+    private let darkStage = FlippedView(frame: .zero)
     private let lightPreview = NSImageView(frame: .zero)
     private let darkPreview = NSImageView(frame: .zero)
     private let lightModeBadge = NSTextField(labelWithString: "")
@@ -26,7 +30,7 @@ public final class AppIconPreferencesView: NSView {
     private let channel: AppIconChannel
 
     @objc public var preferredWidth: CGFloat { 512 }
-    @objc public var preferredHeight: CGFloat { 208 }
+    @objc public var preferredHeight: CGFloat { 212 }
 
     public override var isFlipped: Bool { true }
 
@@ -66,7 +70,7 @@ public final class AppIconPreferencesView: NSView {
         let initialFrame = NSRect(x: frameRect.origin.x,
                                   y: frameRect.origin.y,
                                   width: max(512, frameRect.width),
-                                  height: max(208, frameRect.height))
+                                  height: max(212, frameRect.height))
         super.init(frame: initialFrame)
         configureViews()
         observeAppearance()
@@ -189,7 +193,7 @@ public final class AppIconPreferencesView: NSView {
         let totalWidth: CGFloat = min(512, max(440, bounds.width))
         let gap: CGFloat = 14
         let cardWidth = floor((totalWidth - gap) / 2.0)
-        let cardHeight: CGFloat = 172
+        let cardHeight: CGFloat = 176
 
         layoutCard(lightCard, stage: lightStage, preview: lightPreview, badge: lightModeBadge, label: lightLabel, popup: lightPopupButton, frame: NSRect(x: 0, y: 4, width: cardWidth, height: cardHeight))
         layoutCard(darkCard, stage: darkStage, preview: darkPreview, badge: darkModeBadge, label: darkLabel, popup: darkPopupButton, frame: NSRect(x: cardWidth + gap, y: 4, width: cardWidth, height: cardHeight))
@@ -197,6 +201,7 @@ public final class AppIconPreferencesView: NSView {
         let noteTop: CGFloat = cardHeight + 12
         let noteSize = noteLabel.sizeThatFits(NSSize(width: totalWidth, height: 60))
         noteLabel.frame = NSRect(x: 0, y: noteTop, width: totalWidth, height: ceil(noteSize.height))
+        updateCardAppearances()
     }
 
     private func layoutCard(_ card: NSView,
@@ -209,7 +214,16 @@ public final class AppIconPreferencesView: NSView {
         card.frame = frame
         let pad: CGFloat = 12
         let innerWidth = frame.width - pad * 2
-        let stageFrame = NSRect(x: pad, y: pad, width: innerWidth, height: 84)
+
+        label.sizeToFit()
+        label.frame = NSRect(x: pad, y: pad, width: innerWidth, height: ceil(label.frame.height))
+
+        popup.sizeToFit()
+        popup.frame = NSRect(x: pad, y: label.frame.maxY + 6, width: innerWidth, height: 26)
+
+        let stageTop = popup.frame.maxY + 10
+        let stageHeight = max(76, frame.height - stageTop - pad)
+        let stageFrame = NSRect(x: pad, y: stageTop, width: innerWidth, height: stageHeight)
         stage.frame = stageFrame
 
         let previewSize: CGFloat = 68
@@ -221,13 +235,10 @@ public final class AppIconPreferencesView: NSView {
         )
 
         badge.sizeToFit()
-        badge.frame = NSRect(x: 10, y: 8, width: badge.frame.width, height: badge.frame.height)
-
-        label.sizeToFit()
-        label.frame = NSRect(x: pad, y: stageFrame.maxY + 10, width: innerWidth, height: ceil(label.frame.height))
-
-        popup.sizeToFit()
-        popup.frame = NSRect(x: pad, y: label.frame.maxY + 6, width: innerWidth, height: 26)
+        badge.frame = NSRect(x: 10,
+                             y: max(6, stageFrame.height - badge.frame.height - 8),
+                             width: badge.frame.width,
+                             height: badge.frame.height)
     }
 
     @objc public func refreshPreviews() {
@@ -252,12 +263,19 @@ public final class AppIconPreferencesView: NSView {
             pixelSizes: [68, 136]
         )
 
-        let isDarkActive = NSApplication.shared.effectiveAppearance.it_isDark
-        updateCardHighlight(lightCard, active: !isDarkActive)
-        updateCardHighlight(darkCard, active: isDarkActive)
+        updateCardAppearances()
+    }
+
+    private func updateCardAppearances() {
+        let isDarkActive = (window?.effectiveAppearance ?? NSApplication.shared.effectiveAppearance).it_isDark
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            updateCardHighlight(lightCard, active: !isDarkActive)
+            updateCardHighlight(darkCard, active: isDarkActive)
+        }
     }
 
     private func updateCardHighlight(_ card: NSView, active: Bool) {
+        card.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
         if active {
             card.layer?.borderWidth = 1.5
             card.layer?.borderColor = NSColor.controlAccentColor.cgColor

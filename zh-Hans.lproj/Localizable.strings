@@ -2527,3 +2527,43 @@
 "Select a profile from the sidebar to edit its settings." = "从左侧边栏选择一个配置以编辑其设置。";
 "Section" = "跳转分区";
 "Current Session" = "当前会话";
+
+"Open Quickly hotkey:" = "快速打开快捷键：";
+
+"Input" = "输入";
+
+"Automation" = "自动化";
+
+"Advanced Options" = "高级选项";
+
+"Name, command, and working directory" = "名称、启动命令与工作目录";
+
+"Colors, typography, and window appearance" = "配色、字体与窗口外观";
+
+"Keyboard behavior and mouse reporting" = "按键行为与鼠标事件报告";
+
+"History, notifications, and session lifecycle" = "回滚记录、通知与会话生命周期";
+
+"Triggers, automatic switching, and file actions" = "触发器、自动切换与文件操作";
+
+"Prompt Metadata and tmux" = "提示符元数据与 tmux";
+
+"Copy to Profile…" = "复制到配置方案…";
+
+"New Profile" = "新建配置方案";
+
+"Environment" = "环境";
+
+"Archiving" = "归档";
+
+"Progress Bars" = "进度条";
+
+"Name & Tags" = "名称与标签";
+
+"Profile Shortcut" = "配置快捷键";
+
+"Tab Identity" = "标签页标识";
+
+"Additional Colors" = "其他颜色";
+
+"Logging" = "日志记录";
