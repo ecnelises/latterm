@@ -101,8 +101,6 @@
 #import "iTermCommandRunnerPool.h"
 #import "iTermComposerManager.h"
 #import "iTermController.h"
-#import "iTermCopyModeHandler.h"
-#import "iTermCopyModeState.h"
 #import "iTermDisclosableView.h"
 #import "iTermEchoProbe.h"
 #import "iTermExpect.h"
@@ -21568,7 +21566,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 #pragma mark - iTermCopyModeHandlerDelegate
 
-- (void)copyModeHandlerDidChangeEnabledState:(iTermCopyModeHandler *)handler NOT_COPY_FAMILY {
+- (void)copyModeHandlerDidChangeEnabledState:(iTermCopyModeHandler *)handler __attribute__((objc_method_family(none))) {
     [_textview requestDelegateRedraw];
     const BOOL enabled = handler.enabled;
     if (enabled) {
@@ -21591,7 +21589,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     }];
 }
 
-- (id<iTermCopyModeStateProtocol>)copyModeHandlerCreateState:(iTermCopyModeHandler *)handler NOT_COPY_FAMILY {
+- (id<iTermCopyModeStateProtocol>)copyModeHandlerCreateState:(iTermCopyModeHandler *)handler __attribute__((objc_method_family(none))) {
     iTermCopyModeState *state = [[[iTermCopyModeState alloc] init] autorelease];
     state.coord = VT100GridCoordMake(_screen.cursorX - 1,
                                      _screen.cursorY - 1 + _screen.numberOfScrollbackLines);
@@ -21613,7 +21611,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return state;
 }
 
-- (void)copyModeHandlerRedraw:(iTermCopyModeHandler *)handler NOT_COPY_FAMILY {
+- (void)copyModeHandlerRedraw:(iTermCopyModeHandler *)handler __attribute__((objc_method_family(none))) {
     [self.textview requestDelegateRedraw];
 }
 
@@ -21621,13 +21619,13 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self showFindPanel];
 }
 
-- (void)copyModeHandler:(iTermCopyModeHandler *)handler revealCurrentLineInState:(id<iTermCopyModeStateProtocol>)state NOT_COPY_FAMILY {
+- (void)copyModeHandler:(iTermCopyModeHandler *)handler revealCurrentLineInState:(id<iTermCopyModeStateProtocol>)state __attribute__((objc_method_family(none))) {
     iTermCopyModeState *s = [iTermCopyModeState castFrom:state];
     const int line = s.coord.y;
     [_textview scrollLineNumberRangeIntoView:VT100GridRangeMake(line, 1)];
 }
 
-- (void)copyModeHandlerCopySelection:(iTermCopyModeHandler *)handler NOT_COPY_FAMILY {
+- (void)copyModeHandlerCopySelection:(iTermCopyModeHandler *)handler __attribute__((objc_method_family(none))) {
     [_textview copySelectionAccordingToUserPreferences];
 }
 
