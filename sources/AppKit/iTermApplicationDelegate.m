@@ -76,7 +76,6 @@
 #import "iTermFontPanel.h"
 #import "iTermFullScreenWindowManager.h"
 #import "iTermGlobalScopeController.h"
-#import "iTermGlobalSearchWindowController.h"
 #import "iTermHotKeyController.h"
 #import "iTermHotKeyProfileBindingController.h"
 #import "iTermLSOF.h"

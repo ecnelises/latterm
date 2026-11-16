@@ -2388,3 +2388,8 @@ launchCoprocessWithCommand:(NSString *)command
 }
 
 @end
+
+// Emit runtime ObjC protocol metadata for VT100Screen(Search)<iTermSearchEngineDataSource>
+// so Swift dynamic protocol casts succeed.
+@implementation VT100Screen (Search)
+@end
