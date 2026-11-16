@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "ITAddressBookMgr.h"
-#import "iTermAutomaticProfileSwitcher.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSDictionary+Profile.h"
 
 @interface iTermAutomaticProfileSwitcherTest : XCTestCase<iTermAutomaticProfileSwitcherDelegate>
