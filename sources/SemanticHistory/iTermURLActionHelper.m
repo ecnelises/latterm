@@ -20,7 +20,7 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplication.h"
 #import "iTermApplicationDelegate.h"
-#import "iTermBackgroundCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermExpressionEvaluator.h"
 #import "iTermImageInfo.h"
 #import "iTermLaunchServices.h"

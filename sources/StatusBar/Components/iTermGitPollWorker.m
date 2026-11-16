@@ -10,7 +10,7 @@
 #import "DebugLogging.h"
 
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermCommandRunnerPool.h"
 #import "iTermGitState+MainApp.h"
 #import "iTermSlowOperationGateway.h"

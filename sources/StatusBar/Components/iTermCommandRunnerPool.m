@@ -8,8 +8,7 @@
 #import "iTermCommandRunnerPool.h"
 
 #import "DebugLogging.h"
-#import "iTermBackgroundCommandRunner.h"
-#import "iTermCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSArray+iTerm.h"
 
 @implementation iTermCommandRunnerPool {

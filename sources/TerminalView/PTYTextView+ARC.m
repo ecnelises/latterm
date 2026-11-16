@@ -12,8 +12,6 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermActionsMenuController.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermBackgroundCommandRunner.h"
-#import "iTermCommandRunner.h"
 #import "iTermController.h"
 #import "iTermImageInfo.h"
 #import "iTermLaunchServices.h"

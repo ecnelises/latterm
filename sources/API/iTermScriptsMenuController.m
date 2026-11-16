@@ -12,7 +12,6 @@
 #import "iTermAPIHelper.h"
 #import "iTermAPIScriptLauncher.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermCommandRunner.h"
 #import "iTermPythonRuntimeDownloader.h"
 #import "iTermScriptChooser.h"
 #import "iTermScriptExporter.h"

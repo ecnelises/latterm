@@ -10,7 +10,6 @@
 #import "DebugLogging.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermBuildingScriptWindowController.h"
-#import "iTermCommandRunner.h"
 #import "iTermDisclosableView.h"
 #import "iTermNotificationController.h"
 #import "iTermOptionalComponentDownloadWindowController.h"

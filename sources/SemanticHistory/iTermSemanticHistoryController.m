@@ -27,7 +27,7 @@
 #import "DebugLogging.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermCachingFileManager.h"
-#import "iTermCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermController.h"
 #import "iTermExpressionEvaluator.h"
 #import "iTermExpressionParser.h"

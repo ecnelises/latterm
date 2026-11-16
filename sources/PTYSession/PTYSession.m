@@ -88,7 +88,6 @@
 #import "iTermArrangementKeys.h"
 #import "iTermApplication.h"
 #import "iTermApplicationDelegate.h"
-#import "iTermBackgroundCommandRunner.h"
 #import "iTermBackgroundDrawingHelper.h"
 #import "iTermBadgeLabel.h"
 #import "iTermBuiltInFunctions.h"
