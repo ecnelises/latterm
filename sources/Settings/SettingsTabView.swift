@@ -94,6 +94,19 @@ final class SettingsTabView: NSTabView {
     private func rebuildSections() {
         guard presentsSections else { return }
         let previous = sections
+        var pendingBodies: [NSView] = []
+        for item in tabViewItems {
+            guard let view = item.view, previous.first(where: { $0.item === item }) == nil,
+                  let body = compactBody(in: view) else { continue }
+            SettingsFormView.alignControls(in: body)
+            if !["ActionCustomView", "SnippetCustomView", "PointerBindingsCustomView"].contains(body.identifier?.rawValue ?? "") &&
+                !(body.subviews.contains { $0 is NSScrollView && $0.frame.width > body.bounds.width * 0.7 }) {
+                pendingBodies.append(body)
+            }
+        }
+        if !pendingBodies.isEmpty {
+            SettingsFormView.unifyFormColumns(in: pendingBodies)
+        }
         sections = tabViewItems.compactMap { item in
             guard let view = item.view else { return nil }
             let existing = previous.first { $0.item === item }
@@ -104,11 +117,11 @@ final class SettingsTabView: NSTabView {
             let body = existing?.compactBody ?? compactBody(in: view)
             let height = existing?.height ?? body.map { $0.frame.height + 16 } ?? Self.expandSections(in: view)
             view.autoresizingMask = []
-            if let body, existing == nil { SettingsFormView.alignControls(in: body) }
             body?.autoresizingMask = []
             document.addSubview(heading)
             document.addSubview(view)
-            let fillsWidth = ["ActionCustomView", "SnippetCustomView"].contains(body?.identifier?.rawValue ?? "")
+            let fillsWidth = ["ActionCustomView", "SnippetCustomView", "PointerBindingsCustomView"]
+                .contains(body?.identifier?.rawValue ?? "")
             let fallbackWidth = (view as? AppIconPreferencesView)?.preferredWidth ?? 0
             let bodyWidth = fillsWidth ? CGFloat.greatestFiniteMagnitude : (body?.frame.width ?? fallbackWidth)
             let minimumWidth = fillsWidth ? 0 : (body?.frame.width ?? Self.minimumWidth(in: view))

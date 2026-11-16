@@ -2139,4 +2139,133 @@
     [session close];
 }
 
+- (void)testSettingsAlignmentAndNoClippingRegression {
+    PreferencePanel *panel = [PreferencePanel sharedInstance];
+    NSWindow *window = panel.window;
+    const NSRect originalFrame = window.frame;
+    [window setContentSize:NSMakeSize(1040, 720)];
+    @try {
+        // App Behavior & Appearance sections unify their form control columns.
+        [panel showGlobalTabView:nil];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSTabView *genTabs = [[panel valueForKey:@"_generalPreferencesViewController"] tabView];
+        CGFloat expectedGenControlX = -1;
+        for (NSInteger i = 1; i < genTabs.numberOfTabViewItems; i++) {
+            NSView *body = genTabs.tabViewItems[i].view.subviews.firstObject;
+            CGFloat minControlX = CGFLOAT_MAX;
+            for (NSView *child in body.subviews) {
+                if ([child isKindOfClass:NSTextField.class] && ![(NSTextField *)child isEditable] && NSMinX(child.frame) <= 2) {
+                    continue;
+                }
+                if ([child isKindOfClass:NSButton.class] && [(NSButton *)child bezelStyle] == NSBezelStyleRounded) {
+                    continue;
+                }
+                minControlX = MIN(minControlX, NSMinX(child.frame));
+            }
+            if (expectedGenControlX < 0) { expectedGenControlX = minControlX; }
+            XCTAssertEqualWithAccuracy(minControlX, expectedGenControlX, 2.0, @"App Behavior section %ld misaligned", (long)i);
+        }
+
+        [panel showAppearanceTabView:nil];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSTabView *appTabs = [[panel valueForKey:@"_appearancePreferencesViewController"] tabView];
+        CGFloat expectedAppControlX = -1;
+        for (NSInteger i = 0; i < appTabs.numberOfTabViewItems; i++) {
+            NSView *body = appTabs.tabViewItems[i].view.subviews.firstObject;
+            if (![NSStringFromClass(body.class) isEqualToString:@"iTermPreferencesInnerTabContainerView"]) {
+                continue;
+            }
+            CGFloat minControlX = CGFLOAT_MAX;
+            for (NSView *child in body.subviews) {
+                if ([child isKindOfClass:NSTextField.class] && ![(NSTextField *)child isEditable] && NSMinX(child.frame) <= 2) {
+                    continue;
+                }
+                minControlX = MIN(minControlX, NSMinX(child.frame));
+            }
+            if (expectedAppControlX < 0) { expectedAppControlX = minControlX; }
+            XCTAssertEqualWithAccuracy(minControlX, expectedAppControlX, 2.0, @"Appearance section %ld misaligned", (long)i);
+        }
+
+        // Mouse > Bindings fits within viewport and places buttons evenly without gaps.
+        [panel showMouseTabView:nil];
+        [window.contentView layoutSubtreeIfNeeded];
+        NSTabView *mouseTabs = [[panel valueForKey:@"_pointerViewController"] valueForKey:@"_tabView"];
+        NSScrollView *mouseScroll = (NSScrollView *)[self descendantWithIdentifier:@"SettingsSections"
+                                                                          inView:[[panel valueForKey:@"_pointerViewController"] view]];
+        XCTAssertLessThanOrEqual(NSWidth(mouseScroll.documentView.bounds), NSWidth(mouseScroll.contentView.bounds) + 1);
+        NSView *bindings = mouseTabs.tabViewItems.lastObject.view.subviews.firstObject;
+        NSMutableArray<NSButton *> *bindingButtons = [NSMutableArray array];
+        for (NSView *child in bindings.subviews) {
+            if ([child isKindOfClass:NSButton.class]) {
+                [bindingButtons addObject:(NSButton *)child];
+            }
+        }
+        [bindingButtons sortUsingComparator:^NSComparisonResult(NSButton *a, NSButton *b) {
+            return [@(NSMinX(a.frame)) compare:@(NSMinX(b.frame))];
+        }];
+        XCTAssertEqual(bindingButtons.count, 3);
+        XCTAssertEqualWithAccuracy(NSMinX(bindingButtons[0].frame), 0, 1);
+        XCTAssertEqualWithAccuracy(NSMinX(bindingButtons[1].frame) - NSMaxX(bindingButtons[0].frame), 8, 1);
+        XCTAssertEqualWithAccuracy(NSMinX(bindingButtons[2].frame) - NSMaxX(bindingButtons[1].frame), 8, 1);
+
+        // Actions & Snippets trailing buttons align flush with their scroll views.
+        [[panel valueForKey:@"_tabView"] selectTabViewItem:[panel valueForKey:@"_shortcutsTabViewItem"]];
+        [window.contentView layoutSubtreeIfNeeded];
+        id shortcuts = [panel valueForKey:@"_shortcutsViewController"];
+        for (NSString *key in @[@"_actionsViewController", @"_snippetsViewController"]) {
+            NSView *editor = [[shortcuts valueForKey:key] view];
+            NSScrollView *sv = nil;
+            CGFloat maxBottomRight = 0;
+            for (NSView *child in editor.subviews) {
+                if ([child isKindOfClass:NSScrollView.class]) { sv = (NSScrollView *)child; }
+                else if ([child isKindOfClass:NSButton.class] && NSMinY(child.frame) < 40 && NSMinX(child.frame) > NSWidth(editor.bounds) * 0.5) {
+                    maxBottomRight = MAX(maxBottomRight, NSMaxX(child.frame));
+                }
+            }
+            XCTAssertNotNil(sv);
+            XCTAssertEqualWithAccuracy(maxBottomRight, NSMaxX(sv.frame), 1.0, @"%@ trailing buttons misaligned", key);
+        }
+
+        // Expert settings Exclude Defaults checkbox hugs the right margin flush with the table.
+        [[panel valueForKey:@"_tabView"] selectTabViewItem:[panel valueForKey:@"_advancedTabViewItem"]];
+        [window.contentView layoutSubtreeIfNeeded];
+        id adv = [panel valueForKey:@"_advancedViewController"];
+        NSButton *exclude = [adv valueForKey:@"_excludeDefaults"];
+        NSTableView *advTable = [adv valueForKey:@"_tableView"];
+        NSRect excludeInDoc = [exclude convertRect:exclude.bounds toView:exclude.superview];
+        NSRect tableInDoc = [advTable convertRect:advTable.bounds toView:exclude.superview];
+        XCTAssertEqualWithAccuracy(NSMaxX(excludeInDoc), NSMaxX(tableInDoc), 2.0);
+    } @finally {
+        [window setFrame:originalFrame display:NO];
+        [panel close];
+    }
+
+    // Edit Current Session profile list aligns flush with its search field (collapsed tags divider hidden).
+    PreferencePanel *sessions = [PreferencePanel sessionsInstance];
+    NSWindow *sessionsWindow = sessions.window;
+    const NSRect origSessionFrame = sessionsWindow.frame;
+    @try {
+        [sessionsWindow setContentSize:NSMakeSize(820, 720)];
+        [sessionsWindow.contentView layoutSubtreeIfNeeded];
+        NSView *listView = nil;
+        NSArray *stack = @[sessionsWindow.contentView];
+        while (stack.count > 0) {
+            NSView *cur = stack.firstObject;
+            stack = [stack subarrayWithRange:NSMakeRange(1, stack.count - 1)];
+            if ([NSStringFromClass(cur.class) isEqualToString:@"ProfileListView"]) { listView = cur; break; }
+            stack = [stack arrayByAddingObjectsFromArray:cur.subviews];
+        }
+        if (listView) {
+            NSSearchField *sf = [listView valueForKey:@"searchField_"];
+            NSScrollView *sv = [listView valueForKey:@"scrollView_"];
+            NSRect sfInList = [sf convertRect:sf.bounds toView:listView];
+            NSRect svInList = [sv convertRect:sv.bounds toView:listView];
+            XCTAssertEqualWithAccuracy(NSMinX(svInList), NSMinX(sfInList), 1.0);
+        }
+    } @finally {
+        [sessionsWindow setFrame:origSessionFrame display:NO];
+        [sessions close];
+    }
+}
+
 @end

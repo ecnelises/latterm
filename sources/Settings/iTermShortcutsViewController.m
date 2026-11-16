@@ -29,23 +29,39 @@
     for (NSViewController *editor in @[_actionsViewController, _snippetsViewController]) {
         NSView *view = editor.view;
         [iTermSettingsFormView alignControlsIn:view];
+        const CGFloat width = NSWidth(view.bounds);
+        NSMutableArray<NSButton *> *trailingButtons = [NSMutableArray array];
         for (NSView *child in view.subviews) {
             if ([child isKindOfClass:NSScrollView.class]) {
                 NSRect frame = child.frame;
-                frame.size.width = NSWidth(view.bounds);
+                frame.size.width = width;
                 child.frame = frame;
                 child.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
             } else if ([child isKindOfClass:NSSearchField.class]) {
                 NSRect frame = child.frame;
-                frame.size.width = MAX(0, NSWidth(view.bounds) - 36);
+                frame.size.width = MAX(0, width - 36);
                 child.frame = frame;
                 child.autoresizingMask = NSViewWidthSizable | NSViewMinYMargin;
             } else if ([child isKindOfClass:NSButton.class] && [(NSButton *)child action] == @selector(help:)) {
                 NSRect frame = child.frame;
-                frame.origin.x = NSWidth(view.bounds) - NSWidth(frame);
+                frame.origin.x = width - NSWidth(frame);
                 child.frame = frame;
                 child.autoresizingMask = NSViewMinXMargin | NSViewMinYMargin;
+            } else if ([child isKindOfClass:NSButton.class] &&
+                       ((child.autoresizingMask & NSViewMinXMargin) != 0 || NSMinX(child.frame) > width * 0.5)) {
+                [trailingButtons addObject:(NSButton *)child];
             }
+        }
+        [trailingButtons sortUsingComparator:^NSComparisonResult(NSButton *a, NSButton *b) {
+            return [@(NSMinX(a.frame)) compare:@(NSMinX(b.frame))];
+        }];
+        CGFloat rightEdge = width;
+        for (NSButton *button in trailingButtons.reverseObjectEnumerator) {
+            NSRect frame = button.frame;
+            frame.origin.x = rightEdge - NSWidth(frame);
+            button.frame = frame;
+            button.autoresizingMask = NSViewMinXMargin | NSViewMaxYMargin;
+            rightEdge = NSMinX(frame) - 6;
         }
     }
 }

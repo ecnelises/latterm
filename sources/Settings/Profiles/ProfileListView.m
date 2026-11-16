@@ -558,6 +558,10 @@ const CGFloat kDefaultTagsWidth = 80;
 - (void)useSettingsAppearance {
     _settingsAppearance = YES;
     splitView_.dividerStyle = NSSplitViewDividerStyleThin;
+    if (NSWidth(tagsView_.frame) < 4) {
+        tagsView_.hidden = YES;
+        tagsViewIsCollapsed_ = YES;
+    }
     searchField_.placeholderString = NSLocalizedString(@"Filter Profiles", @"Search within Settings profiles");
     searchField_.focusRingType = NSFocusRingTypeNone;
     scrollView_.borderType = NSBezelBorder;
@@ -568,6 +572,8 @@ const CGFloat kDefaultTagsWidth = 80;
     tableColumn_.title = NSLocalizedString(@"Name", @"Profile list column");
     tableColumn_.headerCell.font = [NSFont systemFontOfSize:11 weight:NSFontWeightMedium];
     tableColumn_.headerCell.textColor = NSColor.secondaryLabelColor;
+    [splitView_ adjustSubviews];
+    [self resizeSubviewsWithOldSize:self.bounds.size];
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)rowIndex {

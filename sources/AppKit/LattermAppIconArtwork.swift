@@ -527,10 +527,10 @@ public enum LattermAppIconRenderer {
         ctx.setLineWidth(84)
         ctx.setLineCap(.butt)
         let segments: [(CGPoint, CGPoint)] = [
-            (CGPoint(x: 330, y: 290), CGPoint(x: 290, y: 756)),
-            (CGPoint(x: 460, y: 290), CGPoint(x: 420, y: 756)),
-            (CGPoint(x: 212, y: 430), CGPoint(x: 512, y: 430)),
-            (CGPoint(x: 200, y: 612), CGPoint(x: 500, y: 612))
+            (CGPoint(x: 311, y: 290), CGPoint(x: 271, y: 756)),
+            (CGPoint(x: 441, y: 290), CGPoint(x: 401, y: 756)),
+            (CGPoint(x: 213, y: 430), CGPoint(x: 513, y: 430)),
+            (CGPoint(x: 198, y: 612), CGPoint(x: 498, y: 612))
         ]
         for (start, end) in segments {
             ctx.beginPath()

@@ -15,6 +15,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Align Settings form columns, bindings tables,
+  and toolbar buttons across all pages, and center
+  the slanted strokes in the Hash app icon.
 - Use the #_ prompt glyph as the default app icon
   across Light and Dark appearances.
 - Refine Settings card alignment on wide windows,
