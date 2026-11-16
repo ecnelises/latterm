@@ -7,7 +7,6 @@
 //
 
 #import "CoprocessTrigger.h"
-#import "iTermAnnouncementViewController.h"
 #import "PTYSession.h"
 #import "iTerm2SharedARC-Swift.h"
 

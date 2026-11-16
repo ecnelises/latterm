@@ -4,7 +4,6 @@
 #import "iTermTexture.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermAnnouncementViewController.h"
 #import "iTermBackgroundColorView.h"
 #import "iTermDropDownFindViewController.h"
 #import "iTermFindDriver.h"

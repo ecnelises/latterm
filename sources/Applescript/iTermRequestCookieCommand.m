@@ -7,7 +7,7 @@
 
 #import "iTermRequestCookieCommand.h"
 
-#import "iTermAnnouncementViewController.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermAPIConnectionIdentifierController.h"
 #import "iTermAPIHelper.h"
 #import "iTermController.h"
@@ -53,7 +53,7 @@ static NSString *const kReusableCookieAnnouncementIdentifier = @"ReusableCookieA
     __weak __typeof(self) weakSelf = self;
     iTermAnnouncementViewController *announcement =
         [iTermAnnouncementViewController announcementWithTitle:message
-                                                         style:kiTermAnnouncementViewStyleQuestion
+                                                         style:iTermAnnouncementViewStyleQuestion
                                                    withActions:@[ @"_24 Hours",
                                                                   @"Forever",
                                                                   @"Always Allow All Apps",

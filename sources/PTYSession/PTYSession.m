@@ -83,8 +83,6 @@
 #import "iTermActionsModel.h"
 #import "iTermAddTriggerViewController.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermAnnouncementView.h"
-#import "iTermAnnouncementViewController.h"
 #import "iTermArrangementKeys.h"
 #import "iTermApplication.h"
 #import "iTermApplicationDelegate.h"
@@ -10237,7 +10235,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     __weak __typeof(self) weakSelf = self;
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:title
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Unpause", @"_Settings" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -11592,7 +11590,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     void (^completion)(int) = ^(int selection) { };
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:message
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_OK" ]
                                                 completion:completion];
     iTermAnnouncementViewController *existing = _announcements[identifier];
@@ -15062,7 +15060,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     };
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:@"A program has tried to resize the window. Allow it?"
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Allow Once", @"_Open Settings", @"Don’t Show This Again" ]
                                                 completion:completion];
     iTermAnnouncementViewController *existing = _announcements[identifier];
@@ -15100,7 +15098,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     };
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:@"A program has tried to resize the window while this session was not active. Allow it?"
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Allow Once", @"_Open Settings", @"Don’t Show This Again" ]
                                                 completion:completion];
     iTermAnnouncementViewController *existing = _announcements[identifier];
@@ -16071,7 +16069,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     if (self.download && ![self.download appendData:data]) {
         iTermAnnouncementViewController *announcement =
         [iTermAnnouncementViewController announcementWithTitle:@"A file transfer was aborted for exceeding its declared size."
-                                                         style:kiTermAnnouncementViewStyleWarning
+                                                         style:iTermAnnouncementViewStyleWarning
                                                    withActions:@[ ]
                                                     completion:^(int selection) {}];
         [self queueAnnouncement:announcement identifier:@"FileTransferAbortedOversize"];
@@ -16111,7 +16109,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         if (![self announcementWithIdentifier:identifier]) {
             iTermAnnouncementViewController *announcement =
             [iTermAnnouncementViewController announcementWithTitle:@"An upload with an unsupported archive format was requested. You may need a newer version of Latterm."
-                                                             style:kiTermAnnouncementViewStyleWarning
+                                                             style:iTermAnnouncementViewStyleWarning
                                                        withActions:@[]
                                                         completion:^(int selection) {}];
             [self queueAnnouncement:announcement identifier:identifier];
@@ -16256,7 +16254,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:@"An app tried to read screen contents with DECRQCRA. Enable this feature?"
-                                                     style:kiTermAnnouncementViewStyleQuestion
+                                                     style:iTermAnnouncementViewStyleQuestion
                                                withActions:@[ @"Yes", @"No" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -16912,7 +16910,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                           identifier:(NSString *)identifier {
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:message
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"OK" ]
                                                 completion:^(int selection) {}];
     [self queueAnnouncement:announcement identifier:identifier];
@@ -16948,7 +16946,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:title
-                                                     style:kiTermAnnouncementViewStyleQuestion
+                                                     style:iTermAnnouncementViewStyleQuestion
                                                withActions:@[ @"_Yes", @"Always", @"Never" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -17007,7 +17005,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     @"Looks like focus reporting was left on when an ssh session ended unexpectedly or an app misbehaved. Turn it off?";
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:title
-                                                     style:kiTermAnnouncementViewStyleQuestion
+                                                     style:iTermAnnouncementViewStyleQuestion
                                                withActions:@[ @"_Yes", @"Always", @"Never" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -17903,7 +17901,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             DLog(@"Want to show a bell announcement. The bell is audible.");
             announcement =
             [iTermAnnouncementViewController announcementWithTitle:@"The bell is ringing a lot. Silence it?"
-                                                             style:kiTermAnnouncementViewStyleQuestion
+                                                             style:iTermAnnouncementViewStyleQuestion
                                                        withActions:@[ @"_Silence Bell Temporarily",
                                                                       @"Suppress _All Output",
                                                                       @"Don't Offer Again",
@@ -17950,7 +17948,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             // Neither audible nor visible.
             announcement =
             [iTermAnnouncementViewController announcementWithTitle:@"The bell is ringing a lot. Want to suppress all output until things calm down?"
-                                                             style:kiTermAnnouncementViewStyleQuestion
+                                                             style:iTermAnnouncementViewStyleQuestion
                                                        withActions:@[ @"Suppress _All Output",
                                                                       @"Don't Offer Again" ]
                                                         completion:^(int selection) {
@@ -18295,7 +18293,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     NSString *notice = @"The terminal attempted to access the clipboard but it was denied. Enable clipboard access in “Settings > General > Selection > Applications in terminal may access clipboard”.";
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:notice
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Open Settings", @"Don't Show This Again" ]
                                                 completion:^(int selection) {
         if (selection == 0) {
@@ -19991,7 +19989,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     }
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:@"When mouse reporting is on, horizontal scrolling does not switch tabs.\nHold option while swiping or disable horizontal scroll reporting to switch tabs."
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"Settings…" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -20329,7 +20327,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     NSString *command = [[coprocess.command copy] autorelease];
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:[NSString stringWithFormat:@"Coprocess “%@” terminated with output on stderr.", coprocess.command]
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_View Errors", @"Ignore Errors from This Command" ]
                                                 completion:^(int selection) {
                                                     if (selection == 0) {
@@ -21440,7 +21438,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:[NSString stringWithFormat:@"You seem frustrated. Would you like the %@ option key to send esc+keystroke?", leftOrRight]
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:actions
                                                 completion:^(int selection) {
                                                     if (selection < 0) {
@@ -21970,7 +21968,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                   completion:(void (^)(int))completion {
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithMarkdownTitle:message
-                                                     style:isQuestion ? kiTermAnnouncementViewStyleQuestion : kiTermAnnouncementViewStyleWarning
+                                                     style:isQuestion ? iTermAnnouncementViewStyleQuestion : iTermAnnouncementViewStyleWarning
                                                withActions:options
                                                 completion:^(int selection) {
         completion(selection);
@@ -21989,7 +21987,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                           completion:(void (^)(int))completion {
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:message
-                                                     style:isQuestion ? kiTermAnnouncementViewStyleQuestion : kiTermAnnouncementViewStyleWarning
+                                                     style:isQuestion ? iTermAnnouncementViewStyleQuestion : iTermAnnouncementViewStyleWarning
                                                withActions:options
                                                 completion:^(int selection) {
         completion(selection);
@@ -22950,7 +22948,7 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
     }
     announcement =
     [iTermAnnouncementViewController announcementWithTitle:title
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Pause Settings" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -23203,7 +23201,7 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
         NSArray<NSString *> *actions = identifier ? @[ @"Silence Warning" ] : @[];
         iTermAnnouncementViewController *announcement =
         [iTermAnnouncementViewController announcementWithTitle:message
-                                                         style:kiTermAnnouncementViewStyleWarning
+                                                         style:iTermAnnouncementViewStyleWarning
                                                    withActions:actions
                                                     completion:^(int selection) {
             if (!identifier) {
@@ -23422,7 +23420,7 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
                                  completion:(void (^)(BOOL, BOOL))completion {
     iTermAnnouncementViewController *announcement =
     [iTermAnnouncementViewController announcementWithTitle:@"Share clipboard contents with app in terminal?"
-                                                     style:kiTermAnnouncementViewStyleWarning
+                                                     style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"Just Once", @"Always", @"Never" ]
                                                 completion:^(int selection) {
         switch (selection) {
@@ -23477,7 +23475,7 @@ static NSString *IT2AuthorizationAnnouncementIdentifier(NSString *guid) {
          @"view and modify Latterm’s contents. Allow it for this session?", who];
     iTermAnnouncementViewController *announcement =
         [iTermAnnouncementViewController announcementWithTitle:title
-                                                         style:kiTermAnnouncementViewStyleWarning
+                                                         style:iTermAnnouncementViewStyleWarning
                                                    withActions:@[ @"Allow", @"Deny" ]
                                                     completion:^(int selection) {
             // 0 = Allow, 1 = Deny: explicit choices we remember for the connection.

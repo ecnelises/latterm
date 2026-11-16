@@ -17,7 +17,6 @@
 #import "PTYSession.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermAnnouncementViewController.h"
 #import "iTermComposerManager.h"
 #import "iTermExpect.h"
 #import "iTermExpressionEvaluator.h"
