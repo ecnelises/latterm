@@ -19,7 +19,6 @@
 #import "iTermBuiltInFunctions.h"
 #import "iTermCache.h"
 #import "iTermColorMap.h"
-#import "iTermCommandRunner.h"
 #import "iTermConfigGenerationTracker.h"
 #import "iTermData.h"
 #import "iTermRowOutputCache.h"

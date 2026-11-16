@@ -7,7 +7,7 @@
 
 #import "iTermScriptExporter.h"
 
-#import "iTermCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermPythonRuntimeDownloader.h"
 #import "iTermSetupCfgParser.h"
 #import "NSDictionary+iTerm.h"

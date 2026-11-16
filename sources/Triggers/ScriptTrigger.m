@@ -9,7 +9,6 @@
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermBackgroundCommandRunner.h"
 #import "iTermCommandRunnerPool.h"
 #import "RegexKitLite.h"
 #import "NSStringITerm.h"

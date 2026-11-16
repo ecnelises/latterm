@@ -9,7 +9,7 @@
 
 #import "DebugLogging.h"
 #import "iTermBuildingScriptWindowController.h"
-#import "iTermCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermScriptArchive.h"
 #import "iTermScriptHistory.h"
 #import "iTermWarning.h"

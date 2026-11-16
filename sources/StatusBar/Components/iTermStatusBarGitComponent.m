@@ -11,7 +11,7 @@
 #import "DebugLogging.h"
 #import "FontSizeEstimator.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermCommandRunner.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermController.h"
 #import "iTermGitPollWorker.h"
 #import "iTermGitPoller.h"
