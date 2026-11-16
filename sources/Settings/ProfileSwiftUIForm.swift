@@ -28,10 +28,31 @@ struct ProfileSwiftUISection: View {
     let revision: Int
 
     private var compact: Bool { cardWidth < 480 }
-    private var labelColumnWidth: CGFloat { cardWidth >= 600 ? 168 : 140 }
+    private var labelColumnWidth: CGFloat { cardWidth >= 600 ? 184 : 140 }
+    private var horizontalPadding: CGFloat { min(14, max(0, cardWidth * 0.25)) }
+
+    private func rowsWithContinuationIndent(_ visibleRows: [ProfileFormRow]) -> [(row: ProfileFormRow, indentedToControlColumn: Bool)] {
+        var inLabeledGroup = false
+        return visibleRows.map { row in
+            if row.fullCardWidth {
+                inLabeledGroup = false
+                return (row, false)
+            }
+            if row.label != nil {
+                inLabeledGroup = row.suppressSeparatorAfter
+                return (row, false)
+            }
+            let indented = inLabeledGroup
+            if !row.suppressSeparatorAfter {
+                inLabeledGroup = false
+            }
+            return (row, indented)
+        }
+    }
 
     var body: some View {
         let visibleRows = section.rows.filter { $0.currentlyVisible() }
+        let arrangedRows = rowsWithContinuationIndent(visibleRows)
         VStack(alignment: .leading, spacing: 8) {
             if let title = section.titleLabel {
                 HStack {
@@ -44,17 +65,18 @@ struct ProfileSwiftUISection: View {
                 }
             }
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(visibleRows.enumerated()), id: \.element.id) { index, row in
-                    ProfileSwiftUIRow(row: row,
+                ForEach(Array(arrangedRows.enumerated()), id: \.element.row.id) { index, item in
+                    ProfileSwiftUIRow(row: item.row,
                                       compact: compact,
+                                      indentedToControlColumn: item.indentedToControlColumn,
                                       labelColumnWidth: labelColumnWidth,
                                       revision: revision)
                         .padding(.vertical, 10)
-                        .padding(.horizontal, 14)
-                        .id(row.id)
-                    if index + 1 < visibleRows.count && !row.suppressSeparatorAfter {
+                        .padding(.horizontal, horizontalPadding)
+                        .id(item.row.id)
+                    if index + 1 < arrangedRows.count && !item.row.suppressSeparatorAfter {
                         Divider()
-                            .padding(.leading, 14)
+                            .padding(.leading, horizontalPadding)
                             .opacity(0.65)
                     }
                 }
@@ -73,9 +95,23 @@ struct ProfileSwiftUISection: View {
 struct ProfileSwiftUIRow: View {
     let row: ProfileFormRow
     let compact: Bool
+    var indentedToControlColumn: Bool = false
     var labelColumnWidth: CGFloat = 160
     let revision: Int
     private var stacked: Bool { compact || row.fullCardWidth }
+
+    private var labelTopPadding: CGFloat {
+        switch row.content {
+        case .checkbox:
+            return 1
+        case .slider:
+            return 2
+        case .custom:
+            return 1
+        case .single, .wrappingLine, .fontPicker, .note:
+            return 3
+        }
+    }
 
     var body: some View {
         Group {
@@ -88,6 +124,13 @@ struct ProfileSwiftUIRow: View {
                 HStack(alignment: .top, spacing: 12) {
                     label
                         .frame(width: labelColumnWidth, alignment: .leading)
+                    content
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            } else if indentedToControlColumn {
+                HStack(alignment: .top, spacing: 12) {
+                    Color.clear
+                        .frame(width: labelColumnWidth, height: 1)
                     content
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -104,7 +147,7 @@ struct ProfileSwiftUIRow: View {
                 .font(.body)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 3)
+                .padding(.top, labelTopPadding)
         }
     }
 
@@ -224,13 +267,14 @@ private struct ProfileFlowLayout: Layout {
     }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 320
+        let width = max(0, proposal.width ?? 320)
         let frames = arrange(subviews, width: width)
         return CGSize(width: width, height: frames.map { $0.0.maxY }.max() ?? 0)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        for (frame, index) in arrange(subviews, width: bounds.width) {
+        let safeWidth = max(0, bounds.width)
+        for (frame, index) in arrange(subviews, width: safeWidth) {
             subviews[index].place(at: CGPoint(x: bounds.minX + frame.minX, y: bounds.minY + frame.minY),
                                   anchor: .topLeading, proposal: ProposedViewSize(frame.size))
         }
@@ -247,7 +291,7 @@ struct ProfileEditorBridge: NSViewRepresentable {
     }
     func updateNSView(_ view: ProfileEditorContainer, context: Context) { view.install([editor]) }
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: ProfileEditorContainer, context: Context) -> CGSize? {
-        let width = proposal.width ?? 320
+        let width = max(0, proposal.width ?? 320)
         let measured = ProfileFormMeasurement.measureControl(editor, maxWidth: width)
         return CGSize(width: fillsWidth ? width : measured.width, height: measured.height)
     }
@@ -261,7 +305,7 @@ private struct ProfileCustomEditorBridge: NSViewRepresentable {
     func makeNSView(context: Context) -> ProfileEditorContainer { ProfileEditorContainer(editors: editors, fillsBounds: false) }
     func updateNSView(_ view: ProfileEditorContainer, context: Context) { view.install(editors) }
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: ProfileEditorContainer, context: Context) -> CGSize? {
-        let width = proposal.width ?? 320
+        let width = max(1, proposal.width ?? 320)
         return CGSize(width: width, height: arrange(0, width, 0, compact))
     }
 }

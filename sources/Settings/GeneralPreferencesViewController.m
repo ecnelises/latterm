@@ -715,8 +715,8 @@ enum {
     NSView *canvas = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 600, 500)];
     NSArray<NSValue *> *startupFrames = @[
         [NSValue valueWithRect:NSMakeRect(16, 158, 568, 18)],
-        [NSValue valueWithRect:NSMakeRect(13, 120, 530, 28)],
-        [NSValue valueWithRect:NSMakeRect(558, 124, 23, 20)],
+        [NSValue valueWithRect:NSMakeRect(13, 120, 340, 28)],
+        [NSValue valueWithRect:NSMakeRect(361, 124, 23, 20)],
         [NSValue valueWithRect:NSMakeRect(14, 90, 570, 18)],
         [NSValue valueWithRect:NSMakeRect(14, 62, 570, 18)],
         [NSValue valueWithRect:NSMakeRect(14, 34, 570, 18)],
@@ -726,7 +726,9 @@ enum {
         NSView *control = startup[index];
         [control removeFromSuperview];
         control.frame = startupFrames[index].rectValue;
-        control.autoresizingMask = control == _warningButton ? NSViewMinXMargin : NSViewWidthSizable;
+        control.autoresizingMask = control == _openWindowsAtStartupLabel || control == _alwaysOpenLegend
+            ? NSViewWidthSizable
+            : (NSViewMaxXMargin | NSViewMinYMargin);
         [canvas addSubview:control];
     }
     for (NSUInteger index = 0; index < closing.count; index++) {

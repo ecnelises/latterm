@@ -282,7 +282,7 @@ static NSDictionary *gIntrospection;
     _pageScrollView.frame = self.view.bounds;
     const CGFloat pageWidth = _pageScrollView.contentSize.width;
     const CGFloat width = MAX(0, pageWidth - 64);
-    const CGFloat checkboxWidth = MAX(192, _excludeDefaults.intrinsicContentSize.width);
+    const CGFloat checkboxWidth = ceil(_excludeDefaults.fittingSize.width);
     _searchField.frame = NSMakeRect(32, 6, MAX(160, width - checkboxWidth - 12), 26);
     _excludeDefaults.frame = NSMakeRect(32 + width - checkboxWidth, 8, checkboxWidth, 22);
     const CGFloat helpHeight = ceil([_editingHelp.cell cellSizeForBounds:NSMakeRect(0, 0, width, CGFLOAT_MAX)].height);

@@ -143,6 +143,34 @@ final class AppIconTests: XCTestCase {
         }
     }
 
+    func testHashGlyphStrokesAreBalanced() throws {
+        let foreground = try XCTUnwrap(
+            LattermAppIconRenderer.makeIconComposerForegroundCGImage(artwork: .release,
+                                                                     pixelSize: 1024,
+                                                                     variant: .glyphHash)
+        )
+        let rep = NSBitmapImageRep(cgImage: foreground)
+        func opaqueSpan(atY y: Int) -> (minX: Int, maxX: Int)? {
+            var minX: Int?
+            var maxX: Int?
+            for x in 0..<550 {
+                if (rep.colorAt(x: x, y: y)?.alphaComponent ?? 0) > 0.5 {
+                    if minX == nil { minX = x }
+                    maxX = x
+                }
+            }
+            guard let minX, let maxX else { return nil }
+            return (minX, maxX)
+        }
+        // Check vertical stem centers against the horizontal bar centers at y = 430 and y = 612.
+        let topBar = try XCTUnwrap(opaqueSpan(atY: 430))
+        let botBar = try XCTUnwrap(opaqueSpan(atY: 612))
+        let midVerts = try XCTUnwrap(opaqueSpan(atY: 521))
+        let barCenter = Double(topBar.minX + topBar.maxX + botBar.minX + botBar.maxX) / 4.0
+        let vertCenter = Double(midVerts.minX + midVerts.maxX) / 2.0
+        XCTAssertLessThanOrEqual(abs(barCenter - vertCenter), 4.0)
+    }
+
     private func renderedPNGBytes(variant: AppIconVariant, channel: AppIconChannel) -> Data? {
         let image = LattermAppIconRenderer.makeIconImage(variant: variant,
                                                          channel: channel,

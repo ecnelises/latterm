@@ -647,7 +647,15 @@ typedef enum {
 {
     [tableView_ setDoubleAction:@selector(tableViewRowDoubleClicked:)];
     [tableView_ setTarget:self];
+    tableView_.columnAutoresizingStyle = NSTableViewUniformColumnAutoresizingStyle;
+    for (NSTableColumn *column in tableView_.tableColumns) {
+        column.resizingMask = NSTableColumnAutoresizingMask | NSTableColumnUserResizingMask;
+    }
     NSView *container = tableView_.enclosingScrollView.superview;
+    container.identifier = @"PointerBindingsCustomView";
+    NSButton *addButton = nil;
+    NSButton *removeButton = nil;
+    NSButton *loadDefaultsButton = nil;
     for (NSView *view in container.subviews) {
         if (![view isKindOfClass:NSButton.class]) { continue; }
         NSButton *button = (NSButton *)view;
@@ -658,10 +666,22 @@ typedef enum {
             button.imagePosition = NSNoImage;
             button.title = add ? NSLocalizedString(@"Add", @"Mouse binding action") : NSLocalizedString(@"Remove", @"Mouse binding action");
             button.bezelStyle = NSBezelStyleRounded;
-            button.frame = NSMakeRect(add ? 20 : 96, 14, 72, 28);
+            if (add) {
+                addButton = button;
+            } else {
+                removeButton = button;
+            }
         } else if (button.action == @selector(loadDefaults:)) {
-            button.frame = NSMakeRect(184, 14, 140, 28);
+            loadDefaultsButton = button;
         }
+    }
+    CGFloat buttonX = 20;
+    for (NSButton *button in @[addButton ?: [NSNull null], removeButton ?: [NSNull null], loadDefaultsButton ?: [NSNull null]]) {
+        if (![button isKindOfClass:NSButton.class]) { continue; }
+        const CGFloat width = MAX(68, ceil(button.fittingSize.width) + 12);
+        button.frame = NSMakeRect(buttonX, 14, width, 28);
+        button.autoresizingMask = NSViewMaxXMargin | NSViewMaxYMargin;
+        buttonX += width + 8;
     }
     NSArray *actions = [[[PointerPrefsController localizedActionMap] allValues] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     [editAction_ addItemsWithTitles:actions];

@@ -163,68 +163,73 @@ struct ProfileWorkspace: View {
                 $0.task == model.task && $0.advanced && $0.section.isFormVisible
             }
 
-            VStack(alignment: .leading, spacing: 0) {
-                profileToolbar(compact: availableWidth < 460)
-                    .frame(width: cardWidth, alignment: .leading)
-                    .padding(.horizontal, horizontalInset)
-                    .padding(.top, model.editingSession ? 16 : 2)
-                    .padding(.bottom, 12)
-                Divider()
-                    .padding(.horizontal, horizontalInset)
-                VStack(alignment: .leading, spacing: 6) {
-                    taskNavigation(compact: availableWidth < 400)
-                    Text(model.task.summary)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(width: cardWidth, alignment: .leading)
-                .padding(.horizontal, horizontalInset)
-                .padding(.top, 12)
-                .padding(.bottom, 10)
-
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 22) {
-                            ForEach(primarySections) { record in
-                                ProfileSwiftUISection(section: record.section,
-                                                      cardWidth: cardWidth,
-                                                      revision: model.revision)
-                            }
-                            if !advancedSections.isEmpty {
-                                DisclosureGroup(isExpanded: $model.showAdvanced) {
-                                    VStack(alignment: .leading, spacing: 22) {
-                                        ForEach(advancedSections) { record in
-                                            ProfileSwiftUISection(section: record.section,
-                                                                  cardWidth: cardWidth,
-                                                                  revision: model.revision)
-                                        }
-                                    }
-                                    .padding(.top, 12)
-                                } label: {
-                                    Text(NSLocalizedString("Advanced Options", comment: "Profile disclosure"))
-                                        .font(.system(size: 13, weight: .semibold))
-                                }
-                                .padding(.vertical, 10)
-                                .padding(.horizontal, 14)
-                                .frame(width: cardWidth, alignment: .leading)
-                                .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
-                                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.primary.opacity(0.08)))
-                            }
-                        }
+            if safeWidth > horizontalInset * 2 + 40 && safeHeight > 0 {
+                VStack(alignment: .leading, spacing: 0) {
+                    profileToolbar(compact: availableWidth < 460)
                         .frame(width: cardWidth, alignment: .leading)
                         .padding(.horizontal, horizontalInset)
-                        .padding(.top, 8)
-                        .padding(.bottom, 28)
-                        .frame(width: max(safeWidth, cardWidth + horizontalInset * 2), alignment: .topLeading)
+                        .padding(.top, model.editingSession ? 16 : 2)
+                        .padding(.bottom, 12)
+                    Divider()
+                        .padding(.horizontal, horizontalInset)
+                    VStack(alignment: .leading, spacing: 6) {
+                        taskNavigation(compact: availableWidth < 400)
+                        Text(model.task.summary)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .onChange(of: model.revealRow) { _, row in
-                        if let row { proxy.scrollTo(row, anchor: .center) }
+                    .frame(width: cardWidth, alignment: .leading)
+                    .padding(.horizontal, horizontalInset)
+                    .padding(.top, 12)
+                    .padding(.bottom, 10)
+
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 22) {
+                                ForEach(primarySections) { record in
+                                    ProfileSwiftUISection(section: record.section,
+                                                          cardWidth: cardWidth,
+                                                          revision: model.revision)
+                                }
+                                if !advancedSections.isEmpty {
+                                    DisclosureGroup(isExpanded: $model.showAdvanced) {
+                                        VStack(alignment: .leading, spacing: 22) {
+                                            ForEach(advancedSections) { record in
+                                                ProfileSwiftUISection(section: record.section,
+                                                                      cardWidth: cardWidth,
+                                                                      revision: model.revision)
+                                            }
+                                        }
+                                        .padding(.top, 12)
+                                    } label: {
+                                        Text(NSLocalizedString("Advanced Options", comment: "Profile disclosure"))
+                                            .font(.system(size: 13, weight: .semibold))
+                                    }
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 14)
+                                    .frame(width: cardWidth, alignment: .leading)
+                                    .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 10))
+                                    .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.primary.opacity(0.08)))
+                                }
+                            }
+                            .frame(width: cardWidth, alignment: .leading)
+                            .padding(.horizontal, horizontalInset)
+                            .padding(.top, 8)
+                            .padding(.bottom, 28)
+                            .frame(width: max(safeWidth, cardWidth + horizontalInset * 2), alignment: .topLeading)
+                        }
+                        .onChange(of: model.revealRow) { _, row in
+                            if let row { proxy.scrollTo(row, anchor: .center) }
+                        }
                     }
                 }
+                .frame(width: safeWidth, height: safeHeight, alignment: .topLeading)
+                .background(Color(nsColor: .windowBackgroundColor))
+            } else {
+                Color(nsColor: .windowBackgroundColor)
+                    .frame(width: safeWidth, height: safeHeight)
             }
-            .frame(width: safeWidth, height: safeHeight, alignment: .topLeading)
-            .background(Color(nsColor: .windowBackgroundColor))
         }
         .onChange(of: model.task) { _, _ in
             model.revealRow = nil

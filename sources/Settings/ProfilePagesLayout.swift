@@ -340,6 +340,7 @@ extension ProfilesGeneralPreferencesViewController {
     }
 
     @objc func installEditSessionLayout() {
+        profiles.useSettingsAppearance()
         let sections: [ProfileSectionCard] = [
             ProfileSectionCard(
                 title: ProfilePageHelpers.localizedSection("Session"),
@@ -1243,10 +1244,14 @@ final class KeyboardFormLayout: NSObject {
         let globalViews = global is NSButton ? [global] : global.subviews
         let navHelp = tabs.tabViewItems.indices.contains(1) ? unownedHelpButtons(in: tabs.tabViewItems[1].view) : []
         let hotkeyNotes = tabs.tabViewItems.indices.contains(2) ? unownedNotes(in: tabs.tabViewItems[2].view) : []
+        let remapHelp = tabs.tabViewItems.indices.contains(3) ? unownedHelpButtons(in: tabs.tabViewItems[3].view) : []
+        let systemNotes = tabs.tabViewItems.indices.contains(4) ? unownedNotes(in: tabs.tabViewItems[4].view) : []
 
         var claimed = known
         navHelp.forEach { claimed.insert(ObjectIdentifier($0)) }
         hotkeyNotes.forEach { claimed.insert(ObjectIdentifier($0)) }
+        remapHelp.forEach { claimed.insert(ObjectIdentifier($0)) }
+        systemNotes.forEach { claimed.insert(ObjectIdentifier($0)) }
 
         var groups: [[ProfileFormRow]] = [
             [ProfileFormRow(content: .custom(hostedViews: [mapping]) { x, width, y, _ in
@@ -1279,12 +1284,13 @@ final class KeyboardFormLayout: NSObject {
              single("leftCommand", label: "leftCommandLabel", fillsWidth: false, maxWidth: 260),
              single("rightCommand", label: "rightCommandLabel", fillsWidth: false, maxWidth: 260),
              single("function", label: "functionLabel", fillsWidth: false, maxWidth: 260),
-             ProfileFormRow(content: .wrappingLine(globalViews.map { .natural($0) }), suppressSeparatorAfter: true),
+             ProfileFormRow(content: .wrappingLine(globalViews.map { .natural($0) } + remapHelp.map { .fixed($0, width: 22) }),
+                            suppressSeparatorAfter: true),
              button("reset")],
             [ProfileFormRow(content: .wrappingLine([
                 .natural(control("force")),
                 .natural(control("locale"), minWidth: 140, maxWidth: 280)
-             ]), suppressSeparatorAfter: true),
+             ]), helperViews: systemNotes, suppressSeparatorAfter: true),
              checkbox("once", indent: 20),
              checkbox("symbolic")]
         ]
