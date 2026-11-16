@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <XCTest/XCTest.h>
-#import "iTermRule.h"
+#import "iTerm2SharedARC-Swift.h"
 
 @interface iTermRuleTest : XCTestCase
 
