@@ -17,7 +17,6 @@
 #import "iTermBadgeLabel.h"
 #import "iTermColorMap.h"
 #import "iTermComposerManager.h"
-#import "iTermCopyModeHandler.h"
 #import "iTermExpect.h"
 #import "iTermIntervalTreeObserver.h"
 #import "iTermLoggingHelper.h"
