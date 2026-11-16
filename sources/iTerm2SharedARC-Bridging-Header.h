@@ -34,8 +34,6 @@
 #import "PseudoTerminal+Private.h"
 #import "PseudoTerminal+WindowStyle.h"
 #import "AtomicHelpers.h"
-#import "iTermAnnouncementView.h"
-#import "iTermAnnouncementViewController.h"
 #import "iTermApplicationDelegate.h"
 #import "iTermArrangementKeys.h"
 #import "SmartSelectionController.h"

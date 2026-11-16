@@ -65,7 +65,6 @@
 #import "iTermAdjustFontSizeHelper.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermModalSheetRunner.h"
-#import "iTermAnnouncementView.h"
 #import "iTermApplication.h"
 #import "iTermApplicationDelegate.h"
 #import "iTermBroadcastInputHelper.h"
