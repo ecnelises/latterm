@@ -599,11 +599,13 @@
                 NSTabView *pointerTabs = [[panel valueForKey:@"_pointerViewController"] valueForKey:@"_tabView"];
                 [pointerTabs selectTabViewItem:pointerTabs.tabViewItems.lastObject];
                 [window.contentView layoutSubtreeIfNeeded];
-                NSView *bindings = pointerTabs.tabViewItems.lastObject.view.subviews.firstObject;
+                NSView *bindings = [self descendantWithViewIdentifier:@"PointerBindingsCustomView"
+                                                               inView:pointerTabs.tabViewItems.lastObject.view];
+                XCTAssertNotNil(bindings);
                 NSUInteger titledActions = 0;
                 for (NSView *child in bindings.subviews) {
                     if ([child isKindOfClass:NSScrollView.class]) {
-                        XCTAssertLessThanOrEqual(NSMaxX(child.frame), NSWidth(bindings.bounds));
+                        XCTAssertLessThanOrEqual(NSMaxX(child.frame), NSWidth(bindings.bounds) + 0.5);
                     } else if ([child isKindOfClass:NSButton.class]) {
                         NSButton *button = (NSButton *)child;
                         if (button.action == @selector(add:) || button.action == @selector(remove:)) {
@@ -780,6 +782,19 @@
     }
     for (NSView *child in root.subviews) {
         NSView *found = [self descendantWithIdentifier:identifier inView:child];
+        if (found) {
+            return found;
+        }
+    }
+    return nil;
+}
+
+- (NSView *)descendantWithViewIdentifier:(NSString *)identifier inView:(NSView *)root {
+    if ([root.identifier isEqualToString:identifier]) {
+        return root;
+    }
+    for (NSView *child in root.subviews) {
+        NSView *found = [self descendantWithViewIdentifier:identifier inView:child];
         if (found) {
             return found;
         }
@@ -2147,8 +2162,9 @@
     @try {
         // Profile workspace picker aligns flush with the left edge of the workspace cards (32pt inset).
         [panel showProfilesTabView:nil];
-        [window.contentView layoutSubtreeIfNeeded];
         ProfilePreferencesViewController *profilesVC = [panel valueForKey:@"_profilesViewController"];
+        [profilesVC selectDefaultProfile];
+        [window.contentView layoutSubtreeIfNeeded];
         NSView *workspaceHost = [self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:profilesVC.view];
         XCTAssertNotNil(workspaceHost);
         [workspaceHost layoutSubtreeIfNeeded];
@@ -2157,6 +2173,34 @@
         NSRect pickerInProfiles = [profilePicker convertRect:profilePicker.bounds
                                                       toView:profilesVC.view];
         XCTAssertLessThanOrEqual(NSMinX(pickerInProfiles), 36.0, @"Profile picker must not have centered leading blank space");
+        XCTAssertLessThanOrEqual(NSWidth(pickerInProfiles), 160.0, @"Profile picker must hug its selected title width so Default Profile badge sits adjacent");
+
+        // Font picker spacing icons (v|i and n/n) align vertically with their adjacent text fields.
+        [profilesVC.view selectWorkspaceTask:@"appearance"];
+        [window.contentView layoutSubtreeIfNeeded];
+        id textVC = [profilesVC valueForKey:@"_textViewController"];
+        NSView *asciiPicker = [textVC valueForKey:@"_asciiFontPicker"];
+        NSView *hSpacing = [asciiPicker valueForKey:@"horizontalSpacing"];
+        NSView *vSpacing = [asciiPicker valueForKey:@"verticalSpacing"];
+        XCTAssertNotNil(hSpacing);
+        XCTAssertNotNil(vSpacing);
+        NSUInteger verifiedSpacingIcons = 0;
+        for (NSView *sub in asciiPicker.subviews) {
+            if ([sub isKindOfClass:NSImageView.class]) {
+                XCTAssertEqualWithAccuracy(NSWidth(sub.frame), 18.0, 0.5);
+                XCTAssertEqualWithAccuracy(NSHeight(sub.frame), 20.0, 0.5);
+                NSTextField *hTF = [hSpacing valueForKey:@"textField"];
+                NSTextField *vTF = [vSpacing valueForKey:@"textField"];
+                NSRect hRect = [hTF convertRect:hTF.bounds toView:asciiPicker];
+                NSRect vRect = [vTF convertRect:vTF.bounds toView:asciiPicker];
+                const CGFloat delta = MIN(fabs(NSMidY(sub.frame) - NSMidY(hRect)),
+                                          fabs(NSMidY(sub.frame) - NSMidY(vRect)));
+                XCTAssertLessThanOrEqual(delta, 1.0,
+                                         @"Spacing icon must share vertical centerline with spacing text field");
+                verifiedSpacingIcons++;
+            }
+        }
+        XCTAssertEqual(verifiedSpacingIcons, 2);
 
         // App Behavior & Appearance sections unify their form control columns.
         [panel showGlobalTabView:nil];
@@ -2199,27 +2243,38 @@
             XCTAssertEqualWithAccuracy(minControlX, expectedAppControlX, 2.0, @"Appearance section %ld misaligned", (long)i);
         }
 
-        // Mouse > Bindings fits within viewport and places buttons evenly without gaps.
+        // Mouse & Trackpad sections use SwiftUI cards, fit within viewport, and align action buttons cleanly.
         [panel showMouseTabView:nil];
         [window.contentView layoutSubtreeIfNeeded];
-        NSTabView *mouseTabs = [[panel valueForKey:@"_pointerViewController"] valueForKey:@"_tabView"];
+        id pointerVC = [panel valueForKey:@"_pointerViewController"];
+        NSButton *ffmSubviews = [pointerVC valueForKey:@"_focusFollowsMouseIncludingSubviews"];
+        XCTAssertFalse([ffmSubviews.title containsString:@"Composer"], @"Removed Composer feature must not appear in Mouse settings");
+        NSTabView *mouseTabs = [pointerVC valueForKey:@"_tabView"];
         NSScrollView *mouseScroll = (NSScrollView *)[self descendantWithIdentifier:@"SettingsSections"
-                                                                          inView:[[panel valueForKey:@"_pointerViewController"] view]];
+                                                                          inView:[pointerVC view]];
         XCTAssertLessThanOrEqual(NSWidth(mouseScroll.documentView.bounds), NSWidth(mouseScroll.contentView.bounds) + 1);
-        NSView *bindings = mouseTabs.tabViewItems.lastObject.view.subviews.firstObject;
+        XCTAssertNotNil([self descendantWithIdentifier:@"ProfileSwiftUIForm" inView:mouseTabs.tabViewItems[0].view]);
+        NSView *bindings = [self descendantWithViewIdentifier:@"PointerBindingsCustomView"
+                                                       inView:mouseTabs.tabViewItems.lastObject.view];
+        XCTAssertNotNil(bindings);
+        NSScrollView *bindingsScroll = nil;
         NSMutableArray<NSButton *> *bindingButtons = [NSMutableArray array];
         for (NSView *child in bindings.subviews) {
-            if ([child isKindOfClass:NSButton.class]) {
+            if ([child isKindOfClass:NSScrollView.class]) {
+                bindingsScroll = (NSScrollView *)child;
+            } else if ([child isKindOfClass:NSButton.class]) {
                 [bindingButtons addObject:(NSButton *)child];
             }
         }
         [bindingButtons sortUsingComparator:^NSComparisonResult(NSButton *a, NSButton *b) {
             return [@(NSMinX(a.frame)) compare:@(NSMinX(b.frame))];
         }];
-        XCTAssertEqual(bindingButtons.count, 3);
+        XCTAssertNotNil(bindingsScroll);
+        XCTAssertEqual(bindingButtons.count, 4);
         XCTAssertEqualWithAccuracy(NSMinX(bindingButtons[0].frame), 0, 1);
         XCTAssertEqualWithAccuracy(NSMinX(bindingButtons[1].frame) - NSMaxX(bindingButtons[0].frame), 8, 1);
         XCTAssertEqualWithAccuracy(NSMinX(bindingButtons[2].frame) - NSMaxX(bindingButtons[1].frame), 8, 1);
+        XCTAssertEqualWithAccuracy(NSMaxX(bindingButtons[3].frame), NSMaxX(bindingsScroll.frame), 1);
 
         // Actions & Snippets trailing buttons align flush with their scroll views.
         [[panel valueForKey:@"_tabView"] selectTabViewItem:[panel valueForKey:@"_shortcutsTabViewItem"]];

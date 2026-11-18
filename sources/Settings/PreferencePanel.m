@@ -627,7 +627,8 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     _settingsContent.frame = frame;
     [_settingsContent setFitsViewport:(_editCurrentSessionMode ||
                                        _tabView.selectedTabViewItem == _profilesTabViewItem ||
-                                       _tabView.selectedTabViewItem == _keyboardTabViewItem)];
+                                       _tabView.selectedTabViewItem == _keyboardTabViewItem ||
+                                       _tabView.selectedTabViewItem == _mouseTabViewItem)];
     [self.window.contentView addSubview:_settingsContent];
 }
 
@@ -1076,7 +1077,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
     [_settingsContent scrollToTop];
     [_settingsContent setFitsViewport:(_editCurrentSessionMode ||
                                        tabViewItem == _profilesTabViewItem ||
-                                       tabViewItem == _keyboardTabViewItem)];
+                                       tabViewItem == _keyboardTabViewItem ||
+                                       tabViewItem == _mouseTabViewItem)];
     if (tabViewItem == _profilesTabViewItem) {
         if (_disableResize == 0) {
             [_profilesViewController resizeWindowForCurrentTabAnimated:YES];
@@ -1357,7 +1359,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 
 - (void)preferencePanelSetContentSize:(NSSize)size {
     if (_editCurrentSessionMode || _tabView.selectedTabViewItem == _profilesTabViewItem ||
-        _tabView.selectedTabViewItem == _keyboardTabViewItem) {
+        _tabView.selectedTabViewItem == _keyboardTabViewItem ||
+        _tabView.selectedTabViewItem == _mouseTabViewItem) {
         [_settingsContent setFitsViewport:YES];
         return;
     }

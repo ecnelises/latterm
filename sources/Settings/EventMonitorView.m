@@ -29,7 +29,29 @@
     _threeFingerTapGestureRecognizer =
         [[ThreeFingerTapGestureRecognizer alloc] initWithTarget:self
                                                        selector:@selector(threeFingerTap:)];
+    label_.alignment = NSTextAlignmentCenter;
+    label_.textColor = [NSColor secondaryLabelColor];
+    label_.font = [NSFont systemFontOfSize:12 weight:NSFontWeightRegular];
+    label_.stringValue = [self promptString];
+    [self layoutLabel];
+}
 
+- (NSString *)promptString {
+    return NSLocalizedString(@"Click or Tap Here to Set Input Fields", @"Pointer capture prompt");
+}
+
+- (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
+    [super resizeSubviewsWithOldSize:oldSize];
+    [self layoutLabel];
+}
+
+- (void)layoutLabel {
+    if (!label_) {
+        return;
+    }
+    [label_ sizeToFit];
+    const CGFloat h = ceil(label_.frame.size.height);
+    label_.frame = NSMakeRect(6, floor((NSHeight(self.bounds) - h) * 0.5), MAX(0, NSWidth(self.bounds) - 12), h);
 }
 
 - (void)dealloc {
@@ -58,8 +80,10 @@
 
 - (void)showNotSupported
 {
-    [label_ setStringValue:@"You can't customize that button"];
-    [label_ performSelector:@selector(setStringValue:) withObject:@"Click or Tap Here to Set Input Fields" afterDelay:1];
+    [NSObject cancelPreviousPerformRequestsWithTarget:label_];
+    [label_ setStringValue:NSLocalizedString(@"Left-click cannot be customized here", @"Pointer capture unsupported button")];
+    [self layoutLabel];
+    [label_ performSelector:@selector(setStringValue:) withObject:[self promptString] afterDelay:1.2];
 }
 
 - (void)mouseUp:(NSEvent *)theEvent {
@@ -133,10 +157,13 @@
 
 - (void)drawRect:(NSRect)dirtyRect
 {
-    [[NSColor controlBackgroundColor] set];
-    NSRectFill(self.bounds);
-    [[NSColor separatorColor] set];
-    NSFrameRect(NSMakeRect(0, 0, self.frame.size.width, self.frame.size.height));
+    NSRect inset = NSInsetRect(self.bounds, 0.5, 0.5);
+    NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:inset xRadius:6 yRadius:6];
+    [[NSColor controlBackgroundColor] setFill];
+    [path fill];
+    [[NSColor separatorColor] setStroke];
+    path.lineWidth = 1.0;
+    [path stroke];
 
     [super drawRect:dirtyRect];
 }

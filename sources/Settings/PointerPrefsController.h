@@ -85,9 +85,11 @@ extern NSString *kForceTouchSingleClick;
 - (IBAction)ok:(id)sender;
 - (IBAction)cancel:(id)sender;
 - (IBAction)add:(id)sender;
+- (IBAction)editSelected:(id)sender;
 - (IBAction)remove:(id)sender;
 - (IBAction)actionChanged:(id)sender;
 - (IBAction)clicksChanged:(id)sender;
 - (IBAction)loadDefaults:(id)sender;
+- (void)layoutBindingsContainer;
 
 @end

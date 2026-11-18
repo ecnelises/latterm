@@ -27,7 +27,7 @@ public class SizePickerView: NSView, NSTextFieldDelegate {
         }
     }
     public override var fittingSize: NSSize {
-        return NSSize(width: 54.0, height: 27.0)
+        return NSSize(width: 58.0, height: 24.0)
     }
     @objc public let textField = NSTextField()
     let stepper = NSStepper()
@@ -54,6 +54,7 @@ public class SizePickerView: NSView, NSTextFieldDelegate {
         textField.isEditable = true
         textField.isSelectable = true
         textField.usesSingleLineMode = true
+        textField.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
         textField.doubleValue = size
         stepper.doubleValue = size
         addSubview(stepper)
@@ -86,16 +87,20 @@ public class SizePickerView: NSView, NSTextFieldDelegate {
         textField.sizeToFit()
         stepper.sizeToFit()
 
-        let margin = CGFloat(0)
+        let gap: CGFloat = 2.0
+        let stepperWidth = stepper.frame.size.width
         let stepperHeight = stepper.frame.size.height
-        stepper.frame = CGRect(x: NSMaxX(bounds) - stepper.frame.size.width,
-                               y: 0,
-                               width: stepper.frame.size.width,
+        let stepperY = floor((bounds.height - stepperHeight) * 0.5)
+        stepper.frame = CGRect(x: max(0, NSMaxX(bounds) - stepperWidth),
+                               y: stepperY,
+                               width: stepperWidth,
                                height: stepperHeight)
-        let textFieldHeight = CGFloat(21)
+        let naturalTextFieldHeight = max(22.0, ceil(textField.frame.size.height))
+        let textFieldHeight = bounds.height > 0 ? min(bounds.height, naturalTextFieldHeight) : naturalTextFieldHeight
+        let textFieldY = floor((bounds.height - textFieldHeight) * 0.5)
         textField.frame = CGRect(x: 0,
-                                 y: (stepperHeight - textFieldHeight) / 2,
-                                 width: bounds.size.width - NSWidth(stepper.frame) - margin,
+                                 y: textFieldY,
+                                 width: max(0, NSMinX(stepper.frame) - gap),
                                  height: textFieldHeight)
     }
 

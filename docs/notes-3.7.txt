@@ -15,6 +15,10 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Rebuild Mouse & Trackpad settings with grouped
+  cards and a cleaner bindings editor, align font
+  spacing icons with inputs, and tighten the
+  Default Profile toolbar badge.
 - Add ordered per-language and symbol font rules
   with regional CJK glyph shaping, relative scale,
   and baseline offset, and reorganize Typography

@@ -18,6 +18,7 @@
 #import "iTermFunctionCallTextFieldDelegate.h"
 #import "iTermPasteSpecialViewController.h"
 #import "iTermUserDefaults.h"
+#import "iTermWarning.h"
 
 static NSString *kPointerActionsKey = @"PointerActions";  // Used in NSUserDefaults
 static NSString *kActionKey = @"Action";  // Used within values
@@ -31,7 +32,6 @@ static NSString *kControlKeyChar = @"^";
 #define kLeftButton 0
 #define kRightButton 1
 #define kMiddleButton 2
-static int kMaxClicks = 4;
 
 static const int kMinGestureTag = 10;
 #define kThreeFingerTapGestureTag 10
@@ -157,6 +157,10 @@ typedef enum {
 
     IBOutlet NSButton *ok_;
     IBOutlet NSButton *remove_;
+    NSButton *_addButton;
+    NSButton *_editButton;
+    NSButton *_loadDefaultsButton;
+    __weak NSView *_bindingsContainer;
     iTermPasteSpecialViewController *_pasteSpecialViewController;
     IBOutlet NSView *_pasteSpecialViewContainer;
 
@@ -172,6 +176,7 @@ typedef enum {
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     tableView_.delegate = nil;
     tableView_.dataSource = nil;
 }
@@ -575,48 +580,20 @@ typedef enum {
 
 + (NSDictionary *)defaultActions
 {
-    static NSDictionary *defaultDict;
-    if (!defaultDict) {
-        NSMutableDictionary *temp = [NSMutableDictionary dictionaryWithDictionary:[PointerPrefsController defaultSettings]];
-        if ([iTermPreferences boolForKey:kPreferenceKeyThreeFingerEmulatesMiddle]) {
-            // Find all actions that use middle button and add corresponding three-finger gesture.
-            NSMutableDictionary *tempCopy = [temp mutableCopy];
-            for (NSString *key in temp) {
-                if ([PointerPrefsController keyIsButton:key] &&
-                    [PointerPrefsController buttonForKey:key] == kMiddleButton) {
-                    NSDictionary *middleAction = [temp objectForKey:key];
-                    NSString *gestureKey = [PointerPrefsController keyForGesture:kThreeFingerClickGesture
-                                                                       modifiers:[PointerPrefsController modifiersForKey:key]];
-                    [tempCopy setObject:middleAction forKey:gestureKey];
-                }
-            }
-            temp = tempCopy;
-            int modMasks[] = { NSEventModifierFlagCommand, NSEventModifierFlagOption, NSEventModifierFlagControl, NSEventModifierFlagShift };
-            int numModCombos = 1 << (sizeof(modMasks) / sizeof(int));
-            for (int numClicks = 0; numClicks <= kMaxClicks; numClicks++) {
-                // i is a bitmask over the modMasks array indices.
-                for (int i = 0; i < numModCombos; i++) {
-                    int modifiers = 0;
-                    // Set modifiers to the OR of the NS...KeyMask values given the bits in i.
-                    for (int j = 0; j < sizeof(modMasks)/sizeof(int); j++) {
-                        if (i & (1 << j)) {
-                            // The j'th bit is set in i, so OR in the j'th modifier mask.
-                            modifiers |= modMasks[j];
-                        }
-                    }
-                    NSString *key = [PointerPrefsController keyForButton:kMiddleButton
-                                                                  clicks:numClicks
-                                                               modifiers:modifiers];
-                    NSDictionary *middleAction = [temp objectForKey:key];
-                    if (middleAction) {
-                        [temp setObject:middleAction forKey:key];
-                    }
-                }
+    NSMutableDictionary *temp = [NSMutableDictionary dictionaryWithDictionary:[PointerPrefsController defaultSettings]];
+    if ([iTermPreferences boolForKey:kPreferenceKeyThreeFingerEmulatesMiddle]) {
+        // Find all actions that use middle button and add corresponding three-finger gesture.
+        for (NSString *key in [temp allKeys]) {
+            if ([PointerPrefsController keyIsButton:key] &&
+                [PointerPrefsController buttonForKey:key] == kMiddleButton) {
+                NSDictionary *middleAction = [temp objectForKey:key];
+                NSString *gestureKey = [PointerPrefsController keyForGesture:kThreeFingerClickGesture
+                                                                   modifiers:[PointerPrefsController modifiersForKey:key]];
+                [temp setObject:middleAction forKey:gestureKey];
             }
         }
-        defaultDict = temp;
     }
-    return defaultDict;
+    return temp;
 }
 
 + (NSDictionary *)settings
@@ -648,14 +625,38 @@ typedef enum {
     [tableView_ setDoubleAction:@selector(tableViewRowDoubleClicked:)];
     [tableView_ setTarget:self];
     tableView_.columnAutoresizingStyle = NSTableViewUniformColumnAutoresizingStyle;
+    tableView_.usesAlternatingRowBackgroundColors = YES;
+    tableView_.rowHeight = 22;
     for (NSTableColumn *column in tableView_.tableColumns) {
         column.resizingMask = NSTableColumnAutoresizingMask | NSTableColumnUserResizingMask;
     }
-    NSView *container = tableView_.enclosingScrollView.superview;
+
+    NSScrollView *oldScrollView = tableView_.enclosingScrollView;
+    NSView *container = oldScrollView.superview;
+    _bindingsContainer = container;
     container.identifier = @"PointerBindingsCustomView";
-    NSButton *addButton = nil;
-    NSButton *removeButton = nil;
-    NSButton *loadDefaultsButton = nil;
+    container.autoresizesSubviews = NO;
+    container.postsFrameChangedNotifications = YES;
+    if (container) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(bindingsContainerFrameDidChange:)
+                                                     name:NSViewFrameDidChangeNotification
+                                                   object:container];
+    }
+
+    if (oldScrollView && ![oldScrollView isKindOfClass:[iTermSettingsEmbeddedScrollView class]]) {
+        iTermSettingsEmbeddedScrollView *embedded = [[iTermSettingsEmbeddedScrollView alloc] initWithFrame:oldScrollView.frame];
+        embedded.borderType = NSBezelBorder;
+        embedded.hasVerticalScroller = YES;
+        embedded.hasHorizontalScroller = NO;
+        embedded.autohidesScrollers = YES;
+        embedded.drawsBackground = YES;
+        [tableView_ removeFromSuperview];
+        embedded.documentView = tableView_;
+        [oldScrollView removeFromSuperview];
+        [container addSubview:embedded];
+    }
+
     for (NSView *view in container.subviews) {
         if (![view isKindOfClass:NSButton.class]) { continue; }
         NSButton *button = (NSButton *)view;
@@ -667,24 +668,144 @@ typedef enum {
             button.title = add ? NSLocalizedString(@"Add", @"Mouse binding action") : NSLocalizedString(@"Remove", @"Mouse binding action");
             button.bezelStyle = NSBezelStyleRounded;
             if (add) {
-                addButton = button;
+                _addButton = button;
             } else {
-                removeButton = button;
+                remove_ = button;
             }
         } else if (button.action == @selector(loadDefaults:)) {
-            loadDefaultsButton = button;
+            button.bezelStyle = NSBezelStyleRounded;
+            _loadDefaultsButton = button;
         }
     }
-    CGFloat buttonX = 20;
-    for (NSButton *button in @[addButton ?: [NSNull null], removeButton ?: [NSNull null], loadDefaultsButton ?: [NSNull null]]) {
-        if (![button isKindOfClass:NSButton.class]) { continue; }
-        const CGFloat width = MAX(68, ceil(button.fittingSize.width) + 12);
-        button.frame = NSMakeRect(buttonX, 14, width, 28);
-        button.autoresizingMask = NSViewMaxXMargin | NSViewMaxYMargin;
-        buttonX += width + 8;
+
+    if (!_editButton && container) {
+        NSButton *editButton = [[NSButton alloc] initWithFrame:NSZeroRect];
+        editButton.title = NSLocalizedString(@"Edit…", @"Mouse binding action");
+        editButton.bezelStyle = NSBezelStyleRounded;
+        editButton.imagePosition = NSNoImage;
+        editButton.font = _addButton.font ?: [NSFont systemFontOfSize:[NSFont systemFontSize]];
+        editButton.target = self;
+        editButton.action = @selector(editSelected:);
+        [container addSubview:editButton];
+        _editButton = editButton;
     }
+
+    [self updateActionButtonStates];
+    [self layoutBindingsContainer];
+    [self normalizeEditPanelLayout];
+
     NSArray *actions = [[[PointerPrefsController localizedActionMap] allValues] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     [editAction_ addItemsWithTitles:actions];
+}
+
+- (void)updateActionButtonStates {
+    const BOOL selected = [tableView_ numberOfSelectedRows] > 0;
+    self.hasSelection = selected;
+    _editButton.enabled = selected;
+    remove_.enabled = selected;
+}
+
+- (void)bindingsContainerFrameDidChange:(NSNotification *)notification {
+    [self layoutBindingsContainer];
+}
+
+- (void)layoutBindingsContainer {
+    NSView *container = _bindingsContainer ?: tableView_.enclosingScrollView.superview;
+    NSScrollView *scrollView = tableView_.enclosingScrollView;
+    if (!container || !scrollView) {
+        return;
+    }
+    const CGFloat width = MAX(180, NSWidth(container.bounds));
+    const CGFloat height = MAX(140, NSHeight(container.bounds));
+    const CGFloat buttonHeight = 28;
+    const CGFloat gap = 8;
+
+    NSArray<NSButton *> *leftButtons = @[];
+    NSMutableArray<NSButton *> *tempLeft = [NSMutableArray array];
+    for (id candidate in @[_addButton ?: [NSNull null], _editButton ?: [NSNull null], remove_ ?: [NSNull null]]) {
+        if ([candidate isKindOfClass:NSButton.class]) {
+            [tempLeft addObject:candidate];
+        }
+    }
+    leftButtons = tempLeft;
+
+    CGFloat leftX = 0;
+    for (NSButton *button in leftButtons) {
+        const CGFloat btnW = MAX(68, ceil(button.fittingSize.width) + 12);
+        button.frame = NSMakeRect(leftX, 0, btnW, buttonHeight);
+        button.autoresizingMask = NSViewMaxXMargin | NSViewMaxYMargin;
+        leftX += btnW + gap;
+    }
+
+    CGFloat buttonAreaHeight = buttonHeight;
+    if (_loadDefaultsButton) {
+        const CGFloat defaultsW = MIN(width, MAX(96, ceil(_loadDefaultsButton.fittingSize.width) + 12));
+        if (leftX + 4 + defaultsW <= width) {
+            _loadDefaultsButton.frame = NSMakeRect(width - defaultsW, 0, defaultsW, buttonHeight);
+        } else {
+            // Stack left buttons above Load Defaults in ultra-narrow viewports.
+            for (NSButton *button in leftButtons) {
+                NSRect f = button.frame;
+                f.origin.y = buttonHeight + 6;
+                button.frame = f;
+            }
+            _loadDefaultsButton.frame = NSMakeRect(0, 0, defaultsW, buttonHeight);
+            buttonAreaHeight = buttonHeight * 2 + 6;
+        }
+        _loadDefaultsButton.autoresizingMask = NSViewMinXMargin | NSViewMaxYMargin;
+    }
+
+    const CGFloat tableY = buttonAreaHeight + 10;
+    const CGFloat tableH = MAX(80, height - tableY);
+    scrollView.frame = NSMakeRect(0, tableY, width, tableH);
+    scrollView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+}
+
+- (void)normalizeEditPanelLayout {
+    NSView *content = panel_.contentView;
+    if (!content) {
+        return;
+    }
+    const CGFloat labelX = 16;
+    const CGFloat labelW = 104;
+    const CGFloat controlX = 128;
+    const CGFloat controlW = MAX(220, NSWidth(content.bounds) - controlX - 20);
+
+    for (NSTextField *label in @[editButtonLabel_ ?: [NSNull null],
+                                 editClickTypeLabel_ ?: [NSNull null],
+                                 editModifiersLabel_ ?: [NSNull null],
+                                 editActionLabel_ ?: [NSNull null],
+                                 editArgumentLabel_ ?: [NSNull null]]) {
+        if (![label isKindOfClass:NSTextField.class]) { continue; }
+        label.alignment = NSTextAlignmentRight;
+        NSRect f = label.frame;
+        f.origin.x = labelX;
+        f.size.width = labelW;
+        label.frame = f;
+    }
+
+    for (NSView *ctrl in @[editButton_ ?: [NSNull null],
+                           editClickType_ ?: [NSNull null],
+                           editAction_ ?: [NSNull null],
+                           editArgumentButton_ ?: [NSNull null],
+                           editArgumentField_ ?: [NSNull null],
+                           _pasteSpecialViewContainer ?: [NSNull null],
+                           _menuItemPopupView ?: [NSNull null]]) {
+        if (![ctrl isKindOfClass:NSView.class]) { continue; }
+        NSRect f = ctrl.frame;
+        f.origin.x = controlX;
+        f.size.width = controlW;
+        ctrl.frame = f;
+    }
+
+    for (NSView *sub in content.subviews) {
+        if ([NSStringFromClass(sub.class) isEqualToString:@"EventMonitorView"]) {
+            NSRect f = sub.frame;
+            f.origin.x = controlX;
+            f.size.width = controlW;
+            sub.frame = f;
+        }
+    }
 }
 
 + (NSString *)keyForRowIndex:(int)rowIndex
@@ -950,8 +1071,8 @@ typedef enum {
             [editArgumentField_ setEnabled:YES];
             [editArgumentButton_ setHidden:YES];
             _menuItemPopupView.hidden = YES;
-            [editArgumentLabel_ setStringValue:@"Esc +"];
-            [[editArgumentField_ cell] setPlaceholderString:@"characters to send"];
+            [editArgumentLabel_ setStringValue:NSLocalizedString(@"Esc +", @"Pointer argument label")];
+            [[editArgumentField_ cell] setPlaceholderString:NSLocalizedString(@"Characters to send", @"Pointer argument placeholder")];
             [editArgumentField_ setStringValue:currentArg];
             [editArgumentField_ setRefusesFirstResponder:NO];
             [editArgumentField_ setSelectable:YES];
@@ -965,8 +1086,8 @@ typedef enum {
             [editArgumentField_ setEnabled:YES];
             [editArgumentButton_ setHidden:YES];
             _menuItemPopupView.hidden = YES;
-            [editArgumentLabel_ setStringValue:@"Hex codes:"];
-            [[editArgumentField_ cell] setPlaceholderString:@"ex: 0x7f 0x20"];
+            [editArgumentLabel_ setStringValue:NSLocalizedString(@"Hex codes:", @"Pointer argument label")];
+            [[editArgumentField_ cell] setPlaceholderString:NSLocalizedString(@"ex: 0x7f 0x20", @"Pointer argument placeholder")];
             [editArgumentField_ setStringValue:currentArg];
             _pasteSpecialViewContainer.hidden = YES;
             editArgumentField_.delegate = nil;
@@ -978,8 +1099,8 @@ typedef enum {
             [editArgumentField_ setEnabled:YES];
             [editArgumentButton_ setHidden:YES];
             _menuItemPopupView.hidden = YES;
-            [editArgumentLabel_ setStringValue:@"Text:"];
-            [[editArgumentField_ cell] setPlaceholderString:@"Enter value to send"];
+            [editArgumentLabel_ setStringValue:NSLocalizedString(@"Text:", @"Pointer argument label")];
+            [[editArgumentField_ cell] setPlaceholderString:NSLocalizedString(@"Enter value to send", @"Pointer argument placeholder")];
             [editArgumentField_ setStringValue:currentArg];
             _pasteSpecialViewContainer.hidden = YES;
             editArgumentField_.delegate = nil;
@@ -991,8 +1112,8 @@ typedef enum {
             [editArgumentField_ setEnabled:YES];
             [editArgumentButton_ setHidden:YES];
             _menuItemPopupView.hidden = YES;
-            [editArgumentLabel_ setStringValue:@"Text:"];
-            [[editArgumentField_ cell] setPlaceholderString:@"Enter function invocation"];
+            [editArgumentLabel_ setStringValue:NSLocalizedString(@"Function:", @"Pointer argument label")];
+            [[editArgumentField_ cell] setPlaceholderString:NSLocalizedString(@"Enter function invocation", @"Pointer argument placeholder")];
             [editArgumentField_ setStringValue:currentArg];
             _pasteSpecialViewContainer.hidden = YES;
             _invocationDelegate = [[iTermFunctionCallTextFieldDelegate alloc] initWithPathSource:[iTermVariableHistory pathSourceForContext:iTermVariablesSuggestionContextSession]
@@ -1006,7 +1127,7 @@ typedef enum {
             [editArgumentField_ setHidden:YES];
             [editArgumentButton_ setHidden:NO];
             _menuItemPopupView.hidden = YES;
-            [editArgumentLabel_ setStringValue:@"Profile:"];
+            [editArgumentLabel_ setStringValue:NSLocalizedString(@"Profile:", @"Pointer argument label")];
             [editArgumentButton_ populateWithProfilesSelectingGuid:currentArg];
             _pasteSpecialViewContainer.hidden = YES;
             break;
@@ -1103,14 +1224,19 @@ typedef enum {
 
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
-    self.hasSelection = [tableView_ numberOfSelectedRows] > 0;
-    int rowIndex = [tableView_ selectedRow];
+    [self updateActionButtonStates];
+    const NSInteger rowIndex = [tableView_ selectedRow];
 
-    if (self.hasSelection) {
-        NSString *key = [PointerPrefsController keyForRowIndex:rowIndex];
+    if (self.hasSelection && rowIndex >= 0) {
+        NSString *key = [PointerPrefsController keyForRowIndex:(int)rowIndex];
         NSDictionary *action = [[PointerPrefsController settings] objectForKey:key];
 
-        [editButton_ selectItemWithTag:[PointerPrefsController buttonForKey:key]];
+        if ([PointerPrefsController keyIsButton:key]) {
+            [editButton_ selectItemWithTag:[PointerPrefsController buttonForKey:key]];
+        } else {
+            NSString *gestureIdent = [PointerPrefsController gestureIdentifierForKey:key];
+            [editButton_ selectItemWithTag:[PointerPrefsController tagForGestureIdentifier:gestureIdent]];
+        }
         [editAction_ selectItemWithTitle:[PointerPrefsController localizedActionForDict:action]];
 
         int modflags = [PointerPrefsController modifiersForKey:key];
@@ -1122,6 +1248,11 @@ typedef enum {
     editButtonLabel_.labelEnabled = self.hasSelection;
     editModifiersLabel_.labelEnabled = self.hasSelection;
     editActionLabel_.labelEnabled = self.hasSelection;
+}
+
+- (IBAction)editSelected:(id)sender
+{
+    [self tableViewRowDoubleClicked:sender];
 }
 
 - (void)tableViewRowDoubleClicked:(id)sender
@@ -1204,6 +1335,7 @@ typedef enum {
     [temp setObject:newValue forKey:newKey];
     [PointerPrefsController setSettings:temp];
     [tableView_ reloadData];
+    [self updateActionButtonStates];
     [[[PreferencePanel sharedInstance] window] endSheet:panel_];
 }
 
@@ -1219,13 +1351,14 @@ typedef enum {
 - (IBAction)remove:(id)sender
 {
     if ([tableView_ selectedRow] >= 0) {
-        NSString *key = [PointerPrefsController keyForRowIndex:[tableView_ selectedRow]];
+        NSString *key = [PointerPrefsController keyForRowIndex:(int)[tableView_ selectedRow]];
         NSMutableDictionary *temp = [NSMutableDictionary dictionaryWithDictionary:[PointerPrefsController settings]];
         if (key) {
             [temp removeObjectForKey:key];
             [PointerPrefsController setSettings:temp];
         }
         [tableView_ reloadData];
+        [self updateActionButtonStates];
     }
 }
 
@@ -1244,8 +1377,23 @@ typedef enum {
 
 - (IBAction)loadDefaults:(id)sender
 {
-    [PointerPrefsController setSettings:[PointerPrefsController defaultSettings]];
+    const iTermWarningSelection selection =
+        [iTermWarning showWarningWithTitle:NSLocalizedString(@"Replace all pointer bindings with the default set?", @"Pointer bindings reset prompt")
+                                   actions:@[
+                                       NSLocalizedString(@"Restore Defaults", @"Pointer bindings reset confirm"),
+                                       NSLocalizedString(@"Cancel", @"Cancel")
+                                   ]
+                                 accessory:nil
+                                identifier:@"NoSyncConfirmLoadDefaultPointerBindings"
+                               silenceable:kiTermWarningTypePermanentlySilenceable
+                                   heading:NSLocalizedString(@"Restore Default Bindings", @"Pointer bindings reset heading")
+                                    window:tableView_.window];
+    if (selection != kiTermWarningSelection0) {
+        return;
+    }
+    [PointerPrefsController setSettings:[PointerPrefsController defaultActions]];
     [tableView_ reloadData];
+    [self updateActionButtonStates];
 }
 
 - (void)configurePasteSpecialWithArgument:(NSString *)parameterValue {
@@ -1305,7 +1453,7 @@ typedef enum {
         NSArray *otherParts = [PointerPrefsController buttonKeyComponents:other];
         if (!selfParts && !otherParts) {
             return NSOrderedSame;
-        } else if (!selfParts && !otherParts) {
+        } else if (!selfParts && otherParts) {
             return NSOrderedAscending;
         } else if (selfParts && !otherParts) {
             return NSOrderedDescending;
@@ -1328,7 +1476,14 @@ typedef enum {
     } else {
         // Compare gestures
         NSArray *selfParts = [PointerPrefsController gestureKeyComponents:self];
-        NSArray *otherParts = [PointerPrefsController gestureKeyComponents:self];
+        NSArray *otherParts = [PointerPrefsController gestureKeyComponents:other];
+        if (!selfParts && !otherParts) {
+            return NSOrderedSame;
+        } else if (!selfParts && otherParts) {
+            return NSOrderedAscending;
+        } else if (selfParts && !otherParts) {
+            return NSOrderedDescending;
+        }
         NSComparisonResult result;
         NSString *selfIdent = [PointerPrefsController localizedGestureNameForGestureIdentifier:[selfParts objectAtIndex:1]];
         NSString *otherIdent = [PointerPrefsController localizedGestureNameForGestureIdentifier:[otherParts objectAtIndex:1]];
@@ -1336,7 +1491,7 @@ typedef enum {
         if (result != NSOrderedSame) {
             return result;
         }
-        result = [[NSNumber numberWithInt:[[selfParts objectAtIndex:2] intValue]] compare:[NSNumber numberWithInt:[[otherParts objectAtIndex:2] intValue]]];
+        result = [[selfParts objectAtIndex:2] compare:[otherParts objectAtIndex:2]];
         if (result != NSOrderedSame) {
             return result;
         }

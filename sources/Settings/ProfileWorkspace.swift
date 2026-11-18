@@ -266,22 +266,36 @@ struct ProfileWorkspace: View {
                     Button(NSLocalizedString("Copy to Profile…", comment: "Profile action")) { model.onCopy?() }
                 }
             } else {
-                HStack(spacing: 10) {
-                    Picker(NSLocalizedString("Profile", comment: "Profile selector"), selection: $model.selectedProfile) {
-                        ForEach(model.profiles) { Text($0.name).tag($0.id) }
+                HStack(alignment: .center, spacing: 8) {
+                    let selectedTitle = model.profiles.first(where: { $0.id == model.selectedProfile })?.name ?? ""
+                    Menu {
+                        ForEach(model.profiles) { profile in
+                            Button {
+                                model.selectedProfile = profile.id
+                            } label: {
+                                if profile.id == model.selectedProfile {
+                                    Label(profile.name, systemImage: SFSymbol.checkmark.rawValue)
+                                } else {
+                                    Text(profile.name)
+                                }
+                            }
+                        }
+                    } label: {
+                        Text(selectedTitle)
+                            .lineLimit(1)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .frame(maxWidth: compact ? 180 : 240, alignment: .leading)
+                    .menuStyle(.button)
+                    .fixedSize()
                     .accessibilityIdentifier("WorkspaceProfilePicker")
 
                     if model.isDefault {
                         Text(NSLocalizedString("Default Profile", comment: "Profile status"))
-                            .font(.caption.weight(.medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
+                            .fixedSize()
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
+                            .padding(.vertical, 2.5)
                             .background(.quaternary, in: Capsule())
                     }
 

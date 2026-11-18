@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import CoreText
 
 @objc(BFPCompositeViewDelegate)
 public protocol FontPickerCompositeViewDelegate: NSObjectProtocol {
@@ -181,13 +182,68 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         }
     }
 
-    private func imageViewForImage(withName name: String) -> NSImageView {
-        let bundle = FontPickerResources.bundle
-        if let image = bundle.image(forResource: NSImage.Name(name)) {
-            return NSImageView(image: image)
-        } else {
-            return NSImageView(image: NSImage(size: NSSize(width: 1, height: 1)))
+    private static func makeHorizontalSpacingIcon() -> NSImage {
+        let size = NSSize(width: 18, height: 20)
+        let img = NSImage(size: size, flipped: false) { rect in
+            guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
+            NSColor.black.setFill()
+            let font = NSFont.systemFont(ofSize: 13.0, weight: .medium)
+            let vLine = CTLineCreateWithAttributedString(
+                NSAttributedString(string: "v", attributes: [.font: font, .foregroundColor: NSColor.black])
+            )
+            let iLine = CTLineCreateWithAttributedString(
+                NSAttributedString(string: "i", attributes: [.font: font, .foregroundColor: NSColor.black])
+            )
+            ctx.textPosition = .zero
+            let vB = CTLineGetImageBounds(vLine, ctx)
+            let iB = CTLineGetImageBounds(iLine, ctx)
+            let gap: CGFloat = 1.9
+            let barW: CGFloat = 1.3
+            let totalW = vB.width + gap + barW + gap + iB.width
+            let startX = (rect.width - totalW) * 0.5
+            let barX = startX + vB.width + gap
+            let bar = NSBezierPath(roundedRect: NSRect(x: barX, y: 2.5, width: barW, height: 15.0),
+                                   xRadius: 0.65,
+                                   yRadius: 0.65)
+            bar.fill()
+            let baselineY = rect.midY - iB.midY - 0.3
+            ctx.textPosition = CGPoint(x: startX - vB.minX, y: baselineY)
+            CTLineDraw(vLine, ctx)
+            ctx.textPosition = CGPoint(x: barX + barW + gap - iB.minX, y: baselineY)
+            CTLineDraw(iLine, ctx)
+            return true
         }
+        img.isTemplate = true
+        return img
+    }
+
+    private static func makeVerticalSpacingIcon() -> NSImage {
+        let size = NSSize(width: 18, height: 20)
+        let img = NSImage(size: size, flipped: false) { rect in
+            guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
+            NSColor.black.setFill()
+            let barH: CGFloat = 1.3
+            let barY = (rect.height - barH) * 0.5
+            let bar = NSBezierPath(roundedRect: NSRect(x: 2.5, y: barY, width: 13.0, height: barH),
+                                   xRadius: 0.65,
+                                   yRadius: 0.65)
+            bar.fill()
+            let font = NSFont.systemFont(ofSize: 12.5, weight: .medium)
+            let nLine = CTLineCreateWithAttributedString(
+                NSAttributedString(string: "n", attributes: [.font: font, .foregroundColor: NSColor.black])
+            )
+            ctx.textPosition = .zero
+            let nB = CTLineGetImageBounds(nLine, ctx)
+            let cx = rect.midX - nB.midX
+            let gap: CGFloat = 1.4
+            ctx.textPosition = CGPoint(x: cx, y: barY + barH + gap - nB.minY)
+            CTLineDraw(nLine, ctx)
+            ctx.textPosition = CGPoint(x: cx, y: barY - gap - nB.maxY)
+            CTLineDraw(nLine, ctx)
+            return true
+        }
+        img.isTemplate = true
+        return img
     }
 
     @objc(addHorizontalSpacingAccessoryWithInitialValue:)
@@ -196,8 +252,8 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         view.clamp(min: 1, max: 200)
         horizontalSpacing = view
         view.size = initialValue
-        let imageView = imageViewForImage(withName: "HorizontalSpacingIcon")
-        imageView.image?.isTemplate = true
+        let imageView = NSImageView(image: Self.makeHorizontalSpacingIcon())
+        imageView.imageScaling = .scaleNone
         imageView.contentTintColor = NSColor.labelColor
         add(accessory: imageView)
         add(accessory: view)
@@ -210,8 +266,8 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
         view.clamp(min: 1, max: 200)
         verticalSpacing = view
         view.size = initialValue
-        let imageView = imageViewForImage(withName: "VerticalSpacingIcon")
-        imageView.image?.isTemplate = true
+        let imageView = NSImageView(image: Self.makeVerticalSpacingIcon())
+        imageView.imageScaling = .scaleNone
         imageView.contentTintColor = NSColor.labelColor
         add(accessory: imageView)
         add(accessory: view)
@@ -239,11 +295,11 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
 
     private struct LayoutGeometry {
         static let margin: CGFloat = 4.0
-        static let pairSpacing: CGFloat = 3.0
-        static let clusterSpacing: CGFloat = 8.0
+        static let pairSpacing: CGFloat = 5.0
+        static let clusterSpacing: CGFloat = 12.0
         static let rowSpacing: CGFloat = 6.0
-        static let primaryRowHeight: CGFloat = 27.0
-        static let accessoryRowHeight: CGFloat = 25.0
+        static let primaryRowHeight: CGFloat = 28.0
+        static let accessoryRowHeight: CGFloat = 26.0
         static let minSingleRowAffordanceWidth: CGFloat = 160.0
     }
 
@@ -295,7 +351,7 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
 
     private func pickerWidths(forWidth width: CGFloat) -> (member: CGFloat, size: CGFloat) {
         let baseMember: CGFloat = memberPicker == nil ? 0 : 100.0
-        let baseSize: CGFloat = sizePicker == nil ? 0 : 54.0
+        let baseSize: CGFloat = sizePicker == nil ? 0 : 58.0
         let gaps = CGFloat((memberPicker == nil ? 0 : 1) + (sizePicker == nil ? 0 : 1)) * LayoutGeometry.margin
         if width <= 0 {
             return (baseMember, baseSize)
@@ -369,17 +425,19 @@ public class FontPickerCompositeView: NSView, AffordanceDelegate, FontFamilyMemb
             : max(0, height - LayoutGeometry.primaryRowHeight)
 
         var x: CGFloat = 0
-        affordance.frame = NSRect(x: x, y: primaryY + 1, width: affordanceWidth, height: 25)
+        let popupHeight: CGFloat = 24.0
+        let popupY = primaryY + floor((LayoutGeometry.primaryRowHeight - popupHeight) * 0.5)
+        affordance.frame = NSRect(x: x, y: popupY, width: affordanceWidth, height: popupHeight)
         x += affordanceWidth
 
         if let memberPicker {
             x += LayoutGeometry.margin
-            memberPicker.frame = NSRect(x: x, y: primaryY + 1, width: pickers.member, height: 25)
+            memberPicker.frame = NSRect(x: x, y: popupY, width: pickers.member, height: popupHeight)
             x += pickers.member
         }
         if let sizePicker {
             x += LayoutGeometry.margin
-            sizePicker.frame = NSRect(x: x, y: primaryY, width: pickers.size, height: 27)
+            sizePicker.frame = NSRect(x: x, y: primaryY, width: pickers.size, height: LayoutGeometry.primaryRowHeight)
             x += pickers.size
         }
 
