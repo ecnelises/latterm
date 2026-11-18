@@ -15,6 +15,13 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Quantize terminal character width to physical
+  pixels (0.5pt steps on Retina) instead of whole
+  points so narrow and condensed fonts keep
+  distinct, accurate column widths.
+- Left-align the Profile workspace selector menu
+  and center all app icon glyphs at 92% scale
+  with symmetric padding.
 - Align Settings form columns, bindings tables,
   and toolbar buttons across all pages, and center
   the slanted strokes in the Hash app icon.

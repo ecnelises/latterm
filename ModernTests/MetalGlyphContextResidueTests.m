@@ -25,8 +25,8 @@
 
 #import <XCTest/XCTest.h>
 
-#import "FontSizeEstimator.h"
 #import "PTYFontInfo.h"
+#import "PTYTextView.h"
 #import "ScreenChar.h"
 #import "iTermASCIITexture.h"
 #import "iTermCharacterBitmap.h"
@@ -132,12 +132,12 @@
     const CGFloat scale = 1;
 
     // The cell metrics -[PTYTextView setFontTable:horizontalSpacing:verticalSpacing:]
-    // computes for this font.
-    FontSizeEstimator *estimator =
-        [FontSizeEstimator fontSizeEstimatorForFont:fontTable.fontForCharacterSizeCalculations];
-    CGSize cellSizeWithoutSpacing = estimator.size;
-    cellSizeWithoutSpacing.width = ceil(cellSizeWithoutSpacing.width);
-    cellSizeWithoutSpacing.height = ceil(cellSizeWithoutSpacing.height + font.leading);
+    // computes for this font at 1x backing scale.
+    const CGSize cellSizeWithoutSpacing =
+        [PTYTextView charSizeForFont:fontTable.fontForCharacterSizeCalculations
+                   horizontalSpacing:1.0
+                     verticalSpacing:1.0
+                               scale:scale];
     const CGSize cellSize = CGSizeMake(cellSizeWithoutSpacing.width * scale,
                                        cellSizeWithoutSpacing.height * scale);
 

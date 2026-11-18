@@ -5372,8 +5372,8 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     PTYSession* session = [tab activeSession];
 
     // Get the width and height of characters in this session.
-    float charWidth = [[session textview] charWidth];
-    float charHeight = [[session textview] lineHeight];
+    CGFloat charWidth = [[session textview] charWidth];
+    CGFloat charHeight = [[session textview] lineHeight];
 
     // Decide when to snap.  (We snap unless control, and only control, is held down.)
     const NSUInteger theMask =
@@ -5436,7 +5436,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     int screenHeight = (contentSize.height - vmargins) / charHeight;
 
     if (snapWidth) {
-      contentSize.width = screenWidth * charWidth + hmargins;
+      contentSize.width = ceil(screenWidth * charWidth) + hmargins;
     }
     if (snapHeight) {
       contentSize.height = screenHeight * charHeight + vmargins;
@@ -9035,15 +9035,18 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
     NSFont* nonAsciiFont = [ITAddressBookMgr fontWithDesc:[theBookmark objectForKey:KEY_NON_ASCII_FONT]
                                          ligaturesEnabled:[iTermProfilePreferences boolForKey:KEY_NON_ASCII_LIGATURES
                                                                                     inProfile:theBookmark]];
+    const CGFloat scale = self.window.screen.backingScaleFactor ?: self.window.backingScaleFactor;
     NSSize asciiCharSize = [PTYTextView charSizeForFont:asciiFont
                                       horizontalSpacing:[iTermProfilePreferences doubleForKey:KEY_HORIZONTAL_SPACING inProfile:theBookmark]
-                                        verticalSpacing:[iTermProfilePreferences doubleForKey:KEY_VERTICAL_SPACING inProfile:theBookmark]];
+                                        verticalSpacing:[iTermProfilePreferences doubleForKey:KEY_VERTICAL_SPACING inProfile:theBookmark]
+                                                  scale:scale];
     NSSize nonAsciiCharSize = [PTYTextView charSizeForFont:nonAsciiFont
                                          horizontalSpacing:[iTermProfilePreferences doubleForKey:KEY_HORIZONTAL_SPACING inProfile:theBookmark]
-                                           verticalSpacing:[iTermProfilePreferences doubleForKey:KEY_VERTICAL_SPACING inProfile:theBookmark]];
+                                           verticalSpacing:[iTermProfilePreferences doubleForKey:KEY_VERTICAL_SPACING inProfile:theBookmark]
+                                                     scale:scale];
     NSSize charSize = NSMakeSize(MAX(asciiCharSize.width, nonAsciiCharSize.width),
                                  MAX(asciiCharSize.height, nonAsciiCharSize.height));
-    NSSize newSessionSize = NSMakeSize(charSize.width * kVT100ScreenMinColumns + [iTermPreferences sideMargins] * 2,
+    NSSize newSessionSize = NSMakeSize(ceil(charSize.width * kVT100ScreenMinColumns) + [iTermPreferences sideMargins] * 2,
                                        charSize.height * kVT100ScreenMinRows + [iTermPreferences topBottomMargins] * 2);
 
     return [[self currentTab] canSplitVertically:isVertical withSize:newSessionSize];

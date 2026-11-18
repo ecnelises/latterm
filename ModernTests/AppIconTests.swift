@@ -162,13 +162,46 @@ final class AppIconTests: XCTestCase {
             guard let minX, let maxX else { return nil }
             return (minX, maxX)
         }
-        // Check vertical stem centers against the horizontal bar centers at y = 430 and y = 612.
-        let topBar = try XCTUnwrap(opaqueSpan(atY: 430))
-        let botBar = try XCTUnwrap(opaqueSpan(atY: 612))
-        let midVerts = try XCTUnwrap(opaqueSpan(atY: 521))
+        // Check vertical stem centers against the horizontal bar centers (scaled 0.92 around y=512).
+        let topBar = try XCTUnwrap(opaqueSpan(atY: 426))
+        let botBar = try XCTUnwrap(opaqueSpan(atY: 594))
+        let midVerts = try XCTUnwrap(opaqueSpan(atY: 510))
         let barCenter = Double(topBar.minX + topBar.maxX + botBar.minX + botBar.maxX) / 4.0
         let vertCenter = Double(midVerts.minX + midVerts.maxX) / 2.0
         XCTAssertLessThanOrEqual(abs(barCenter - vertCenter), 4.0)
+    }
+
+    func testForegroundContentIsCenteredWithSymmetricPadding() throws {
+        for artwork in [AppIconBundleArtwork.release, .nightly, .beta] {
+            for variant in [AppIconVariant.glyphHash, .ink, .monogram, .glyphDollar, .glyphPercent, .glyphLambda, .glyphLt] {
+                let cg = try XCTUnwrap(
+                    LattermAppIconRenderer.makeIconComposerForegroundCGImage(artwork: artwork,
+                                                                             pixelSize: 256,
+                                                                             variant: variant)
+                )
+                let rep = NSBitmapImageRep(cgImage: cg)
+                let data = try XCTUnwrap(rep.bitmapData)
+                let bpr = rep.bytesPerRow
+                var minX = 256, maxX = -1, minY = 256, maxY = -1
+                for y in 0..<256 {
+                    for x in 0..<256 {
+                        if data[y * bpr + x * 4 + 3] > 16 {
+                            if x < minX { minX = x }
+                            if x > maxX { maxX = x }
+                            if y < minY { minY = y }
+                            if y > maxY { maxY = y }
+                        }
+                    }
+                }
+                let leftPad = minX - 25
+                let rightPad = 230 - maxX
+                let topPad = minY - 25
+                let bottomPad = 230 - maxY
+                XCTAssertLessThanOrEqual(abs(leftPad - rightPad), 1, "\(artwork) \(variant.rawValue) asymmetric horizontal padding: \(leftPad) vs \(rightPad)")
+                XCTAssertLessThanOrEqual(abs(topPad - bottomPad), 1, "\(artwork) \(variant.rawValue) asymmetric vertical padding: \(topPad) vs \(bottomPad)")
+                XCTAssertGreaterThanOrEqual(leftPad, 30, "\(artwork) \(variant.rawValue) should retain breathing room at 92% scale")
+            }
+        }
     }
 
     private func renderedPNGBytes(variant: AppIconVariant, channel: AppIconChannel) -> Data? {

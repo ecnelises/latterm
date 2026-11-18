@@ -580,10 +580,15 @@ typedef void (^PTYTextViewDrawingHookBlock)(iTermTextDrawingHelper *);
 @property (nonatomic, readonly) NSColor *colorForMargins;
 
 // Returns the size of a cell for a given font. hspace and vspace are multipliers and the width
-// and height.
+// and height. Character width is quantized to physical pixels (0.5pt on Retina, 1.0pt on 1x).
 + (NSSize)charSizeForFont:(NSFont*)aFont
         horizontalSpacing:(CGFloat)hspace
           verticalSpacing:(CGFloat)vspace;
+
++ (NSSize)charSizeForFont:(NSFont *)aFont
+        horizontalSpacing:(CGFloat)hspace
+          verticalSpacing:(CGFloat)vspace
+                    scale:(CGFloat)scale;
 
 - (instancetype)initWithFrame:(NSRect)frame NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

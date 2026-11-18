@@ -216,14 +216,35 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
 }
 
 
+static CGFloat iTermEffectiveCharacterWidthScale(CGFloat scale) {
+    if (scale <= 0) {
+        scale = [NSScreen mainScreen].backingScaleFactor;
+    }
+    return (scale >= 2.0) ? 2.0 : 1.0;
+}
+
+static CGFloat iTermQuantizeCharacterWidth(CGFloat width, CGFloat scale) {
+    const CGFloat effectiveScale = iTermEffectiveCharacterWidthScale(scale);
+    return MAX(1.0, round(width * effectiveScale) / effectiveScale);
+}
+
 + (NSSize)charSizeForFont:(NSFont *)aFont
         horizontalSpacing:(CGFloat)hspace
           verticalSpacing:(CGFloat)vspace {
+    return [self charSizeForFont:aFont
+               horizontalSpacing:hspace
+                 verticalSpacing:vspace
+                           scale:0];
+}
+
++ (NSSize)charSizeForFont:(NSFont *)aFont
+        horizontalSpacing:(CGFloat)hspace
+          verticalSpacing:(CGFloat)vspace
+                    scale:(CGFloat)scale {
     FontSizeEstimator* fse = [FontSizeEstimator fontSizeEstimatorForFont:aFont];
     NSSize size = [fse size];
-    size.width = ceil(size.width);
+    size.width = iTermQuantizeCharacterWidth(size.width * hspace, scale);
     size.height = ceil(size.height + [aFont leading]);
-    size.width = ceil(size.width * hspace);
     size.height = ceil(size.height * vspace);
     return size;
 }
@@ -1076,10 +1097,42 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
     }
 }
 
+- (CGFloat)characterWidthScale {
+    const CGFloat windowScale = self.window.screen.backingScaleFactor ?: self.window.backingScaleFactor;
+    return iTermEffectiveCharacterWidthScale(windowScale);
+}
+
+- (void)updateCharacterWidthForBackingScaleIfNeeded {
+    if (self.window == nil ||
+        _fontTable == nil ||
+        _charWidth <= 0 ||
+        _lineHeight <= 0 ||
+        _horizontalSpacing <= 0 ||
+        _verticalSpacing <= 0) {
+        return;
+    }
+    const CGFloat scale = [self characterWidthScale];
+    const NSSize unspacedSize = [PTYTextView charSizeForFont:_fontTable.fontForCharacterSizeCalculations
+                                           horizontalSpacing:1.0
+                                             verticalSpacing:1.0
+                                                       scale:scale];
+    const NSSize spacedSize = [PTYTextView charSizeForFont:_fontTable.fontForCharacterSizeCalculations
+                                         horizontalSpacing:_horizontalSpacing
+                                           verticalSpacing:_verticalSpacing
+                                                     scale:scale];
+    if (fabs(_charWidth - spacedSize.width) > 0.001 ||
+        fabs(_charWidthWithoutSpacing - unspacedSize.width) > 0.001) {
+        _charWidthWithoutSpacing = unspacedSize.width;
+        self.charWidth = spacedSize.width;
+        [self didUpdateFont];
+    }
+}
+
 - (void)viewDidChangeBackingProperties {
-    CGFloat scale = [[[self window] screen] backingScaleFactor];
+    CGFloat scale = [[[self window] screen] backingScaleFactor] ?: self.window.backingScaleFactor;
     BOOL isRetina = scale > 1;
     [self setDrawingHelperIsRetina:isRetina];
+    [self updateCharacterWidthForBackingScaleIfNeeded];
 }
 
 - (void)setDrawingHelperIsRetina:(BOOL)isRetina {
@@ -1182,6 +1235,9 @@ const CGFloat PTYTextViewMarginClickGraceWidth = 2.0;
     // If you change tabs while dragging you never get a mouseUp. Issue 8350.
     [_selection endLiveSelection];
     [super viewDidMoveToWindow];
+    if (self.window) {
+        [self updateCharacterWidthForBackingScaleIfNeeded];
+    }
 }
 
 #pragma mark - NSView Mouse-Related Overrides
@@ -2522,16 +2578,22 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         [[NSNotificationCenter defaultCenter] postNotificationName:PTYTextViewWillChangeFontNotification object:self];
     }
 
-    NSSize sz = [PTYTextView charSizeForFont:fontTable.fontForCharacterSizeCalculations
-                           horizontalSpacing:1.0
-                             verticalSpacing:1.0];
+    const CGFloat scale = [self characterWidthScale];
+    NSSize unspacedSize = [PTYTextView charSizeForFont:fontTable.fontForCharacterSizeCalculations
+                                     horizontalSpacing:1.0
+                                       verticalSpacing:1.0
+                                                 scale:scale];
+    NSSize spacedSize = [PTYTextView charSizeForFont:fontTable.fontForCharacterSizeCalculations
+                                   horizontalSpacing:horizontalSpacing
+                                     verticalSpacing:verticalSpacing
+                                               scale:scale];
 
-    _charWidthWithoutSpacing = sz.width;
-    _charHeightWithoutSpacing = sz.height;
+    _charWidthWithoutSpacing = unspacedSize.width;
+    _charHeightWithoutSpacing = unspacedSize.height;
     _horizontalSpacing = horizontalSpacing;
     _verticalSpacing = verticalSpacing;
-    self.charWidth = ceil(_charWidthWithoutSpacing * horizontalSpacing);
-    self.lineHeight = ceil(_charHeightWithoutSpacing * verticalSpacing);
+    self.charWidth = spacedSize.width;
+    self.lineHeight = spacedSize.height;
 
     [_fontTable autorelease];
     _fontTable = [fontTable retain];
@@ -2560,7 +2622,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (void)setCharWidth:(double)width {
-    _charWidth = ceil(width);
+    _charWidth = iTermQuantizeCharacterWidth(width, [self characterWidthScale]);
     _drawingHelper.cellSize = NSMakeSize(_charWidth, _lineHeight);
     _drawingHelper.cellSizeWithoutSpacing = NSMakeSize(_charWidthWithoutSpacing, _charHeightWithoutSpacing);
 }
@@ -5580,7 +5642,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (NSRect)frameForCoord:(VT100GridCoord)coord {
-    return NSMakeRect(MAX(0, floor(coord.x * _charWidth + [iTermPreferences sideMargins])),
+    return NSMakeRect(MAX(0, coord.x * _charWidth + [iTermPreferences sideMargins]),
                       MAX(0, coord.y * _lineHeight),
                       _charWidth,
                       _lineHeight);
@@ -7049,7 +7111,7 @@ static NSString *iTermStringFromRange(NSRange range) {
         startX = visualSpan.location;
         spanWidth = visualSpan.length;
     }
-    NSRect result = NSMakeRect(MAX(0, floor(startX * _charWidth + [iTermPreferences sideMargins])),
+    NSRect result = NSMakeRect(MAX(0, startX * _charWidth + [iTermPreferences sideMargins]),
                                MAX(0, coordRange.start.y * _lineHeight),
                                MAX(0, spanWidth * _charWidth),
                                MAX(0, (coordRange.end.y - coordRange.start.y + 1) * _lineHeight));

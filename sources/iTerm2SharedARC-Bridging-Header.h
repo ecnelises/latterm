@@ -260,6 +260,7 @@
 #import "ColorsMenuItemView.h"
 #import "iTermStreamingPNGWriter.h"
 #import "iTermCharacterSource.h"
+#import "FontSizeEstimator.h"
 #import "PTYFontInfo.h"
 #import "iTermCharacterParts.h"
 #import "iTermCharacterSourceTestHelper.h"

@@ -676,9 +676,9 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
 
 //        NSLog(@"Paint background row %d range %@", line, NSStringFromRange(run->range));
 
-        NSRect rect = NSMakeRect(floor([iTermPreferences sideMargins] + run->visualRange.location * _cellSize.width),
+        NSRect rect = NSMakeRect([iTermPreferences sideMargins] + run->visualRange.location * _cellSize.width,
                                  yOrigin,
-                                 ceil(run->visualRange.length * _cellSize.width),
+                                 run->visualRange.length * _cellSize.width,
                                  _cellSize.height * rows);
         // If subpixel AA is enabled, then we want to draw the default background color directly.
         // Otherwise, we'll disable blending and make it clear. Then the background color view can
@@ -3469,12 +3469,12 @@ iTermKittyImageDraw *iTermFindKittyImageDrawForVirtualPlaceholder(NSArray<iTermK
                             self.unicodeVersion,
                             self.softAlternateScreenMode,
                             NULL);
-        int cursorX = 0;
-        int baseX = floor(xStart * _cellSize.width + [iTermPreferences sideMargins]);
+        CGFloat cursorX = 0;
+        CGFloat baseX = xStart * _cellSize.width + [iTermPreferences sideMargins];
         int i;
         int y = (yStart + _numberOfLines - height) * _cellSize.height;
         int cursorY = y;
-        int x = baseX;
+        CGFloat x = baseX;
         int preWrapY = 0;
         BOOL justWrapped = NO;
         BOOL foundCursor = NO;
@@ -3558,7 +3558,7 @@ iTermKittyImageDraw *iTermFindKittyImageDrawForVirtualPlaceholder(NSArray<iTermK
             } else {
                 justWrapped = NO;
             }
-            x = floor(xStart * _cellSize.width + [iTermPreferences sideMargins]);
+            x = xStart * _cellSize.width + [iTermPreferences sideMargins];
             y = (yStart + _numberOfLines - height) * _cellSize.height;
             i += charsInLine;
         }
@@ -3599,13 +3599,13 @@ iTermKittyImageDraw *iTermFindKittyImageDrawForVirtualPlaceholder(NSArray<iTermK
     const int rowNumber = cursorCoord.y + _numberOfLines - _gridSize.height;
     if ([iTermAdvancedSettingsModel fullHeightCursor]) {
         const CGFloat height = MAX(_cellSize.height, _cellSizeWithoutSpacing.height);
-        return NSMakeRect(floor(cursorCoord.x * _cellSize.width + [iTermPreferences sideMargins]),
+        return NSMakeRect(cursorCoord.x * _cellSize.width + [iTermPreferences sideMargins],
                           rowNumber * _cellSize.height,
                           MIN(_cellSize.width, _cellSizeWithoutSpacing.width),
                           height);
     } else {
         const CGFloat height = MIN(_cellSize.height, _cellSizeWithoutSpacing.height);
-        return NSMakeRect(floor(cursorCoord.x * _cellSize.width + [iTermPreferences sideMargins]),
+        return NSMakeRect(cursorCoord.x * _cellSize.width + [iTermPreferences sideMargins],
                           rowNumber * _cellSize.height + MAX(0, round((_cellSize.height - _cellSizeWithoutSpacing.height) / 2.0)),
                           MIN(_cellSize.width, _cellSizeWithoutSpacing.width),
                           height);
