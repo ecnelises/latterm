@@ -7,7 +7,9 @@
 //
 
 #import "PointerPreferencesViewController.h"
+#import "PointerPrefsController.h"
 #import "PreferencePanel.h"
+#import "iTerm2SharedARC-Swift.h"
 
 NSString *const kPointerPrefsChangedNotification = @"kPointerPrefsChangedNotification";
 NSString *const kPointerPrefsSemanticHistoryEnabledChangedNotification = @"kPointerPrefsSemanticHistoryEnabledChangedNotification";
@@ -77,6 +79,8 @@ NSString *const kPointerPrefsSemanticHistoryEnabledChangedNotification = @"kPoin
                                                           userInfo:nil];
     };
 
+    _focusFollowsMouseIncludingSubviews.title = NSLocalizedString(@"Include embedded fields such as Find",
+                                                                  @"Focus follows mouse sub-option");
     [self defineControl:_focusFollowsMouse
                     key:kPreferenceKeyFocusFollowsMouse
             relatedView:nil
@@ -98,6 +102,30 @@ NSString *const kPointerPrefsSemanticHistoryEnabledChangedNotification = @"kPoin
                     key:kPreferenceKeyReportHorizontalScrollEvents
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
+
+    if (_tabView.numberOfTabViewItems >= 2) {
+        _tabView.tabViewItems[0].label = NSLocalizedString(@"Behavior", @"Mouse settings section");
+        _tabView.tabViewItems[1].label = NSLocalizedString(@"Pointer Bindings", @"Mouse settings section");
+        NSView *bindingsView = _tabView.tabViewItems[1].view.subviews.firstObject;
+        if (bindingsView) {
+            [self addViewToSearchIndex:bindingsView
+                           displayName:@"Pointer bindings"
+                               phrases:@[ @"mouse bindings", @"trackpad gestures", @"middle click", @"three finger", @"force touch", @"swipe" ]
+                                   key:nil];
+            [iTermPointerFormLayout installIn:_tabView controls:@{
+                @"cmdSelection": _cmdSelection,
+                @"optionClickMovesCursor": _optionClickMovesCursor,
+                @"threeFingerEmulatesMiddle": _threeFingerEmulatesMiddle,
+                @"focusFollowsMouse": _focusFollowsMouse,
+                @"focusFollowsMouseIncludingSubviews": _focusFollowsMouseIncludingSubviews,
+                @"focusOnRightOrMiddleClick": _focusOnRightOrMiddleClick,
+                @"reportHorizontalScrollEvents": _reportHorizontalScrollEvents,
+                @"controlLeftClickActsLikeRightClick": _controlLeftClickActsLikeRightClick,
+                @"rightClickActsLikeRightClick": _rightClickActsLikeRightClick,
+                @"bindings": bindingsView
+            }];
+        }
+    }
 }
 
 - (NSTabView *)tabView {
@@ -105,7 +133,7 @@ NSString *const kPointerPrefsSemanticHistoryEnabledChangedNotification = @"kPoin
 }
 
 - (CGFloat)minimumWidth {
-    return 186;
+    return 468;
 }
 
 @end

@@ -1337,3 +1337,89 @@ final class KeyboardFormLayout: NSObject {
         }
     }
 }
+
+/// Uses responsive SwiftUI section cards for global Mouse & Trackpad preferences.
+@objc(iTermPointerFormLayout)
+final class PointerFormLayout: NSObject {
+    @objc static func install(in tabs: NSTabView, controls: [String: NSView]) {
+        func control<T: NSView>(_ key: String) -> T {
+            guard let view = controls[key] as? T else {
+                it_fatalError("Missing pointer editor: \(key)")
+            }
+            return view
+        }
+        func field(_ localizedTitle: String) -> NSTextField {
+            NSTextField(labelWithString: localizedTitle)
+        }
+
+        guard tabs.numberOfTabViewItems >= 2,
+              let behaviorRoot = tabs.tabViewItems[0].view,
+              let bindingsRoot = tabs.tabViewItems[1].view else {
+            return
+        }
+
+        let behaviorSections: [ProfileSectionCard] = [
+            ProfileSectionCard(
+                title: ProfilePageHelpers.localizedSection("Clicks & Gestures"),
+                rows: [
+                    ProfileFormRow(label: field(NSLocalizedString("Clicks:", comment: "Pointer form label")),
+                                   content: .checkbox(control("cmdSelection"), trailing: []),
+                                   suppressSeparatorAfter: true),
+                    ProfileFormRow(content: .checkbox(control("optionClickMovesCursor"), trailing: [])),
+                    ProfileFormRow(label: field(NSLocalizedString("Trackpad:", comment: "Pointer form label")),
+                                   content: .checkbox(control("threeFingerEmulatesMiddle"), trailing: []))
+                ]
+            ),
+            ProfileSectionCard(
+                title: ProfilePageHelpers.localizedSection("Window & Pane Focus"),
+                rows: [
+                    ProfileFormRow(label: field(NSLocalizedString("Hover:", comment: "Pointer form label")),
+                                   content: .checkbox(control("focusFollowsMouse"), trailing: []),
+                                   suppressSeparatorAfter: true),
+                    ProfileFormRow(content: .checkbox(control("focusFollowsMouseIncludingSubviews"), trailing: []),
+                                   indent: 20),
+                    ProfileFormRow(label: field(NSLocalizedString("Clicks:", comment: "Pointer form label")),
+                                   content: .checkbox(control("focusOnRightOrMiddleClick"), trailing: []))
+                ]
+            ),
+            ProfileSectionCard(
+                title: ProfilePageHelpers.localizedSection("Terminal App Reporting"),
+                footerText: NSLocalizedString("Applies when terminal applications (such as vim, tmux, or htop) enable mouse reporting.",
+                                              comment: "Pointer reporting description"),
+                rows: [
+                    ProfileFormRow(label: field(NSLocalizedString("Scrolling:", comment: "Pointer form label")),
+                                   content: .checkbox(control("reportHorizontalScrollEvents"), trailing: [])),
+                    ProfileFormRow(label: field(NSLocalizedString("Context Menu:", comment: "Pointer form label")),
+                                   content: .checkbox(control("controlLeftClickActsLikeRightClick"), trailing: []),
+                                   suppressSeparatorAfter: true),
+                    ProfileFormRow(content: .checkbox(control("rightClickActsLikeRightClick"), trailing: []))
+                ]
+            )
+        ]
+
+        let bindings: NSView = control("bindings")
+        let bindingsSection = ProfileSectionCard(
+            title: nil,
+            footerText: NSLocalizedString("Custom bindings override built-in pointer actions. Double-click a row to edit.",
+                                          comment: "Pointer bindings hint"),
+            rows: [
+                ProfileFormRow(
+                    content: .custom(hostedViews: [bindings]) { x, width, y, _ in
+                        let height = ProfilePageHelpers.naturalTableContainerHeight(
+                            in: bindings,
+                            minHeight: 220,
+                            maxHeight: 380,
+                            extraChrome: 40
+                        )
+                        bindings.frame = NSRect(x: x, y: y, width: width, height: height)
+                        return height
+                    },
+                    fullCardWidth: true
+                )
+            ]
+        )
+
+        ProfilePageHelpers.installDocument(behaviorSections, on: behaviorRoot)
+        ProfilePageHelpers.installDocument([bindingsSection], on: bindingsRoot)
+    }
+}
