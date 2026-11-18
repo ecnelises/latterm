@@ -130,7 +130,7 @@ extension TerminalWindowSizeHelper {
         case .none:
             fallback
         case .cells(let cells):
-            charWidth * CGFloat(cells) + decorationWidth + 2.0 * hmargin
+            ceil(charWidth * CGFloat(cells)) + decorationWidth + 2.0 * hmargin
         case .screenPercentage(let percentage):
             screenVisibleSize.width * percentage / 100.0
         }
@@ -247,7 +247,7 @@ extension TerminalWindowSizeHelper {
         let vmargin = Double(iTermPreferences.topBottomMargins())
 
         return NSSize(
-            width: hmargin * 2.0 + CGFloat(sessionSize.width) * cellSize.width + decorationSize.width,
+            width: hmargin * 2.0 + ceil(CGFloat(sessionSize.width) * cellSize.width) + decorationSize.width,
             height: vmargin * 2.0 + CGFloat(sessionSize.height) * cellSize.height + decorationSize.height)
     }
 
@@ -352,7 +352,7 @@ private extension TerminalWindowSizeHelper {
         let hmargin = Double(iTermPreferences.sideMargins())
         let vmargin = Double(iTermPreferences.topBottomMargins())
         return NSSize(
-            width: CGFloat(gridSize.width) * cellSize.width + hmargin * 2,
+            width: ceil(CGFloat(gridSize.width) * cellSize.width) + hmargin * 2,
             height: CGFloat(gridSize.height) * cellSize.height + vmargin * 2)
     }
 

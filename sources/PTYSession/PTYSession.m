@@ -2749,15 +2749,16 @@ ITERM_WEAKLY_REFERENCEABLE
         }
         return result;
     } else {
-        result -= [iTermPreferences sideMargins] * 2;
-        int iCharWidth = [_textview charWidth];
-        if (iCharWidth == 0) {
+        const CGFloat remaining = result - [iTermPreferences sideMargins] * 2;
+        const CGFloat charWidth = [_textview charWidth];
+        if (charWidth <= 0) {
             return 0;
         }
-        result %= iCharWidth;
-        if (result > iCharWidth / 2) {
-            result -= iCharWidth;
+        CGFloat remainder = fmod(remaining, charWidth);
+        if (remainder > charWidth / 2.0) {
+            remainder -= charWidth;
         }
+        return round(remainder);
     }
     return result;
 }
@@ -4540,7 +4541,7 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (NSSize)idealScrollViewSizeWithStyle:(NSScrollerStyle)scrollerStyle {
-    NSSize innerSize = NSMakeSize([_screen width] * [_textview charWidth] + [iTermPreferences sideMargins] * 2,
+    NSSize innerSize = NSMakeSize(ceil([_screen width] * [_textview charWidth]) + [iTermPreferences sideMargins] * 2,
                                   [_screen height] * [_textview lineHeight] + [iTermPreferences topBottomMargins] * 2);
     BOOL hasScrollbar = [[_delegate realParentWindow] scrollbarShouldBeVisible];
     NSSize outerSize =

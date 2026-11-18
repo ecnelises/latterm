@@ -271,7 +271,8 @@ struct ProfileWorkspace: View {
                         ForEach(model.profiles) { Text($0.name).tag($0.id) }
                     }
                     .labelsHidden()
-                    .frame(width: compact ? 180 : 220)
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: compact ? 180 : 240, alignment: .leading)
                     .accessibilityIdentifier("WorkspaceProfilePicker")
 
                     if model.isDefault {

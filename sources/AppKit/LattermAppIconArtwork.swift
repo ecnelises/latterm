@@ -358,10 +358,81 @@ public enum LattermAppIconRenderer {
         }
     }
 
+    private static let foregroundContentScale: CGFloat = 0.92
+
+    private static func rawForegroundCenter(variant: AppIconVariant, channel: AppIconChannel) -> CGPoint {
+        switch (variant, channel) {
+        case (.ink, .stable), (.paper, .stable), (.flame, .stable), (.cobalt, .stable):
+            return CGPoint(x: 495.5, y: 512.0)
+        case (.ink, .alpha), (.paper, .alpha), (.flame, .alpha), (.cobalt, .alpha):
+            return CGPoint(x: 537.0, y: 512.0)
+        case (.ink, .beta), (.paper, .beta), (.flame, .beta), (.cobalt, .beta):
+            return CGPoint(x: 499.0, y: 512.0)
+
+        case (.block, _):
+            return CGPoint(x: 512.0, y: 512.0)
+
+        case (.monogram, .stable):
+            return CGPoint(x: 512.0, y: 522.0)
+        case (.monogram, .alpha):
+            return CGPoint(x: 510.5, y: 502.0)
+        case (.monogram, .beta):
+            return CGPoint(x: 500.5, y: 502.0)
+
+        case (.glyphLt, .stable):
+            return CGPoint(x: 494.5, y: 512.0)
+        case (.glyphLt, .alpha):
+            return CGPoint(x: 511.0, y: 512.0)
+        case (.glyphLt, .beta):
+            return CGPoint(x: 501.0, y: 512.0)
+
+        case (.glyphDollar, .stable), (.glyphDollarPaper, .stable):
+            return CGPoint(x: 502.5, y: 520.0)
+        case (.glyphDollar, .alpha), (.glyphDollarPaper, .alpha):
+            return CGPoint(x: 507.0, y: 520.0)
+        case (.glyphDollar, .beta), (.glyphDollarPaper, .beta):
+            return CGPoint(x: 497.0, y: 520.0)
+
+        case (.glyphHash, .stable), (.glyphHashPaper, .stable):
+            return CGPoint(x: 492.0, y: 523.0)
+        case (.glyphHash, .alpha), (.glyphHashPaper, .alpha):
+            return CGPoint(x: 496.5, y: 523.0)
+        case (.glyphHash, .beta), (.glyphHashPaper, .beta):
+            return CGPoint(x: 486.5, y: 523.0)
+
+        case (.glyphPercent, .stable), (.glyphPercentPaper, .stable):
+            return CGPoint(x: 494.0, y: 522.5)
+        case (.glyphPercent, .alpha), (.glyphPercentPaper, .alpha):
+            return CGPoint(x: 501.5, y: 522.5)
+        case (.glyphPercent, .beta), (.glyphPercentPaper, .beta):
+            return CGPoint(x: 491.5, y: 522.5)
+
+        case (.glyphLambda, .stable), (.glyphLambdaPaper, .stable):
+            return CGPoint(x: 488.0, y: 523.0)
+        case (.glyphLambda, .alpha), (.glyphLambdaPaper, .alpha):
+            return CGPoint(x: 492.5, y: 523.0)
+        case (.glyphLambda, .beta), (.glyphLambdaPaper, .beta):
+            return CGPoint(x: 482.5, y: 523.0)
+        }
+    }
+
     private static func drawVariantForeground(in ctx: CGContext,
                                               variant: AppIconVariant,
                                               channel: AppIconChannel,
                                               palette: VariantColors) {
+        let rawCenter = rawForegroundCenter(variant: variant, channel: channel)
+        ctx.saveGState()
+        ctx.translateBy(x: 512.0, y: 512.0)
+        ctx.scaleBy(x: foregroundContentScale, y: foregroundContentScale)
+        ctx.translateBy(x: -rawCenter.x, y: -rawCenter.y)
+        drawRawVariantForeground(in: ctx, variant: variant, channel: channel, palette: palette)
+        ctx.restoreGState()
+    }
+
+    private static func drawRawVariantForeground(in ctx: CGContext,
+                                                 variant: AppIconVariant,
+                                                 channel: AppIconChannel,
+                                                 palette: VariantColors) {
         switch variant {
         case .ink, .paper, .flame, .cobalt:
             if channel == .alpha {

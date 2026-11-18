@@ -2549,7 +2549,7 @@ static void SetAgainstGrainDim(BOOL isVertical, NSSize *dest, CGFloat value) {
     NSSize size;
     DLog(@"    calculating session size based on %dx%d cells", columns, rows);
     DLog(@"    cell size is %@", NSStringFromSize(NSMakeSize(charWidth, lineHeight)));
-    size.width = columns * charWidth + [iTermPreferences sideMargins] * 2;
+    size.width = ceil(columns * charWidth) + [iTermPreferences sideMargins] * 2;
     size.height = rows * lineHeight + [iTermPreferences topBottomMargins] * 2;
     DLog(@"    size for content is %@", NSStringFromSize(size));
     BOOL hasScrollbar = [term scrollbarShouldBeVisible];
@@ -2592,7 +2592,7 @@ static void SetAgainstGrainDim(BOOL isVertical, NSSize *dest, CGFloat value) {
 - (NSSize)_minSessionSize:(SessionView*)sessionView respectPinning:(BOOL)respectPinning {
     NSSize size;
     PTYSession *session = [self sessionForSessionView:sessionView];
-    size.width = kVT100ScreenMinColumns * [[session textview] charWidth] + [iTermPreferences sideMargins] * 2;
+    size.width = ceil(kVT100ScreenMinColumns * [[session textview] charWidth]) + [iTermPreferences sideMargins] * 2;
     size.height = kVT100ScreenMinRows * [[session textview] lineHeight] + [iTermPreferences topBottomMargins] * 2;
 
     BOOL hasScrollbar = [parentWindow_ scrollbarShouldBeVisible];

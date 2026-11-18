@@ -2145,6 +2145,19 @@
     const NSRect originalFrame = window.frame;
     [window setContentSize:NSMakeSize(1040, 720)];
     @try {
+        // Profile workspace picker aligns flush with the left edge of the workspace cards (32pt inset).
+        [panel showProfilesTabView:nil];
+        [window.contentView layoutSubtreeIfNeeded];
+        ProfilePreferencesViewController *profilesVC = [panel valueForKey:@"_profilesViewController"];
+        NSView *workspaceHost = [self descendantWithIdentifier:@"ProfileWorkspaceHost" inView:profilesVC.view];
+        XCTAssertNotNil(workspaceHost);
+        [workspaceHost layoutSubtreeIfNeeded];
+        NSView *profilePicker = workspaceHost.subviews.firstObject;
+        XCTAssertNotNil(profilePicker);
+        NSRect pickerInProfiles = [profilePicker convertRect:profilePicker.bounds
+                                                      toView:profilesVC.view];
+        XCTAssertLessThanOrEqual(NSMinX(pickerInProfiles), 36.0, @"Profile picker must not have centered leading blank space");
+
         // App Behavior & Appearance sections unify their form control columns.
         [panel showGlobalTabView:nil];
         [window.contentView layoutSubtreeIfNeeded];

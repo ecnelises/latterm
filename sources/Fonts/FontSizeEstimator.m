@@ -95,8 +95,7 @@
             size.width = advances[0];
             size.width *= [aFont pointSize];
             size.width /= CGFontGetUnitsPerEm(cgfont);
-            size.width = round(size.width);
-            DLog(@"Improving my guess for width using formula round(%d * %f / %d) giving %f",
+            DLog(@"Improving my guess for width using formula %d * %f / %d giving %f",
                  advances[0],
                  [aFont pointSize],
                  CGFontGetUnitsPerEm(cgfont),
