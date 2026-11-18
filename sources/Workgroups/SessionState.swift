@@ -2,8 +2,6 @@
 //  SessionState.swift
 //  iTerm2
 //
-//  Shared with Companion. Keep this file platform-neutral.
-//
 
 import Foundation
 

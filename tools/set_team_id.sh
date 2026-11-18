@@ -27,9 +27,6 @@ PROJECT_FILES=(
     "BetterFontPicker/BetterFontPicker.xcodeproj/project.pbxproj"
     "SearchableComboListView/SearchableComboListView.xcodeproj/project.pbxproj"
     "SignedArchive/SignedArchive.xcodeproj/project.pbxproj"
-    "SignPlugin/SignPlugin.xcodeproj/project.pbxproj"
-    "iTermCompanion/iTermCompanion.xcodeproj/project.pbxproj"
-    "Companion/iTerm2Companion.xcodeproj/project.pbxproj"
 )
 
 cd "$REPO_ROOT"

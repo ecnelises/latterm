@@ -1092,7 +1092,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = macosx;
-				VALID_ARCHS = "i386 x86_64 armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -1148,7 +1147,6 @@
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = macosx;
-				VALID_ARCHS = "i386 x86_64 armv7 armv7s";
 			};
 			name = Release;
 		};
@@ -1188,7 +1186,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.inthebeginninggames.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_AFTER_BUILD = YES;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -1229,7 +1226,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.inthebeginninggames.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_AFTER_BUILD = YES;
-				VALID_ARCHS = "$(ARCHS_STANDARD)";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
@@ -1256,7 +1252,6 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -1277,7 +1272,6 @@
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Release;
 		};

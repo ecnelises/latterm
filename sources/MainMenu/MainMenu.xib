@@ -23,11 +23,6 @@
                                     <action selector="showAbout:" target="201" id="509"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Companion Device Settings" identifier="Pair Companion Device" id="Cmp-n0-De1">
-                                <connections>
-                                    <action selector="pairCompanionDevice:" target="201" id="Cmp-n0-Ac1"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="Dxk-DH-qzi">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>

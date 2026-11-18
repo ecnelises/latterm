@@ -587,17 +587,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 
     iTermSessionModeHandler *_modeHandler;
 
-    // Set while injecting a synthesized key event (companion on-screen keyboard) so
-    // the shared keyDown/keyUp path suppresses broadcast to other split panes: the
-    // phone targets one specific session.
-    BOOL _injectingSynthesizedKey;
-
-    // Set by -regularKeyDown: when it actually emits mapper bytes for an injected key,
-    // so injection only synthesizes the matching key-up when there was a real press
-    // (a keyDown consumed by a binding/handler/copy-mode must not emit an orphan
-    // release under Kitty report-all-event-types).
-    BOOL _injectedKeyEmittedPress;
-
     // Absolute line number where touchbar status changed.
     long long _statusChangedAbsLine;
 
@@ -3437,10 +3426,6 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)_maybeWarnAboutShortLivedSessions {
-    if ([iTermApplication.sharedApplication delegate].isAppleScriptTestApp) {
-        // The applescript test driver doesn't care about short-lived sessions.
-        return;
-    }
     if (self.isSingleUseSession) {
         return;
     }
@@ -3821,12 +3806,8 @@ ITERM_WEAKLY_REFERENCEABLE
             [mutableState appendStringAtCursor:[string stringByMakingControlCharactersToPrintable]];
         }];
     }
-    // check if we want to send this input to all the sessions. Suppressed while
-    // injecting a synthesized key (companion keyboard): the phone targets one specific
-    // session, so its keys must not fan out to the split's other panes. Only the
-    // broadcast decision is gated - local echo (above), bell-silence, and
-    // scroll-to-bottom (below) still behave as they do for a real keypress.
-    if (canBroadcast && !_injectingSynthesizedKey && [[_delegate realParentWindow] broadcastInputToSession:self fromSessionWithGUID:self.guid]) {
+    // Check if we want to send this input to all the sessions.
+    if (canBroadcast && [[_delegate realParentWindow] broadcastInputToSession:self fromSessionWithGUID:self.guid]) {
         // Ask the parent window to write to the other tasks.
         DLog(@"Passing input to window to broadcast it. Won't send in this call.");
         [[_delegate realParentWindow] sendInputToAllSessions:string
@@ -4064,7 +4045,7 @@ ITERM_WEAKLY_REFERENCEABLE
         reporting:(BOOL)reporting {
     NSStringEncoding encoding = forceEncoding ? optionalEncoding : _screen.terminalEncoding;
     if (self.tmuxMode == TMUX_CLIENT || _conductor.handlesKeystrokes) {
-        if (canBroadcast && !_injectingSynthesizedKey && [[_delegate realParentWindow] broadcastInputToSession:self fromSessionWithGUID:self.guid]) {
+        if (canBroadcast && [[_delegate realParentWindow] broadcastInputToSession:self fromSessionWithGUID:self.guid]) {
             [[_delegate realParentWindow] sendInputToAllSessions:string
                                                         encoding:optionalEncoding
                                                    forceEncoding:forceEncoding];
@@ -10623,12 +10604,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     if (![[_tmuxController gateway] serverSupportsExtendedKeys]) {
         return NO;
     }
-    // Companion-injected keys track their emitted press through the byte path
-    // (_injectedKeyEmittedPress); leave them on it so key-up handling stays
-    // correct.
-    if (_injectingSynthesizedKey) {
-        return NO;
-    }
     // Preserve broadcast semantics: when this keystroke would be broadcast to
     // other sessions, fall back to the normal byte path (which handles
     // broadcasting) rather than sending only to this pane.
@@ -11108,12 +11083,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     if (!action) {
         return;
     }
-    // While injecting a synthesized key (companion keyboard) the phone targets one
-    // session, so don't let an action's apply-mode (all sessions / all-in-tab /
-    // broadcasting) fan the injected key out to other sessions - restrict to self.
-    NSArray<PTYSession *> *sessions =
-        _injectingSynthesizedKey ? @[ self ]
-                                 : [PTYSession sessionsForActionApplyMode:action.applyMode focused:self];
+    NSArray<PTYSession *> *sessions = [PTYSession sessionsForActionApplyMode:action.applyMode focused:self];
     for (PTYSession *session in sessions) {
         [session reallyPerformKeyBindingAction:action event:event];
     }
@@ -11472,14 +11442,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             for (iTermKeyBindingAction *subaction in [action.parameter keyBindingActionsFromSequenceParameter]) {
                 [session performKeyBindingAction:subaction event:event];
                 // Normally a sequence follows the focused session (a subaction may
-                // switch panes, and the next should type into the new one). But while
-                // injecting, the phone targets exactly one session: keep the whole
-                // sequence on it, or later subactions would run on the mac's focused
-                // session - the wrong target, and one where _injectingSynthesizedKey is
-                // clear so writes could broadcast.
-                if (!_injectingSynthesizedKey) {
-                    session = [[[iTermController sharedInstance] currentTerminal] currentSession] ?: self;
-                }
+                session = [[[iTermController sharedInstance] currentTerminal] currentSession] ?: self;
             }
             break;
         case KEY_ACTION_SWAP_WITH_NEXT_PANE:
@@ -11785,13 +11748,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     DLog(@"PTYSession keyDown not short-circuted by special handler");
     const NSEventModifierFlags mask = (NSEventModifierFlagCommand | NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagControl);
 
-    // The "movement keys scroll outside interactive apps" shortcut is meaningless for
-    // an injected (companion) key: a remote typist wants PageUp/Home/etc. delivered to
-    // the program, not consumed to scroll the mac's local text view. It also reads the
-    // mac's LIVE physical modifier state, which would be cross-talk between the phone's
-    // key and whatever the mac user is holding, so skip it entirely while injecting.
-    if (!_injectingSynthesizedKey &&
-        !_screen.terminalSoftAlternateScreenMode &&
+    if (!_screen.terminalSoftAlternateScreenMode &&
         ([[iTermApplication sharedApplication] it_modifierFlags] & mask) == 0 &&
         [iTermProfilePreferences boolForKey:KEY_MOVEMENT_KEYS_SCROLL_OUTSIDE_INTERACTIVE_APPS inProfile:self.profile]) {
         switch (event.keyCode) {
@@ -11856,11 +11813,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     NSData *const dataToSend = [_keyMapper keyMapperDataForPostCocoaEvent:event];
     DLog(@"dataToSend=%@", dataToSend);
     if (dataToSend) {
-        if (_injectingSynthesizedKey) {
-            // Record that this injected keyDown produced a real press, so injection
-            // knows whether a matching key-up is warranted.
-            _injectedKeyEmittedPress = YES;
-        }
         // Broadcast suppression during injection is enforced centrally in
         // -writeTask:encoding:forceEncoding:canBroadcast:reporting:.
         [self writeLatin1EncodedData:dataToSend broadcastAllowed:YES reporting:NO];
@@ -13053,166 +13005,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
             break;
     }
     return NO;
-}
-
-- (BOOL)scrollWheelReportingEnabled {
-    // Mirror the full gate the live scroll-report path enforces
-    // (PTYMouseHandler.terminalWantsMouseReports plus its wheel sub-gate),
-    // not just the program's requested mode. Otherwise the orchestrator
-    // would advertise mouse_reporting:true and inject scroll bytes even
-    // when the user has turned reporting off in their profile, bypassing
-    // the consent the real wheel path honors.
-    //
-    //   1. xtermMouseReporting: the profile's "Enable mouse reporting"
-    //      setting (KEY_XTERM_MOUSE_REPORTING) and its
-    //      restrict-to-alternate-screen rule. NO means the user opted out.
-    //   2. xtermMouseReportingAllowMouseWheel: the separate "report mouse
-    //      wheel events" sub-setting.
-    //   3. a mouse mode that actually reports the wheel. Highlight-tracking
-    //      mode (1001) reports selection clicks but never scroll, so it's
-    //      excluded just like in terminalWantsMouseReports.
-    if (!self.xtermMouseReporting) {
-        return NO;
-    }
-    if (!self.xtermMouseReportingAllowMouseWheel) {
-        return NO;
-    }
-    switch (_screen.terminalMouseMode) {
-        case MOUSE_REPORTING_NORMAL:
-        case MOUSE_REPORTING_BUTTON_MOTION:
-        case MOUSE_REPORTING_ALL_MOTION:
-            return YES;
-        case MOUSE_REPORTING_NONE:
-        case MOUSE_REPORTING_HIGHLIGHT:
-            return NO;
-    }
-    return NO;
-}
-
-- (void)injectSynthesizedKeyEvent:(NSEvent *)event literalText:(NSString *)literalText {
-    if (_exited) {
-        DLog(@"injectSynthesizedKeyEvent: session already dead");
-        return;
-    }
-    if (!event) {
-        return;
-    }
-    // Gate exactly like a physical keystroke, via the same entry point the real key
-    // path uses (textViewShouldAcceptKeyDownEvent:): keystroke monitors, copy/session
-    // mode, tmux unpause, paste-abort, PLUS the responsive-keystroke cadence boost and
-    // selected-command-range clearing. If the gate consumes the event (it drove copy
-    // mode, unpaused tmux, was filtered by a monitor, etc.), don't also send it to the
-    // shell. Both the mapped and the literal path go through this gate so ASCII and
-    // non-ASCII phone input behave identically.
-    //
-    // Known tradeoff: this gate consults Mac-LOCAL state. If the Mac operator has a
-    // selection up with copy-mode-on-selection enabled, an injected key can auto-enter
-    // copy mode and be swallowed with no signal to the remote typist. That is the price
-    // of "gate exactly like a physical key"; treated as acceptable for now.
-    if (![self textViewShouldAcceptKeyDownEvent:event]) {
-        return;
-    }
-    // The flag suppresses broadcast to other split panes for the duration, since the
-    // phone targets one specific session. Save/restore in @finally rather than a bare
-    // assignment so a bound action that raises an exception can't leak the flag YES
-    // (which would silently disable broadcast for real keys in this pane afterward);
-    // save/restore (not clear-to-NO) also keeps a re-entrant injection correct.
-    const BOOL previouslyInjecting = _injectingSynthesizedKey;
-    const BOOL previouslyEmittedPress = _injectedKeyEmittedPress;
-    _injectingSynthesizedKey = YES;
-    _injectedKeyEmittedPress = NO;
-    @try {
-        if (literalText.length > 0) {
-            // A character with no single-keystroke mapping on the mac's layout (accented
-            // letter, emoji, dead-key result). Its fallback key code would be mis-encoded
-            // by the CSI-u key mapper, so write the correct character literally - but
-            // through the same broadcast-suppressed, already-gated path as the mapped keys.
-            [self noteUserInput];
-            [self writeTaskNoBroadcast:literalText];
-        } else {
-            // Route through the real key-down path so profile key bindings (e.g. Delete
-            // sends ^H and remapped keys) and the session's key mapper
-            // all apply exactly as for a physical press.
-            //
-            // Known tradeoff: broadcast suppression relies on _injectingSynthesizedKey
-            // being YES for the SYNCHRONOUS duration here. A bound paste-style action
-            // (KEY_ACTION_PASTE_*, SEND_SNIPPET routed through the paste helper) delivers
-            // its bytes in later runloop chunks, after the flag is restored, so those
-            // chunks are not broadcast-suppressed. Rare (injected key must be bound to a
-            // paste action AND broadcast-input on); a dedicated no-broadcast paste path
-            // would be needed to fully close it.
-            [self keyDown:event];
-            // A phone tap is a discrete press-and-release. When the program asked to see
-            // key releases (the Kitty "report all event types" enhancement, or DECSET
-            // key-up reporting), deliver the matching key-up - but ONLY if the keyDown
-            // actually produced a press. A keyDown consumed by a binding/handler/copy
-            // mode emitted no press, so a key-up here would be an orphan release. Modifier
-            // dead-keys ride on the key event's flags rather than as separate modifier
-            // press/release events, which the phone cannot produce.
-            if (_injectedKeyEmittedPress &&
-                (_keyMapper.keyMapperWantsKeyUp || _screen.terminalReportKeyUp)) {
-                NSEvent *keyUp = [NSEvent keyEventWithType:NSEventTypeKeyUp
-                                                  location:event.locationInWindow
-                                             modifierFlags:event.modifierFlags
-                                                 timestamp:event.timestamp
-                                              windowNumber:event.windowNumber
-                                                   context:nil
-                                                characters:event.characters
-                               charactersIgnoringModifiers:event.charactersIgnoringModifiers
-                                                 isARepeat:NO
-                                                   keyCode:event.keyCode];
-                [self keyUp:keyUp];
-            }
-        }
-    } @finally {
-        _injectingSynthesizedKey = previouslyInjecting;
-        _injectedKeyEmittedPress = previouslyEmittedPress;
-    }
-}
-
-- (BOOL)reportScrollWheelForOrchestratorUp:(BOOL)up lines:(NSInteger)lines {
-    // Gate on the shared scroll-capable predicate so the bytes we'd send
-    // are actually understood by the program. Without scroll reporting
-    // there's nothing meaningful to send.
-    if (!self.scrollWheelReportingEnabled) {
-        return NO;
-    }
-    VT100Output *output = _screen.terminalOutput;
-    if (!output) {
-        return NO;
-    }
-    // Bound the repeat count: a runaway value would flood the program
-    // with reports. 256 notches is far more than any real history view
-    // needs and matches the spirit of the 32-step cap on live scrolls.
-    const NSInteger steps = MAX(1, MIN(256, lines));
-    // iTerm's MOUSE_BUTTON_SCROLL{UP,DOWN} names track the sign of the
-    // scroll-wheel *delta*, not the direction the content moves.
-    // MOUSE_BUTTON_SCROLLDOWN (4) encodes to xterm SGR button 64, which
-    // pagers and TUIs read as "scroll back" (reveal OLDER content above);
-    // MOUSE_BUTTON_SCROLLUP (5) encodes to SGR 65 = "scroll forward"
-    // (newer content below). So revealing older content (up==YES) means
-    // SCROLLDOWN. This matches the live scroll path in PTYMouseHandler.m,
-    // where scrollingDeltaY>0 maps to MOUSE_BUTTON_SCROLLDOWN. Getting it
-    // backwards sends a forward-scroll that does nothing when the view is
-    // already at the bottom, which is exactly the no-op the orchestrator hit.
-    const int button = up ? MOUSE_BUTTON_SCROLLDOWN : MOUSE_BUTTON_SCROLLUP;
-    // Report the scroll over the middle of the grid. Apps that key off
-    // pointer location (panes, scroll regions) then treat it as a scroll
-    // over the main content area rather than an edge. mousePress: adds 1
-    // to translate to the 1-based wire coordinates.
-    const int width = _screen.width;
-    const int height = _screen.height;
-    const VT100GridCoord coord = VT100GridCoordMake(MAX(0, width / 2),
-                                                    MAX(0, height / 2));
-    NSData *data = [output mousePress:button
-                       withModifiers:0
-                                  at:coord
-                               point:NSMakePoint(coord.x, coord.y)];
-    if (!data) {
-        return NO;
-    }
-    [self writeMouseReport:[data it_repeated:steps]];
-    return YES;
 }
 
 - (void)writeMouseReport:(NSData *)data {
@@ -14955,54 +14747,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [_delegate sessionInitiatedResize:self width:columns height:rows];
 }
 
-- (BOOL)companionSessionCanResizeWindow {
-    id<WindowControllerInterface> window = [_delegate parentWindow];
-    if (!window) {
-        return NO;
-    }
-    // A resize request is ignored in full screen (see sessionInitiatedResize:).
-    if ([window anyFullScreen]) {
-        return NO;
-    }
-    // A width-locked session (e.g. the "lock" affordance) refuses column changes.
-    if (_view.preferredWidth != nil) {
-        return NO;
-    }
-    // Freely-resizable and edge-attached window styles can be resized. Normal
-    // styles resize to an arbitrary grid; edge-attached styles (by percentage or
-    // by cells) lock the attached dimension but are already manually resizable in
-    // the free dimension, so the phone may resize them too and the window
-    // controller clamps the locked dimension exactly as it does for a manual drag.
-    // Maximized styles are fixed to the screen and full-screen styles do not
-    // resize at all.
-    // windowType lives on the iTermWindowController sub-protocol; parentWindow is
-    // declared as the narrower WindowControllerInterface but is always a real
-    // window controller, so downcast to read it.
-    switch (iTermThemedWindowType([(id<iTermWindowController>)window windowType])) {
-        case WINDOW_TYPE_NORMAL:
-        case WINDOW_TYPE_COMPACT:
-        case WINDOW_TYPE_NO_TITLE_BAR:
-        case WINDOW_TYPE_ACCESSORY:
-        case WINDOW_TYPE_CENTERED:
-        case WINDOW_TYPE_TOP_PERCENTAGE:
-        case WINDOW_TYPE_BOTTOM_PERCENTAGE:
-        case WINDOW_TYPE_LEFT_PERCENTAGE:
-        case WINDOW_TYPE_RIGHT_PERCENTAGE:
-        case WINDOW_TYPE_TOP_CELLS:
-        case WINDOW_TYPE_BOTTOM_CELLS:
-        case WINDOW_TYPE_LEFT_CELLS:
-        case WINDOW_TYPE_RIGHT_CELLS:
-            return YES;
-
-        case WINDOW_TYPE_TRADITIONAL_FULL_SCREEN:
-        case WINDOW_TYPE_LION_FULL_SCREEN:
-        case WINDOW_TYPE_MAXIMIZED:
-        case WINDOW_TYPE_COMPACT_MAXIMIZED:
-            return NO;
-    }
-    return NO;
-}
-
 - (VT100GridSize)windowSizeInCells {
     VT100GridSize result;
     const NSRect screenFrame = [self screenWindowScreenFrame];
@@ -15744,13 +15488,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                     tabIndex:[self screenTabIndex]
                                                    viewIndex:[self screenViewIndex]
                                                       sticky:YES];
-        // Mirror to the paired iPhone when this profile opted in (the bridge is a
-        // no-op unless a revision-2 phone is paired and can be notified).
-        if ([iTermProfilePreferences boolForKey:KEY_SEND_ALERTS_TO_COMPANION inProfile:self.profile]) {
-            [iTermCompanionAlertBridge postTerminalAlertWithTitle:NSLocalizedString(@"Mark Set", @"User notification")
-                                                             body:markDescription
-                                                        threadKey:self.stableID];
-        }
         completion();
         return;
     }
@@ -23237,13 +22974,6 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
                        windowIndex:[self screenWindowIndex]
                           tabIndex:[self screenTabIndex]
                          viewIndex:[self screenViewIndex]];
-    // Mirror to the paired iPhone when this profile opted in (the bridge is a
-    // no-op unless a revision-2 phone is paired and can be notified).
-    if ([iTermProfilePreferences boolForKey:KEY_SEND_ALERTS_TO_COMPANION inProfile:self.profile]) {
-        [iTermCompanionAlertBridge postTerminalAlertWithTitle:message
-                                                         body:triggerDescription
-                                                    threadKey:self.stableID];
-    }
 }
 
 // Scroll so that `absLine` is the last visible onscreen.

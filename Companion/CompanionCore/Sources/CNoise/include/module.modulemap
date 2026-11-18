@@ -1,4 +1,0 @@
-module CNoise {
-    header "cnoise.h"
-    export *
-}

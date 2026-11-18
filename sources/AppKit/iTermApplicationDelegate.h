@@ -53,8 +53,6 @@ void TurnOnDebugLoggingAutomatically(void);
 + (BOOL)isCompareRenderingMode;
 
 @property(nonatomic, readonly) BOOL workspaceSessionActive;
-@property(nonatomic, readonly) BOOL isAppleScriptTestApp;
-@property(nonatomic, readonly) BOOL isRunningOnTravis;
 
 // Returns one of the kMarkAlertAction strings defined above.
 @property(nonatomic, readonly) NSString *markAlertAction;
@@ -90,7 +88,6 @@ void TurnOnDebugLoggingAutomatically(void);
 - (void)undo:(id)sender;
 - (void)showPrefWindow:(id)sender;
 - (IBAction)openDashboard:(id)sender;
-- (IBAction)pairCompanionDevice:(id)sender;
 - (IBAction)makeScreenshot:(id)sender;
 
 @end

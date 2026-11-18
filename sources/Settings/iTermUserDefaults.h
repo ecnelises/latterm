@@ -71,15 +71,6 @@ typedef NS_ENUM(NSUInteger, iTermAppleWindowTabbingMode) {
 // migration state through synced prefs.
 @property (class, nonatomic) BOOL workgroupShortcutsBackfilled;
 
-// Tri-state consent for automatically sharing terminal state with a paired
-// Companion device. This privacy decision remains local to this Mac.
-typedef NS_ENUM(NSInteger, iTermAutoProvideConsent) {
-    iTermAutoProvideConsentUnknown = 0,
-    iTermAutoProvideConsentGranted = 1,
-    iTermAutoProvideConsentDenied = 2
-};
-@property (class, nonatomic) iTermAutoProvideConsent autoProvideConsent;
-
 // Returns whether the previous process exited cleanly. The value is latched on
 // first access: the on-disk flag is read then immediately reset so that if this
 // process crashes before +markShutdownAsClean is called, the next launch will

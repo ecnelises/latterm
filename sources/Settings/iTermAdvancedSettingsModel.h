@@ -112,10 +112,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 #if ITERM2_SHARED_ARC
 + (NSString *)browserBundleID;
 #endif  // ITERM2_SHARED_ARC
-+ (BOOL)companionStreamFrameNumbers;
-+ (int)companionStreamMaxLeadMilliseconds;
-+ (int)companionStreamMaxQueueDepth;
-+ (double)companionStreamBitrateMultiplier;
 + (int)bufferDepth;
 + (BOOL)chaseAnchoredScreen;
 + (BOOL)channelsEnabled;
@@ -225,9 +221,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (double)fractionOfCharacterSelectingNextNeighbor;
 + (BOOL)fullHeightCursor;
 + (BOOL)fullWidthFlags;
-+ (BOOL)companionPairingAllowed;
-+ (NSString *)companionRelayOrigin;
-+ (NSString *)companionResolverURL;
 + (NSString *)gitSearchPath;
 + (double)gitTimeout;
 + (void)setGitTimeout:(double)value;

@@ -1836,8 +1836,6 @@ CA
                 <outlet property="_restrictMouseReportingToAlternateScreenMode" destination="9Ds-KM-wpJ" id="0ZJ-D0-AS5"/>
                 <outlet property="_scrollbackInAlternateScreen" destination="5758" id="Wzb-92-pab"/>
                 <outlet property="_scrollbackWithStatusBar" destination="5154" id="GTO-ta-yjN"/>
-                <outlet property="_sendAlertsToCompanion" destination="cmp-A1-bri" id="cmp-A1-out"/>
-                <outlet property="_sendAlertsToCompanionStatus" destination="cmp-A2-lbl" id="cmp-A2-out"/>
                 <outlet property="_sessionEndedAlert" destination="Hn1-0h-Vve" id="vQS-d5-b1B"/>
                 <outlet property="_shellIntegrationRequiredButton" destination="Yv4-ze-aYW" id="DbO-2y-TZd"/>
                 <outlet property="_showOffscreenCommandLine" destination="bAl-3O-ik0" id="2QD-PE-Ynt"/>
@@ -9815,14 +9813,14 @@ instead of the system keyboard.</string>
         </customView>
         <window title="Filter Alerts" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" hidesOnDeactivate="YES" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="u39-OD-7hu" customClass="NSPanel">
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="120" y="138" width="406" height="214"/>
+            <rect key="contentRect" x="120" y="138" width="406" height="170"/>
             <rect key="screenRect" x="0.0" y="0.0" width="3008" height="1661"/>
             <view key="contentView" id="dXn-d7-O8o">
-                <rect key="frame" x="0.0" y="0.0" width="406" height="214"/>
+                <rect key="frame" x="0.0" y="0.0" width="406" height="170"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="O5A-H9-sKq">
-                        <rect key="frame" x="18" y="178" width="152" height="18"/>
+                        <rect key="frame" x="18" y="134" width="152" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Send “Bell” alert" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="RWj-e3-HBy">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -9834,7 +9832,7 @@ instead of the system keyboard.</string>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bxF-vz-pm1">
-                        <rect key="frame" x="18" y="154" width="152" height="18"/>
+                        <rect key="frame" x="18" y="110" width="152" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Send “Idle” alert" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="5OR-eB-vkq">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -9846,7 +9844,7 @@ instead of the system keyboard.</string>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gMB-do-VHw">
-                        <rect key="frame" x="195" y="154" width="179" height="18"/>
+                        <rect key="frame" x="195" y="110" width="179" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Send “New Output” alert" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="cP6-Jq-skb">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -9858,7 +9856,7 @@ instead of the system keyboard.</string>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Hn1-0h-Vve">
-                        <rect key="frame" x="195" y="178" width="193" height="18"/>
+                        <rect key="frame" x="195" y="134" width="193" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Send “Session Ended” alert" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="2lN-Vt-8WG">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -9870,7 +9868,7 @@ instead of the system keyboard.</string>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pot-jK-a8U">
-                        <rect key="frame" x="18" y="120" width="268" height="18"/>
+                        <rect key="frame" x="18" y="76" width="268" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Send escape sequence-generated alerts" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="T4Q-lq-oX1">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -9882,7 +9880,7 @@ instead of the system keyboard.</string>
                         </connections>
                     </button>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="neY-Tu-CXc">
-                        <rect key="frame" x="18" y="96" width="249" height="18"/>
+                        <rect key="frame" x="18" y="52" width="249" height="18"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="check" title="Suppress alerts from active session" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="FB4-af-uFa">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -9893,26 +9891,6 @@ instead of the system keyboard.</string>
                             <outlet property="nextKeyView" destination="2100" id="MXH-BS-Ibd"/>
                         </connections>
                     </button>
-                    <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-A1-bri">
-                        <rect key="frame" x="18" y="72" width="198" height="18"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="check" title="Send alerts to paired iPhone" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="cmp-A1-cel">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="settingChanged:" target="gMD-DK-gev" id="cmp-A1-act"/>
-                        </connections>
-                    </button>
-                    <textField focusRingType="none" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-A2-lbl">
-                        <rect key="frame" x="40" y="20" width="248" height="48"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" controlSize="small" selectable="YES" title="Companion app help text goes here" id="cmp-A2-cel">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rzp-rB-JFI">
                         <rect key="frame" x="330" y="20" width="58" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>

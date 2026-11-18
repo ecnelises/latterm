@@ -32,7 +32,7 @@ final class SecureUserDefaultsReentrancyTests: XCTestCase {
         SecureUserDefaultTestHooks.privilegedWriteRunner = nil
         // Nothing was written, so dropping the caches restores the real values.
         SecureUserDefaults.instance.allowPaste.invalidateCache()
-        SecureUserDefaults.instance.enableCompanionPairing.invalidateCache()
+        SecureUserDefaults.instance.requireAuthToOpenPasswordmanager.invalidateCache()
         super.tearDown()
     }
 
@@ -48,7 +48,7 @@ final class SecureUserDefaultsReentrancyTests: XCTestCase {
                                                           object: nil,
                                                           queue: nil) { notification in
             // A synchronous observer reads a different secure setting.
-            _ = SecureUserDefaults.instance.enableCompanionPairing.key
+            _ = SecureUserDefaults.instance.requireAuthToOpenPasswordmanager.key
             observedKeys.append(notification.object as? String ?? "")
         }
 
@@ -74,7 +74,7 @@ final class SecureUserDefaultsReentrancyTests: XCTestCase {
 
     func testSerializeAllIncludesEverySetting() {
         let serialized = SecureUserDefaults.serializeAll()
-        for key in ["AllowPaste", "RequireAuthenticationToOpenPasswordManager", "EnableSecureKeyboardEntryAutomatically", "EnableCompanionPairing", "BrowserBundleID"] {
+        for key in ["AllowPaste", "RequireAuthenticationToOpenPasswordManager", "EnableSecureKeyboardEntryAutomatically", "BrowserBundleID"] {
             XCTAssertNotNil(serialized[key], key)
         }
     }

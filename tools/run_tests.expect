@@ -6,8 +6,12 @@ if {$argc < 1} {
     exit 1
 }
 
+set scheme ModernTests
 set only_testing_flags {}
 foreach test_name $argv {
+    if {[string match "iTerm2XCTests*" $test_name]} {
+        set scheme iTerm2Tests
+    }
     lappend only_testing_flags -only-testing:$test_name
 }
 set timeout -1
@@ -31,7 +35,7 @@ proc kill_tree {pid} {
     catch {exec kill -9 $pid}
 }
 
-spawn xcodebuild test -project iTerm2.xcodeproj -scheme ModernTests {*}$only_testing_flags -parallel-testing-enabled NO {*}$signing_flags
+spawn xcodebuild test -project iTerm2.xcodeproj -scheme $scheme {*}$only_testing_flags -parallel-testing-enabled NO {*}$signing_flags
 set spawned_pid [exp_pid]
 
 proc cleanup_and_exit {code} {

@@ -6,12 +6,6 @@
 //
 
 import Foundation
-import OSLog
-
-/*
-@available(macOS 11.0, *)
-private let passwordLogger = Logger(subsystem: "com.googlecode.iterm2.PasswordManager", category: "default")
-*/
 
 class CommandLineProvidedAccount: NSObject, PasswordManagerAccount {
     private let configuration: CommandLinePasswordDataSource.Configuration
@@ -614,13 +608,6 @@ class CommandLinePasswordDataSource: NSObject {
                          function: String = #function) {
             if debugging {
                 let message = messageBlock()
-                // This is commented out because we don't want to log passwords. I keep it around
-                // only for testing locally.
-                /*
-                if #available(macOS 11.0, *) {
-                    passwordLogger.info("\(message, privacy: .public)")
-                }
-                 */
                 DebugLogImpl(file, Int32(line), function, message)
             }
         }
