@@ -39,6 +39,8 @@
     NSMutableData *_positionsBuffer;
 
     BOOL _isAscii;
+    NSString *_languageCode;
+    CGFloat _customBaselineOffset;
     // Set by -frameFlipped: when the font answered the aliased measurement with something
     // that cannot describe this context. See -boundsAreTrustworthy.
     BOOL _aliasedBoundsWereRejected;
@@ -63,12 +65,13 @@
     UTF32Char remapped = 0;
     BOOL fakeBold = attributes.bold;
     BOOL fakeItalic = attributes.italic;
-    NSFont *font = [descriptor.fontTable fontForCharacter:[string longCharacterAtIndex:0]
-                                              useBoldFont:descriptor.useBoldFont
-                                            useItalicFont:descriptor.useItalicFont
-                                               renderBold:&fakeBold
-                                             renderItalic:&fakeItalic
-                                                 remapped: &remapped].font;
+    PTYFontInfo *fontInfo = [descriptor.fontTable fontForCharacter:[string longCharacterAtIndex:0]
+                                                       useBoldFont:descriptor.useBoldFont
+                                                     useItalicFont:descriptor.useItalicFont
+                                                        renderBold:&fakeBold
+                                                      renderItalic:&fakeItalic
+                                                          remapped:&remapped];
+    NSFont *font = fontInfo.font;
     const BOOL isAscii = (string.length == 1 && [string characterAtIndex:0] < 128);
 
     self = [super initWithFont:font
@@ -87,6 +90,8 @@
 
         _string = [string copy];
         _isAscii = isAscii;
+        _languageCode = [fontInfo.languageCode copy];
+        _customBaselineOffset = fontInfo.customBaselineOffset;
         DLog(@"%p initialize with descriptor %@, isAscii=%@", self, descriptor, @(_isAscii));
 
         ITAssertWithMessage(descriptor.fontTable, @"Nil font table for string=%@ attributes=%@", string, attributes);
@@ -122,6 +127,8 @@
 - (CGSize)desiredOffset {
     if (_isAscii && !iTermLineAttributeIsDoubleWidth(_lineAttribute)) {
         return _descriptor.asciiOffset;
+    } else if (_customBaselineOffset != 0) {
+        return CGSizeMake(0, _customBaselineOffset * _descriptor.scale);
     } else {
         return CGSizeZero;
     }
@@ -442,6 +449,13 @@
         paragraphStyle.tabStops = @[];
         paragraphStyle.baseWritingDirection = NSWritingDirectionLeftToRight;
     });
+    if (_languageCode.length > 0) {
+        return @{ (NSString *)kCTLigatureAttributeName: @0,
+                  (NSString *)kCTForegroundColorAttributeName: (id)[self textColorForIteration:iteration],
+                  (NSString *)kCTLanguageAttributeName: _languageCode,
+                  NSFontAttributeName: _font,
+                  NSParagraphStyleAttributeName: paragraphStyle };
+    }
     return @{ (NSString *)kCTLigatureAttributeName: @0,
               (NSString *)kCTForegroundColorAttributeName: (id)[self textColorForIteration:iteration],
               NSFontAttributeName: _font,

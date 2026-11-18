@@ -69,6 +69,7 @@ typedef struct {
     BOOL hasUnderlineColor;
     RTLStatus rtlStatus;
     VT100TerminalColorValue underlineColor;
+    NSString *languageCode;
 } iTermCharacterAttributes;
 
 NSString *const iTermAntiAliasAttribute = @"iTermAntiAliasAttribute";
@@ -105,6 +106,7 @@ NSString *const iTermKittyImagePlacementIDAttribute = @"iTermKittyImagePlacement
     uint64_t _scalars;  // all scalar fields, including the underline color, packed
     NSColor *_fg;
     NSFont *_font;
+    NSString *_languageCode;
     NSUInteger _hash;
 }
 - (NSUInteger)hash {
@@ -120,6 +122,7 @@ NSString *const iTermKittyImagePlacementIDAttribute = @"iTermKittyImagePlacement
     iTermCharAttrsDictKey *other = object;
     return (_scalars == other->_scalars &&
             _font == other->_font &&
+            (_languageCode == other->_languageCode || [_languageCode isEqualToString:other->_languageCode]) &&
             (_fg == other->_fg || [_fg isEqual:other->_fg]));
 }
 - (id)copyWithZone:(NSZone *)zone {
@@ -129,6 +132,7 @@ NSString *const iTermKittyImagePlacementIDAttribute = @"iTermKittyImagePlacement
     copy->_scalars = _scalars;
     copy->_fg = _fg;
     copy->_font = _font;
+    copy->_languageCode = [_languageCode copy];
     copy->_hash = _hash;
     return copy;
 }
@@ -783,6 +787,7 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
     attributes->font = fontInfo.font;
     attributes->metalFontID = fontInfo.metalFontID;
     attributes->ligatureLevel = fontInfo.ligatureLevel;
+    attributes->languageCode = fontInfo.languageCode;
     if (_preferSpeedToFullLigatureSupport) {
         if (!c->complexChar &&
             iTermCharacterSupportsFastPath(c->code, _asciiLigaturesAvailable)) {
@@ -870,6 +875,8 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
                                           newAttributes->contrastIneligible != previousAttributes ->contrastIneligible ||
                                           ![newAttributes->font isEqual:previousAttributes->font] ||
                                           newAttributes->metalFontID != previousAttributes->metalFontID ||
+                                          (newAttributes->languageCode != previousAttributes->languageCode &&
+                                           ![newAttributes->languageCode isEqualToString:previousAttributes->languageCode]) ||
                                           newAttributes->ligatureLevel != previousAttributes->ligatureLevel ||
                                           newAttributes->bold != previousAttributes->bold ||
                                           newAttributes->faint != previousAttributes->faint ||
@@ -896,6 +903,8 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
                                                newAttributes->contrastIneligible == previousAttributes->contrastIneligible &&
                                                [newAttributes->font isEqual:previousAttributes->font] &&
                                                newAttributes->metalFontID == previousAttributes->metalFontID &&
+                                               (newAttributes->languageCode == previousAttributes->languageCode ||
+                                                [newAttributes->languageCode isEqualToString:previousAttributes->languageCode]) &&
                                                newAttributes->ligatureLevel == previousAttributes->ligatureLevel &&
                                                newAttributes->bold == previousAttributes->bold &&
                                                newAttributes->faint == previousAttributes->faint &&
@@ -958,12 +967,16 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
         key->_scalars = scalars;
         key->_fg = attributes->foregroundColor;
         key->_font = attributes->font;
+        key->_languageCode = attributes->languageCode;
         // Cheap multiplicative mix of the packed scalars, the (value-based) color
         // hash, and the font pointer. Avoids the byte-loop hashing and the
         // per-lookup -[NSFont hash] message send.
         NSUInteger h = (NSUInteger)(scalars ^ (scalars >> 32));
         h = h * 1099511628211ULL + key->_fg.hash;
         h = h * 1099511628211ULL + (NSUInteger)(__bridge void *)key->_font;
+        if (key->_languageCode) {
+            h = h * 1099511628211ULL + key->_languageCode.hash;
+        }
         key->_hash = h;
         _dictCacheLookups++;
         NSDictionary *cached = _dictCache[key];
@@ -1035,23 +1048,28 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
                             @(attributes->underlineColor.mode) ];
     }
 
-    NSDictionary *result = @{ (NSString *)kCTLigatureAttributeName: @(attributes->ligatureLevel),
-              (NSString *)kCTForegroundColorAttributeName: (id)[attributes->foregroundColor CGColor],
-              NSFontAttributeName: attributes->font,
-              iTermMetalFontIDAttribute: @(attributes->metalFontID),
-              iTermAntiAliasAttribute: @(attributes->shouldAntiAlias),
-              iTermIsBoxDrawingAttribute: @(attributes->boxDrawing),
-              iTermFakeBoldAttribute: @(attributes->fakeBold),
-              iTermBoldAttribute: @(attributes->bold),
-              iTermFaintAttribute: @(attributes->faint),
-              iTermFakeItalicAttribute: @(attributes->fakeItalic),
-              iTermHasUnderlineColorAttribute: @(attributes->hasUnderlineColor),
-              iTermUnderlineColorAttribute: underlineColor,
-              NSUnderlineStyleAttributeName: @(underlineStyle),
-              NSStrikethroughStyleAttributeName: @(strikethroughStyle),
-              NSParagraphStyleAttributeName: paragraphStyle,
-              NSWritingDirectionAttributeName: writingDirection,
-    };
+    NSMutableDictionary *mutableResult = [@{
+        (NSString *)kCTLigatureAttributeName: @(attributes->ligatureLevel),
+        (NSString *)kCTForegroundColorAttributeName: (id)[attributes->foregroundColor CGColor],
+        NSFontAttributeName: attributes->font,
+        iTermMetalFontIDAttribute: @(attributes->metalFontID),
+        iTermAntiAliasAttribute: @(attributes->shouldAntiAlias),
+        iTermIsBoxDrawingAttribute: @(attributes->boxDrawing),
+        iTermFakeBoldAttribute: @(attributes->fakeBold),
+        iTermBoldAttribute: @(attributes->bold),
+        iTermFaintAttribute: @(attributes->faint),
+        iTermFakeItalicAttribute: @(attributes->fakeItalic),
+        iTermHasUnderlineColorAttribute: @(attributes->hasUnderlineColor),
+        iTermUnderlineColorAttribute: underlineColor,
+        NSUnderlineStyleAttributeName: @(underlineStyle),
+        NSStrikethroughStyleAttributeName: @(strikethroughStyle),
+        NSParagraphStyleAttributeName: paragraphStyle,
+        NSWritingDirectionAttributeName: writingDirection,
+    } mutableCopy];
+    if (attributes->languageCode.length > 0) {
+        mutableResult[(NSString *)kCTLanguageAttributeName] = attributes->languageCode;
+    }
+    NSDictionary *result = [mutableResult copy];
 
     if (key) {
         if (!_dictCache) {

@@ -2567,3 +2567,28 @@
 "Additional Colors" = "其他颜色";
 
 "Logging" = "日志记录";
+
+/* Per-language font overrides and cell grid metrics. */
+"Language & Fallback Fonts" = "多语言与回退字体";
+"Cell grid: %@ × %.0f pt" = "网格单元：%@ × %.0f pt";
+"Simplified Chinese" = "简体中文";
+"Traditional Chinese" = "繁體中文";
+"Japanese (Kana & Kanji)" = "日语（假名与汉字）";
+"Japanese (Kana Only)" = "日语假名";
+"Korean (Hangul & Hanja)" = "韩语（谚文与汉字）";
+"Korean (Hangul Only)" = "韩语谚文";
+"Greek" = "希腊文";
+"Hebrew" = "希伯来文";
+"Devanagari" = "天城文";
+"Thai" = "泰文";
+"Symbols & Nerd Font" = "符号与 Nerd Font 图标";
+"Assign dedicated fonts to languages or symbol sets. Earlier rules take priority when scripts overlap." = "为特定语言或符号集指定字体。当字符范围重叠时，排在前面的规则优先。";
+"No language-specific overrides configured." = "暂未配置按语言覆盖规则。";
+"Add Language Font…" = "添加语言字体…";
+"%d custom Unicode range rules active" = "已启用 %d 条自定义 Unicode 范围规则";
+"Size:" = "字号：";
+"Baseline:" = "基线：";
+"Enable or disable this language font rule" = "启用或禁用此语言字体规则";
+"Move higher priority" = "上移优先级";
+"Move lower priority" = "下移优先级";
+"Remove language font rule" = "移除此语言字体规则";

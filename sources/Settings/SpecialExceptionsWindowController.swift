@@ -501,8 +501,12 @@ final class SpecialExceptionsWindowController: NSWindowController {
             showError(String(format: NSLocalizedString("You must install the following fonts to use the exceptions in this file:\n\n%@", comment: "Missing fonts"), missing.joined(separator: "\n")))
             return
         }
+        var merged = newConfig
+        if merged.languageRules.isEmpty && !config.languageRules.isEmpty {
+            merged.languageRules = config.languageRules
+        }
         crud.undoable {
-            config = newConfig
+            config = merged
         }
         crud.reload()
     }
