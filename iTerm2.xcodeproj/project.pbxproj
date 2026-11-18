@@ -4196,6 +4196,7 @@
 		C0D000000000000000000003 /* WorkgroupSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000000000000000000013 /* WorkgroupSessionState.swift */; };
 		C170B61E5D91A047173C40BB /* CompanionPixelBufferHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B75EA7ECA05D0BBE98C9EF /* CompanionPixelBufferHash.swift */; };
 		C24E6595755B40F2AE129C26 /* ProfileWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A55816CA080ECDA29AA85A /* ProfileWorkspace.swift */; };
+		8F4C92E1B7A03D564E11C902 /* LanguageFontRulesEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4C92E1B7A03D564E11C901 /* LanguageFontRulesEditorView.swift */; };
 		C2C60D63975344F109B2E428 /* iTermRightGutterPanelRegistry.h in Sources */ = {isa = PBXBuildFile; fileRef = 6518C4017AD4275634FA34AA /* iTermRightGutterPanelRegistry.h */; };
 		C369A6986C34BDE586B335C9 /* iTermOpenDirectory+MainApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C05599DA2E4F97B75124672 /* iTermOpenDirectory+MainApp.m */; };
 		C38E3AF02061D97048B95334 /* CompanionMediaFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99A5372072C3A845A3FF589 /* CompanionMediaFrame.swift */; };
@@ -6714,6 +6715,7 @@
 		A6A5162B2BCDE6C7006F3F09 /* PTYSessionHostState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionHostState.swift; sourceTree = "<group>"; };
 		A6A51A3F1B45CEA9007891F3 /* VT100DCSParserTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VT100DCSParserTest.m; sourceTree = "<group>"; };
 		A6A55816CA080ECDA29AA85A /* ProfileWorkspace.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileWorkspace.swift; sourceTree = "<group>"; };
+		8F4C92E1B7A03D564E11C901 /* LanguageFontRulesEditorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LanguageFontRulesEditorView.swift; sourceTree = "<group>"; };
 		A6A5BDF72A070C3800F5FD44 /* iTerm2ImportStatus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iTerm2ImportStatus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6A5BDF92A070C3C00F5FD44 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A6A5BDFB2A070C3D00F5FD44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -11159,6 +11161,7 @@
 				21CA65CA25DE5DE0532A6FAE /* SettingsEmptyStateView.swift */,
 				8082CB184F50E02B2E650C98 /* ProfileSwiftUIForm.swift */,
 				A6A55816CA080ECDA29AA85A /* ProfileWorkspace.swift */,
+				8F4C92E1B7A03D564E11C901 /* LanguageFontRulesEditorView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -17553,6 +17556,7 @@
 				0ED8036305399E9BC6716643 /* CompanionPluginHTTPError.swift in Sources */,
 				476EEE1329299E7A667D4E0C /* ProfileSwiftUIForm.swift in Sources */,
 				C24E6595755B40F2AE129C26 /* ProfileWorkspace.swift in Sources */,
+				8F4C92E1B7A03D564E11C902 /* LanguageFontRulesEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

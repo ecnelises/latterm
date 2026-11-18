@@ -23,6 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The font's -it_metalFontID, computed once because looking it up is slow.
 @property(nonatomic, readonly) int metalFontID;
 @property(nonatomic, readonly) BOOL hasDefaultLigatures;
+// Optional BCP-47 language tag (e.g. "zh-Hans", "zh-Hant", "ja", "ko") passed to CoreText
+// as kCTLanguageAttributeName so OpenType `locl` variants and cascade fallbacks match the language.
+@property(nonatomic, copy, nullable) NSString *languageCode;
+// Optional vertical baseline shift in points for aligning secondary script/symbol fonts.
+@property(nonatomic, assign) CGFloat customBaselineOffset;
 
 + (PTYFontInfo *)fontInfoWithFont:(NSFont *)font;
 

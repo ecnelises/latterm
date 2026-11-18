@@ -126,6 +126,8 @@
     copy->_ligatureLevel = _ligatureLevel;
     copy->_metalFontID = _metalFontID;
     copy->_hasDefaultLigatures = _hasDefaultLigatures;
+    copy->_languageCode = [_languageCode copy];
+    copy->_customBaselineOffset = _customBaselineOffset;
     return copy;
 }
 
@@ -289,7 +291,10 @@
     NSFont *boldFont = [self boldVersionOfFont:font_];
     DLog(@"Bold version of %@ is %@", font_, boldFont);
     if (boldFont && boldFont != font_) {
-        return [PTYFontInfo fontInfoWithFont:boldFont];
+        PTYFontInfo *info = [PTYFontInfo fontInfoWithFont:boldFont];
+        info.languageCode = _languageCode;
+        info.customBaselineOffset = _customBaselineOffset;
+        return info;
     } else {
         DLog(@"Failed to find a bold version of %@", font_);
         return nil;
@@ -301,7 +306,10 @@
     NSFont* italicFont = [fontManager convertFont:font_ toHaveTrait:NSItalicFontMask];
     DLog(@"Italic version of %@ is %@", font_, italicFont);
     if (italicFont && italicFont != font_) {
-        return [PTYFontInfo fontInfoWithFont:italicFont];
+        PTYFontInfo *info = [PTYFontInfo fontInfoWithFont:italicFont];
+        info.languageCode = _languageCode;
+        info.customBaselineOffset = _customBaselineOffset;
+        return info;
     } else {
         DLog(@"Failed to find an italic version of %@", font_);
         return nil;
@@ -319,7 +327,9 @@
         return NO;
     }
 
-    return [self.font isEqual:other.font];
+    return ([self.font isEqual:other.font] &&
+            [NSObject object:self.languageCode isEqualToObject:other.languageCode] &&
+            fabs(self.customBaselineOffset - other.customBaselineOffset) < 0.001);
 }
 
 - (void)sanityCheck {

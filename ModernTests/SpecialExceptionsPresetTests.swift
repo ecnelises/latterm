@@ -232,4 +232,172 @@ final class SpecialExceptionsPresetTests: XCTestCase {
         manager.close()
     }
 
+    func testLanguageRuleMultiBlockCoverageAndProfileWithoutNonASCIIFallback() throws {
+        let fonts = makeDistinctFonts()
+        let asciiFamily = try XCTUnwrap(fonts[0].familyName)
+        let chineseFamily = try XCTUnwrap(fonts[2].familyName) // Courier has native Bold & Oblique
+        let symbolFamily = try XCTUnwrap(fonts[1].familyName)  // Monaco uses synthetic bold/italic
+
+        let rules = [
+            FontTable.LanguageRule(script: .chineseSimplified, fontName: chineseFamily, scalePercent: 105, baselineOffset: -0.5),
+            FontTable.LanguageRule(script: .symbolsAndNerdFont, fontName: symbolFamily, scalePercent: 100, baselineOffset: 0)
+        ]
+        let config = FontTable.Config(entries: [], languageRules: rules)
+        let profile: [AnyHashable: Any] = [
+            KEY_NORMAL_FONT: "\(fonts[0].fontName) 12",
+            KEY_USE_NONASCII_FONT: false,
+            KEY_FONT_CONFIG: config.stringValue
+        ]
+        let table = FontTable.fontTable(forProfile: profile)
+
+        // ASCII stays on primary font
+        XCTAssertEqual(familyName(for: 0x0041, in: table), asciiFamily)
+        // Box Drawing (U+2500) is excluded from symbolsAndNerdFont so terminal borders use primary grid font
+        XCTAssertEqual(familyName(for: 0x2500, in: table), asciiFamily)
+        // Unassigned non-ASCII (e.g. Cyrillic U+0416) falls back to primary font when non-ASCII font is off
+        XCTAssertEqual(familyName(for: 0x0416, in: table), asciiFamily)
+
+        // Simplified Chinese covers CJK Unified (U+4E2D), Ext A (U+3400), Ext B (U+20000), and Fullwidth (U+FF01)
+        for cp: UTF32Char in [0x4E2D, 0x3400, 0x20000, 0xFF01] {
+            var remapped = cp
+            let info = table.font(for: cp, remapped: &remapped)
+            XCTAssertEqual(info.font.familyName, chineseFamily)
+            XCTAssertEqual(info.languageCode, "zh-Hans")
+            XCTAssertEqual(info.customBaselineOffset, -0.5, accuracy: 0.001)
+            XCTAssertEqual(info.font.pointSize, 12.5, accuracy: 0.001)
+            XCTAssertNotNil(info.boldVersion)
+            XCTAssertEqual(info.boldVersion?.languageCode, "zh-Hans")
+            XCTAssertEqual(info.boldVersion?.customBaselineOffset ?? 0, -0.5, accuracy: 0.001)
+            XCTAssertNotNil(info.italicVersion)
+            XCTAssertEqual(info.italicVersion?.languageCode, "zh-Hans")
+
+            var fakeBold = ObjCBool(false)
+            var fakeItalic = ObjCBool(false)
+            let resolvedBold = table.fontForCharacter(cp,
+                                                      useBoldFont: true,
+                                                      useItalicFont: true,
+                                                      renderBold: &fakeBold,
+                                                      renderItalic: &fakeItalic,
+                                                      remapped: &remapped)
+            XCTAssertEqual(resolvedBold.languageCode, "zh-Hans")
+            XCTAssertEqual(resolvedBold.customBaselineOffset, -0.5, accuracy: 0.001)
+        }
+
+        // Symbols & Nerd Font covers BMP PUA (U+E0B0) and Plane 15 PUA (U+F0001) without language tag
+        for cp: UTF32Char in [0xE0B0, 0xF0001] {
+            var remapped = cp
+            let info = table.font(for: cp, remapped: &remapped)
+            XCTAssertEqual(info.font.familyName, symbolFamily)
+            XCTAssertNil(info.languageCode)
+        }
+
+        // Segmentation detects boundary between ASCII and language-rule character even when KEY_USE_NONASCII_FONT is off
+        var asciiChar = screen_char_t()
+        asciiChar.code = 0x0041
+        var hanChar = screen_char_t()
+        hanChar.code = 0x4E2D
+        XCTAssertTrue(table.haveSpecialException(for: asciiChar, orCharacter: hanChar))
+    }
+
+    func testLanguageRulePriorityOrderAndExplicitEntryPrecedence() throws {
+        let fonts = makeDistinctFonts()
+        let ascii = PTYFontInfo(font: fonts[0])
+        let cjkFontA = fonts[1]
+        let cjkFontB = fonts[2]
+
+        // Case 1: Japanese before Simplified Chinese -> shared Kanji (U+4E2D) gets Japanese font & "ja" locl tag
+        let jaFirst = FontTable.Config(entries: [], languageRules: [
+            FontTable.LanguageRule(script: .japanese, fontName: cjkFontA.familyName!),
+            FontTable.LanguageRule(script: .chineseSimplified, fontName: cjkFontB.familyName!)
+        ])
+        let tableJaFirst = FontTable(defaultFont: ascii, nonAsciiFont: nil, configString: jaFirst.stringValue)
+        var remapped: UTF32Char = 0
+        let kanjiJa = tableJaFirst.font(for: 0x4E2D, remapped: &remapped)
+        XCTAssertEqual(kanjiJa.font.familyName, cjkFontA.familyName)
+        XCTAssertEqual(kanjiJa.languageCode, "ja")
+
+        // Case 2: Simplified Chinese before Japanese -> shared Kanji (U+4E2D) gets Chinese font & "zh-Hans",
+        // while Hiragana (U+3042) still gets Japanese font & "ja"
+        let zhFirst = FontTable.Config(entries: [], languageRules: [
+            FontTable.LanguageRule(script: .chineseSimplified, fontName: cjkFontB.familyName!),
+            FontTable.LanguageRule(script: .japanese, fontName: cjkFontA.familyName!)
+        ])
+        let tableZhFirst = FontTable(defaultFont: ascii, nonAsciiFont: nil, configString: zhFirst.stringValue)
+        let kanjiZh = tableZhFirst.font(for: 0x4E2D, remapped: &remapped)
+        XCTAssertEqual(kanjiZh.font.familyName, cjkFontB.familyName)
+        XCTAssertEqual(kanjiZh.languageCode, "zh-Hans")
+        let kanaJa = tableZhFirst.font(for: 0x3042, remapped: &remapped)
+        XCTAssertEqual(kanaJa.font.familyName, cjkFontA.familyName)
+        XCTAssertEqual(kanaJa.languageCode, "ja")
+
+        // Case 3: Disabled rule is skipped, and explicit custom Unicode entry overrides active language rule
+        let explicitEntry = FontTable.Entry(start: 0x4E2D, count: 1, fontName: fonts[0].fontName, pointSize: 16)
+        let mixed = FontTable.Config(entries: [explicitEntry], languageRules: [
+            FontTable.LanguageRule(script: .japanese, fontName: cjkFontA.familyName!, enabled: false),
+            FontTable.LanguageRule(script: .chineseSimplified, fontName: cjkFontB.familyName!, enabled: true)
+        ])
+        let tableMixed = FontTable(defaultFont: ascii, nonAsciiFont: nil, configString: mixed.stringValue)
+        XCTAssertEqual(tableMixed.font(for: 0x4E2D, remapped: &remapped).font.familyName, fonts[0].familyName)
+        XCTAssertEqual(tableMixed.font(for: 0x4E2D, remapped: &remapped).font.pointSize, 16)
+        XCTAssertEqual(tableMixed.font(for: 0x4E2E, remapped: &remapped).font.familyName, cjkFontB.familyName)
+    }
+
+    func testLanguageRuleProportionalZoomAndConfigSerializationBounds() throws {
+        let fonts = makeDistinctFonts()
+        let config = FontTable.Config(entries: [], languageRules: [
+            FontTable.LanguageRule(script: .koreanHangul, fontName: fonts[1].familyName!, scalePercent: 125, baselineOffset: 1.0)
+        ])
+        // Version 3 is emitted when languageRules is non-empty; Version 2 when empty
+        XCTAssertEqual(config.version, 3)
+        let roundTripped = try XCTUnwrap(FontTable.Config(string: config.stringValue))
+        XCTAssertEqual(roundTripped, config)
+
+        let entriesOnly = FontTable.Config(entries: [FontTable.Entry(start: 128, count: 2, fontName: "Menlo")])
+        XCTAssertEqual(entriesOnly.version, 2)
+        XCTAssertFalse(entriesOnly.stringValue.contains("languageRules"))
+
+        // Zooming 12pt -> 16pt scales 125% rule from 15pt -> 20pt automatically
+        let baseTable = FontTable(defaultFont: PTYFontInfo(font: fonts[0]), nonAsciiFont: nil, configString: config.stringValue)
+        var remapped: UTF32Char = 0
+        XCTAssertEqual(baseTable.font(for: 0xAC00, remapped: &remapped).font.pointSize, 15.0, accuracy: 0.001)
+        let zoomedTable = baseTable.fontTable(grownBy: 4)
+        XCTAssertEqual(zoomedTable.font(for: 0xAC00, remapped: &remapped).font.pointSize, 20.0, accuracy: 0.001)
+
+        // Invalid languageRules bounds are rejected
+        for invalidRule: [String: Any] in [
+            ["script": "zh-Hans", "fontName": "", "scalePercent": 100, "baselineOffset": 0, "enabled": true],
+            ["script": "zh-Hans", "fontName": "Menlo", "scalePercent": 40, "baselineOffset": 0, "enabled": true],
+            ["script": "zh-Hans", "fontName": "Menlo", "scalePercent": 250, "baselineOffset": 0, "enabled": true],
+            ["script": "zh-Hans", "fontName": "Menlo", "scalePercent": 100, "baselineOffset": 25, "enabled": true],
+            ["script": "unknown-script", "fontName": "Menlo", "scalePercent": 100, "baselineOffset": 0, "enabled": true]
+        ] {
+            let payload: [String: Any] = ["version": 3, "entries": [], "languageRules": [invalidRule]]
+            let json = String(decoding: try JSONSerialization.data(withJSONObject: payload), as: UTF8.self)
+            XCTAssertNil(FontTable.Config(string: json))
+        }
+    }
+
+    func testLanguageFontRulesEditorViewLoadsPreservesEntriesAndLaysOutResponsively() throws {
+        let fonts = makeDistinctFonts()
+        let initial = FontTable.Config(
+            entries: [FontTable.Entry(start: 0xE000, count: 16, fontName: fonts[2].fontName)],
+            languageRules: [
+                FontTable.LanguageRule(script: .chineseSimplified, fontName: fonts[1].familyName!, scalePercent: 105, baselineOffset: -0.5),
+                FontTable.LanguageRule(script: .japaneseKana, fontName: fonts[0].familyName!, scalePercent: 100, baselineOffset: 0)
+            ]
+        )
+        let editor = LanguageFontRulesEditorView()
+        editor.load(configString: initial.stringValue)
+        XCTAssertEqual(editor.config, initial)
+
+        for width: CGFloat in [320, 480, 720] {
+            var trailingOrigin = NSPoint.zero
+            let height = editor.layout(forWidth: width, trailingButtonWidth: 140, trailingButtonOriginOut: &trailingOrigin)
+            XCTAssertGreaterThan(height, 80)
+            XCTAssertGreaterThanOrEqual(trailingOrigin.x, 0)
+            XCTAssertLessThanOrEqual(trailingOrigin.x + 140, width + 0.5)
+            XCTAssertLessThanOrEqual(trailingOrigin.y + 24, height + 0.5)
+        }
+    }
+
 }

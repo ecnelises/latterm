@@ -5,7 +5,194 @@
 //  Created by George Nachman on 3/12/23.
 //
 
+import AppKit
 import Foundation
+
+enum FontLanguageScript: String, Codable, CaseIterable, Identifiable, Hashable {
+    case chineseSimplified = "zh-Hans"
+    case chineseTraditional = "zh-Hant"
+    case japanese = "ja"
+    case japaneseKana = "ja-Kana"
+    case korean = "ko"
+    case koreanHangul = "ko-Hang"
+    case cyrillic = "Cyrl"
+    case greek = "Grek"
+    case arabic = "Arab"
+    case hebrew = "Hebr"
+    case devanagari = "Deva"
+    case thai = "Thai"
+    case symbolsAndNerdFont = "Zsym"
+
+    var id: String { rawValue }
+
+    var localizedTitle: String {
+        switch self {
+        case .chineseSimplified:
+            return NSLocalizedString("Simplified Chinese", comment: "Language font script")
+        case .chineseTraditional:
+            return NSLocalizedString("Traditional Chinese", comment: "Language font script")
+        case .japanese:
+            return NSLocalizedString("Japanese (Kana & Kanji)", comment: "Language font script")
+        case .japaneseKana:
+            return NSLocalizedString("Japanese (Kana Only)", comment: "Language font script")
+        case .korean:
+            return NSLocalizedString("Korean (Hangul & Hanja)", comment: "Language font script")
+        case .koreanHangul:
+            return NSLocalizedString("Korean (Hangul Only)", comment: "Language font script")
+        case .cyrillic:
+            return NSLocalizedString("Cyrillic", comment: "Language font script")
+        case .greek:
+            return NSLocalizedString("Greek", comment: "Language font script")
+        case .arabic:
+            return NSLocalizedString("Arabic", comment: "Language font script")
+        case .hebrew:
+            return NSLocalizedString("Hebrew", comment: "Language font script")
+        case .devanagari:
+            return NSLocalizedString("Devanagari", comment: "Language font script")
+        case .thai:
+            return NSLocalizedString("Thai", comment: "Language font script")
+        case .symbolsAndNerdFont:
+            return NSLocalizedString("Symbols & Nerd Font", comment: "Language font script")
+        }
+    }
+
+    var coreTextLanguage: String? {
+        switch self {
+        case .chineseSimplified: return "zh-Hans"
+        case .chineseTraditional: return "zh-Hant"
+        case .japanese, .japaneseKana: return "ja"
+        case .korean, .koreanHangul: return "ko"
+        case .cyrillic: return "ru"
+        case .greek: return "el"
+        case .arabic: return "ar"
+        case .hebrew: return "he"
+        case .devanagari: return "hi"
+        case .thai: return "th"
+        case .symbolsAndNerdFont: return nil
+        }
+    }
+
+    private static let hanRanges: [ClosedRange<Int>] = [
+        0x2E80...0x2FDF,   // CJK Radicals Supplement & Kangxi Radicals
+        0x3000...0x303F,   // CJK Symbols and Punctuation
+        0x31C0...0x31EF,   // CJK Strokes
+        0x3200...0x33FF,   // Enclosed CJK Letters and Months & CJK Compatibility
+        0x3400...0x4DBF,   // CJK Unified Ideographs Extension A
+        0x4E00...0x9FFF,   // CJK Unified Ideographs
+        0xF900...0xFAFF,   // CJK Compatibility Ideographs
+        0xFE30...0xFE4F,   // CJK Compatibility Forms
+        0xFF01...0xFF60,   // Fullwidth ASCII variants & punctuation
+        0xFFE0...0xFFE6,   // Fullwidth symbol variants
+        0x20000...0x2EE5F, // CJK Unified Ideographs Extensions B, C, D, E, F, I
+        0x2F800...0x2FA1F, // CJK Compatibility Ideographs Supplement
+        0x30000...0x323AF  // CJK Unified Ideographs Extensions G, H
+    ]
+
+    private static let kanaRanges: [ClosedRange<Int>] = [
+        0x3040...0x30FF,   // Hiragana & Katakana
+        0x31F0...0x31FF,   // Katakana Phonetic Extensions
+        0xFF65...0xFF9F,   // Halfwidth Katakana
+        0x1B000...0x1B16F  // Kana Supplement, Kana Extended-A, Small Kana Extension
+    ]
+
+    private static let hangulRanges: [ClosedRange<Int>] = [
+        0x1100...0x11FF,   // Hangul Jamo
+        0x3130...0x318F,   // Hangul Compatibility Jamo
+        0xA960...0xA97F,   // Hangul Jamo Extended-A
+        0xAC00...0xD7AF,   // Hangul Syllables
+        0xD7B0...0xD7FF,   // Hangul Jamo Extended-B
+        0xFFA0...0xFFDC    // Halfwidth Hangul
+    ]
+
+    private var ranges: [ClosedRange<Int>] {
+        switch self {
+        case .chineseSimplified:
+            return Self.hanRanges
+        case .chineseTraditional:
+            return Self.hanRanges + [0x3100...0x312F, 0x31A0...0x31BF] // + Bopomofo
+        case .japanese:
+            return Self.kanaRanges + Self.hanRanges
+        case .japaneseKana:
+            return Self.kanaRanges
+        case .korean:
+            return Self.hangulRanges + Self.hanRanges
+        case .koreanHangul:
+            return Self.hangulRanges
+        case .cyrillic:
+            return [0x0400...0x052F, 0x1C80...0x1C8F, 0x2DE0...0x2DFF, 0xA640...0xA69F]
+        case .greek:
+            return [0x0370...0x03FF, 0x1F00...0x1FFF]
+        case .arabic:
+            return [0x0600...0x06FF, 0x0750...0x077F, 0x08A0...0x08FF, 0xFB50...0xFDFF, 0xFE70...0xFEFF]
+        case .hebrew:
+            return [0x0590...0x05FF, 0xFB1D...0xFB4F]
+        case .devanagari:
+            return [0x0900...0x097F, 0xA8E0...0xA8FF]
+        case .thai:
+            return [0x0E00...0x0E7F]
+        case .symbolsAndNerdFont:
+            return [
+                0x2190...0x23FF,     // Arrows, Math Operators, Misc Technical
+                0x25A0...0x27BF,     // Geometric Shapes, Misc Symbols, Dingbats (excludes 2500..259F Box Drawing)
+                0x2B00...0x2BFF,     // Misc Symbols and Arrows
+                0xE000...0xF8FF,     // BMP Private Use Area (Powerline, Nerd Fonts, Devicons)
+                0xF0000...0xFFFFD,   // Supplementary Private Use Area-A (Material Design Icons)
+                0x100000...0x10FFFD  // Supplementary Private Use Area-B
+            ]
+        }
+    }
+
+    private static let cachedCodePointSets: [FontLanguageScript: IndexSet] = {
+        var dict = [FontLanguageScript: IndexSet]()
+        for script in FontLanguageScript.allCases {
+            var set = IndexSet()
+            for r in script.ranges {
+                set.insert(integersIn: r)
+            }
+            dict[script] = set
+        }
+        return dict
+    }()
+
+    var codePointSet: IndexSet {
+        Self.cachedCodePointSets[self] ?? IndexSet()
+    }
+
+    func preferredDefaultFontFamily(availableFamilies: [String]) -> String {
+        let candidates: [String]
+        switch self {
+        case .chineseSimplified:
+            candidates = ["PingFang SC", "Heiti SC", "STHeiti"]
+        case .chineseTraditional:
+            candidates = ["PingFang TC", "Heiti TC", "STHeiti"]
+        case .japanese, .japaneseKana:
+            candidates = ["Hiragino Sans", "Hiragino Kaku Gothic ProN"]
+        case .korean, .koreanHangul:
+            candidates = ["Apple SD Gothic Neo", "AppleGothic"]
+        case .cyrillic, .greek:
+            candidates = ["SF Mono", "Menlo", "Helvetica Neue"]
+        case .arabic:
+            candidates = ["Geeza Pro", "SF Arabic", "Arial"]
+        case .hebrew:
+            candidates = ["Arial Hebrew", "SF Hebrew", "Helvetica Neue"]
+        case .devanagari:
+            candidates = ["Kohinoor Devanagari", "Devanagari Sangam MN"]
+        case .thai:
+            candidates = ["Thonburi", "Ayuthaya"]
+        case .symbolsAndNerdFont:
+            if let nerd = availableFamilies.first(where: { $0.localizedCaseInsensitiveContains("Symbols Nerd Font") }) ??
+                availableFamilies.first(where: { $0.localizedCaseInsensitiveContains("Nerd Font") }) {
+                return nerd
+            }
+            candidates = ["Apple Symbols", "Menlo"]
+        }
+        let familySet = Set(availableFamilies)
+        for c in candidates where familySet.contains(c) {
+            return c
+        }
+        return availableFamilies.first ?? "Menlo"
+    }
+}
 
 @objc
 protocol FontProviderProtocol {
@@ -174,14 +361,62 @@ class FontTable: NSObject, FontProviderProtocol {
         }
     }
 
-    struct Config: Codable, Equatable, Hashable {
-        static let latestKnownVersion = 2
-        var entries: [Entry]
-        var version = Self.latestKnownVersion
+    struct LanguageRule: Codable, Equatable, Hashable {
+        var script: FontLanguageScript
+        var fontName: String
+        var scalePercent: Int = 100
+        var baselineOffset: CGFloat = 0
+        var enabled: Bool = true
 
-        init(entries: [Entry]) {
+        func fontInfo(defaultPointSize: CGFloat) -> PTYFontInfo {
+            let scaledSize = min(200, max(2, round(defaultPointSize * CGFloat(scalePercent) / 100.0 * 2.0) / 2.0))
+            let resolvedFont = NSFont(name: fontName, size: scaledSize) ??
+                NSFontManager.shared.font(withFamily: fontName, traits: [], weight: 5, size: scaledSize) ??
+                NSFont.monospacedSystemFont(ofSize: scaledSize, weight: .regular)
+            let info = PTYFontInfo(font: resolvedFont)
+            info.languageCode = script.coreTextLanguage
+            info.customBaselineOffset = baselineOffset
+            info.boldVersion = info.computedBoldVersion()
+            info.italicVersion = info.computedItalicVersion()
+            info.boldItalicVersion = info.computedBoldItalicVersion()
+            return info
+        }
+    }
+
+    struct Config: Codable, Equatable, Hashable {
+        static let latestKnownVersion = 3
+        var entries: [Entry]
+        var languageRules: [LanguageRule]
+        var version: Int
+
+        private enum CodingKeys: String, CodingKey {
+            case entries
+            case languageRules
+            case version
+        }
+
+        init(entries: [Entry], languageRules: [LanguageRule] = []) {
             self.entries = entries
+            self.languageRules = languageRules
+            self.version = languageRules.isEmpty ? 2 : Self.latestKnownVersion
             sortEntries()
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.version = try container.decode(Int.self, forKey: .version)
+            self.entries = try container.decodeIfPresent([Entry].self, forKey: .entries) ?? []
+            self.languageRules = try container.decodeIfPresent([LanguageRule].self, forKey: .languageRules) ?? []
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            let encodedVersion = languageRules.isEmpty ? min(version, 2) : Self.latestKnownVersion
+            try container.encode(max(1, encodedVersion), forKey: .version)
+            try container.encode(entries, forKey: .entries)
+            if !languageRules.isEmpty {
+                try container.encode(languageRules, forKey: .languageRules)
+            }
         }
 
         init?(string: String) {
@@ -198,6 +433,10 @@ class FontTable: NSObject, FontProviderProtocol {
                 return nil
             }
             sortEntries()
+        }
+
+        var isEmpty: Bool {
+            entries.isEmpty && languageRules.isEmpty
         }
 
         // Imported profiles and exception files are untrusted input. Validate
@@ -222,6 +461,14 @@ class FontTable: NSObject, FontProviderProtocol {
                 guard !assigned.intersects(integersIn: range) else { return false }
                 assigned.insert(integersIn: range)
             }
+            for rule in languageRules {
+                guard !rule.fontName.isEmpty,
+                      (50...200).contains(rule.scalePercent),
+                      rule.baselineOffset.isFinite,
+                      abs(rule.baselineOffset) <= 20 else {
+                    return false
+                }
+            }
             return true
         }
 
@@ -232,7 +479,8 @@ class FontTable: NSObject, FontProviderProtocol {
         }
 
         func byAddingPointSize(_ delta: CGFloat) -> Config {
-            return Config(entries: entries.map { $0.byAddingPointSize(delta)})
+            return Config(entries: entries.map { $0.byAddingPointSize(delta) },
+                          languageRules: languageRules)
         }
 
         var stringValue: String {
@@ -295,9 +543,23 @@ class FontTable: NSObject, FontProviderProtocol {
         if let config {
             for entry in config.entries {
                 let font = entry.font(defaultPointSize: defaultFont.font.pointSize)
+                font.boldVersion = font.computedBoldVersion()
+                font.italicVersion = font.computedItalicVersion()
+                font.boldItalicVersion = font.computedBoldItalicVersion()
                 rangeMap.insert(range: entry.range,
                                 value: FontBox(font, delta: entry.delta))
                 unassignedCodePoints.remove(integersIn: entry.range)
+            }
+            for rule in config.languageRules where rule.enabled {
+                let effectivePoints = rule.script.codePointSet
+                    .intersection(unassignedCodePoints)
+                    .intersection(IndexSet(integersIn: asciiLimit..<FontTable.unicodeLimit))
+                guard !effectivePoints.isEmpty else { continue }
+                let box = FontBox(rule.fontInfo(defaultPointSize: defaultFont.font.pointSize), delta: nil)
+                for range in effectivePoints.rangeView {
+                    rangeMap.insert(range: range, value: box)
+                }
+                unassignedCodePoints.subtract(effectivePoints)
             }
         }
         defaultNonASCIIFont = nonAsciiFont ?? defaultFont
@@ -447,17 +709,12 @@ class FontTable: NSObject, FontProviderProtocol {
                                                                                                     inProfile: profile)) ?? NSFont.monospacedSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
         let useNonASCIIFont = iTermProfilePreferences.bool(forKey: KEY_USE_NONASCII_FONT,
                                                            inProfile: profile)
-        if !useNonASCIIFont {
-            return FontTable(
-                defaultFont: PTYFontInfo(font: asciiFont),
-                nonAsciiFont: nil,
-                configString: nil)
-        }
-
-        let nonASCIIFont = iTermProfilePreferences.font(forKey: KEY_NON_ASCII_FONT,
-                                                        inProfile: profile,
-                                                        ligaturesEnabled: iTermProfilePreferences.bool(forKey: KEY_NON_ASCII_LIGATURES,
-                                                                                                       inProfile: profile))
+        let nonASCIIFont: NSFont? = useNonASCIIFont
+            ? iTermProfilePreferences.font(forKey: KEY_NON_ASCII_FONT,
+                                           inProfile: profile,
+                                           ligaturesEnabled: iTermProfilePreferences.bool(forKey: KEY_NON_ASCII_LIGATURES,
+                                                                                          inProfile: profile))
+            : nil
         let config = iTermProfilePreferences.string(forKey: KEY_FONT_CONFIG,
                                                     inProfile: profile)
         return FontTable(
@@ -483,15 +740,15 @@ class FontTable: NSObject, FontProviderProtocol {
 
     @objc(haveSpecialExceptionFor:orCharacter:)
     func haveSpecialException(for c1: screen_char_t, orCharacter c2: screen_char_t) -> Bool {
-        for c in [c1, c2] {
-            if c.image != 0 {
-                continue
-            }
-            if rangeMap[Int(c.baseCharacter)] != nil {
-                return true
-            }
+        guard config != nil else {
+            return false
         }
-        return false
+        let box1 = c1.image == 0 ? rangeMap[Int(c1.baseCharacter)]?.value : nil
+        let box2 = c2.image == 0 ? rangeMap[Int(c2.baseCharacter)]?.value : nil
+        if box1 !== box2 {
+            return true
+        }
+        return box1?.delta != nil || box2?.delta != nil
     }
 
     func cloneFontProvider() -> any FontProviderProtocol {

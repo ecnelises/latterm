@@ -616,6 +616,7 @@ extension ProfilesTextPreferencesViewController {
                 rows: [
                     ProfileFormRow(label: asciiFontLabel,
                                    content: .fontPicker(asciiFontPicker),
+                                   helperViews: [cellMetricsLabel],
                                    fullCardWidth: true,
                                    suppressSeparatorAfter: true),
                     ProfileFormRow(content: .checkbox(asciiAntiAliased, trailing: [normalFontWantsAntialiasing]),
@@ -626,8 +627,34 @@ extension ProfilesTextPreferencesViewController {
                 ]
             ),
             ProfileSectionCard(
-                title: ProfilePageHelpers.sectionTitle(from: nonAsciiFontLabel, fallback: "Non-ASCII Font"),
+                title: ProfilePageHelpers.localizedSection("Language & Fallback Fonts"),
                 rows: [
+                    ProfileFormRow(
+                        content: .custom(hostedViews: [languageFontRulesEditorView, manageCharacterFontsButton]) { x, availableWidth, y, _ in
+                            guard let editor = self.languageFontRulesEditorView as? LanguageFontRulesEditorView else {
+                                return 28
+                            }
+                            let trailingVisible = !self.manageCharacterFontsButton.isHidden
+                            let trailingSize = trailingVisible
+                                ? ProfileFormMeasurement.measureControl(self.manageCharacterFontsButton, maxWidth: availableWidth)
+                                : .zero
+                            var trailingOrigin = NSPoint.zero
+                            let h = editor.layout(forWidth: availableWidth,
+                                                  trailingButtonWidth: trailingVisible ? trailingSize.width : 0,
+                                                  trailingButtonOriginOut: &trailingOrigin)
+                            editor.frame = NSRect(x: x, y: y, width: availableWidth, height: h)
+                            if trailingVisible {
+                                let btnW = min(availableWidth, ceil(trailingSize.width))
+                                let btnH = max(24, ceil(trailingSize.height))
+                                self.manageCharacterFontsButton.frame = NSRect(x: x + trailingOrigin.x,
+                                                                               y: y + trailingOrigin.y,
+                                                                               width: btnW,
+                                                                               height: btnH)
+                            }
+                            return h
+                        },
+                        fullCardWidth: true
+                    ),
                     ProfileFormRow(label: nonAsciiFontLabel,
                                    content: .checkbox(useNonAsciiFont, trailing: []),
                                    suppressSeparatorAfter: true),
@@ -645,14 +672,6 @@ extension ProfilesTextPreferencesViewController {
                                        return !self.nonAsciiFontView.isHidden
                                    }),
                     ProfileFormRow(content: .checkbox(nonAsciiLigatures, trailing: [ligatureWarningNonAscii]),
-                                   suppressSeparatorAfter: true,
-                                   isVisible: { [weak self] in
-                                       guard let self else { return false }
-                                       return !self.nonAsciiFontView.isHidden
-                                   }),
-                    ProfileFormRow(content: .wrappingLine([
-                                       .natural(manageCharacterFontsButton, minWidth: 120, maxWidth: 280, wraps: true)
-                                   ]),
                                    isVisible: { [weak self] in
                                        guard let self else { return false }
                                        return !self.nonAsciiFontView.isHidden

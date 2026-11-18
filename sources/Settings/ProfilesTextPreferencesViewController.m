@@ -23,6 +23,7 @@
 #import "NSTextField+iTerm.h"
 #import "PreferencePanel.h"
 #import "PTYFontInfo.h"
+#import "PTYTextView.h"
 @import BetterFontPicker;
 
 @interface ProfilesTextPreferencesViewController ()<BFPCompositeViewDelegate, BFPSizePickerViewDelegate, NSMenuItemValidation>
@@ -91,6 +92,8 @@
     // Hide this view to hide all non-ASCII font settings.
     IBOutlet NSView *_nonAsciiFontView;
 
+    NSTextField *_cellMetricsLabel;
+    iTermLanguageFontRulesEditorView *_languageFontRulesEditorView;
     SpecialExceptionsWindowController *_specialExceptionsWindowController;
 }
 
@@ -105,6 +108,8 @@
 - (NSButton *)animateMovement { return _animateMovement; }
 - (NSButton *)animateMovementOnlyInInteractiveApps { return _animateMovementOnlyInInteractiveApps; }
 - (NSView *)asciiFontPicker { return _asciiFontPicker; }
+- (NSTextField *)cellMetricsLabel { return _cellMetricsLabel; }
+- (NSView *)languageFontRulesEditorView { return _languageFontRulesEditorView; }
 - (NSButton *)asciiAntiAliased { return _asciiAntiAliased; }
 - (NSTextField *)normalFontWantsAntialiasing { return _normalFontWantsAntialiasing; }
 - (NSButton *)asciiLigatures { return _asciiLigatures; }
@@ -395,6 +400,18 @@
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
 
+    _cellMetricsLabel = [NSTextField labelWithString:@""];
+    _cellMetricsLabel.font = [NSFont monospacedDigitSystemFontOfSize:11 weight:NSFontWeightRegular];
+    _cellMetricsLabel.textColor = [NSColor secondaryLabelColor];
+
+    _languageFontRulesEditorView = [[iTermLanguageFontRulesEditorView alloc] init];
+    _languageFontRulesEditorView.onConfigChanged = ^(NSString * _Nullable configString) {
+        [weakSelf setString:configString ?: @"" forKey:KEY_FONT_CONFIG];
+    };
+    _languageFontRulesEditorView.onLayoutInvalidated = ^{
+        [weakSelf.view it_invalidateProfileFormLayout];
+    };
+
     [self updateFontsDescriptionsIncludingSpacing:YES];
     [self updateNonAsciiFontViewVisibility];
     [self updateLigatureWarning];
@@ -519,7 +536,28 @@
         _nonAsciiLigatures.enabled = YES;
     }
 
+    [self updateCellMetricsLabel];
+    [_languageFontRulesEditorView loadConfigString:[self stringForKey:KEY_FONT_CONFIG]];
     [self updateWarnings];
+}
+
+- (void)updateCellMetricsLabel {
+    NSFont *font = self.normalFont ?: [NSFont userFixedPitchFontOfSize:12];
+    if (!font) {
+        _cellMetricsLabel.stringValue = @"";
+        return;
+    }
+    const CGFloat hspace = [self doubleForKey:KEY_HORIZONTAL_SPACING] ?: 1.0;
+    const CGFloat vspace = [self doubleForKey:KEY_VERTICAL_SPACING] ?: 1.0;
+    const NSSize cellSize = [PTYTextView charSizeForFont:font
+                                       horizontalSpacing:hspace
+                                         verticalSpacing:vspace];
+    NSString *widthStr = (fabs(cellSize.width - round(cellSize.width)) > 0.01)
+        ? [NSString stringWithFormat:@"%.1f", cellSize.width]
+        : [NSString stringWithFormat:@"%.0f", cellSize.width];
+    _cellMetricsLabel.stringValue = [NSString stringWithFormat:NSLocalizedString(@"Cell grid: %@ × %.0f pt", @"Computed terminal cell size in Typography settings"),
+                                     widthStr,
+                                     cellSize.height];
 }
 
 - (BOOL)cursorTypeSupportsShadow {
@@ -742,21 +780,30 @@
 }
 
 - (void)loadConfigFromSpecialExceptionsWindowController {
-    [self setString:_specialExceptionsWindowController.configString forKey:KEY_FONT_CONFIG];
+    NSString *updated = _specialExceptionsWindowController.configString;
+    [self setString:updated forKey:KEY_FONT_CONFIG];
+    [_languageFontRulesEditorView loadConfigString:updated];
+    [self.view it_invalidateProfileFormLayout];
 }
 
 #pragma mark - Notifications
 
 - (void)reloadProfiles {
     [self updateFontsDescriptionsIncludingSpacing:YES];
+    [self.view it_invalidateProfileFormLayout];
 }
 
 - (void)preferenceDidChangeFromOtherPanel:(NSNotification *)notification {
     NSString *key = notification.userInfo[kPreferenceDidChangeFromOtherPanelKeyUserInfoKey];
     if ([key isEqualToString:KEY_NORMAL_FONT]) {
         _asciiFontPicker.font = [[self stringForKey:KEY_NORMAL_FONT] fontValueWithLigaturesEnabled:YES];
+        self.normalFont = _asciiFontPicker.font;
+        [self updateCellMetricsLabel];
     } else if ([key isEqualToString:KEY_NON_ASCII_FONT]) {
         _nonASCIIFontPicker.font = [[self stringForKey:KEY_NON_ASCII_FONT] fontValueWithLigaturesEnabled:YES];
+    } else if ([key isEqualToString:KEY_FONT_CONFIG]) {
+        [_languageFontRulesEditorView loadConfigString:[self stringForKey:KEY_FONT_CONFIG]];
+        [self.view it_invalidateProfileFormLayout];
     }
     [super preferenceDidChangeFromOtherPanel:notification];
 }
@@ -805,6 +852,8 @@
                                            KEY_NON_ASCII_FONT: nonAsciiFont };
     NSDictionary *dict = [dictionaryWithNulls dictionaryByRemovingNullValues];
     [self setObjectsFromDictionary:dict];
+    self.normalFont = _asciiFontPicker.font ?: self.normalFont;
+    [self updateCellMetricsLabel];
 }
 
 @end
