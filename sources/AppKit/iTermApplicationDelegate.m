@@ -651,15 +651,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 #pragma mark - APIs
 
-- (BOOL)isAppleScriptTestApp {
-    return [[[NSBundle mainBundle] bundleIdentifier] containsString:@"applescript"];
-}
-
-- (BOOL)isRunningOnTravis {
-    NSString *travis = [[[NSProcessInfo processInfo] environment] objectForKey:@"TRAVIS"];
-    return [travis isEqualToString:@"true"];
-}
-
 - (void)userDidInteractWithASession {
     userHasInteractedWithAnySession_ = YES;
 }
@@ -1136,11 +1127,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         RLog(@"Already restored one of our own windows so not opening an untitled file during window state restoration.");
         return NO;
     }
-    if ([self isAppleScriptTestApp]) {
-        DLog(@"Nope, am applescript test app");
-        // Don't want to do this for applescript testing so we have a blank slate.
-        return NO;
-    }
     RLog(@"finishedLaunching=%@ openArrangementAtStartup=%@ openNoWindowsAtStartup=%@ alwaysOpenWindowAtStartup=%@",
          @(finishedLaunching_),
          @([iTermPreferences boolForKey:kPreferenceKeyOpenArrangementAtStartup]),
@@ -1227,10 +1213,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     }
     if ([iTermAdvancedSettingsModel storeStateInSqlite]) {
         DLog(@"Using sqlite-based restoration so not restoring anything.");
-        return;
-    }
-    if (self.isAppleScriptTestApp) {
-        DLog(@"Is applescript test app");
         return;
     }
     NSDictionary *screenCharState = [coder decodeObjectForKey:kScreenCharRestorableStateKey];
@@ -1507,40 +1489,8 @@ void TurnOnDebugLoggingAutomatically(void) {
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     DLog(@"didFinishLaunching");
 
-    // Test-only: if launched with the purge flag, wipe the app's data-protection
-    // keychain items and quit BEFORE any keychain read. Gated to Development builds via
-    // ITERM_DEBUG (defined only in the Development configuration), so the call does not
-    // exist at all in Beta/Nightly/Deployment. See `make purge-keychain-test`.
-#ifdef ITERM_DEBUG
-    [iTermKeychainTestSupport handlePurgeLaunchFlagIfPresent];
-#endif
-
     [iTermLaunchExperienceController applicationDidFinishLaunching];
     [[iTermLaunchServices sharedInstance] registerForiTerm2Scheme];
-    // Skip the Companion launch hooks under unit tests. They read
-    // keychain-backed pairing material at launch, and a locked login keychain
-    // turns that read into a modal unlock prompt that hangs an unattended test
-    // run ("test runner hung before establishing connection"). A test host has
-    // no paired device, so none of this is needed there.
-    if (![NSApp isRunningUnitTests]) {
-        // If a companion device is paired, quietly listen so it can reconnect.
-        [[iTermCompanionPairingController shared] resumePairedListeningIfNeeded];
-        // If the pairing predates the push relay host move, ask the user to re-pair.
-        [[iTermCompanionPairingController shared] promptToRepairAfterRelayMoveIfNeeded];
-        // If the pairing is half-present (pid persisted but keychain credentials
-        // missing, e.g. after a rebuild/reinstall), tell the user to re-pair instead
-        // of failing every relay park silently.
-        [[iTermCompanionPairingController shared] promptToRepairIfPairingIncompleteIfNeeded];
-        // Surface paired-device presence (menu bar status item + connect toast).
-        [[iTermCompanionPresenceController shared] start];
-    }
-    // Give the Companion Device Settings menu item its glyph and hide it when
-    // the feature is disabled; keep it in sync if the setting changes.
-    [self updateCompanionMenuItem];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(updateCompanionMenuItem)
-                                                 name:iTermAdvancedSettingsDidChange
-                                               object:nil];
     NSApp.automaticCustomizeTouchBarMenuItemEnabled = YES;
 
     if ([iTermAdvancedSettingsModel disableAppNap]) {
@@ -1614,8 +1564,7 @@ void TurnOnDebugLoggingAutomatically(void) {
                                              selector:@selector(processTypeDidChange:)
                                                  name:iTermProcessTypeDidChangeNotification
                                                object:nil];
-    if ([iTermAdvancedSettingsModel runJobsInServers] &&
-        !self.isAppleScriptTestApp) {
+    if ([iTermAdvancedSettingsModel runJobsInServers]) {
         DLog(@"Set post-retoration completion block from appDidFinishLaunching");
         [PseudoTerminalRestorer setPostRestorationCompletionBlock:^{
             RLog(@"Running post-retoration completion block from appDidFinishLaunching");
@@ -2147,8 +2096,7 @@ static iTermKeyEventReplayer *gReplayer;
 
     // Check if we have an autolaunch script to execute. Do it only once, i.e. at application launch.
     BOOL ranAutoLaunchScripts = NO;
-    if (![self isAppleScriptTestApp] &&
-        ![[NSApplication sharedApplication] isRunningUnitTests]) {
+    if (![[NSApplication sharedApplication] isRunningUnitTests]) {
         DLog(@"Run autolaunch scripts if needed");
         ranAutoLaunchScripts = [self.scriptsMenuController runAutoLaunchScriptsIfNeeded];
     }
@@ -2185,9 +2133,6 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (BOOL)shouldOpenUntitledFileAfterRunningAutoLaunchScripts:(BOOL)ranAutoLaunchScripts {
-    if ([self isAppleScriptTestApp]) {
-        return NO;
-    }
     if ([[NSApplication sharedApplication] isRunningUnitTests]) {
         return NO;
     }
@@ -2260,37 +2205,6 @@ static iTermKeyEventReplayer *gReplayer;
     NSPasteboard *pboard = [NSPasteboard generalPasteboard];
     [pboard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:self];
     [pboard setString:copyString forType:NSPasteboardTypeString];
-}
-
-// Depth-first search for the menu item wired to a given action, so a
-// xib-defined item can be configured in code without an outlet.
-- (NSMenuItem *)menuItemWithAction:(SEL)action inMenu:(NSMenu *)menu {
-    for (NSMenuItem *item in menu.itemArray) {
-        if (item.action == action) {
-            return item;
-        }
-        if (item.submenu) {
-            NSMenuItem *found = [self menuItemWithAction:action inMenu:item.submenu];
-            if (found) {
-                return found;
-            }
-        }
-    }
-    return nil;
-}
-
-// Give the Companion Device Settings menu item its glyph and hide it entirely
-// when companion pairing is disabled (the admin/feature-flag gate).
-- (void)updateCompanionMenuItem {
-    NSMenuItem *companionItem = [self menuItemWithAction:@selector(pairCompanionDevice:)
-                                                 inMenu:[NSApp mainMenu]];
-    companionItem.image = [NSImage imageWithSystemSymbolName:SFSymbolGetString(SFSymbolLaptopcomputerAndIphone)
-                                  accessibilityDescription:@"Companion Device Settings"];
-    companionItem.hidden = ![iTermAdvancedSettingsModel companionPairingAllowed];
-}
-
-- (IBAction)pairCompanionDevice:(id)sender {
-    [iTermCompanionOnboardingRouter openSettingsOrWizard];
 }
 
 #pragma mark - Main Menu
@@ -3712,10 +3626,6 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (void)restorableStateRestoreApplicationStateWithRecord:(iTermEncoderGraphRecord *)record {
-    if (self.isAppleScriptTestApp) {
-        DLog(@"Is applescript test app");
-        return;
-    }
     iTermEncoderGraphRecord *app = [record childRecordWithKey:@"app" identifier:@""];
     if (!app) {
         DLog(@"No app record");

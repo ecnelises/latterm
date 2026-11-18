@@ -895,56 +895,11 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 - (void)writeLatin1EncodedData:(NSData *)data broadcastAllowed:(BOOL)broadcast reporting:(BOOL)reporting;
 
-// Inject a synthesized key event into the session as if the user typed it at the
-// keyboard. Runs it through the SAME path a physical key takes - the accept/gating
-// check (keystroke monitors, copy mode, tmux unpause), profile key bindings (e.g.
-// Delete sends ^H) and the session's key mapper, so behavior
-// matches a real press, then (for a discrete tap) delivers the matching key-up when
-// the program wants key-ups. Broadcast to split panes is suppressed. Used by the
-// companion app's on-screen keyboard.
-//
-// If literalText is non-nil/non-empty, the character has no single-keystroke mapping
-// on the mac's layout (accented letter, emoji, dead-key result) and its synthesized
-// key code would be mis-encoded by the CSI-u mapper; the text is then written
-// literally instead of mapped, but still behind the same accept-gate and broadcast
-// suppression.
-- (void)injectSynthesizedKeyEvent:(NSEvent *)event literalText:(nullable NSString *)literalText
-    NS_SWIFT_NAME(injectSynthesizedKeyEvent(_:literalText:));
-
 // Records that the user just sent input to this session. Broadcastable writes
 // call this themselves; call it explicitly only for a user-initiated write that
 // deliberately does not broadcast, such as password entry. Drives the cursor
 // movement animation gate.
 - (void)noteUserInput;
-
-// Inject a mouse scroll-wheel report into the session as if the user
-// scrolled the wheel `lines` notches over the middle of the screen.
-// up=YES scrolls toward older content (MOUSE_BUTTON_SCROLLUP), up=NO
-// toward newer content. Returns NO without writing anything when the
-// foreground program hasn't enabled mouse reporting
-// (terminalMouseMode == MOUSE_REPORTING_NONE): there is no scroll
-// sequence to send in that case. Used by the orchestrator's
-// scroll_wheel tool to page through a full-screen app's own scrollback
-// when it's on the (soft) alternate screen.
-- (BOOL)reportScrollWheelForOrchestratorUp:(BOOL)up lines:(NSInteger)lines
-    NS_SWIFT_NAME(reportScrollWheelForOrchestrator(up:lines:));
-
-// YES when a scroll-wheel report would actually be sent for this session,
-// matching the full gate the live wheel path uses
-// (PTYMouseHandler.terminalWantsMouseReports plus its wheel sub-gate):
-// the profile's mouse-reporting setting (xtermMouseReporting, including
-// its restrict-to-alternate-screen rule) AND the "report mouse wheel
-// events" sub-setting (xtermMouseReportingAllowMouseWheel) AND a mouse
-// mode that reports the wheel (normal / button-motion / any-motion;
-// highlight-tracking mode reports selection clicks but never scroll, so
-// it's excluded). This is the single source of truth for "scroll
-// reporting is possible": both reportScrollWheelForOrchestratorUp:lines:
-// and the mouse_reporting hint the orchestrator surfaces to the agent
-// read it, so the advertised capability and the actual behavior can't
-// drift apart, and we never inject scroll bytes the user opted out of.
-// Exposed so Swift callers can gate the scroll_wheel tool without
-// referencing the C MouseMode enum directly.
-@property (nonatomic, readonly) BOOL scrollWheelReportingEnabled;
 
 - (void)updateViewBackgroundImage;
 - (void)invalidateBlend;
@@ -992,12 +947,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // (a value of -1 means "keep the current dimension" and 0 means "as many as the
 // window allows").
 - (void)reallySetCellSize:(VT100GridSize)proposedSize;
-
-// Whether a terminal/content-initiated resize (reallySetCellSize:) would actually
-// take effect right now: YES only for a freely-resizable, non-fullscreen window
-// whose width is not locked. NO for maximized, edge-attached (fixed by percentage
-// or cells), and full-screen windows.
-- (BOOL)companionSessionCanResizeWindow;
 
 // Returns the number of pixels over or under the an ideal size.
 // Will never exceed +/- cell size/2.

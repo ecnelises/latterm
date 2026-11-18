@@ -914,7 +914,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 }
 
 - (void)requestRedraw {
-    _lastRedrawRequestedAt = [NSDate it_timeSinceBoot];
     if (_useMetal) {
         // TODO: Would be nice to draw only the rect, but I don't see a way to do that with iTermMTKView
         // that doesn't involve doing something nutty like saving a copy of the drawable.
@@ -928,7 +927,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 }
 
 - (void)requestRedrawInRect:(NSRect)rect {
-    _lastRedrawRequestedAt = [NSDate it_timeSinceBoot];
     if (_useMetal) {
         [_metalView setNeedsDisplay:YES];
         [_scrollview setNeedsDisplay:YES];

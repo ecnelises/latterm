@@ -176,17 +176,6 @@ NSString *const iTermWindowStateKeyGUID = @"guid";
     }
 
     DLog(@"Restore window with identifier %@", identifier);
-    if ([[[NSBundle mainBundle] bundleIdentifier] containsString:@"applescript"]) {
-        // Disable window restoration for iTerm2ForAppleScriptTesting
-        DLog(@"Abort because bundle ID contains applescript");
-        completionHandler(nil, nil);
-        return;
-    }
-    if ([[NSApplication sharedApplication] isRunningUnitTests]) {
-        DLog(@"Abort because this is a unit test.");
-        completionHandler(nil, nil);
-        return;
-    }
     [[[iTermApplication sharedApplication] delegate] willRestoreWindow];
 
     if ([iTermPreferences boolForKey:kPreferenceKeyOpenArrangementAtStartup]) {

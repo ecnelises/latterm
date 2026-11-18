@@ -2,15 +2,7 @@
 //  Data+BigEndian.swift
 //  iTerm2
 //
-//  Big-endian fixed-width integer framing, shared by everything that reads/writes
-//  length-prefixed wire formats (Companion media/HEVC framing, the it2 demux).
-//
-//  This lives in its own file, separate from Data+iTerm.swift, because the two
-//  Companion Shared files that use it (CompanionMediaFrame.swift,
-//  CompanionHEVCFraming.swift) are also compiled by the standalone
-//  Companion/iTerm2Companion.xcodeproj, which does NOT include Data+iTerm.swift
-//  (that file depends on app-only types like SubData). Keep this file dependency-free
-//  (Foundation/Data only) and a member of both the main app and the Companion targets.
+//  Big-endian fixed-width integer framing for length-prefixed wire formats.
 //
 
 import Foundation

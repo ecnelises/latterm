@@ -92,7 +92,6 @@ struct SecureUserDefaults {
     lazy var allowPaste = { SecureUserDefault<Bool>("AllowPaste", defaultValue: false) }()
     lazy var requireAuthToOpenPasswordmanager = { SecureUserDefault<Bool>("RequireAuthenticationToOpenPasswordManager", defaultValue: true) }()
     lazy var enableSecureKeyboardEntryAutomatically = { SecureUserDefault<Bool>("EnableSecureKeyboardEntryAutomatically", defaultValue: true) }()
-    lazy var enableCompanionPairing = { SecureUserDefault<Bool>("EnableCompanionPairing", defaultValue: false) }()
     lazy var browserBundleID = { SecureUserDefault<String>("BrowserBundleID", defaultValue: "") }()
 
     private var hostToOpenURLSUDs = [String: SecureUserDefault<Bool>]()
@@ -110,7 +109,6 @@ struct SecureUserDefaults {
         [allowPaste,
          requireAuthToOpenPasswordmanager,
          enableSecureKeyboardEntryAutomatically,
-         enableCompanionPairing,
          browserBundleID] + Array(hostToOpenURLSUDs.values)
     }
 }

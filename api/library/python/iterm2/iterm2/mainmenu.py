@@ -93,7 +93,6 @@ class MainMenu:
     class Latterm(enum.Enum):
         ABOUT_LATTERM = MenuItemIdentifier("About Latterm", "About iTerm2")
         SHOW_TIP_OF_THE_DAY = MenuItemIdentifier("Show Tip of the Day", "Show Tip of the Day")
-        COMPANION_DEVICE_SETTINGS = MenuItemIdentifier("Companion Device Settings", "Pair Companion Device")
         TOGGLE_DEBUG_LOGGING = MenuItemIdentifier("Toggle Debug Logging", "Toggle Debug Logging")
         SAVE_RETROSPECTIVE_DEBUG_LOGS = MenuItemIdentifier("Save Retrospective Debug Logs", "Save Retrospective Debug Logs")
         COPY_PERFORMANCE_STATS = MenuItemIdentifier("Copy Performance Stats", "Copy Performance Stats")

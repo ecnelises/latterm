@@ -19,7 +19,6 @@ Menu Item                                                                       
 ======================================================================================= ==============================================================================
 Latterm > About Latterm                                                                 `About iTerm2`
 Latterm > Show Tip of the Day                                                           `Show Tip of the Day`
-Latterm > Companion Device Settings                                                     `Pair Companion Device`
 Latterm > Toggle Debug Logging                                                          `Toggle Debug Logging`
 Latterm > Save Retrospective Debug Logs                                                 `Save Retrospective Debug Logs`
 Latterm > Copy Performance Stats                                                        `Copy Performance Stats`

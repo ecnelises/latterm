@@ -42,7 +42,6 @@ static NSString *const iTermUserDefaultsKeyWindowCornerRadiusCache = @"NoSyncWin
 static NSString *const iTermUserDefaultsKeyLastShutdownWasClean = @"NoSyncLastShutdownWasClean";
 static NSString *const iTermUserDefaultsKeyWorkgroupsData = @"Workgroups";
 static NSString *const iTermUserDefaultsKeyWorkgroupShortcutsBackfilled = @"NoSyncWorkgroupShortcutsBackfilled";
-static NSString *const iTermUserDefaultsKeyAutoProvideConsent = @"NoSyncAutoProvideConsent";
 
 @implementation iTermUserDefaults
 
@@ -324,15 +323,6 @@ static NSUserDefaults *iTermPrivateUserDefaults(void) {
 + (void)setWorkgroupShortcutsBackfilled:(BOOL)value {
     [self.userDefaults setBool:value
                         forKey:iTermUserDefaultsKeyWorkgroupShortcutsBackfilled];
-}
-
-+ (iTermAutoProvideConsent)autoProvideConsent {
-    return [self.userDefaults integerForKey:iTermUserDefaultsKeyAutoProvideConsent];
-}
-
-+ (void)setAutoProvideConsent:(iTermAutoProvideConsent)value {
-    [self.userDefaults setInteger:value
-                           forKey:iTermUserDefaultsKeyAutoProvideConsent];
 }
 
 + (BOOL)lastShutdownWasClean {
