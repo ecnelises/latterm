@@ -114,7 +114,6 @@
 #import "iTermScriptArchive.h"
 #import "iTermSignatureVerifier.h"
 #import "SIGIdentity.h"
-#import "iTermSSHHelpers.h"
 #import "iTermInProcessIt2.h"
 #import "iTermScriptExporter.h"
 #import "iTermScriptFunctionCall.h"
@@ -167,9 +166,6 @@
 #import "LineBufferHelpers.h"
 #import "iTermLineBlockArray.h"
 #import "MovePaneController.h"
-#import <NMSSH/NMSSH.h>
-#import <NMSSH/NMSSHConfig.h>
-#import <NMSSH/NMSSHHostConfig.h>
 #import "NSAlert+iTerm.h"
 #import "NSAppearance+iTerm.h"
 #import "NSBezierPath+iTerm.h"
