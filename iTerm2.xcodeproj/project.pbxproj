@@ -559,7 +559,6 @@
 		745A29B54D2537CEDE30520E /* iTermLargeContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17306A9E43DF81BD3B73C4B3 /* iTermLargeContent.swift */; };
 		7531FA92945C4C5ABAB8F390 /* iTermEventTriggerEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B231EDB860248C368A511B42 /* iTermEventTriggerEvaluator.swift */; };
 		756C32AD2597AC2E0047B3A9 /* iTermImage+Sixel.m in Sources */ = {isa = PBXBuildFile; fileRef = 756C32AC2597AC2E0047B3A9 /* iTermImage+Sixel.m */; };
-		756C32B72597AC8C0047B3A9 /* libsixel.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A67D194E2237045C00BD0D4D /* libsixel.a */; };
 		7577E2A12593B88700905402 /* iTermSandboxedWorkerClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 7577E29F2593B88700905402 /* iTermSandboxedWorkerClient.h */; };
 		7577E2A22593B88700905402 /* iTermSandboxedWorkerClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 7577E2A02593B88700905402 /* iTermSandboxedWorkerClient.m */; };
 		7581C4E120A38E0F00699F99 /* iTermHyperlinkTrigger.h in Headers */ = {isa = PBXBuildFile; fileRef = 7581C4DD20A38DF900699F99 /* iTermHyperlinkTrigger.h */; };
@@ -730,6 +729,7 @@
 		A60D023D2687EF3B00E19362 /* InjectTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60D023C2687EF3B00E19362 /* InjectTrigger.swift */; };
 		A60D20C92597F496004AC979 /* iTermImage+ImageWithData.m in Sources */ = {isa = PBXBuildFile; fileRef = A60D20C82597F496004AC979 /* iTermImage+ImageWithData.m */; };
 		A60D20D22597F4DF004AC979 /* iTermImage.m in Sources */ = {isa = PBXBuildFile; fileRef = A6755F421D728FFA00F3726C /* iTermImage.m */; };
+		A67D195A2237289900BD0D4D /* SixelDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67D19592237289900BD0D4D /* SixelDecoder.swift */; };
 		A60D20DC2597F83E004AC979 /* image_decoder.sb in Resources */ = {isa = PBXBuildFile; fileRef = A60D20DB2597F83D004AC979 /* image_decoder.sb */; };
 		A60D20E62597FAFB004AC979 /* libsandbox.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A60D20E52597FAFB004AC979 /* libsandbox.tbd */; };
 		A60D20EF2597FCFA004AC979 /* iTermImage+ImageWithData.m in Sources */ = {isa = PBXBuildFile; fileRef = A60D20C82597F496004AC979 /* iTermImage+ImageWithData.m */; };
@@ -1717,6 +1717,7 @@
 		A67D0D8F1A2EE12A003A8B35 /* TmuxDashboard.xib in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D301A2EE12A003A8B35 /* TmuxDashboard.xib */; };
 		A67D1953223704C400BD0D4D /* VT100SixelParser.m in Sources */ = {isa = PBXBuildFile; fileRef = A67D1952223704C400BD0D4D /* VT100SixelParser.m */; };
 		A67D19582237289900BD0D4D /* iTermImage.m in Sources */ = {isa = PBXBuildFile; fileRef = A6755F421D728FFA00F3726C /* iTermImage.m */; };
+		A67D195B2237289900BD0D4D /* SixelDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67D19592237289900BD0D4D /* SixelDecoder.swift */; };
 		A67D19792238D50800BD0D4D /* iTermSetFindStringNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = A67D19772238D50800BD0D4D /* iTermSetFindStringNotification.h */; };
 		A67D197A2238D50800BD0D4D /* iTermSetFindStringNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = A67D19782238D50800BD0D4D /* iTermSetFindStringNotification.m */; };
 		A67DAF1D299D61D100AD331A /* iTermTextDrawingHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A1AE21AAE290700B49F79 /* iTermTextDrawingHelper.m */; };
@@ -5049,8 +5050,8 @@
 		A67D0D2A1A2EE12A003A8B35 /* PreferencePanel.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = PreferencePanel.strings; path = Interfaces/PreferencePanel.strings; sourceTree = "<group>"; };
 		A67D0D2D1A2EE12A003A8B35 /* PseudoTerminal.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = PseudoTerminal.strings; path = Interfaces/PseudoTerminal.strings; sourceTree = "<group>"; };
 		A67D0D301A2EE12A003A8B35 /* TmuxDashboard.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TmuxDashboard.xib; sourceTree = "<group>"; };
-		A67D194E2237045C00BD0D4D /* libsixel.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsixel.a; path = ThirdParty/libsixel/lib/libsixel.a; sourceTree = "<group>"; };
 		A67D1952223704C400BD0D4D /* VT100SixelParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VT100SixelParser.m; sourceTree = "<group>"; };
+		A67D19592237289900BD0D4D /* SixelDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixelDecoder.swift; sourceTree = "<group>"; };
 		A67D19772238D50800BD0D4D /* iTermSetFindStringNotification.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSetFindStringNotification.h; sourceTree = "<group>"; };
 		A67D19782238D50800BD0D4D /* iTermSetFindStringNotification.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSetFindStringNotification.m; sourceTree = "<group>"; };
 		A67E0ACE186E4B71009B2B68 /* TaskNotifier.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.h; path = TaskNotifier.h; sourceTree = "<group>"; tabWidth = 4; };
@@ -6453,7 +6454,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A60D20E62597FAFB004AC979 /* libsandbox.tbd in Frameworks */,
-				756C32B72597AC8C0047B3A9 /* libsixel.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7133,7 +7133,6 @@
 				1DD39B7A180B8842004E56D5 /* libicucore.dylib */,
 				A6A73D4727C8049E002E4CCA /* libicucore.tbd */,
 				A60D20E52597FAFB004AC979 /* libsandbox.tbd */,
-				A67D194E2237045C00BD0D4D /* libsixel.a */,
 				A60BD9181B3F5D76007D7F11 /* OpenDirectory.framework */,
 				A6C1FE5B284C1BF200EA8A3B /* UniformTypeIdentifiers.framework */,
 				1DD39AD8180B8118004E56D5 /* Other Frameworks */,
@@ -10636,6 +10635,7 @@
 				A67F57B61B01A01800B4F135 /* iTermImageInfo.m */,
 				A6D1A3F62C7E9B2000FECDF2 /* KittyImageCommand.swift */,
 				A6CB24CA2C6EC13000005824 /* KittyImageController.swift */,
+				A67D19592237289900BD0D4D /* SixelDecoder.swift */,
 				A6BA7D22247637B700407C4D /* VT100InlineImageHelper.h */,
 				A6BA7D23247637B700407C4D /* VT100InlineImageHelper.m */,
 			);
@@ -13442,6 +13442,7 @@
 				A6038309294306BA00FE11C2 /* iTermSandboxedWorkerClient.m in Sources */,
 				7596379F2593AE0700E278CC /* iTerm2SandboxedWorker.m in Sources */,
 				A60D20D22597F4DF004AC979 /* iTermImage.m in Sources */,
+				A67D195A2237289900BD0D4D /* SixelDecoder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -13627,6 +13628,7 @@
 				5370678A21C9D2780088D0F3 /* SIGKey.m in Sources */,
 				A6F718C62265B2580053488E /* iTermPathCleaner.m in Sources */,
 				A67D19582237289900BD0D4D /* iTermImage.m in Sources */,
+				A67D195B2237289900BD0D4D /* SixelDecoder.swift in Sources */,
 				A6EC47A62D84BD6E0079845B /* JSONSerialization+iTerm.swift in Sources */,
 				A6A64E5E2508B83F0040490B /* iTermStatusBarSnippetComponent.m in Sources */,
 				5312269B20CB1D3A004831C6 /* iTermBuiltInFunctions.m in Sources */,
@@ -15574,17 +15576,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty/libsixel/include;
 				INFOPLIST_FILE = iTerm2SandboxedWorker/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../../../../Frameworks",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -15650,17 +15647,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty/libsixel/include;
 				INFOPLIST_FILE = iTerm2SandboxedWorker/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../../../../Frameworks",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -15723,17 +15715,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty/libsixel/include;
 				INFOPLIST_FILE = iTerm2SandboxedWorker/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../../../../Frameworks",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -15796,17 +15783,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = ThirdParty/libsixel/include;
 				INFOPLIST_FILE = iTerm2SandboxedWorker/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../../../../Frameworks",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ThirdParty/libsixel/lib",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -16426,7 +16408,6 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -16762,7 +16743,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -16834,7 +16814,6 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",
@@ -16908,7 +16887,6 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "sources/iTerm2SharedARC-Bridging-Header.h";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 				SWIFT_VERSION = 5.0;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/ThirdParty/libsixel/include";
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wno-nullability-completeness",

@@ -1,7 +1,5 @@
 #import "VT100Terminal.h"
 
-#include "sixel.h"
-
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
@@ -5271,9 +5269,7 @@ typedef NS_ENUM(int, iTermDECRPMSetting)  {
 }
 
 - (void)executeReadNumberOfColorRegisters:(VT100Token *)token {
-    // First arg after # gives the sixel register number. This is how I determined that
-    // SIXEL_PALETTE_MAX corresponds to the number of registers.
-    [self sendGraphicsAttributeReportForToken:token status:0 value:[@(SIXEL_PALETTE_MAX) stringValue]];
+    [self sendGraphicsAttributeReportForToken:token status:0 value:[@(iTermSixelDecoder.maxPaletteRegisters) stringValue]];
 }
 
 - (void)executeResetNumberOfColorRegisters:(VT100Token *)token {
@@ -5285,7 +5281,7 @@ typedef NS_ENUM(int, iTermDECRPMSetting)  {
 }
 
 - (void)executeReadMaximumValueOfNumberOfColorRegisters:(VT100Token *)token {
-    [self sendGraphicsAttributeReportForToken:token status:0 value:[@(SIXEL_PALETTE_MAX) stringValue]];
+    [self sendGraphicsAttributeReportForToken:token status:0 value:[@(iTermSixelDecoder.maxPaletteRegisters) stringValue]];
 }
 
 - (void)executeReadSixelGeometry:(VT100Token *)token {
