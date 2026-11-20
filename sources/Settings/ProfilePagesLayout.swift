@@ -948,8 +948,6 @@ extension ProfilesTerminalPreferencesViewController {
                     ProfileFormRow(label: terminalMetadataSectionLabel,
                                    content: .checkbox(forceCommandPromptToFirstColumn, trailing: [shellIntegrationRequiredButton]),
                                    suppressSeparatorAfter: true),
-                    ProfileFormRow(content: .checkbox(showOffscreenCommandLine, trailing: []), suppressSeparatorAfter: true),
-                    ProfileFormRow(content: .checkbox(showOffscreenCommandLineForCurrentCommand, trailing: []), indent: 20, suppressSeparatorAfter: true),
                     ProfileFormRow(content: .checkbox(promptPathClickOpensNavigator, trailing: [])),
                     ProfileFormRow(label: tmuxIntegrationSectionLabel,
                                    content: .checkbox(tmuxNewline, trailing: []))

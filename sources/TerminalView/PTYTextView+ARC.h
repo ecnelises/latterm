@@ -67,17 +67,12 @@ iTermURLActionHelperDelegate>
 
 - (NSMenu * _Nullable)menuForEvent:(NSEvent *)event;
 
-#pragma mark - Offscreen Command Line
+#pragma mark - Command Info
 
-- (iTermOffscreenCommandLine * _Nullable)offscreenCommandLineForClickAt:(NSPoint)windowPoint;
-- (void)presentCommandInfoForOffscreenCommandLine:(iTermOffscreenCommandLine *)offscreenCommandLine
-                                            event:(NSEvent *)event
-                         fromOffscreenCommandLine:(BOOL)fromOffscreenCommandLine;
 - (void)presentCommandInfoForMark:(id<VT100ScreenMarkReading>)mark
                absoluteLineNumber:(long long)absoluteLineNumber
                              date:(NSDate *)date
-                            point:(NSPoint)locationInWindow
-         fromOffscreenCommandLine:(BOOL)fromOffscreenCommandLine;
+                            point:(NSPoint)locationInWindow;
 
 #pragma mark - Mouse Cursor
 

@@ -1308,7 +1308,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     }
 }
 
-static const NSInteger SessionViewNumberOfTrackingAreas = 3;
+static const NSInteger SessionViewNumberOfTrackingAreas = 2;
 
 typedef struct {
     NSRect rect;
@@ -1336,10 +1336,6 @@ typedef struct {
         {
             .rect = self.bounds,
             .options = trackingOptions
-        },
-        {
-            .rect = [self offscreenCommandLineFrame],
-            .options = NSTrackingActiveInActiveApp | NSTrackingMouseEnteredAndExited
         },
         // This one is because command marks and fold buttons are in the left margin.
         {
@@ -1398,10 +1394,6 @@ typedef struct {
     }
     DLog(@"Existing tracking areas are just fine");
     return NO;
-}
-
-- (NSRect)offscreenCommandLineFrame {
-    return [self.delegate sessionViewOffscreenCommandLineFrameForView:self];
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent {

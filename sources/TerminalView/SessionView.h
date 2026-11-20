@@ -174,7 +174,6 @@ extern NSString *const SessionViewWasSelectedForInspectionNotification;
 - (void)sessionViewDidChangeEffectiveAppearance;
 - (BOOL)sessionViewCaresAboutMouseMovement;
 
-- (NSRect)sessionViewOffscreenCommandLineFrameForView:(NSView *)view;
 - (void)sessionViewUpdateComposerFrame;
 - (NSDictionary *)sessionViewStatusBarAdvancedConfigurationDictionary;
 - (CGFloat)desiredRightExtra;

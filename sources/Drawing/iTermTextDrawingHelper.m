@@ -66,7 +66,6 @@ static iTermSignedRange iTermSignedRangeWithBounds(NSInteger minValue, NSInteger
 }
 const CGFloat iTermCursorGuideAlphaThreshold = 0.3;
 static const int kBadgeMargin = 4;
-const CGFloat iTermOffscreenCommandLineVerticalPadding = 8.0;
 
 extern void CGContextSetFontSmoothingStyle(CGContextRef, int);
 extern int CGContextGetFontSmoothingStyle(CGContextRef);
@@ -413,8 +412,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
 
 //        NSLog(@"Draw line %d at %f", line, y);
         NSData *matches = [_delegate drawingHelperMatchesOnLine:line];
-        BOOL first;
-        const screen_char_t *theLine = [self lineAtIndex:line isFirst:&first];
+        const screen_char_t *theLine = [self lineAtIndex:line];
         NSIndexSet *selectedIndexes =
             [_selection selectedIndexesIncludingTabFillersInAbsoluteLine:line + _totalScrollbackOverflow];
 
@@ -512,12 +510,10 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
     // Now iterate over the lines and paint the characters.
     if ([self textAppearanceDependsOnBackgroundColor]) {
         [self drawForegroundForBackgroundRunArrays:backgroundRunArrays
-                          drawOffscreenCommandLine:NO
                                                ctx:ctx
                                      virtualOffset:virtualOffset];
     } else {
         [self drawUnprocessedForegroundForBackgroundRunArrays:backgroundRunArrays
-                                     drawOffscreenCommandLine:NO
                                                           ctx:ctx
                                                 virtualOffset:virtualOffset];
     }
@@ -1309,10 +1305,6 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
 
 - (void)createTimestampDrawingHelperWithFontInfo:(PTYFontInfo *)fontInfo {
     [self updateCachedMetrics];
-    CGFloat obscured = 0;
-    if (_offscreenCommandLine) {
-        obscured = _cellSize.height + iTermOffscreenCommandLineVerticalPadding * 2;
-    }
     _timestampDrawHelper =
         [[iTermTimestampDrawHelper alloc] initWithBackgroundColor:[self defaultBackgroundColor]
                                                         textColor:[_colorMap colorForKey:kColorMapForeground]
@@ -1322,7 +1314,7 @@ static CGFloat iTermTextDrawingHelperAlphaValueForDefaultBackgroundColor(BOOL ha
                                         rowHeightWithoutSpacing:_cellSizeWithoutSpacing.height
                                                            retina:self.isRetina
                                                          fontInfo:fontInfo
-                                                         obscured:obscured];
+                                                         obscured:0];
     _timestampDrawHelper.timestampBaseline = self.timestampBaseline;
     for (int y = _scrollViewDocumentVisibleRect.origin.y / _cellSize.height;
          y < NSMaxY(_scrollViewDocumentVisibleRect) / _cellSize.height && y < _numberOfLines;
@@ -1647,7 +1639,6 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
 
 // Draw assuming no foreground color processing. Keeps glyphs together in a single background color run across different background colors.
 - (void)drawUnprocessedForegroundForBackgroundRunArrays:(NSArray<iTermBackgroundColorRunsInLine *> *)backgroundRunArrays
-                               drawOffscreenCommandLine:(BOOL)drawOffscreenCommandLine
                                                     ctx:(CGContextRef)ctx
                                           virtualOffset:(CGFloat)virtualOffset {
     // Combine runs on each line, except those with different values of
@@ -1689,38 +1680,25 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
         return fakeRuns;
     }];
     [self drawForegroundForBackgroundRunArrays:fakeRunArrays
-                      drawOffscreenCommandLine:drawOffscreenCommandLine
                                            ctx:ctx
                                  virtualOffset:virtualOffset];
 }
 
 // Draws
 - (void)drawForegroundForBackgroundRunArrays:(NSArray<iTermBackgroundColorRunsInLine *> *)backgroundRunArrays
-                    drawOffscreenCommandLine:(BOOL)drawOffscreenCommandLine
                                          ctx:(CGContextRef)ctx
                                virtualOffset:(CGFloat)virtualOffset {
     iTermBackgroundColorRunsInLine *representativeRunArray = nil;
     NSInteger count = 0;
-    const int firstLine = [self rangeOfVisibleRows].location;
-    const CGFloat vmargin = [iTermPreferences topBottomMargins];
     for (iTermBackgroundColorRunsInLine *runArray in backgroundRunArrays) {
         if (count == 0) {
             representativeRunArray = runArray;
             count = runArray.numberOfEquivalentRows;
         }
         count--;
-        const BOOL isOffscreenCommandLine = (_offscreenCommandLine && runArray.line == firstLine);
-        CGFloat y = runArray.y;
-        if (isOffscreenCommandLine && !drawOffscreenCommandLine) {
-            continue;
-        } else if (!isOffscreenCommandLine && drawOffscreenCommandLine) {
-            continue;
-        } else if (isOffscreenCommandLine && drawOffscreenCommandLine) {
-            y -= vmargin + 1;
-        }
         [self drawForegroundForSourceLineNumber:runArray.sourceLine
                               displayLineNumber:runArray.line
-                                              y:y
+                                              y:runArray.y
                                  backgroundRuns:representativeRunArray.array
                                         context:ctx
                                   virtualOffset:virtualOffset];
@@ -1765,7 +1743,7 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
                backgroundRuns:(NSArray<iTermBoxedBackgroundColorRun *> *)backgroundRuns
                       context:(CGContextRef)ctx
                 virtualOffset:(CGFloat)virtualOffset {
-    const screen_char_t *theLine = [self lineAtIndex:sourceLine isFirst:nil];
+    const screen_char_t *theLine = [self lineAtIndex:sourceLine];
     iTermImmutableMetadata metadata = [self.delegate drawingHelperMetadataOnLine:sourceLine];
     id<iTermExternalAttributeIndexReading> eaIndex = iTermImmutableMetadataGetExternalAttributesIndex(metadata);
     const BOOL rtlFound = metadata.rtlFound;
@@ -1844,9 +1822,6 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
 
     iTermPreciseTimerStatsStartTimer(&_stats[TIMER_STAT_DRAW]);
     NSPoint adjustedPoint = initialPoint;
-    if (_offscreenCommandLine && displayLineNumber == [self rangeOfVisibleRows].location) {
-        adjustedPoint.y += iTermOffscreenCommandLineVerticalPadding;
-    }
 
     if (iTermLineAttributeIsDoubleWidth(lineAttribute)) {
         // Scale the context 2x horizontally. Halve x positions so they end up
@@ -3315,130 +3290,6 @@ iTermKittyImageDraw *iTermFindKittyImageDrawForVirtualPlaceholder(NSArray<iTermK
     [NSGraphicsContext restoreGraphicsState];
 }
 
-+ (NSRect)offscreenCommandLineFrameForVisibleRect:(NSRect)visibleRect
-                                         cellSize:(NSSize)cellSize
-                                         gridSize:(VT100GridSize)gridSize {
-    const CGFloat hmargin = [iTermPreferences sideMargins];
-    const CGFloat vmargin = [iTermPreferences topBottomMargins];
-    NSRect rect = NSMakeRect(hmargin,
-                             visibleRect.origin.y - vmargin - 1,
-                             cellSize.width * gridSize.width,
-                             cellSize.height + iTermOffscreenCommandLineVerticalPadding * 2);
-    return rect;
-}
-
-- (NSRect)offscreenCommandLineFrame {
-    return [iTermTextDrawingHelper offscreenCommandLineFrameForVisibleRect:_visibleRectExcludingTopMargin
-                                                                  cellSize:_cellSize
-                                                                  gridSize:_gridSize];
-}
-
-- (NSColor *)offscreenCommandLineBackgroundColor {
-    if (!self.offscreenCommandLine) {
-        return nil;
-    }
-    NSColor *color;
-    if ([[self defaultBackgroundColor] isDark]) {
-        color = [[self defaultBackgroundColor] it_colorByDimmingByAmount:0.7];
-    } else {
-        color = [[self defaultBackgroundColor] it_colorByDimmingByAmount:0.1];
-    }
-    return [color colorWithAlphaComponent:0.5];
-}
-
-- (NSColor *)offscreenCommandLineOutlineColor {
-    if (!self.offscreenCommandLine) {
-        return nil;
-    }
-    NSColor *textColor = self.defaultTextColor;
-    NSColor *backgroundColor = self.defaultBackgroundColor;
-    NSColor *blend = [textColor blendedWithColor:backgroundColor weight:0.5];
-    return blend;
-}
-
-- (void)drawOffscreenCommandLineWithVirtualOffset:(CGFloat)virtualOffset {
-    if (!_offscreenCommandLine) {
-        return;
-    }
-    CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
-
-    BOOL blink = NO;
-    const int row = [self rangeOfVisibleRows].location;
-
-    const int line = _offscreenCommandLine.absoluteLineNumber - _totalScrollbackOverflow;
-    iTermImmutableMetadata metadata = [self.delegate drawingHelperMetadataOnLine:line];
-    const BOOL rtlFound = metadata.rtlFound;
-
-    iTermBackgroundColorRunsInLine *backgroundRuns =
-    [iTermBackgroundColorRunsInLine backgroundRunsInLine:_offscreenCommandLine.characters.line
-                                              lineLength:_gridSize.width
-                                        sourceLineNumber:line
-                                       displayLineNumber:row
-                                         selectedIndexes:[NSIndexSet indexSet]
-                                             withinRange:NSMakeRange(0, _gridSize.width)
-                                                 matches:nil
-                                                anyBlink:&blink
-                                                       y:row * _cellSize.height
-                                                    bidi:rtlFound ? [self.delegate drawingHelperBidiInfoForLine:line] : nil
-                                                 eaIndex:iTermImmutableMetadataGetExternalAttributesIndex(metadata)
-                                                darkMode:_colorMap.backgroundIsDark];
-
-
-    [self drawOffscreenCommandLineDecorationsInContext:ctx
-                                         virtualOffset:virtualOffset];
-
-    const CGFloat vmargin = [iTermPreferences topBottomMargins];
-    // Use padding to disable drawing default background color
-    [self drawBackgroundForLine:0
-                            atY:row * _cellSize.height + iTermOffscreenCommandLineVerticalPadding - vmargin - 1
-                           runs:backgroundRuns.array
-                 equivalentRows:1
-                  virtualOffset:virtualOffset
-                            pad:YES
-                        padding:NSZeroSize
-                    drawingMode:iTermBackgroundDrawingModeDefault];
-
-    if ([self textAppearanceDependsOnBackgroundColor]) {
-        [self drawForegroundForBackgroundRunArrays:@[backgroundRuns]
-                          drawOffscreenCommandLine:YES
-                                               ctx:ctx
-                                     virtualOffset:virtualOffset];
-    } else {
-        [self drawUnprocessedForegroundForBackgroundRunArrays:@[backgroundRuns]
-                                     drawOffscreenCommandLine:YES
-                                                          ctx:ctx
-                                                virtualOffset:virtualOffset];
-    }
-}
-
-- (void)drawOffscreenCommandLineDecorationsInContext:(CGContextRef)ctx
-                                       virtualOffset:(CGFloat)virtualOffset {
-    if (!self.offscreenCommandLine) {
-        return;
-    }
-
-    const NSRect rect = self.offscreenCommandLineFrame;
-
-    NSRect outline = rect;
-    outline.origin.x = 0;
-    outline.size.width = _visibleRectExcludingTopMargin.size.width;
-
-    [[self offscreenCommandLineBackgroundColor] set];
-    iTermRectFill(outline, virtualOffset);
-
-    [[self offscreenCommandLineOutlineColor] set];
-
-    const BOOL enableBlending = [NSView iterm_takingSnapshot];
-    const NSCompositingOperation operation = enableBlending ? NSCompositingOperationSourceOver : NSCompositingOperationCopy;
-
-    iTermRectFillUsingOperation(NSMakeRect(outline.origin.x, outline.origin.y, outline.size.width, 1),
-                                operation,
-                                virtualOffset);
-    iTermRectFillUsingOperation(NSMakeRect(outline.origin.x, NSMaxY(outline) - 1, outline.size.width, 1),
-                                operation,
-                                virtualOffset);
-}
-
 - (BOOL)drawInputMethodEditorTextAt:(int)xStart
                                   y:(int)yStart
                               width:(int)width
@@ -3657,7 +3508,7 @@ typedef struct {
     if (cursorCoord.y >= 0) {
         theLine = [self lineAtScreenIndex:cursorCoord.y];
     } else {
-        theLine = [self lineAtIndex:absoluteLine isFirst:nil];
+        theLine = [self lineAtIndex:absoluteLine];
     }
     iTermImmutableMetadata metadata = [self.delegate drawingHelperMetadataOnLine:absoluteLine];
     BOOL isDoubleWidth;
@@ -3783,7 +3634,7 @@ typedef struct {
         if (_cursorCoord.y >= 0) {
             theLine = [self lineAtScreenIndex:_cursorCoord.y];
         } else {
-            theLine = [self lineAtIndex:absoluteLine isFirst:nil];
+            theLine = [self lineAtIndex:absoluteLine];
         }
         iTermImmutableMetadata metadata = [self.delegate drawingHelperMetadataOnLine:absoluteLine];
         BOOL isDoubleWidth;
@@ -4154,21 +4005,12 @@ typedef struct {
     return _inputMethodMarkedRange.length > 0;
 }
 
-- (const screen_char_t *)lineAtIndex:(int)line isFirst:(BOOL *)isFirstPtr {
-    if (_offscreenCommandLine && line == [self rangeOfVisibleRows].location) {
-        if (isFirstPtr) {
-            *isFirstPtr = YES;
-        }
-        return _offscreenCommandLine.characters.line;
-    }
-    if (isFirstPtr) {
-        *isFirstPtr = NO;
-    }
+- (const screen_char_t *)lineAtIndex:(int)line {
     return [self.delegate drawingHelperLineAtIndex:line];
 }
 
 - (const screen_char_t *)lineAtScreenIndex:(int)line {
-    return [self lineAtIndex:line + _numberOfScrollbackLines isFirst:nil];
+    return [self lineAtIndex:line + _numberOfScrollbackLines];
 }
 
 #pragma mark - Background Utilities
@@ -4293,7 +4135,7 @@ typedef struct {
     NSRect innerRect = [self rectForCoordRange:coordRange];
     iTermRectClip(innerRect, virtualOffset);
 
-    const screen_char_t *line = [self lineAtIndex:row isFirst:nil];
+    const screen_char_t *line = [self lineAtIndex:row];
     iTermImmutableMetadata metadata = [self.delegate drawingHelperMetadataOnLine:row];
     const BOOL rtlFound = metadata.rtlFound;
     id<iTermExternalAttributeIndexReading> eaIndex = iTermImmutableMetadataGetExternalAttributesIndex(metadata);

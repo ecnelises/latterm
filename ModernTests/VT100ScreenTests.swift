@@ -2600,10 +2600,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func triggerSessionSetBufferInput(_ shouldBuffer: Bool) {
     }
 
-    func screenOffscreenCommandLineShouldBeVisibleForCurrentCommand() -> Bool {
-        return false
-    }
-
     func screenUpdateBlock(_ blockID: String, action: iTermUpdateBlockAction) {
     }
 

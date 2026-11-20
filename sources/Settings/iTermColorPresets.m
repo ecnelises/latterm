@@ -19,9 +19,14 @@ NSString *const kRebuildColorPresetsMenuNotification = @"kRebuildColorPresetsMen
 }
 
 + (iTermColorPresetDictionary *)builtInColorPresets {
-  NSString *plistFile = [[NSBundle bundleForClass:[self class]] pathForResource:@"ColorPresets"
-                                                                         ofType:@"plist"];
-  return [NSDictionary dictionaryWithContentsOfFile:plistFile];
+    static NSDictionary *presets;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *plistFile = [[NSBundle bundleForClass:[self class]] pathForResource:@"ColorPresets"
+                                                                               ofType:@"plist"];
+        presets = [NSDictionary dictionaryWithContentsOfFile:plistFile] ?: @{};
+    });
+    return presets;
 }
 
 + (iTermColorPresetDictionary *)allColorPresets {
@@ -247,7 +252,7 @@ NSString *const kRebuildColorPresetsMenuNotification = @"kRebuildColorPresetsMen
     NSArray<NSString *> *suffixesToSkip = @[];  // Suffixes on input that we ignore.
     if (!presetUsesModes) {
         if (source != 0) {
-            return [self addColorPresetNamed:presetName toProfile:profile from:0 to:destination];
+            return [self addColorPresetNamed:presetName toProfile:profile from:0 to:destination updateUseModes:updateUseModes];
         }
         suffixesToSkip = @[ COLORS_LIGHT_MODE_SUFFIX, COLORS_DARK_MODE_SUFFIX ];
     } else {
@@ -288,9 +293,14 @@ NSString *const kRebuildColorPresetsMenuNotification = @"kRebuildColorPresetsMen
             continue;
         }
 
-        // Fan out the value to the profile.
+        // Fan out the value to the profile. When copying both modes from a dual-mode preset,
+        // keep Light -> Light and Dark -> Dark instead of letting Dark overwrite Light.
         iTermColorDictionary *colorDict = [settings iterm_presetColorWithName:colorName];
-        for (NSString *suffix in suffixesToSet) {
+        NSArray<NSString *> *effectiveSuffixes =
+            (colorNameSuffix.length > 0 && [suffixesToSet containsObject:colorNameSuffix] && suffixesToSet.count > 1)
+            ? @[ colorNameSuffix ]
+            : suffixesToSet;
+        for (NSString *suffix in effectiveSuffixes) {
             NSString *key = [baseColorName stringByAppendingString:suffix];
             if (colorDict) {
                 newDict[key] = colorDict;

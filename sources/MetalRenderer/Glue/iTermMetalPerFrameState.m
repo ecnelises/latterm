@@ -148,7 +148,6 @@ typedef struct {
     NSArray<iTermHighlightedRow *> *_highlightedRows;
     NSTimeInterval _startTime;
     NSEdgeInsets _extraMargins;
-    BOOL _haveOffscreenCommandLine;
     NSArray<iTermKittyImageDraw *> *_kittyImageDraws;
 
     VT100GridRange _linesToSuppressDrawing;
@@ -243,7 +242,6 @@ typedef struct {
     [self loadIndicatorsFromTextView:textView drawingHelper:drawingHelper];
     [self loadHighlightedRowsFromTextView:textView];
     [self loadAnnotationRangesFromTextView:textView];
-    [self loadOffscreenCommandLine:textView screen:screen drawingHelper:drawingHelper];
     [self loadImagesFromTextView:textView];
 }
 
@@ -501,10 +499,6 @@ typedef struct {
     _highlightedRows = [textView.highlightedRows copy];
 }
 
-- (BOOL)haveOffscreenCommandLine {
-    return _haveOffscreenCommandLine;
-}
-
 - (iTermCharacterSourceDescriptor *)characterSourceDescriptorForASCIIWithGlyphSize:(CGSize)glyphSize
                                                                        asciiOffset:(CGSize)asciiOffset {
     return [iTermCharacterSourceDescriptor characterSourceDescriptorWithFontTable:_configuration->_fontTable
@@ -548,22 +542,6 @@ typedef struct {
     return _configuration->_scale;
 }
 
-- (vector_float4)offscreenCommandLineOutlineColor {
-    const float a = (float)_configuration->_offscreenCommandLineOutlineColor.alphaComponent;
-    return simd_make_float4((float)_configuration->_offscreenCommandLineOutlineColor.redComponent * a,
-                            (float)_configuration->_offscreenCommandLineOutlineColor.greenComponent * a,
-                            (float)_configuration->_offscreenCommandLineOutlineColor.blueComponent * a,
-                            a);
-}
-
-- (vector_float4)offscreenCommandLineBackgroundColor {
-    const float a = (float)_configuration->_offscreenCommandLineBackgroundColor.alphaComponent;
-    return simd_make_float4((float)_configuration->_offscreenCommandLineBackgroundColor.redComponent * a,
-                            (float)_configuration->_offscreenCommandLineBackgroundColor.greenComponent * a,
-                            (float)_configuration->_offscreenCommandLineBackgroundColor.blueComponent * a,
-                            a);
-}
-
 - (VT100GridRange)linesToSuppressDrawing {
     return _linesToSuppressDrawing;
 }
@@ -588,30 +566,6 @@ typedef struct {
         }
         return dict;
     }];
-}
-
-// Replace the first entry in _rows with the offscren command line if we are showing one.
-- (void)loadOffscreenCommandLine:(PTYTextView *)textView
-                          screen:(VT100Screen *)screen 
-                   drawingHelper:(iTermTextDrawingHelper *)drawingHelper {
-    _haveOffscreenCommandLine = drawingHelper.offscreenCommandLine != nil;
-    if (_haveOffscreenCommandLine) {
-        // The offscreen command line replaces row 0's content but not its content
-        // identity, so that identity no longer describes what will be drawn. Mark
-        // the row uncacheable so the per-row cache never serves or stores it.
-        _rows[0]->_contentIdentity.generation = iTermRowContentGenerationUncacheable;
-        _rows[0]->_screenCharLine = drawingHelper.offscreenCommandLine.characters;
-        _rows[0]->_selectedIndexSet = [[NSIndexSet alloc] init];
-        _rows[0]->_matches = nil;
-        _rows[0]->_date = drawingHelper.offscreenCommandLine.date;
-        const long long totalScrollbackOverflow = [screen totalScrollbackOverflow];
-        const int i = drawingHelper.offscreenCommandLine.absoluteLineNumber - totalScrollbackOverflow;
-        if (i < 0) {
-            _rows[0]->_eaIndex = nil;
-        } else {
-            _rows[0]->_eaIndex = [[screen externalAttributeIndexForLine:i] copy];
-        }
-    }
 }
 
 - (void)loadIndicatorsFromTextView:(PTYTextView *)textView 

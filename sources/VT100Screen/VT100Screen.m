@@ -847,56 +847,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
     return !runningCommand;
 }
 
-- (iTermOffscreenCommandLine *)offscreenCommandLineBefore:(int)line {
-    DLog(@"offscreenCommandLineBefore:%@ numberOfScrollbackLines=%@ terminalSoftAlternateScreenMode=%@",
-         @(line), @(_state.numberOfScrollbackLines), @(_state.terminalSoftAlternateScreenMode));
-    if (line >= _state.numberOfScrollbackLines && _state.terminalSoftAlternateScreenMode) {
-        return nil;
-    }
-    id<VT100ScreenMarkReading> mark = [self screenMarkAtOrBeforeAbsLine:line + _state.totalScrollbackOverflow];
-    DLog(@"mark=%@ hasCode=%@", mark, @(mark.hasCode));
-    if (!mark) {
-        return nil;
-    }
-    if (!mark.hasCode && ![self.delegate screenOffscreenCommandLineShouldBeVisibleForCurrentCommand]) {
-        return nil;
-    }
-    const long long absLine = mark.commandRange.start.y;
-    DLog(@"absLine=%@ totalScrollbackOverflow=%@ numberOfScrollbackLines=%@",
-         @(absLine), @(_state.totalScrollbackOverflow), @(_state.numberOfScrollbackLines));
-    if (absLine >= _state.totalScrollbackOverflow + _state.numberOfScrollbackLines) {
-        return nil;
-    }
-    if (absLine < _state.totalScrollbackOverflow) {
-        return nil;
-    }
-    if (absLine - _state.totalScrollbackOverflow == line) {
-        return nil;
-    }
-    const VT100GridCoordRange range = [self rangeOfOutputForCommandMark:mark];
-    DLog(@"range=%@", VT100GridCoordRangeDescription(range));
-    if (VT100GridCoordRangeHeight(range) <= 3) {
-        // The UI will cover up the command output so it's counterproductive to show it.
-        return nil;
-    }
-    const int commandLineNumber = absLine - _state.totalScrollbackOverflow;
-    ScreenCharArray *sca = [_state screenCharArrayForLine:commandLineNumber];
-    if (sca.lengthExcludingTrailingWhitespaceAndNulls == 0) {
-        DLog(@"Empty offscreen command line at absY=%@", @(commandLineNumber));
-        return nil;
-    }
-    NSDate *date = nil;
-    const NSTimeInterval timestamp = [_state metadataOnLine:commandLineNumber].timestamp;
-    if (timestamp) {
-        date = [NSDate dateWithTimeIntervalSinceReferenceDate:timestamp];
-    }
-    DLog(@"commandLineNumber=%@ sca=%@ date=%@", @(commandLineNumber), sca, date);
-    return [[[iTermOffscreenCommandLine alloc] initWithCharacters:sca
-                                               absoluteLineNumber:absLine
-                                                             date:date
-                                                             mark:mark] autorelease];
-}
-
 - (NSArray<iTermTerminalButtonPlace *> *)buttonsInRange:(VT100GridRange)range {
     return [_state buttonsInRange:range];
 }

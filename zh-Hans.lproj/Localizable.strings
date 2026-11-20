@@ -331,8 +331,6 @@
 "English (US) UTF-8" = "英语（美国）UTF-8";
 "Insert newline before start of command prompt if needed" = "必要时在命令提示符前插入换行";
 "Click on a path in a shell prompt to open Navigator" = "点击提示符中的路径打开导航器";
-"Show offscreen command line at top of session" = "在会话顶部显示已滚出视野的命令行";
-"…even for the currently running command" = "…包括正在运行的命令";
 "Filename:" = "文件名：";
 "Enable automatic session logging" = "自动记录会话日志";
 "Raw data" = "原始数据";
@@ -2596,3 +2594,15 @@
 "Replace all pointer bindings with the default set?" = "要使用默认配置替换当前所有鼠标与手势绑定吗？";
 "Restore Defaults" = "恢复默认";
 "Restore Default Bindings" = "恢复默认绑定";
+
+/* Color preset mode selection and menu actions. */
+"Save As…" = "存储为…";
+"Delete Preset…" = "删除预设…";
+"Visit Online Gallery" = "访问在线配色库";
+"Update Which Modes?" = "更新哪些外观模式？";
+"This preset has colors for both light mode and dark mode." = "此配色预设同时包含浅色模式与深色模式的颜色。";
+"This preset does not have separate colors for light mode and dark mode." = "此配色预设未分别提供浅色模式与深色模式的颜色。";
+"Update Both Modes" = "同时更新两种模式";
+"Update Light Mode Only" = "仅更新浅色模式";
+"Update Dark Mode Only" = "仅更新深色模式";
+"Your current theme overrides the system light and dark mode setting, so color switching will not occur. You can change it in Settings > Appearance > General > Theme." = "当前主题覆盖了系统的浅色与深色外观设置，因此颜色不会随系统外观自动切换。可在“设置 > 外观 > 通用 > 主题”中修改。";

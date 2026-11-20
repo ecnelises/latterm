@@ -25,7 +25,6 @@
 @protocol iTermExternalAttributeIndexReading;
 @class iTermFindOnPageHelper;
 @class iTermKittyImageDraw;
-@class iTermOffscreenCommandLine;
 @class iTermRectArray;
 @class iTermSelection;
 @class iTermTextExtractor;
@@ -95,7 +94,6 @@ BOOL CheckFindMatchAtIndex(NSData *findMatches, int index);
 BOOL iTermScreenCharCanHostSpacingMark(const screen_char_t *base, BOOL useNativePowerlineGlyphs);
 NSColor *iTermTextDrawingHelperTextColorForMatch(NSColor *bgColor);
 
-extern const CGFloat iTermOffscreenCommandLineVerticalPadding;
 extern const int iTermTextDrawingHelperLineStyleMarkRightInsetCells;
 extern const CGFloat iTermCursorGuideAlphaThreshold;
 
@@ -375,10 +373,6 @@ extern const CGFloat iTermCursorGuideAlphaThreshold;
 
 @property (nonatomic, readonly) NSColor *blockCursorFillColorRespectingSmartSelection;
 @property (nonatomic) BOOL softAlternateScreenMode;
-@property (nonatomic, strong) iTermOffscreenCommandLine *offscreenCommandLine;
-@property (nonatomic, readonly) NSRect offscreenCommandLineFrame;
-@property (nonatomic, readonly) NSColor *offscreenCommandLineBackgroundColor;
-@property (nonatomic, readonly) NSColor *offscreenCommandLineOutlineColor;
 @property (nonatomic) BOOL useSelectedTextColor;
 @property (nonatomic, strong) iTermFontTable *fontTable;
 @property (nonatomic) VT100GridRange linesToSuppress;
@@ -400,10 +394,6 @@ extern const CGFloat iTermCursorGuideAlphaThreshold;
 
 + (NSColor *)colorForMarkType:(iTermMarkIndicatorType)type;
 + (NSColor *)colorForLineStyleMark:(iTermMarkIndicatorType)type backgroundColor:(NSColor *)bgColor;
-
-+ (NSRect)offscreenCommandLineFrameForVisibleRect:(NSRect)visibleRect
-                                         cellSize:(NSSize)cellSize
-                                         gridSize:(VT100GridSize)gridSize;
 
 // imageSize: size of image to draw
 // destinationRect: rect bounding the region of a scrollview's content view (i.e., very tall view) that's being drawn
@@ -448,7 +438,6 @@ extern const CGFloat iTermCursorGuideAlphaThreshold;
 
 // Draw timestamps.
 - (void)drawTimestampsWithVirtualOffset:(CGFloat)virtualOffset;
-- (void)drawOffscreenCommandLineWithVirtualOffset:(CGFloat)virtualOffset;
 
 - (VT100GridCoordRange)coordRangeForRect:(NSRect)rect;
 

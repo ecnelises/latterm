@@ -119,11 +119,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
     if (requireMargin && locationInWindow.x >= [iTermPreferences sideMargins]) {
         return nil;
     }
-    iTermOffscreenCommandLine *offscreenCommandLine =
-        [self.delegate contextMenu:self offscreenCommandLineForClickAt:event.locationInWindow];
-    if (offscreenCommandLine) {
-        return nil;
-    }
     const NSPoint clickPoint = [self.delegate contextMenu:self
                                                clickPoint:event
                                  allowRightMarginOverflow:NO];

@@ -91,7 +91,6 @@ final class iTermRecordingProfileSanitizerTests: XCTestCase {
             KEY_USE_ACTIVE_PANE_BORDER + COLORS_LIGHT_MODE_SUFFIX: true,
             KEY_ANIMATE_MOVEMENT: true,
             KEY_TIMESTAMPS_VISIBLE: true,
-            KEY_SHOW_OFFSCREEN_COMMANDLINE: false,
             KEY_UNLIMITED_SCROLLBACK: true,
             KEY_REDUCE_FLICKER: true,
         ]

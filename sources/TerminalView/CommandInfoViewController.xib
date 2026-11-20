@@ -14,7 +14,6 @@
                 <outlet property="copyDirectory" destination="2qj-sU-AUO" id="lEM-9c-pvc"/>
                 <outlet property="copyOutput" destination="w1e-QE-s74" id="PfS-yR-gUB"/>
                 <outlet property="directory" destination="USn-lU-ZIc" id="1Bf-xv-ac1"/>
-                <outlet property="disableShowingOffscreenCommand" destination="pQZ-rQ-rSV" id="kVZ-vA-dcG"/>
                 <outlet property="output" destination="eKH-d2-hAv" id="aF0-Td-x6S"/>
                 <outlet property="progressIndicator" destination="rX2-2G-4s3" id="mDd-OJ-QGB"/>
                 <outlet property="proxyIcon" destination="lO8-vd-LCm" id="f9G-Pb-nav"/>
@@ -378,7 +377,7 @@
                             </customSpacing>
                         </stackView>
                         <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aod-ki-dJM">
-                            <rect key="frame" x="1408" y="0.0" width="339" height="20"/>
+                            <rect key="frame" x="1533" y="0.0" width="88" height="20"/>
                             <subviews>
                                 <stackView distribution="fill" orientation="horizontal" alignment="top" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" ambiguous="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Iqu-R7-45G" userLabel="Started At">
                                     <rect key="frame" x="0.0" y="0.0" width="88" height="19"/>
@@ -399,26 +398,11 @@
                                         <real value="3.4028234663852886e+38"/>
                                     </customSpacing>
                                 </stackView>
-                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="pQZ-rQ-rSV">
-                                    <rect key="frame" x="89" y="-7" width="257" height="32"/>
-                                    <buttonCell key="cell" type="push" title="Disable showing offscreen command" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="YSm-Mh-1SD">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
-                                    </buttonCell>
-                                    <connections>
-                                        <action selector="disableOffscrenCommandLine:" target="-2" id="h79-MX-ElG"/>
-                                    </connections>
-                                </button>
                             </subviews>
-                            <constraints>
-                                <constraint firstItem="pQZ-rQ-rSV" firstAttribute="firstBaseline" secondItem="UNn-LG-yVR" secondAttribute="firstBaseline" id="8ml-hr-6xv"/>
-                            </constraints>
                             <visibilityPriorities>
-                                <integer value="1000"/>
                                 <integer value="1000"/>
                             </visibilityPriorities>
                             <customSpacing>
-                                <real value="3.4028234663852886e+38"/>
                                 <real value="3.4028234663852886e+38"/>
                             </customSpacing>
                         </stackView>

@@ -10,7 +10,6 @@ using namespace metal;
 
 #import "iTermShaderTypes.h"
 
-// Matches function in iTermOffscreenCommandLineBackgroundRenderer.m
 static float4 iTermBlendColors(float4 src, float4 dst) {
     float4 out;
     out.w = src.w + dst.w * (1 - src.w);

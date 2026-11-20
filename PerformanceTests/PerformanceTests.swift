@@ -305,7 +305,6 @@ class FakeSession: NSObject, VT100ScreenDelegate {
     func screenExecDidFail() {}
     func screenSetProfileProperties(_ dict: [AnyHashable : Any]) {}
     func triggerSessionSetBufferInput(_ shouldBuffer: Bool) {}
-    func screenOffscreenCommandLineShouldBeVisibleForCurrentCommand() -> Bool { false }
     func screenUpdateBlock(_ blockID: String, action: iTermUpdateBlockAction) {}
     func screenPollLocalDirectoryOnly() {}
 }

@@ -53,7 +53,6 @@ typedef NS_ENUM(int, iTermMetalFrameDataStat) {
     iTermMetalFrameDataStatPqCreateCopyBackgroundTS,
     iTermMetalFrameDataStatPqCreateMarkTS,
     iTermMetalFrameDataStatPqCreateCursorTS,
-    iTermMetalFrameDataStatPqCreateOffscreenCommandLineTS,
     iTermMetalFrameDataStatPqCreateMarginTS,
     iTermMetalFrameDataStatPqCreateBlockTS,
     iTermMetalFrameDataStatPqCreateUnderlineTS,
@@ -83,10 +82,6 @@ typedef NS_ENUM(int, iTermMetalFrameDataStat) {
     iTermMetalFrameDataStatPqEnqueueDrawUnderlineComposite,
     iTermMetalFrameDataStatPqEnqueueDrawRectangles,
     iTermMetalFrameDataStatPqEnqueueDrawCursorGuide,
-    iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineBgPre,
-    iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineBg,
-    iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineBgColors,
-    iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineFg,
     iTermMetalFrameDataStatPqEnqueueDrawHighlightRow,
     iTermMetalFrameDataStatPqEnqueueDrawImage,
     iTermMetalFrameDataStatPqEnqueueDrawButtons,
@@ -178,8 +173,6 @@ extern void iTermMetalFrameDataStatsBundleAdd(iTermPreciseTimerStats *dest, iTer
 @property (nonatomic) BOOL hasUnderlines;
 @property (nonatomic, strong, nullable) NSMutableData *underlineSpanData;  // C array of iTermMetalUnderlineSpan
 @property (nonatomic, strong, nullable) NSMutableData *strikethroughSpanData;  // C array of iTermMetalUnderlineSpan
-@property (nonatomic, strong, nullable) NSMutableData *offscreenUnderlineSpanData;  // offscreen command line
-@property (nonatomic, strong, nullable) NSMutableData *offscreenStrikethroughSpanData;  // offscreen command line
 
 // Offscreen textures for multi-pass underline compositing.
 // Created only when hasUnderlines && useMultiPassUnderlineRenderer.

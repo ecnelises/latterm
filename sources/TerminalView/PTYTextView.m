@@ -997,36 +997,12 @@ static CGFloat iTermQuantizeCharacterWidth(CGFloat width, CGFloat scale) {
     return currentlyVisibleRange;
 }
 
-- (NSRange)visibleAbsoluteRangeIncludingOffscreenCommandLineIfVisible:(BOOL)includeOffscreenCommandLine {
+- (NSRange)visibleAbsoluteRange {
     const NSRange relativeRange = [self visibleRelativeRange];
     if (relativeRange.location == NSNotFound) {
         return NSMakeRange(NSNotFound, 0);
     }
-    NSRange range = relativeRange;
-    range.location += _dataSource.totalScrollbackOverflow;
-    if (includeOffscreenCommandLine) {
-        return range;
-    }
-    const int topBottomMargin = [iTermPreferences topBottomMargins];
-    if (![_delegate textViewShouldShowOffscreenCommandLineAt:relativeRange.location]) {
-        return range;
-    }
-    if (self.enclosingScrollView.contentView.bounds.origin.y <= topBottomMargin) {
-        return range;
-    }
-    iTermOffscreenCommandLine *offscreenCommandLine = [self.dataSource offscreenCommandLineBefore:range.location - _dataSource.totalScrollbackOverflow];
-    if (!offscreenCommandLine) {
-        return range;
-    }
-    const NSRect visibleRect = [self adjustedDocumentVisibleRectIncludingTopMargin:NO];
-    const NSRect frame = [iTermTextDrawingHelper offscreenCommandLineFrameForVisibleRect:visibleRect
-                                                                                cellSize:NSMakeSize(_charWidth, _lineHeight)
-                                                                                gridSize:VT100GridSizeMake(_dataSource.width, _dataSource.height)];
-    const int numLines = ceil(frame.size.height / _lineHeight);
-    if (range.length <= numLines) {
-        return NSMakeRange(range.location, 0);
-    }
-    return NSMakeRange(range.location + numLines, range.length - numLines);
+    return NSMakeRange(relativeRange.location + _dataSource.totalScrollbackOverflow, relativeRange.length);
 }
 
 - (void)scrollLineNumberRangeIntoView:(VT100GridRange)range {
@@ -1784,16 +1760,9 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
         const NSRect indicatorsRect = NSRectSubtractingVirtualOffset(_drawingHelper.indicatorFrame, MAX(0, virtualOffset));
 
-        if (!_drawingHelper.offscreenCommandLine) {
-            // Draw indicators under timestamps since they take precedence.
-            [_indicatorsHelper drawInFrame:indicatorsRect];
-        }
+        // Draw indicators under timestamps since they take precedence.
+        [_indicatorsHelper drawInFrame:indicatorsRect];
         [_drawingHelper drawTimestampsWithVirtualOffset:virtualOffset];
-        [_drawingHelper drawOffscreenCommandLineWithVirtualOffset:virtualOffset];
-        if (_drawingHelper.offscreenCommandLine) {
-            // Draw indicators over offscreen command line so it isn't completely obscured.
-            [_indicatorsHelper drawInFrame:indicatorsRect];
-        }
 
         // Not sure why this is needed, but for some reason this view draws over its subviews.
         // Don't do this during screenshot capture for animation - it causes unnecessary redraws.
@@ -2110,7 +2079,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         helper.panelReservation = 0;
         helper.highlightedBlockLineRange = NSMakeRange(NSNotFound, 0);
         helper.timestampBaseline = 0;
-        helper.offscreenCommandLine = nil;
         helper.showDropTargets = NO;
         helper.dropLine = -1;
         helper.highlightCursorLine = NO;
@@ -2170,15 +2138,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
     [_drawingHelper updateCachedMetrics];
     [self updateTooltipsForButtons:[_drawingHelper updateButtonFrames]];
-
-    const VT100GridRange range = [self rangeOfVisibleLines];
-    const int topBottomMargin = [iTermPreferences topBottomMargins];
-    if ([_delegate textViewShouldShowOffscreenCommandLineAt:range.location] &&
-        self.enclosingScrollView.contentView.bounds.origin.y > topBottomMargin) {
-        _drawingHelper.offscreenCommandLine = [self.dataSource offscreenCommandLineBefore:range.location];
-    } else {
-        _drawingHelper.offscreenCommandLine = nil;
-    }
 
     CGFloat rightMargin = 0;
     if (self.showTimestamps) {
@@ -2414,14 +2373,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 #pragma mark - Geometry
-
-- (NSRect)offscreenCommandLineFrameForView:(NSView *)view {
-    NSRect base = [iTermTextDrawingHelper offscreenCommandLineFrameForVisibleRect:self.enclosingScrollView.documentVisibleRect
-                                                                         cellSize:NSMakeSize(self.charWidth, self.lineHeight)
-                                                                         gridSize:VT100GridSizeMake(self.dataSource.width,
-                                                                                                    self.dataSource.height)];
-    return [self convertRect:base toView:view];
-}
 
 - (NSRect)scrollViewContentSize {
     NSRect r = NSMakeRect(0, 0, 0, 0);
@@ -4753,13 +4704,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (BOOL)showCommandInfoForEvent:(NSEvent *)event {
-    if (event.buttonNumber == 1) {
-        iTermOffscreenCommandLine *offscreenCommandLine = [self offscreenCommandLineForClickAt:event.locationInWindow];
-        if (offscreenCommandLine) {
-            [self presentCommandInfoForOffscreenCommandLine:offscreenCommandLine event:event fromOffscreenCommandLine:YES];
-            return YES;
-        }
-    }
     id<VT100ScreenMarkReading> mark = [_contextMenuHelper markForClick:event requireMargin:event.buttonNumber == 1];
     return [self showCommandInfoForMark:mark at:event.locationInWindow];
 }
@@ -4772,8 +4716,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         [self presentCommandInfoForMark:mark
                      absoluteLineNumber:VT100GridAbsCoordFromCoord(coord, overflow).y
                                    date:date
-                                  point:locationInWindow
-               fromOffscreenCommandLine:NO];
+                                  point:locationInWindow];
         return YES;
     }
     return NO;
@@ -6477,7 +6420,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         const VT100GridAbsCoordRange markAbsCoordRange = [_delegate textViewCoordRangeForCommandAndOutputAtMark:mark];
         const NSRange markRange = NSMakeRange(markAbsCoordRange.start.y,
                                               markAbsCoordRange.end.y - markAbsCoordRange.start.y + 1);
-        const NSRange visibleRange = [self visibleAbsoluteRangeIncludingOffscreenCommandLineIfVisible:NO];
+        const NSRange visibleRange = [self visibleAbsoluteRange];
         if (visibleRange.location == NSNotFound) {
             return VT100GridAbsCoordMake(-1, -1);
         }
@@ -6635,8 +6578,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
             [weakSelf presentCommandInfoForMark:weakMark
                              absoluteLineNumber:absLine
                                            date:[weakMark startDate]
-                                          point:locationInWindow
-                       fromOffscreenCommandLine:NO];
+                                          point:locationInWindow];
         }
     });
 
@@ -7652,20 +7594,6 @@ static NSString *iTermStringFromRange(NSRange range) {
             DLog(@"mouseUp: show indicator message");
             [self showIndicatorMessage:message at:enclosingViewPoint];
             return VT100GridCoordMake(-1, -1);
-        }
-        if (_drawingHelper.offscreenCommandLine) {
-            DLog(@"mouseUp: reveal command line");
-            NSRect rect = [iTermTextDrawingHelper offscreenCommandLineFrameForVisibleRect:[self adjustedDocumentVisibleRect]
-                                                                                 cellSize:NSMakeSize(_charWidth, _lineHeight)
-                                                                                 gridSize:VT100GridSizeMake(_dataSource.width, _dataSource.height)];
-            const NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
-            if (NSPointInRect(viewPoint, rect)) {
-                DLog(@"Highlight %@", @(_drawingHelper.offscreenCommandLine.absoluteLineNumber));
-                [self highlightMarkOnLine:_drawingHelper.offscreenCommandLine.absoluteLineNumber - _dataSource.totalScrollbackOverflow
-                             hasErrorCode:NO];
-                [self scrollToAbsoluteOffset:_drawingHelper.offscreenCommandLine.absoluteLineNumber height:1];
-                return VT100GridCoordMake(-1, -1);
-            }
         }
         id<iTermFoldMarkReading> foldMark = [self foldMarkAtWindowCoord:event.locationInWindow];
         id<VT100ScreenMarkReading> commandMark = [self commandMarkAtWindowCoord:event.locationInWindow];

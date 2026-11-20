@@ -12,7 +12,6 @@ protocol CommandInfoViewControllerDelegate: AnyObject {
     @objc func commandInfoSend(_ string: String)
     @objc func commandInfoOpenInCompose(_ string: String)
     @objc func commandInfoSelectOutput(_ mark: VT100ScreenMarkReading)
-    @objc func commandInfoDisable()
 }
 
 @objc(iTermCommandInfoViewController)
@@ -34,7 +33,6 @@ class CommandInfoViewController: NSViewController {
     @IBOutlet weak var startedAt: NSTextField!
     @IBOutlet weak var stackView: NSStackView!
     @IBOutlet weak var copiedView: CopiedView!
-    @IBOutlet weak var disableShowingOffscreenCommand: NSButton!
 
     weak var delegate: CommandInfoViewControllerDelegate?
 
@@ -53,33 +51,7 @@ class CommandInfoViewController: NSViewController {
     private var runtimeConstraint: NSLayoutConstraint?
     private var _mark: VT100ScreenMarkReading
 
-    @objc(presentOffscreenCommandLine:directory:remoteHost:outputSize:outputLines:outputPromise:outputProgress:inView:fromOffscreenCommandLine:at:delegate:)
-    static func present(offscreenCommandLine: iTermOffscreenCommandLine,
-                        directory: String?,
-                        remoteHost: VT100RemoteHostReading?,
-                        outputSize: Int,
-                        outputLines: Int,
-                        outputPromise: iTermRenegablePromise<NSString>,
-                        outputProgress: Progress,
-                        inView view: NSView,
-                        fromOffscreenCommandLine: Bool,
-                        at p: NSPoint,
-                        delegate: CommandInfoViewControllerDelegate?) {
-        present(mark: offscreenCommandLine.mark,
-                date: offscreenCommandLine.date,
-                directory: directory,
-                remoteHost: remoteHost,
-                outputSize: outputSize,
-                outputLines: outputLines,
-                outputPromise: outputPromise,
-                outputProgress: outputProgress,
-                inView: view,
-                fromOffscreenCommandLine: fromOffscreenCommandLine,
-                at: p,
-                delegate: delegate)
-    }
-
-    @objc(presentMark:date:directory:remoteHost:outputSize:outputLines:outputPromise:outputProgress:inView:fromOffscreenCommandLine:at:delegate:)
+    @objc(presentMark:date:directory:remoteHost:outputSize:outputLines:outputPromise:outputProgress:inView:at:delegate:)
     static func present(mark: VT100ScreenMarkReading,
                         date: Date?,
                         directory: String?,
@@ -89,7 +61,6 @@ class CommandInfoViewController: NSViewController {
                         outputPromise: iTermRenegablePromise<NSString>,
                         outputProgress: Progress,
                         inView view: NSView,
-                        fromOffscreenCommandLine: Bool,
                         at p: NSPoint,
                         delegate: CommandInfoViewControllerDelegate?) {
         let mark = mark
@@ -126,9 +97,6 @@ class CommandInfoViewController: NSViewController {
             startDate: date)
         viewController.delegate = delegate
         viewController.loadView()
-        if !fromOffscreenCommandLine {
-            viewController.removeDisableButton()
-        }
         viewController.sizeToFit()
         let popover = NSPopover()
         viewController.enclosingPopover = popover
@@ -173,10 +141,6 @@ class CommandInfoViewController: NSViewController {
     deinit {
         _outputPromise.renege()
         timer?.invalidate()
-    }
-
-    private func removeDisableButton() {
-        disableShowingOffscreenCommand.removeFromSuperview()
     }
 
     private func timerDidFire() {
@@ -263,6 +227,7 @@ class CommandInfoViewController: NSViewController {
         if let _startDate {
             startedAt.stringValue = "Started at " + formattedDate(_startDate)
         } else {
+            startedAtStackView.superview?.isHidden = true
             startedAtStackView.isHidden = true
             stackView.removeArrangedSubview(startedAtStackView)
             startedAtStackView.removeFromSuperview()
@@ -303,10 +268,6 @@ class CommandInfoViewController: NSViewController {
         return xs.max()!
     }
 
-    @IBAction func disableOffscrenCommandLine(_ sender: Any) {
-        enclosingPopover?.close()
-        delegate?.commandInfoDisable()
-    }
     @IBAction func selectOutput(_ sender: Any) {
         delegate?.commandInfoSelectOutput(_mark)
     }
