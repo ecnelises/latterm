@@ -11,7 +11,6 @@ SUITE ?= $(notdir $(CURDIR))-Development
 VERSION = $(shell cat version.txt)
 NAME=$(shell echo $(VERSION) | sed -e "s/\\./_/g")
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
-CMAKE ?= $(HOMEBREW_PREFIX)/bin/cmake
 PKG_CONFIG ?= $(HOMEBREW_PREFIX)/bin/pkg-config
 DEPLOYMENT_TARGET=15.0
 XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme iTerm2
@@ -44,7 +43,6 @@ endif
 # Latterm targets Apple Silicon only.
 TARGET_ARCH := arm64
 ARCH_FLAGS = ARCHS="$(TARGET_ARCH)" ONLY_ACTIVE_ARCH=YES
-CMAKE_ARCHS = $(TARGET_ARCH)
 
 .PHONY: clean all backup-old-iterm restart setup dangerous-setup _setup-main help doctor
 
@@ -175,10 +173,8 @@ _setup-main:
 		sudo PATH="$(ORIG_PATH)" xcodebuild -license accept 2>/dev/null || true; \
 	fi
 	@test -f plists/iTerm2.plist || cp plists/dev-iTerm2.plist plists/iTerm2.plist
-	@PATH="$(ORIG_PATH)" brew list cmake >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install cmake
 	@PATH="$(ORIG_PATH)" brew list pkg-config >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install pkg-config
 	@PATH="$(ORIG_PATH)" brew list automake >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install automake
-	@PATH="$(ORIG_PATH)" command -v perl >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install perl
 	@if ! test -x "$(HOMEBREW_PREFIX)/bin/python3"; then \
 		PATH="$(ORIG_PATH)" brew install python3; \
 		if ! PATH="$(ORIG_PATH)" brew link python@3 2>/dev/null; then \
@@ -218,10 +214,8 @@ doctor:
 	@printf "  %-18s" "Xcode:"; (xcodebuild -version 2>/dev/null | tr '\n' ' ' && echo) || echo "NOT FOUND"
 	@printf "  %-18s" "xcode-select:"; (xcode-select -p 2>/dev/null) || echo "NOT FOUND"
 	@printf "  %-18s" "xcodes:"; (PATH="$(ORIG_PATH)" xcodes version 2>/dev/null) || echo "not installed"
-	@printf "  %-18s" "cmake:"; ($(CMAKE) --version 2>/dev/null | head -1) || echo "NOT FOUND"
 	@printf "  %-18s" "pkg-config:"; ($(PKG_CONFIG) --version 2>/dev/null) || echo "NOT FOUND"
 	@printf "  %-18s" "automake:"; (PATH="$(ORIG_PATH)" automake --version 2>/dev/null | grep -m1 .) || echo "NOT FOUND"
-	@printf "  %-18s" "perl:"; (PATH="$(ORIG_PATH)" perl -e 'print $$]."\n"' 2>/dev/null) || echo "NOT FOUND"
 	@printf "  %-18s" "python3 (brew):"; ver=$$($(HOMEBREW_PREFIX)/bin/python3 --version 2>/dev/null); \
 		if [ -z "$$ver" ]; then echo "NOT FOUND — run make setup"; \
 		elif echo "$$ver" | grep -q "^Python 3"; then echo "$$ver"; \
@@ -295,9 +289,7 @@ clean:
 	rm -rf submodules/*/build
 	rm -rf submodules/*/build-*
 	rm -rf submodules/*/build_*
-	rm -rf submodules/libssh2/libssh2.a
 	rm -f *~
-	git -C submodules/NMSSH/ checkout NMSSH-OSX/Libraries/lib/
 	rm -rf ThirdParty && git checkout ThirdParty
 	cd submodules/libsixel && make distclean || true
 	git checkout last-xcode-version
@@ -327,39 +319,9 @@ libsixel: force
 	cp ThirdParty/libsixel-arm/lib/libsixel.a ThirdParty/libsixel/lib/libsixel.a
 	cp ThirdParty/libsixel-arm/include/sixel.h ThirdParty/libsixel/include/sixel.h
 
-openssl: force
-	echo Begin building configure-armopenssl
-	cd submodules/openssl && make clean && make distclean || echo make failed
-	cd submodules/openssl && ./Configure darwin64-arm64-cc no-shared -fPIC -mmacosx-version-min=$(DEPLOYMENT_TARGET)
-	echo Begin building armopenssl
-	cd submodules/openssl && $(MAKE)
-	rm -rf submodules/openssl/build-arm
-	mkdir submodules/openssl/build-arm
-	cp submodules/openssl/*.a submodules/openssl/build-arm
-	cd submodules/openssl; rm -rf build-fat; mkdir -p build-fat/lib; cp -R include/ build-fat/include/
-	cp submodules/openssl/build-arm/*.a submodules/openssl/build-fat/lib
-	cp submodules/openssl/build-arm/libcrypto.a submodules/openssl/build-arm/libssl.a submodules/NMSSH/NMSSH-OSX/Libraries/lib
-
-libssh2: force openssl
-	echo Begin building armlibssh2
-	mkdir -p submodules/libssh2/build_arm64
-	# Add this flag to enable tracing:
-	# -DCMAKE_C_FLAGS="-DLIBSSH2DEBUG"
-	cd submodules/libssh2/build_arm64 && $(CMAKE) -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -DOPENSSL_INCLUDE_DIR=${PWD}/submodules/openssl/include -DOPENSSL_ROOT_DIR=${PWD}/submodules/openssl -DBUILD_EXAMPLES=NO -DBUILD_TESTING=NO -DCMAKE_OSX_ARCHITECTURES=arm64 -DCRYPTO_BACKEND=OpenSSL -DCMAKE_OSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) .. && $(MAKE) libssh2_static
-	cp submodules/libssh2/build_arm64/src/libssh2.a submodules/NMSSH/NMSSH-OSX/Libraries/lib/libssh2.a
-
 CoreParse: force
 	rm -rf ThirdParty/CoreParse.framework
 	cd ThirdParty/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=.. MACOSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) $(SIGNING_FLAGS) $(ARCH_FLAGS)
-
-NMSSH: force libssh2
-	echo Begin building NMSSH
-	rm -rf ThirdParty/NMSSH.framework
-	cp submodules/libssh2/include/* submodules/NMSSH/NMSSH-OSX/Libraries/include/libssh2
-	cd submodules/NMSSH && xcodebuild -target NMSSH -project NMSSH.xcodeproj -configuration Release CONFIGURATION_BUILD_DIR=../../ThirdParty MACOSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) $(SIGNING_FLAGS) $(ARCH_FLAGS)
-
-paranoid-NMSSH: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" NMSSH
 
 pwmadapters: force
 	cd pwmplugin/ && ./build.sh
@@ -379,9 +341,6 @@ paranoid-deps: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" deps
 	xcodebuild -version > last-xcode-version
 
-paranoid-libssh2: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libssh2
-
 paranoid-libsixel: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libsixel
 
@@ -389,7 +348,7 @@ paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force libsixel CoreParse NMSSH pwmadapters
+deps: force libsixel CoreParse pwmadapters
 
 # Regenerate NSCharacterSet+iTerm.m and iTermCharacterSets.m from latest Unicode data.
 # Run this when a new Unicode version is released.
@@ -402,10 +361,7 @@ DepsIfNeeded: force
 
 cleandeps: force
 	rm -rf ThirdParty/CoreParse/build
-	cd submodules/NMSSH && git restore .
 	cd submodules/libsixel && git clean -f -d .
-	cd submodules/libssh2 && git clean -f -d .
-	cd submodules/openssl && git clean -f -d .
 
 test: force
 	tools/run_tests.expect ModernTests

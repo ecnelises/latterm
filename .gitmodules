@@ -1,16 +1,4 @@
-[submodule "submodules/NMSSH"]
-	path = submodules/NMSSH
-	url = https://github.com/gnachman/NMSSH.git
-	ignore = dirty
 [submodule "submodules/libsixel"]
 	path = submodules/libsixel
 	url = https://github.com/saitoha/libsixel
-	ignore = dirty
-[submodule "submodules/openssl"]
-	path = submodules/openssl
-	url = https://github.com/gnachman/openssl
-	ignore = dirty
-[submodule "submodules/libssh2"]
-	path = submodules/libssh2
-	url = https://github.com/libssh2/libssh2
 	ignore = dirty
