@@ -261,6 +261,3 @@
 
 @end
 
-@implementation iTermOffscreenCommandLineBackgroundColorRenderer
-@end
-

@@ -96,10 +96,6 @@ NS_ASSUME_NONNULL_BEGIN
     iTermRectArray *_buttonsBackgroundRects;
     NSArray<iTermButtonPillInfo *> *_buttonPillInfos;
     BOOL _softAlternateScreenMode;
-
-    // Offscreen command line
-    NSColor *_offscreenCommandLineBackgroundColor;
-    NSColor *_offscreenCommandLineOutlineColor;
 };
 
 - (void)loadSettingsWithDrawingHelper:(iTermTextDrawingHelper *)drawingHelper

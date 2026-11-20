@@ -328,7 +328,6 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 // Show the non-text paste dialog for dropped files, same as Cmd+V with files on the pasteboard.
 - (void)textViewShowPasteOptionsForDroppedFiles:(NSArray<NSString *> *)filenames;
 - (void)textViewUpdateTrackingAreas;
-- (BOOL)textViewShouldShowOffscreenCommandLineAt:(int)location;
 - (BOOL)textViewShouldUseSelectedTextColor;
 - (void)textViewOpenComposer:(NSString *)string;
 - (BOOL)textViewIsAutoComposerOpen;
@@ -336,7 +335,6 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 - (CGFloat)textViewPointsOnBottomToSuppressDrawing;
 - (NSRect)textViewCursorFrameInScreenCoords;
 - (void)textViewDidReceiveSingleClick;
-- (void)textViewDisableOffscreenCommandLine;
 - (void)textViewSaveScrollPositionForMark:(id<VT100ScreenMarkReading>)mark withName:(NSString *)name;
 - (void)textViewRemoveBookmarkForMark:(id<VT100ScreenMarkReading>)mark;
 - (BOOL)textViewEnclosingTabHasMultipleSessions;
@@ -648,7 +646,6 @@ typedef void (^PTYTextViewDrawingHookBlock)(iTermTextDrawingHelper *);
    horizontalSpacing:(CGFloat)horizontalSpacing
      verticalSpacing:(CGFloat)verticalSpacing;
 - (NSRect)scrollViewContentSize;
-- (NSRect)offscreenCommandLineFrameForView:(NSView *)view;
 - (void)setAntiAlias:(BOOL)asciiAA nonAscii:(BOOL)nonAsciiAA;
 
 // Update the scroller color for light or dark backgrounds.

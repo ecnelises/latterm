@@ -525,10 +525,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
 #pragma mark - Context Menu
 
 - (NSMenu *)menuForEvent:(NSEvent *)event {
-    iTermOffscreenCommandLine *offscreenCommandLine = [self offscreenCommandLineForClickAt:event.locationInWindow];
-    if (offscreenCommandLine) {
-        return nil;
-    }
     if ([_contextMenuHelper markForClick:event requireMargin:YES]) {
         return nil;
     }
@@ -536,54 +532,13 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
     return [_contextMenuHelper menuForEvent:event];
 }
 
-#pragma mark - Offscreen Command Line
-
-- (iTermOffscreenCommandLine *)offscreenCommandLineForClickAt:(NSPoint)windowPoint {
-    iTermOffscreenCommandLine *offscreenCommandLine = self.drawingHelper.offscreenCommandLine;
-    if (offscreenCommandLine) {
-        NSRect rect =
-        [iTermTextDrawingHelper offscreenCommandLineFrameForVisibleRect:[self adjustedDocumentVisibleRect]
-                                                               cellSize:NSMakeSize(self.charWidth, self.lineHeight)
-                                                               gridSize:VT100GridSizeMake(self.dataSource.width,
-                                                                                          self.dataSource.height)];
-        const NSPoint viewPoint = [self convertPoint:windowPoint fromView:nil];
-        if (NSPointInRect(viewPoint, rect)) {
-            DLog(@"Cursor in OCL");
-            return offscreenCommandLine;
-        }
-        DLog(@"Cursor not in OCL at windowPoint %@, viewPoint %@", NSStringFromPoint(windowPoint), NSStringFromPoint(viewPoint));
-    }
-    return nil;
-}
-
-- (void)presentCommandInfoForOffscreenCommandLine:(iTermOffscreenCommandLine *)offscreenCommandLine
-                                            event:(NSEvent *)event
-                         fromOffscreenCommandLine:(BOOL)fromOffscreenCommandLine {
-    [self presentCommandInfoForMark:offscreenCommandLine.mark
-                 absoluteLineNumber:offscreenCommandLine.absoluteLineNumber
-                               date:offscreenCommandLine.date
-                              event:event
-           fromOffscreenCommandLine:fromOffscreenCommandLine];
-}
-
-- (void)presentCommandInfoForMark:(id<VT100ScreenMarkReading>)mark
-               absoluteLineNumber:(long long)absoluteLineNumber
-                             date:(NSDate *)date
-                            event:(NSEvent *)event 
-         fromOffscreenCommandLine:(BOOL)fromOffscreenCommandLine {
-    [self presentCommandInfoForMark:mark
-                 absoluteLineNumber:absoluteLineNumber
-                               date:date
-                              point:event.locationInWindow
-           fromOffscreenCommandLine:fromOffscreenCommandLine];
-}
+#pragma mark - Command Info
 
 // Point is in window coords
 - (void)presentCommandInfoForMark:(id<VT100ScreenMarkReading>)mark
                absoluteLineNumber:(long long)absoluteLineNumber
                              date:(NSDate *)date
-                            point:(NSPoint)windowPoint
-         fromOffscreenCommandLine:(BOOL)fromOffscreenCommandLine {
+                            point:(NSPoint)windowPoint {
     long long overflow = self.dataSource.totalScrollbackOverflow;
     const int line = absoluteLineNumber - overflow;
     const VT100GridRange lineRange = [self lineRangeForMark:mark];
@@ -602,7 +557,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
                                   outputPromise:outputPromise
                                  outputProgress:outputProgress
                                          inView:self
-                       fromOffscreenCommandLine:fromOffscreenCommandLine
                                              at:point
                                        delegate:self];
 }
@@ -724,8 +678,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
         // IBeamWithCircle affordance remains the fallback when no shape was
         // requested.
         changed = [self setCursor:self.delegate.textViewDefaultPointer ?: [iTermMouseCursor mouseCursorOfType:iTermMouseCursorTypeIBeamWithCircle]];
-    } else if ([self contextMenu:_contextMenuHelper offscreenCommandLineForClickAt:event.locationInWindow]) {
-        changed = [self setCursor:[NSCursor arrowCursor]];
     } else if ([self mouseIsOverButtonInEvent:event]) {
         DLog(@"Mouse is over a button");
         changed = [self setCursor:[NSCursor arrowCursor]];
@@ -1588,11 +1540,6 @@ allowRightMarginOverflow:(BOOL)allowRightMarginOverflow {
                                                                     allowEmpty:![iTermAdvancedSettingsModel disallowCopyEmptyString]];
     [promise wait];
     return [promise maybeValue] ?: @"";
-}
-
-- (iTermOffscreenCommandLine *)contextMenu:(iTermTextViewContextMenuHelper *)contextMenu
-            offscreenCommandLineForClickAt:(NSPoint)windowPoint {
-    return [self offscreenCommandLineForClickAt:windowPoint];
 }
 
 - (id<VT100ScreenMarkReading>)contextMenuCommandWithOutputAtLine:(int)line {
@@ -2627,8 +2574,7 @@ toggleAnimationOfImage:(id<iTermImageInfoReading>)imageInfo {
     [self presentCommandInfoForMark:mark
                  absoluteLineNumber:absRange.start.y
                                date:mark.startDate
-                              point:windowPoint
-           fromOffscreenCommandLine:NO];
+                              point:windowPoint];
 }
 
 - (void)contextMenu:(iTermTextViewContextMenuHelper *)contextMenu
@@ -3012,10 +2958,6 @@ toggleAnimationOfImage:(id<iTermImageInfoReading>)imageInfo {
 
 - (void)commandInfoSelectOutput:(id<VT100ScreenMarkReading>)mark {
     [_contextMenuHelper selectOutputOfCommandMark:mark];
-}
-
-- (void)commandInfoDisable {
-    [self.delegate textViewDisableOffscreenCommandLine];
 }
 
 #pragma mark - Arrangements

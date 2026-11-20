@@ -15,7 +15,6 @@
 @protocol iTermFoldMarkReading;
 @class iTermKittyImageDraw;
 @protocol iTermMark;
-@class iTermOffscreenCommandLine;
 @protocol iTermPathMarkReading;
 @class iTermRange;
 @class iTermRangeArray;
@@ -173,7 +172,6 @@
 - (int)lineNumberOfCursor;
 
 - (VT100GridCoordRange)coordRangeOfPorthole:(id<Porthole>)porthole;
-- (iTermOffscreenCommandLine *)offscreenCommandLineBefore:(int)line;
 - (NSInteger)numberOfCellsUsedInRange:(VT100GridRange)range;
 - (NSInteger)numberOfRawLinesInRange:(VT100GridRange)range;
 - (NSArray<iTermTerminalButtonPlace *> *)buttonsInRange:(VT100GridRange)range;

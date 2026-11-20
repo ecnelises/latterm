@@ -22,8 +22,5 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface iTermOffscreenCommandLineTextRenderer: iTermTextRenderer
-@end
-
 NS_ASSUME_NONNULL_END
 

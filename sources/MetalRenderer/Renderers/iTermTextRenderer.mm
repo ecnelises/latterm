@@ -386,6 +386,3 @@ static NSString *const VertexFunctionName(const BOOL &underlined,
 }
 
 @end
-
-@implementation iTermOffscreenCommandLineTextRenderer
-@end

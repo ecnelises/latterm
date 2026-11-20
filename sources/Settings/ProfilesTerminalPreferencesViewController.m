@@ -50,8 +50,6 @@
     IBOutlet NSButton *_changeLocale;
     IBOutlet NSButton *_forceCommandPromptToFirstColumn;
     IBOutlet NSButton *_promptPathClickOpensNavigator;
-    IBOutlet NSButton *_showOffscreenCommandLine;
-    IBOutlet NSButton *_showOffscreenCommandLineForCurrentCommand;
     IBOutlet NSButton *_shellIntegrationRequiredButton;
     IBOutlet NSButton *_allowCursorBlinkControlSequence;
 
@@ -105,8 +103,6 @@
 - (NSButton *)changeLocale { return _changeLocale; }
 - (NSTextField *)localeName { return _localeName; }
 - (NSButton *)forceCommandPromptToFirstColumn { return _forceCommandPromptToFirstColumn; }
-- (NSButton *)showOffscreenCommandLine { return _showOffscreenCommandLine; }
-- (NSButton *)showOffscreenCommandLineForCurrentCommand { return _showOffscreenCommandLineForCurrentCommand; }
 - (NSButton *)promptPathClickOpensNavigator { return _promptPathClickOpensNavigator; }
 - (NSButton *)shellIntegrationRequiredButton { return _shellIntegrationRequiredButton; }
 - (NSButton *)tmuxNewline { return _tmuxNewline; }
@@ -332,19 +328,6 @@
                     key:KEY_PROMPT_PATH_CLICK_OPENS_NAVIGATOR
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
-
-    [self defineControl:_showOffscreenCommandLine
-                    key:KEY_SHOW_OFFSCREEN_COMMANDLINE
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
-    info = [self defineControl:_showOffscreenCommandLineForCurrentCommand
-                    key:KEY_SHOW_OFFSCREEN_COMMANDLINE_FOR_CURRENT_COMMAND
-            relatedView:nil
-                   type:kPreferenceInfoTypeCheckbox];
-    [info addShouldBeEnabledDependencyOnSetting:KEY_SHOW_OFFSCREEN_COMMANDLINE controller:self];
-    info.shouldBeEnabled = ^BOOL{
-        return [weakSelf boolForKey:KEY_SHOW_OFFSCREEN_COMMANDLINE];
-    };
 
     [self defineControl:_tmuxNewline
                     key:KEY_TMUX_NEWLINE

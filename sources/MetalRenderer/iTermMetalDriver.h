@@ -97,9 +97,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) PTYFontInfo *timestampFontInfo;
 @property (nonatomic) NSTimeInterval timestampBaseline;
 @property (nonatomic, readonly) NSColorSpace *colorSpace;
-@property (nonatomic, readonly) BOOL haveOffscreenCommandLine;
-@property (nonatomic, readonly) vector_float4 offscreenCommandLineOutlineColor;
-@property (nonatomic, readonly) vector_float4 offscreenCommandLineBackgroundColor;
 @property (nonatomic, readonly) VT100GridRange linesToSuppressDrawing;
 @property (nonatomic, readonly) CGFloat pointsOnBottomToSuppressDrawing;
 @property (nonatomic, readonly) NSArray<iTermTerminalButton *> *terminalButtons;

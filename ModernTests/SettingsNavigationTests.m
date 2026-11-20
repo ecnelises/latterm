@@ -22,6 +22,8 @@
 #import "iTermProfilePreferences.h"
 #import "iTermProfilePreferencesBaseViewController.h"
 #import "iTermSnippetsEditingViewController.h"
+#import "iTermColorPresets.h"
+#import "ProfilesColorsPreferencesViewController.h"
 
 @interface NSView (ProfileWorkspaceTests)
 - (void)selectWorkspaceTask:(NSString *)identifier;
@@ -2333,6 +2335,79 @@
     } @finally {
         [sessionsWindow setFrame:origSessionFrame display:NO];
         [sessions close];
+    }
+}
+
+- (void)testColorPresetsDualModeUpdateAndNoPreviewRestoreRegression {
+    // 1. Built-in presets are cached in memory across calls.
+    iTermColorPresetDictionary *firstLoad = [iTermColorPresets builtInColorPresets];
+    iTermColorPresetDictionary *secondLoad = [iTermColorPresets builtInColorPresets];
+    XCTAssertNotNil(firstLoad);
+    XCTAssertGreaterThan(firstLoad.count, 0u);
+    XCTAssertEqual(firstLoad, secondLoad);
+
+    // Find a dual-mode built-in preset where Light and Dark backgrounds differ.
+    NSString *dualPresetName = nil;
+    for (NSString *name in firstLoad) {
+        NSDictionary *preset = firstLoad[name];
+        if (iTermColorPresetHasModes(preset) &&
+            ![preset[KEY_BACKGROUND_COLOR COLORS_LIGHT_MODE_SUFFIX]
+              isEqual:preset[KEY_BACKGROUND_COLOR COLORS_DARK_MODE_SUFFIX]]) {
+            dualPresetName = name;
+            break;
+        }
+    }
+    XCTAssertNotNil(dualPresetName);
+
+    ProfileModel *model = [ProfileModel sharedInstance];
+    NSString *tempGuid = [[NSUUID UUID] UUIDString];
+    NSDictionary *tempProfile = @{
+        KEY_GUID: tempGuid,
+        KEY_NAME: @"ColorPresetRegressionTemp",
+        KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE: @YES
+    };
+    [model addBookmark:tempProfile];
+    @try {
+        // 2. Updating both modes in a single batch preserves distinct Light and Dark colors.
+        const iTermColorPresetMode both = (iTermColorPresetModeLight | iTermColorPresetModeDark);
+        XCTAssertTrue([model addColorPresetNamed:dualPresetName
+                                       toProfile:[model bookmarkWithGuid:tempGuid]
+                                            from:both
+                                              to:both
+                                  updateUseModes:YES]);
+        Profile *updated = [model bookmarkWithGuid:tempGuid];
+        NSDictionary *expectedPreset = firstLoad[dualPresetName];
+        XCTAssertEqualObjects(updated[KEY_BACKGROUND_COLOR COLORS_LIGHT_MODE_SUFFIX],
+                              expectedPreset[KEY_BACKGROUND_COLOR COLORS_LIGHT_MODE_SUFFIX]);
+        XCTAssertEqualObjects(updated[KEY_BACKGROUND_COLOR COLORS_DARK_MODE_SUFFIX],
+                              expectedPreset[KEY_BACKGROUND_COLOR COLORS_DARK_MODE_SUFFIX]);
+        XCTAssertNotEqualObjects(updated[KEY_BACKGROUND_COLOR COLORS_LIGHT_MODE_SUFFIX],
+                                 updated[KEY_BACKGROUND_COLOR COLORS_DARK_MODE_SUFFIX]);
+
+        // 3. Opening and closing the presets menu without hover-previewing performs zero profile reloads.
+        PreferencePanel *panel = [PreferencePanel sharedInstance];
+        (void)panel.window;
+        ProfilePreferencesViewController *profilesVC = [panel valueForKey:@"_profilesViewController"];
+        ProfilesColorsPreferencesViewController *colorsVC = [profilesVC valueForKey:@"_colorsViewController"];
+        XCTAssertNotNil(colorsVC);
+        NSMenu *presetsMenu = [colorsVC valueForKey:@"_presetsMenu"];
+        __block NSInteger reloadCount = 0;
+        id token = [[NSNotificationCenter defaultCenter] addObserverForName:kReloadAllProfiles
+                                                                     object:nil
+                                                                      queue:nil
+                                                                 usingBlock:^(NSNotification *note) {
+            reloadCount += 1;
+        }];
+        @try {
+            [(id)colorsVC performSelector:@selector(popupButtonWillPopUp:) withObject:nil];
+            [(id<NSMenuDelegate>)colorsVC menuDidClose:presetsMenu];
+            XCTAssertEqual(reloadCount, 0);
+        } @finally {
+            [[NSNotificationCenter defaultCenter] removeObserver:token];
+            [panel close];
+        }
+    } @finally {
+        [model removeProfileWithGuid:tempGuid];
     }
 }
 

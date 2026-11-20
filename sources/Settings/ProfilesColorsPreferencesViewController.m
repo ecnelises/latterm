@@ -121,6 +121,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     IBOutlet iTermHueVisualizationView *_hueVisualization;
 
     NSDictionary<NSString *, id> *_savedColors;
+    BOOL _didPreviewPreset;
     NSTimer *_timer;
 }
 
@@ -424,12 +425,15 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
 }
 
 - (void)updateModeEnabled:(BOOL)useModes {
+    const BOOL wasHidden = _modeWarning.hidden;
     if (!useModes) {
         _mode.enabled = NO;
         _modeLabel.labelEnabled = NO;
         _modeWarning.hidden = YES;
         DLog(@"Do not copy");
-        [self.view it_invalidateProfileFormLayout];
+        if (wasHidden != _modeWarning.hidden) {
+            [self.view it_invalidateProfileFormLayout];
+        }
         return;
     }
     _mode.enabled = YES;
@@ -449,7 +453,9 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
             _modeWarning.hidden = NO;
             break;
     }
-    [self.view it_invalidateProfileFormLayout];
+    if (wasHidden != _modeWarning.hidden) {
+        [self.view it_invalidateProfileFormLayout];
+    }
 }
 
 - (void)copySharedColorsToModalColorsIfNeeded:(BOOL)useModes {
@@ -461,33 +467,57 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     // Copy the shared colors to the per-mode colors in user defaults if they do not already exist.
     RLog(@"-- begin copying colors --");
     Profile *profile = [self.delegate profilePreferencesCurrentProfile];
-    for (NSString *baseKey in [self keysForBulkCopy]) {
-        if ([baseKey isEqualToString:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE]) {
+    NSString *guid = profile[KEY_GUID];
+    ProfileModel *model = [self.delegate profilePreferencesCurrentModel];
+    if (!profile || !guid || !model) {
+        return;
+    }
+    NSMutableDictionary *updated = [profile mutableCopy];
+    BOOL changed = NO;
+    for (NSString *baseKey in [super keysForBulkCopy]) {
+        if ([baseKey isEqualToString:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE] ||
+            [baseKey isEqualToString:KEY_BINDINGS]) {
             DLog(@"Ignore %@", baseKey);
+            continue;
+        }
+        id newValue = [super objectForKey:baseKey];
+        if (!newValue) {
+            DLog(@"Have no value for %@", baseKey);
             continue;
         }
         for (NSString *suffix in @[ COLORS_LIGHT_MODE_SUFFIX, COLORS_DARK_MODE_SUFFIX ]) {
             NSString *key = [baseKey stringByAppendingString:suffix];
-            id newValue = [super objectForKey:baseKey];
-            if (!newValue) {
-                DLog(@"Have no value for %@", baseKey);
-                continue;
-            }
-            if (profile[key] != nil) {
+            if (updated[key] != nil) {
                 DLog(@"Already have a non-default value key %@", key);
                 continue;
             }
             DLog(@"Set %@ = %@ [baseKey=%@]", key, newValue, baseKey);
-            [super setObject:newValue forKey:key];
+            updated[key] = newValue;
+            changed = YES;
         }
+    }
+    if (changed) {
+        [model setBookmark:updated withGuid:guid];
     }
     RLog(@"-- finished copying colors --");
 }
 
 - (void)copyCurrentModeColorsToShared {
     RLog(@"-- begin copying colors to shared --");
+    Profile *profile = [self.delegate profilePreferencesCurrentProfile];
+    NSString *guid = profile[KEY_GUID];
+    ProfileModel *model = [self.delegate profilePreferencesCurrentModel];
+    if (!profile || !guid || !model) {
+        return;
+    }
+    NSMutableDictionary *updated = [profile mutableCopy];
+    BOOL changed = NO;
     NSString *suffix = _mode.selectedTag == 1 ? COLORS_DARK_MODE_SUFFIX : COLORS_LIGHT_MODE_SUFFIX;
-    for (NSString *baseKey in [self keysForBulkCopy]) {
+    for (NSString *baseKey in [super keysForBulkCopy]) {
+        if ([baseKey isEqualToString:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE] ||
+            [baseKey isEqualToString:KEY_BINDINGS]) {
+            continue;
+        }
         NSString *key = [baseKey stringByAppendingString:suffix];
         id newValue = [super objectForKey:key];
         if (!newValue) {
@@ -495,16 +525,22 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
             continue;
         }
         DLog(@"Set %@ = %@ [source key=%@]", baseKey, newValue, key);
-        [super setObject:newValue forKey:baseKey];
+        updated[baseKey] = newValue;
+        changed = YES;
+    }
+    if (changed) {
+        [model setBookmark:updated withGuid:guid];
     }
     RLog(@"-- finished copying colors to shared --");
 }
 
 - (void)maybeWarnAboutExcessiveContrast {
     const BOOL hidden = ([self floatForKey:KEY_MINIMUM_CONTRAST] < 0.97);
-    _bwWarning1.hidden = hidden;
-    _bwWarning2.hidden = hidden;
-    [self.view it_invalidateProfileFormLayout];
+    if (_bwWarning1.hidden != hidden || _bwWarning2.hidden != hidden) {
+        _bwWarning1.hidden = hidden;
+        _bwWarning2.hidden = hidden;
+        [self.view it_invalidateProfileFormLayout];
+    }
 }
 
 - (void)updateColorControlsEnabled {
@@ -626,11 +662,11 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
 
     [_presetsMenu addItem:[NSMenuItem separatorItem]];
 
-    [self addPresetItemWithTitle:@"Import…" action:@selector(importColorPreset:)];
-    [self addPresetItemWithTitle:@"Export…" action:@selector(exportColorPreset:)];
-    [self addPresetItemWithTitle:@"Save As…" action:@selector(saveColorPreset:)];
-    [self addPresetItemWithTitle:@"Delete Preset…" action:@selector(deleteColorPreset:)];
-    [self addPresetItemWithTitle:@"Visit Online Gallery" action:@selector(visitGallery:)];
+    [self addPresetItemWithTitle:NSLocalizedString(@"Import…", @"Color presets") action:@selector(importColorPreset:)];
+    [self addPresetItemWithTitle:NSLocalizedString(@"Export…", @"Color presets") action:@selector(exportColorPreset:)];
+    [self addPresetItemWithTitle:NSLocalizedString(@"Save As…", @"Color presets") action:@selector(saveColorPreset:)];
+    [self addPresetItemWithTitle:NSLocalizedString(@"Delete Preset…", @"Color presets") action:@selector(deleteColorPreset:)];
+    [self addPresetItemWithTitle:NSLocalizedString(@"Visit Online Gallery", @"Color presets") action:@selector(visitGallery:)];
     _presetsMenu.delegate = self;
 }
 
@@ -843,71 +879,30 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     }];
 }
 
-- (BOOL)shouldUpdateBothModesWhenLoadingPreset:(NSString *)presetName {
-    ProfileModel *model = [self.delegate profilePreferencesCurrentModel];
-    const BOOL presetHasModes = [model presetHasMultipleModes:presetName];
-    const BOOL modes = [self boolForKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE];
-    const BOOL currentModeIsDark = _mode.selectedTag == 1;
-    if (presetHasModes) {
-        if (!modes) {
-            return YES;
-        }
-        NSString *currentMode = currentModeIsDark ? @"Dark Mode" : @"Light Mode";
-        const iTermWarningSelection selection =
-        [iTermWarning showWarningWithTitle:@"This preset has colors for both light mode and dark mode."
-                                   actions:@[ @"Update Both Modes",
-                                              [NSString stringWithFormat:@"Update %@ Only", currentMode]]
-                             actionMapping:nil
-                                 accessory:nil
-                                identifier:@"NoSyncUpdateWhichModes_PresetHasModes"
-                               silenceable:kiTermWarningTypePersistent
-                                   heading:@"Update Which Modes?"
-                                    window:self.view.window];
-        return (selection == 0);
-    }
-    if (!modes) {
-        return NO;
-    }
-    NSString *currentMode = currentModeIsDark ? @"Dark Mode" : @"Light Mode";
-    const iTermWarningSelection selection =
-    [iTermWarning showWarningWithTitle:@"This preset does not have separate colors for light mode and dark mode."
-                               actions:@[ @"Update Both Modes",
-                                          [NSString stringWithFormat:@"Update %@ Only", currentMode]]
-                         actionMapping:nil
-                             accessory:nil
-                            identifier:@"NoSyncUpdateWhichModes_PresetLacksModes"
-                           silenceable:kiTermWarningTypePersistent
-                               heading:@"Update Which Modes?"
-                                window:self.view.window];
-    return (selection == 0);
-}
-
-- (void)loadColorPresetWithName:(NSString *)presetName prompt:(BOOL)prompt {
+- (void)applyColorPresetWithName:(NSString *)presetName updateBothModes:(BOOL)both {
     Profile *profile = [self.delegate profilePreferencesCurrentProfile];
     ProfileModel *model = [self.delegate profilePreferencesCurrentModel];
-    const BOOL currentModeIsDark = _mode.selectedTag == 1;
-    const BOOL both = prompt && [self shouldUpdateBothModesWhenLoadingPreset:presetName];
-
+    if (!profile || !model) {
+        return;
+    }
     if (both) {
+        const iTermColorPresetMode bothModes = (iTermColorPresetModeLight | iTermColorPresetModeDark);
         [model addColorPresetNamed:presetName
                          toProfile:profile
-                              from:iTermColorPresetModeLight
-                                to:iTermColorPresetModeLight];
-        profile = [self.delegate profilePreferencesCurrentProfile];
-        [model addColorPresetNamed:presetName
-                         toProfile:profile
-                              from:iTermColorPresetModeDark
-                                to:iTermColorPresetModeDark];
-        [self setBool:YES forKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE];
+                              from:bothModes
+                                to:bothModes
+                    updateUseModes:YES];
         return;
     }
 
     const BOOL modes = [self boolForKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE];
     if (modes) {
+        const BOOL currentModeIsDark = _mode.selectedTag == 1;
+        const iTermColorPresetMode mode = currentModeIsDark ? iTermColorPresetModeDark : iTermColorPresetModeLight;
         [model addColorPresetNamed:presetName
                          toProfile:profile
-                              from:currentModeIsDark ? iTermColorPresetModeDark : iTermColorPresetModeLight
-                                to:currentModeIsDark ? iTermColorPresetModeDark : iTermColorPresetModeLight];
+                              from:mode
+                                to:mode];
     } else {
         const BOOL dark = [NSApp effectiveAppearance].it_isDark;
         [model addColorPresetNamed:presetName
@@ -917,8 +912,62 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     }
 }
 
+- (void)loadColorPresetWithName:(NSString *)presetName prompt:(BOOL)prompt {
+    if (!prompt) {
+        [self applyColorPresetWithName:presetName updateBothModes:NO];
+        return;
+    }
+
+    ProfileModel *model = [self.delegate profilePreferencesCurrentModel];
+    const BOOL presetHasModes = [model presetHasMultipleModes:presetName];
+    const BOOL modes = [self boolForKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE];
+    if (!modes) {
+        [self applyColorPresetWithName:presetName updateBothModes:presetHasModes];
+        return;
+    }
+
+    const BOOL currentModeIsDark = _mode.selectedTag == 1;
+    NSString *title = presetHasModes
+        ? NSLocalizedString(@"This preset has colors for both light mode and dark mode.", @"Color presets")
+        : NSLocalizedString(@"This preset does not have separate colors for light mode and dark mode.", @"Color presets");
+    NSString *heading = NSLocalizedString(@"Update Which Modes?", @"Color presets");
+    NSString *bothAction = NSLocalizedString(@"Update Both Modes", @"Color presets");
+    NSString *singleAction = currentModeIsDark
+        ? NSLocalizedString(@"Update Dark Mode Only", @"Color presets")
+        : NSLocalizedString(@"Update Light Mode Only", @"Color presets");
+    NSString *cancelAction = NSLocalizedString(@"Cancel", @"Color presets");
+    NSString *identifier = presetHasModes
+        ? @"NoSyncUpdateWhichModes_PresetHasModes"
+        : @"NoSyncUpdateWhichModes_PresetLacksModes";
+
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [iTermWarning asyncShowWarningWithTitle:title
+                                        actions:@[ bothAction, singleAction, cancelAction ]
+                                  actionMapping:nil
+                                      accessory:nil
+                                     identifier:identifier
+                                    silenceable:kiTermWarningTypePersistent
+                                        heading:heading
+                                    cancelLabel:cancelAction
+                                         window:strongSelf.view.window
+                                     completion:^(iTermWarningSelection selection, iTermWarning *warning) {
+            if (selection == kiTermWarningSelection0) {
+                [weakSelf applyColorPresetWithName:presetName updateBothModes:YES];
+            } else if (selection == kiTermWarningSelection1) {
+                [weakSelf applyColorPresetWithName:presetName updateBothModes:NO];
+            }
+        }];
+    });
+}
+
 - (void)loadColorPreset:(id)sender {
     _savedColors = nil;
+    _didPreviewPreset = NO;
     [self loadColorPresetWithName:[sender identifier] prompt:YES];
 }
 
@@ -959,30 +1008,51 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     return YES;
 }
 
-- (NSDictionary *)currentColors {
-    NSMutableDictionary<NSString *, id> *dict = [NSMutableDictionary dictionary];
-    const BOOL separate = [self boolForKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE];
-    for (NSString *key in [ProfileModel colorKeysWithModes:NO]) {
-        dict[key] = [self objectForKey:key];
+- (NSDictionary<NSString *, id> *)rawCurrentColors {
+    Profile *profile = [self.delegate profilePreferencesCurrentProfile];
+    if (!profile) {
+        return nil;
     }
-    if (separate) {
-        for (NSString *key in [ProfileModel colorKeysWithModes:YES]) {
-            id value = [self objectForKey:key];
-            if (value) {
-                dict[key] = value;
-            }
-        }
+    NSMutableDictionary<NSString *, id> *dict = [NSMutableDictionary dictionary];
+    for (NSString *key in [ProfileModel colorKeysWithModes:NO]) {
+        dict[key] = profile[key] ?: [NSNull null];
+    }
+    for (NSString *key in [ProfileModel colorKeysWithModes:YES]) {
+        dict[key] = profile[key] ?: [NSNull null];
     }
     return dict;
 }
 
 - (void)restoreColors {
+    if (!_didPreviewPreset || !_savedColors) {
+        return;
+    }
+    _didPreviewPreset = NO;
+    Profile *profile = [self.delegate profilePreferencesCurrentProfile];
+    NSString *guid = profile[KEY_GUID];
+    ProfileModel *model = [self.delegate profilePreferencesCurrentModel];
+    if (!profile || !guid || !model) {
+        return;
+    }
+    NSMutableDictionary *restored = [profile mutableCopy];
+    __block BOOL changed = NO;
     [_savedColors enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         id value = [obj nilIfNull];
-        if (![NSObject object:value isEqualToObject:[self objectForKey:key]]) {
-            [self setObject:value forKey:key];
+        id current = restored[key];
+        if (value != current && ![value isEqual:current]) {
+            changed = YES;
+            if (value) {
+                restored[key] = value;
+            } else {
+                [restored removeObjectForKey:key];
+            }
         }
     }];
+    if (changed) {
+        [model setBookmark:restored withGuid:guid];
+        [model flush];
+        [[NSNotificationCenter defaultCenter] postNotificationName:kReloadAllProfiles object:nil];
+    }
 }
 
 // If the current color settings exactly match a preset, place a check mark next to it and uncheck
@@ -991,7 +1061,8 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     BOOL found = NO;
     iTermColorPresetDictionary *allPresets = [iTermColorPresets allColorPresets];
 
-    _savedColors = [self currentColors];
+    _savedColors = [self rawCurrentColors];
+    _didPreviewPreset = NO;
     const BOOL separate = [self boolForKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE];
 
     for (NSMenuItem *item in _presetsMenu.itemArray) {
@@ -1037,6 +1108,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
 - (void)previewColors:(NSTimer *)timer {
     NSMenuItem *item = timer.userInfo;
     if (_timer) {
+        _didPreviewPreset = YES;
         [self loadColorPresetWithName:item.identifier prompt:NO];
     }
     [self removeTimer];
@@ -1050,6 +1122,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     [self removeTimer];
     [self restoreColors];
     _savedColors = nil;
+    _didPreviewPreset = NO;
 }
 
 #pragma mark - Actions
@@ -1061,7 +1134,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
 }
 
 - (IBAction)showModeWarning:(id)sender {
-    [_modeWarning it_showWarning:@"Your current theme overrides the system light and dark mode setting, so color switching will not occur. You can change it in Settings > Appearance > General > Theme."];
+    [_modeWarning it_showWarning:NSLocalizedString(@"Your current theme overrides the system light and dark mode setting, so color switching will not occur. You can change it in Settings > Appearance > General > Theme.", @"Color presets")];
 }
 
 #pragma mark - Overrides

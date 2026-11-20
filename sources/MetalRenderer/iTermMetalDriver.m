@@ -26,7 +26,6 @@
 #import "iTermMetalFrameData.h"
 #import "iTermMarkRenderer.h"
 #import "iTermMetalRowData.h"
-#import "iTermOffscreenCommandLineBackgroundRenderer.h"
 #import "iTermPreciseTimer.h"
 #import "iTermPreferences.h"
 #import "iTermTextDrawingHelper.h"
@@ -112,10 +111,7 @@ typedef struct {
     iTermMarginRenderer *_marginRenderer;
     iTermBackgroundImageRenderer *_backgroundImageRenderer;
     iTermBackgroundColorRenderer *_backgroundColorRenderer;
-    iTermOffscreenCommandLineBackgroundRenderer *_offscreenCommandLineBackgroundRenderer;
     iTermTextRenderer *_textRenderer;
-    iTermOffscreenCommandLineTextRenderer *_offscreenCommandLineTextRenderer;
-    iTermOffscreenCommandLineBackgroundColorRenderer *_offscreenCommandLineBackgroundColorRenderer;
     iTermMarkRenderer *_arrowStyleMarkRenderer;
     iTermLineStyleMarkRenderer *_lineStyleMarkRenderer;
     iTermBadgeRenderer *_badgeRenderer;
@@ -205,10 +201,7 @@ typedef struct {
         _marginRenderer = [[iTermMarginRenderer alloc] initWithDevice:device];
         _backgroundImageRenderer = [[iTermBackgroundImageRenderer alloc] initWithDevice:device];
         _textRenderer = [[iTermTextRenderer alloc] initWithDevice:device];
-        _offscreenCommandLineTextRenderer = [[iTermOffscreenCommandLineTextRenderer alloc] initWithDevice:device];
-        _offscreenCommandLineBackgroundColorRenderer = [[iTermOffscreenCommandLineBackgroundColorRenderer alloc] initWithDevice:device];
         _backgroundColorRenderer = [[iTermBackgroundColorRenderer alloc] initWithDevice:device];
-        _offscreenCommandLineBackgroundRenderer = [[iTermOffscreenCommandLineBackgroundRenderer alloc] initWithDevice:device];
         _arrowStyleMarkRenderer = [[iTermMarkRenderer alloc] initWithDevice:device];
         _lineStyleMarkRenderer = [[iTermLineStyleMarkRenderer alloc] initWithDevice:device];
         _badgeRenderer = [[iTermBadgeRenderer alloc] initWithDevice:device];
@@ -1085,139 +1078,16 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                           stat:iTermMetalFrameDataStatPqEnqueueDrawButtons];
     }
 
-    if (!frameData.perFrameState.haveOffscreenCommandLine) {
-        [self drawRenderer:_indicatorRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawIndicators];
-        [self drawRenderer:_flashRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawFullScreenFlash];
-    }
+    [self drawRenderer:_indicatorRenderer
+             frameData:frameData
+                  stat:iTermMetalFrameDataStatPqEnqueueDrawIndicators];
+    [self drawRenderer:_flashRenderer
+             frameData:frameData
+                  stat:iTermMetalFrameDataStatPqEnqueueDrawFullScreenFlash];
 
     [self drawCellRenderer:_timestampsRenderer
                  frameData:frameData
                       stat:iTermMetalFrameDataStatPqEnqueueDrawTimestamps];
-
-    [self drawRenderer:_offscreenCommandLineBackgroundRenderer
-             frameData:frameData
-                  stat:iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineBg];
-
-    [self drawCellRenderer:_offscreenCommandLineBackgroundColorRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineBgColors];
-    const BOOL osclMultiPassUnderlines = ([iTermAdvancedSettingsModel useMultiPassUnderlineRenderer] &&
-                                          frameData.offscreenUnderlineSpanData.length > 0 &&
-                                          frameData.textOffscreenRPD);
-    if (osclMultiPassUnderlines) {
-        // Draw offscreen command line underlines with full smear compositing (matching legacy renderer).
-        iTermUnderlineRendererTransientState *ulState =
-            [frameData transientStateForRenderer:_underlineRenderer];
-        CGFloat savedOffset = ulState.verticalOffset;
-        const CGFloat osclVerticalOffset = frameData.scale * (frameData.vmargin - iTermOffscreenCommandLineVerticalPadding + 1);
-
-        // Swap in offscreen spans and vertical offset.
-        [ulState setSpansWithUnderlineData:frameData.offscreenUnderlineSpanData
-                         strikethroughData:frameData.offscreenStrikethroughSpanData];
-        ulState.verticalOffset = osclVerticalOffset;
-
-        // Draw strikethrough directly to render target (no smear).
-        ulState.drawMode = DrawModeStrikethrough;
-        [self drawCellRenderer:_underlineRenderer
-                     frameData:frameData
-                          stat:iTermMetalFrameDataStatPqEnqueueDrawUnderlines];
-
-        // Reuse T: switch to texture T (clears to transparent), draw offscreen text.
-        [frameData.renderEncoder endEncoding];
-        [frameData updateRenderEncoderWithRenderPassDescriptor:frameData.textOffscreenRPD
-                                                          stat:iTermMetalFrameDataStatNA
-                                                         label:@"Offscreen cmd line text to T"];
-        [self drawCellRenderer:_offscreenCommandLineTextRenderer
-                     frameData:frameData
-                          stat:iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineFg];
-
-        // Reuse U: switch to texture U (clears to transparent), draw offscreen underlines.
-        [frameData.renderEncoder endEncoding];
-        [frameData updateRenderEncoderWithRenderPassDescriptor:frameData.underlineOffscreenRPD
-                                                          stat:iTermMetalFrameDataStatNA
-                                                         label:@"Offscreen cmd line underlines to U"];
-        ulState.drawMode = DrawModeUnderlines;
-        [self drawCellRenderer:_underlineRenderer
-                     frameData:frameData
-                          stat:iTermMetalFrameDataStatPqEnqueueDrawUnderlines];
-
-        // Switch back to render target and composite with scissor rect to avoid processing
-        // the entire viewport for just one row.
-        [frameData.renderEncoder endEncoding];
-        [self updateRenderEncoderForCurrentPass:frameData label:@"Composite offscreen cmd line underlines"];
-
-        // The offscreen command line is at the top of the screen.
-        // In Metal window coordinates, y=0 is at the top.
-        // The viewport dimensions are already in pixels (scaled).
-        const NSUInteger osclPixelHeight = (NSUInteger)([self offscreenCommandLineHeight:frameData] * frameData.scale);
-        MTLScissorRect scissor = {
-            .x = 0,
-            .y = 0,
-            .width = frameData.viewportSize.x,
-            .height = MIN(frameData.viewportSize.y, osclPixelHeight)
-        };
-        [frameData.renderEncoder setScissorRect:scissor];
-
-        iTermUnderlineCompositeRendererTransientState *compositeState =
-            [frameData transientStateForRenderer:_underlineCompositeRenderer];
-        compositeState.textTexture = frameData.textOffscreenRPD.colorAttachments[0].texture;
-        compositeState.underlineTexture = frameData.underlineOffscreenRPD.colorAttachments[0].texture;
-        compositeState.solidMode = [iTermAdvancedSettingsModel solidUnderlines];
-
-        [self drawRenderer:_underlineCompositeRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawUnderlineComposite];
-
-        // Reset scissor to full viewport for subsequent drawing.
-        MTLScissorRect fullViewport = {
-            .x = 0,
-            .y = 0,
-            .width = frameData.viewportSize.x,
-            .height = frameData.viewportSize.y
-        };
-        [frameData.renderEncoder setScissorRect:fullViewport];
-
-        // Restore main grid spans.
-        [ulState setSpansWithUnderlineData:frameData.underlineSpanData
-                         strikethroughData:frameData.strikethroughSpanData];
-        ulState.verticalOffset = savedOffset;
-    } else {
-        // Draw text directly when not doing multi-pass underline compositing.
-        [self drawCellRenderer:_offscreenCommandLineTextRenderer
-                     frameData:frameData
-                          stat:iTermMetalFrameDataStatPqEnqueueDrawOffscreenCommandLineFg];
-
-        if ([iTermAdvancedSettingsModel useMultiPassUnderlineRenderer] &&
-            frameData.offscreenStrikethroughSpanData.length > 0) {
-            // Only strikethrough, no underlines — draw directly.
-            iTermUnderlineRendererTransientState *ulState =
-                [frameData transientStateForRenderer:_underlineRenderer];
-            CGFloat savedOffset = ulState.verticalOffset;
-            [ulState setSpansWithUnderlineData:frameData.offscreenUnderlineSpanData
-                             strikethroughData:frameData.offscreenStrikethroughSpanData];
-            ulState.verticalOffset = frameData.scale * (frameData.vmargin - iTermOffscreenCommandLineVerticalPadding + 1);
-            ulState.drawMode = DrawModeStrikethrough;
-            [self drawCellRenderer:_underlineRenderer
-                         frameData:frameData
-                              stat:iTermMetalFrameDataStatPqEnqueueDrawUnderlines];
-            [ulState setSpansWithUnderlineData:frameData.underlineSpanData
-                             strikethroughData:frameData.strikethroughSpanData];
-            ulState.verticalOffset = savedOffset;
-        }
-    }
-
-    if (frameData.perFrameState.haveOffscreenCommandLine) {
-        [self drawRenderer:_indicatorRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawIndicators];
-        [self drawRenderer:_flashRenderer
-                 frameData:frameData
-                      stat:iTermMetalFrameDataStatPqEnqueueDrawFullScreenFlash];
-    }
 
     [self drawCellRenderer:_highlightRowRenderer
                  frameData:frameData
@@ -1234,7 +1104,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         return;
     }
     [self configureTextRenderer:_textRenderer frameData:frameData];
-    [self configureTextRenderer:_offscreenCommandLineTextRenderer frameData:frameData];
 }
 
 - (void)configureTextRenderer:(iTermTextRenderer *)textRenderer
@@ -1485,14 +1354,8 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
     tState.destinationRect = frameData.perFrameState.badgeDestinationRect;
 }
 
-// The meaning of drawOffscreenCommandLine is:
-//   nil - just draw
-//   @YES - draw only first line
-//   @NO - draw all but first line
 - (iTermTextRendererTransientState *)_populateTextRenderer:(iTermTextRenderer *)textRenderer
-                                             withFrameData:(iTermMetalFrameData *)frameData
-                                  drawOffscreenCommandLine:(NSNumber *)drawOffscreenCommandLine
-                                       suppressedTopHeight:(CGFloat)suppressedTopHeight {
+                                             withFrameData:(iTermMetalFrameData *)frameData {
     // Update the text renderer's transient state with current glyphs and colors.
     const CGFloat scale = frameData.scale;
     iTermTextRendererTransientState *textState = [frameData transientStateForRenderer:textRenderer];
@@ -1518,21 +1381,12 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
 
     iTermMetalIMEInfo *imeInfo = frameData.perFrameState.imeInfo;
 
-    textState.suppressedTopHeight = suppressedTopHeight;
+    textState.suppressedTopHeight = 0;
     [frameData.rows enumerateObjectsUsingBlock:^(iTermMetalRowData * _Nonnull rowData, NSUInteger idx, BOOL * _Nonnull stop) {
         NSRange markedRangeOnLine = NSMakeRange(NSNotFound, 0);
-        if (drawOffscreenCommandLine) {
-            if (drawOffscreenCommandLine.boolValue && idx != 0) {
-                return;
-            }
-            if (!drawOffscreenCommandLine.boolValue && idx == 0) {
-                return;
-            }
-        }
         if (imeInfo &&
             rowData.y >= imeInfo.markedRange.start.y &&
-            rowData.y <= imeInfo.markedRange.end.y &&
-            !drawOffscreenCommandLine.boolValue) {
+            rowData.y <= imeInfo.markedRange.end.y) {
             // This line contains at least part of the marked range
             if (rowData.y == imeInfo.markedRange.start.y) {
                 // Marked range starts on this line
@@ -1581,9 +1435,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                                }];
 
             // Compute underline/strikethrough spans for multi-pass rendering.
-            // Offscreen command line spans go to separate arrays (different vertical offset).
             if (rowData.hasUnderlineOrStrikethrough || markedRangeOnLine.length > 0) {
-                const BOOL isOffscreen = [drawOffscreenCommandLine isEqual:@YES];
                 const iTermMetalGlyphAttributes *attrs =
                     (const iTermMetalGlyphAttributes *)rowData.attributesData.bytes;
                 iTermBidiDisplayInfo *bidiInfo = rowData.screenCharArray.bidiInfo;
@@ -1596,8 +1448,8 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                                                    inverseLUT:bidiInfo ? bidiInfo.inverseLUT : NULL
                                                  inverseLUTLen:bidiInfo ? bidiInfo.inverseLUTCount : 0
                                                 lineAttribute:rowData.lineAttribute
-                                               underlineSpans:isOffscreen ? frameData.offscreenUnderlineSpanData : frameData.underlineSpanData
-                                           strikethroughSpans:isOffscreen ? frameData.offscreenStrikethroughSpanData : frameData.strikethroughSpanData];
+                                               underlineSpans:frameData.underlineSpanData
+                                           strikethroughSpans:frameData.strikethroughSpanData];
             }
         }
         [rowData.keysData checkForOverrun];
@@ -1636,22 +1488,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
                                 omitClear:NO];
         }];
         backgroundState.suppressedBottomHeight = frameData.perFrameState.pointsOnBottomToSuppressDrawing;
-        backgroundState.suppressedTopHeight = [self offscreenCommandLineHeight:frameData];
-    }
-}
-
-- (void)_populateOffscreenCommandLineBackgroundRendererWithFrameData:(iTermMetalFrameData *)frameData {
-    if (!_offscreenCommandLineBackgroundRenderer.rendererDisabled) {
-        iTermOffscreenCommandLineBackgroundRendererTransientState *offscreenState = [frameData transientStateForRenderer:_offscreenCommandLineBackgroundRenderer];
-        if (!frameData.perFrameState.haveOffscreenCommandLine) {
-            offscreenState.shouldDraw = NO;
-        } else {
-            offscreenState.shouldDraw = YES;
-            [offscreenState setOutlineColor:frameData.perFrameState.offscreenCommandLineOutlineColor
-                     defaultBackgroundColor:frameData.perFrameState.processedDefaultBackgroundColor
-                            backgroundColor:frameData.perFrameState.offscreenCommandLineBackgroundColor
-                                  rowHeight:frameData.cellSize.height];
-        }
+        backgroundState.suppressedTopHeight = 0;
     }
 }
 
@@ -1660,27 +1497,13 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         return;
     }
 
-    [self _populateOffscreenCommandLineBackgroundRendererWithFrameData:frameData];
-
     // Initialize span data for multi-pass underline rendering.
     frameData.hasUnderlines = NO;
     frameData.underlineSpanData = [[NSMutableData alloc] init];
-    frameData.offscreenUnderlineSpanData = [[NSMutableData alloc] init];
-    frameData.offscreenStrikethroughSpanData = [[NSMutableData alloc] init];
     frameData.strikethroughSpanData = [[NSMutableData alloc] init];
 
-    iTermTextRendererTransientState *textState;
-    if (frameData.perFrameState.haveOffscreenCommandLine && !_offscreenCommandLineTextRenderer.rendererDisabled) {
-        textState = [self _populateTextRenderer:_textRenderer 
-                                  withFrameData:frameData
-                       drawOffscreenCommandLine:@NO
-                            suppressedTopHeight:[self offscreenCommandLineHeight:frameData]];
-    } else {
-        textState = [self _populateTextRenderer:_textRenderer
-                                  withFrameData:frameData
-                       drawOffscreenCommandLine:nil
-                            suppressedTopHeight:0];
-    }
+    iTermTextRendererTransientState *textState = [self _populateTextRenderer:_textRenderer
+                                                               withFrameData:frameData];
 
     [self _populateBackgroundRendererTransientStateWithFrameData:frameData];
 
@@ -1689,32 +1512,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         [textState willDraw];
     }
 
-    const float verticalOffset = frameData.scale * (frameData.vmargin - iTermOffscreenCommandLineVerticalPadding + 1);
-    if (!_offscreenCommandLineTextRenderer.rendererDisabled) {
-        _offscreenCommandLineTextRenderer.verticalOffset = verticalOffset;
-        if (frameData.perFrameState.haveOffscreenCommandLine) {
-            textState = [self _populateTextRenderer:_offscreenCommandLineTextRenderer
-                                      withFrameData:frameData
-                           drawOffscreenCommandLine:@YES
-                                suppressedTopHeight:0];
-            [textState willDraw];
-        }
-    }
-
-    frameData.hasUnderlines = (frameData.underlineSpanData.length > 0 ||
-                                frameData.offscreenUnderlineSpanData.length > 0);
-    if (!_offscreenCommandLineBackgroundColorRenderer.rendererDisabled &&
-        frameData.perFrameState.haveOffscreenCommandLine) {
-        iTermBackgroundColorRendererTransientState *osclBottomState = [frameData transientStateForRenderer:_offscreenCommandLineBackgroundColorRenderer];
-        osclBottomState.verticalOffset = verticalOffset;
-        osclBottomState.defaultBackgroundColor = simd_make_float4(0, 0, 0, 0);
-
-        [osclBottomState setColorRLEs:frameData.rows[0].backgroundColorRLEData.mutableBytes
-                                count:frameData.rows[0].numberOfBackgroundRLEs
-                                  row:0
-                        repeatingRows:1
-                            omitClear:YES];
-    }
+    frameData.hasUnderlines = (frameData.underlineSpanData.length > 0);
 }
 
 - (NSString *)fpsMeterStringForFrameNumber:(int)frameNumber {
@@ -1791,11 +1589,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
         tState.backgroundColor = frameData.perFrameState.timestampsBackgroundColor;
         tState.textColor = frameData.perFrameState.timestampsTextColor;
         tState.fontInfo = frameData.perFrameState.timestampFontInfo;
-        if (frameData.perFrameState.haveOffscreenCommandLine) {
-            tState.obscured = frameData.cellSize.height / frameData.scale + iTermOffscreenCommandLineVerticalPadding * 2;
-        } else {
-            tState.obscured = 0;
-        }
+        tState.obscured = 0;
         tState.timestampBaseline = frameData.perFrameState.timestampBaseline;
         tState.timestamps = [frameData.rows mapWithBlock:^id(iTermMetalRowData *row) {
             return row.date;
@@ -1806,16 +1600,6 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
 - (void)populateFlashRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
     iTermFullScreenFlashRendererTransientState *tState = [frameData transientStateForRenderer:_flashRenderer];
     tState.color = frameData.perFrameState.fullScreenFlashColor;
-}
-
-- (CGFloat)offscreenCommandLineHeight:(iTermMetalFrameData *)frameData {
-    if (!_offscreenCommandLineBackgroundColorRenderer.rendererDisabled &&
-        frameData.perFrameState.haveOffscreenCommandLine) {
-        return [iTermOffscreenCommandLineBackgroundRendererTransientState heightForScale:frameData.scale
-                                                                               rowHeight:frameData.cellSize.height
-                                                                          topExtraMargin:frameData.perFrameState.extraMargins.top];
-    }
-    return 0;
 }
 
 - (void)populateMarginRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
@@ -1833,7 +1617,7 @@ panelReservationPoints:(CGFloat)panelReservationPoints {
             }
         }];
     }
-    tState.suppressedTopHeight = [self offscreenCommandLineHeight:frameData];
+    tState.suppressedTopHeight = 0;
 }
 
 - (void)populateBlockRendererTransientStateWithFrameData:(iTermMetalFrameData *)frameData {
@@ -2439,10 +2223,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
         iTermTextRendererTransientState *textState = [frameData transientStateForRenderer:_textRenderer];
         [textState didComplete];
     }
-    if (!_offscreenCommandLineTextRenderer.rendererDisabled) {
-        iTermTextRendererTransientState *textState = [frameData transientStateForRenderer:_offscreenCommandLineTextRenderer];
-        [textState didComplete];
-    }
     DLog(@"  Recording final stats");
 
 #if ENABLE_STATS
@@ -2476,8 +2256,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
 - (NSArray<id<iTermMetalCellRenderer>> *)cellRenderers {
     return [@[ _marginRenderer,
                _textRenderer,
-               _offscreenCommandLineBackgroundColorRenderer,
-               _offscreenCommandLineTextRenderer,
                _backgroundColorRenderer,
                _broadcastStripesRenderer,
                _arrowStyleMarkRenderer,
@@ -2504,7 +2282,6 @@ extraIdentifyingInfoForIcon:button.extraIdentifyingInfoForIcon];
 - (NSArray<id<iTermMetalRenderer>> *)nonCellRenderers {
     // Always include _copyToDrawableRenderer for deferred drawable support.
     return @[ _backgroundImageRenderer,
-              _offscreenCommandLineBackgroundRenderer,
               _badgeRenderer,
               _underlineCompositeRenderer,
               _indicatorRenderer,

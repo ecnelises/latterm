@@ -163,12 +163,6 @@ static vector_float4 VectorForColor(NSColor *color) {
     _timestampFontInfo = [_fontTable.asciiFont copy];
     _timestampBaseline = textView.timestampBaseline;
 
-    // Offscreen command line
-    if (drawingHelper.offscreenCommandLine) {
-        _offscreenCommandLineBackgroundColor = [textView.drawingHelper.offscreenCommandLineBackgroundColor colorUsingColorSpace:_colorSpace];
-        _offscreenCommandLineOutlineColor = [textView.drawingHelper.offscreenCommandLineOutlineColor colorUsingColorSpace:_colorSpace];
-    }
-
     _totalScrollbackOverflow = drawingHelper.totalScrollbackOverflow;
 
     // All row-build inputs are populated. Derive a per-textview config

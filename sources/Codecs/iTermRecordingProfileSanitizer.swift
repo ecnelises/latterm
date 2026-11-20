@@ -81,8 +81,6 @@ class iTermRecordingProfileSanitizer: NSObject {
         // Marks, timestamps, and other drawing aids
         KEY_TIMESTAMPS_STYLE,
         KEY_TIMESTAMPS_VISIBLE,
-        KEY_SHOW_OFFSCREEN_COMMANDLINE,
-        KEY_SHOW_OFFSCREEN_COMMANDLINE_FOR_CURRENT_COMMAND,
         KEY_ENABLE_PROGRESS_BARS,
         KEY_PROGRESS_BAR_HEIGHT,
         KEY_PROGRESS_BAR_COLOR_SCHEME,

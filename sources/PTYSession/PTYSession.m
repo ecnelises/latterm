@@ -19463,39 +19463,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self.view updateTrackingAreas];
 }
 
-- (BOOL)textViewShouldShowOffscreenCommandLineAt:(int)location {
-    if (_screen.height < 5) {
-        return NO;
-    }
-    if (_modeHandler.mode == iTermSessionModeCopy) {
-        return NO;
-    }
-    if (![[self.view.scrollview ptyVerticalScroller] userScroll] && _screen.cursorY <= 3) {
-        // Would overlap cursor.
-        return NO;
-    }
-    if (![iTermProfilePreferences boolForKey:KEY_SHOW_OFFSCREEN_COMMANDLINE inProfile:self.profile]) {
-        return NO;
-    }
-    iTermOffscreenCommandLine *ocl = [_screen offscreenCommandLineBefore:location];
-    if (!ocl || !ocl.mark) {
-        return NO;
-    }
-    // See issue 11818.
-    // Don't show an offscreen command line over output of clear;command.
-    id<VT100ScreenMarkReading> lastCommandMark = _screen.lastCommandMark;
-    if (ocl.mark ==  lastCommandMark ||
-        (ocl.mark == _screen.penultimateCommandMark &&
-         lastCommandMark.isRunning == NO &&
-         lastCommandMark.endDate == nil)) {
-        const VT100GridCoordRange commandRange = [_screen coordRangeForInterval:ocl.mark.entry.interval];
-        if (commandRange.end.y + 1 == location) {
-            return NO;
-        }
-    }
-    return YES;
-}
-
 - (BOOL)textViewShouldUseSelectedTextColor {
     const BOOL dark = [NSApp effectiveAppearance].it_isDark;
     NSString *key = iTermAmendedColorKey(KEY_USE_SELECTED_TEXT_COLOR, self.profile, dark);
@@ -19659,19 +19626,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)textViewDidReceiveSingleClick {
     DLog(@"textViewDidReceiveSingleClick");
-}
-
-- (void)textViewDisableOffscreenCommandLine {
-    if (self.isDivorced) {
-        [self setSessionSpecificProfileValues:@{
-            KEY_SHOW_OFFSCREEN_COMMANDLINE: @NO
-        }];
-        return;
-    }
-    [iTermProfilePreferences setBool:NO
-                              forKey:KEY_SHOW_OFFSCREEN_COMMANDLINE
-                           inProfile:self.profile
-                               model:[ProfileModel sharedInstance]];
 }
 
 - (void)textViewSaveScrollPositionForMark:(id<VT100ScreenMarkReading>)mark withName:(NSString *)name {
@@ -20020,10 +19974,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (BOOL)sessionViewCaresAboutMouseMovement {
     return [_textview wantsMouseMovementEvents];
-}
-
-- (NSRect)sessionViewOffscreenCommandLineFrameForView:(NSView *)view {
-    return [_textview offscreenCommandLineFrameForView:view];
 }
 
 - (void)sessionViewUpdateComposerFrame {
@@ -22131,17 +22081,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)screenExecDidFail {
     _execDidFail = YES;
-}
-
-- (BOOL)screenOffscreenCommandLineShouldBeVisibleForCurrentCommand {
-    if (![iTermProfilePreferences boolForKey:KEY_SHOW_OFFSCREEN_COMMANDLINE_FOR_CURRENT_COMMAND
-                                   inProfile:self.profile]) {
-        return NO;
-    }
-    if (_screen.terminalSoftAlternateScreenMode) {
-        return NO;
-    }
-    return YES;
 }
 
 - (void)screenResizeResilientCoordinates:(VT100GridAbsCoord(^ _Nonnull)(VT100GridAbsCoord))convert {
