@@ -19,6 +19,11 @@
 #import "iTermSandboxedWorkerClient.h"
 #if DECODE_IMAGES_IN_PROCESS
 #import "iTermImage+ImageWithData.h"
+#ifdef SANDBOXED_WORKER
+#import "iTerm2SandboxedWorker-Swift.h"
+#else
+#import "iTerm2SharedARC-Swift.h"
+#endif
 // Informational note (not a #warning): under AddressSanitizer the sandboxed
 // image-decoding worker is bypassed and images decode in this process. Emitted
 // via #pragma message so it stays visible in the build log without tripping
@@ -59,7 +64,15 @@ static const CGFloat kMaxDimension = 10000;
 }
 
 + (instancetype)imageWithSixelData:(NSData *)sixelData {
+#if DECODE_IMAGES_IN_PROCESS
+    NSImage *nativeImage = [iTermSixelDecoder decodeImageFromData:sixelData];
+    if (!nativeImage) {
+        return nil;
+    }
+    return [self imageWithNativeImage:nativeImage];
+#else
     return [iTermSandboxedWorkerClient imageFromSixelData:sixelData];
+#endif
 }
 
 - (instancetype)init {

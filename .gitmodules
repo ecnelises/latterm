@@ -1,4 +1,0 @@
-[submodule "submodules/libsixel"]
-	path = submodules/libsixel
-	url = https://github.com/saitoha/libsixel
-	ignore = dirty

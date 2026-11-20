@@ -11,7 +11,6 @@ SUITE ?= $(notdir $(CURDIR))-Development
 VERSION = $(shell cat version.txt)
 NAME=$(shell echo $(VERSION) | sed -e "s/\\./_/g")
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
-PKG_CONFIG ?= $(HOMEBREW_PREFIX)/bin/pkg-config
 DEPLOYMENT_TARGET=15.0
 XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme iTerm2
 
@@ -64,10 +63,10 @@ help:
 	@echo "  make install      Build Deployment and install to /Applications"
 	@echo ""
 	@echo "Dependencies:"
-	@echo "  make paranoid-deps  Rebuild all native dependencies (sandboxed)"
+	@echo "  make paranoid-deps  Rebuild bundled native dependencies (sandboxed)"
 	@echo "  make DepsIfNeeded   Rebuild deps only if Xcode version changed"
 	@echo "  make clean        Remove build products"
-	@echo "  make cleandeps    Clean submodule build directories"
+	@echo "  make cleandeps    Clean dependency build directories"
 	@echo ""
 	@echo "Release:"
 	@echo "  make Beta         Build Beta configuration"
@@ -173,8 +172,6 @@ _setup-main:
 		sudo PATH="$(ORIG_PATH)" xcodebuild -license accept 2>/dev/null || true; \
 	fi
 	@test -f plists/iTerm2.plist || cp plists/dev-iTerm2.plist plists/iTerm2.plist
-	@PATH="$(ORIG_PATH)" brew list pkg-config >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install pkg-config
-	@PATH="$(ORIG_PATH)" brew list automake >/dev/null 2>&1 || PATH="$(ORIG_PATH)" brew install automake
 	@if ! test -x "$(HOMEBREW_PREFIX)/bin/python3"; then \
 		PATH="$(ORIG_PATH)" brew install python3; \
 		if ! PATH="$(ORIG_PATH)" brew link python@3 2>/dev/null; then \
@@ -200,7 +197,6 @@ _setup-main:
 		fi; \
 	fi
 	@$(HOMEBREW_PREFIX)/bin/python3 -c "import objc" 2>/dev/null || $(HOMEBREW_PREFIX)/bin/pip3 install --break-system-packages pyobjc
-	git submodule update --init --recursive
 	PATH="$(ORIG_PATH)" xcodebuild -downloadComponent MetalToolchain || \
 		echo "WARNING: Metal Toolchain download failed. You can retry later with: xcodebuild -downloadComponent MetalToolchain"
 	@echo ""
@@ -214,8 +210,6 @@ doctor:
 	@printf "  %-18s" "Xcode:"; (xcodebuild -version 2>/dev/null | tr '\n' ' ' && echo) || echo "NOT FOUND"
 	@printf "  %-18s" "xcode-select:"; (xcode-select -p 2>/dev/null) || echo "NOT FOUND"
 	@printf "  %-18s" "xcodes:"; (PATH="$(ORIG_PATH)" xcodes version 2>/dev/null) || echo "not installed"
-	@printf "  %-18s" "pkg-config:"; ($(PKG_CONFIG) --version 2>/dev/null) || echo "NOT FOUND"
-	@printf "  %-18s" "automake:"; (PATH="$(ORIG_PATH)" automake --version 2>/dev/null | grep -m1 .) || echo "NOT FOUND"
 	@printf "  %-18s" "python3 (brew):"; ver=$$($(HOMEBREW_PREFIX)/bin/python3 --version 2>/dev/null); \
 		if [ -z "$$ver" ]; then echo "NOT FOUND — run make setup"; \
 		elif echo "$$ver" | grep -q "^Python 3"; then echo "$$ver"; \
@@ -286,12 +280,8 @@ zip: Deployment
 
 clean:
 	rm -rf "$(BUILD_DIR)"
-	rm -rf submodules/*/build
-	rm -rf submodules/*/build-*
-	rm -rf submodules/*/build_*
 	rm -f *~
 	rm -rf ThirdParty && git checkout ThirdParty
-	cd submodules/libsixel && make distclean || true
 	git checkout last-xcode-version
 
 backup-old-iterm:
@@ -313,12 +303,6 @@ preview:
 	cp plists/preview-iTerm2.plist plists/iTerm2.plist
 	make Deployment
 
-libsixel: force
-	mkdir -p submodules/libsixel/build-arm
-	cd submodules/libsixel/build-arm && PKG_CONFIG=$(PKG_CONFIG) CC="/usr/bin/clang -target arm64-apple-macos$(DEPLOYMENT_TARGET)" LDFLAGS="-target arm64-apple-macos$(DEPLOYMENT_TARGET)" CFLAGS="-target arm64-apple-macos$(DEPLOYMENT_TARGET)" LIBTOOLFLAGS="-target arm64-apple-macos$(DEPLOYMENT_TARGET)" ../configure --host=aarch64-apple-darwin --prefix=${PWD}/ThirdParty/libsixel-arm --without-libcurl --without-jpeg --without-png --disable-python --disable-shared && $(MAKE) && $(MAKE) install
-	cp ThirdParty/libsixel-arm/lib/libsixel.a ThirdParty/libsixel/lib/libsixel.a
-	cp ThirdParty/libsixel-arm/include/sixel.h ThirdParty/libsixel/include/sixel.h
-
 CoreParse: force
 	rm -rf ThirdParty/CoreParse.framework
 	cd ThirdParty/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=.. MACOSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) $(SIGNING_FLAGS) $(ARCH_FLAGS)
@@ -337,18 +321,14 @@ paranoid-CoreParse: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" CoreParse
 
 paranoid-deps: force
-	tools/check-submodule-cleanliness
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" deps
 	xcodebuild -version > last-xcode-version
-
-paranoid-libsixel: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" libsixel
 
 paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force libsixel CoreParse pwmadapters
+deps: force CoreParse pwmadapters
 
 # Regenerate NSCharacterSet+iTerm.m and iTermCharacterSets.m from latest Unicode data.
 # Run this when a new Unicode version is released.
@@ -361,7 +341,6 @@ DepsIfNeeded: force
 
 cleandeps: force
 	rm -rf ThirdParty/CoreParse/build
-	cd submodules/libsixel && git clean -f -d .
 
 test: force
 	tools/run_tests.expect ModernTests
