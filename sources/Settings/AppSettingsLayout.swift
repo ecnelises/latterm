@@ -78,28 +78,6 @@ final class GeneralFormLayout: NSObject {
                         ])
                     ),
                     checkbox("savePasteHistory", label: field("Clipboard History:")),
-                    ProfileFormRow(
-                        label: field("Python API:"),
-                        content: .checkbox(control("enableAPI"), trailing: []),
-                        suppressSeparatorAfter: true
-                    ),
-                    ProfileFormRow(
-                        content: .wrappingLine([
-                            .fill(control("apiPermission"), minWidth: 180, maxWidth: 320, wraps: true),
-                            .fixed(control("pythonAPIAuthHelp"), width: 24, wraps: false)
-                        ]),
-                        indent: 20,
-                        suppressSeparatorAfter: true
-                    ),
-                    checkbox("useCustomScriptsFolder", indent: 20, suppressSeparatorAfter: true),
-                    ProfileFormRow(
-                        content: .wrappingLine([
-                            .fill(control("customScriptsFolder"), minWidth: 180, maxWidth: .greatestFiniteMagnitude, wraps: true),
-                            .fixed(control("customScriptsFolderWarning"), width: 16, wraps: false),
-                            .natural(control("browseCustomScriptsFolder"), minWidth: 72, maxWidth: 160, wraps: false)
-                        ]),
-                        indent: 40
-                    ),
                     checkbox("enableBonjour", label: field("Bonjour:"))
                 ]
             )

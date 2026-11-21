@@ -392,12 +392,6 @@ DQ
                                                 <action selector="downloadFiles:" target="-1" id="T2e-RW-XQ6"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Remote host can control Latterm" identifier="ssh.Remote host can control iTerm2" id="it2-au-th0">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="toggleRemoteHostCanControlIterm2:" target="-1" id="it2-au-th1"/>
-                                            </connections>
-                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -1444,79 +1438,6 @@ CQ
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Scripts" id="eAB-5s-fVh">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Scripts" id="CZD-7u-bch">
-                        <items>
-                            <menuItem title="Manage" id="Koa-MY-5QA">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Manage" id="PGw-xl-7oF">
-                                    <items>
-                                        <menuItem title="New Python Script" identifier="New Python Script" id="ds5-gY-cX0">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="newPythonScript:" target="201" id="v2b-iE-k7t"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="2O5-I1-S86"/>
-                                        <menuItem title="Open Python REPL" identifier="Open Interactive Window" id="jXH-0I-Wtc">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openREPL:" target="201" id="1Pl-tK-Km1"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="iQa-T4-8Bh"/>
-                                        <menuItem title="Manage Dependencies…" identifier="Manage Dependencies" id="wHh-8e-oU2">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="openDependencyEditor:" target="201" id="4J6-lc-cWr"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Install Python Runtime" identifier="Install Python Runtime" id="0D0-tt-wlA">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="installPythonRuntime:" target="201" id="uxc-3n-hZc"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Install Already-Downloaded Python Runtime" alternate="YES" identifier="Install Already-Downloaded Python Runtime" id="t3w-Wj-vG8">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES"/>
-                                            <connections>
-                                                <action selector="installAlreadyDownloadedPythonRuntime:" target="201" id="3fX-lc-mur"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Reveal Scripts in Finder" identifier="Reveal in Finder" id="eeH-ly-45H">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="revealScriptsInFinder:" target="201" id="2jN-7I-BfW"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="4hk-FZ-gFt"/>
-                                        <menuItem title="Import…" identifier="Import Script" id="hZE-iO-QIR">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="importScript:" target="201" id="eOl-HZ-58e"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Export…" identifier="Export Script" id="dlj-rW-u7D">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="exportScript:" target="201" id="foG-lG-KnC"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="Rsa-x0-U18"/>
-                                        <menuItem title="Console" keyEquivalent="j" identifier="Script Console" id="YqT-f8-W2j">
-                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
-                                            <connections>
-                                                <action selector="openScriptConsole:" target="201" id="DYl-Yt-fdf"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" identifier="Separator" id="fcT-12-G86"/>
-                        </items>
-                    </menu>
-                </menuItem>
                 <menuItem title="Profiles" identifier=".Profiles" id="591">
                     <menu key="submenu" title="Profiles" id="592">
                         <items>
@@ -1988,11 +1909,9 @@ CQ
                 <outlet property="_captureGPUFrameMenuItem" destination="8KO-hG-xdC" id="boz-fC-4l8"/>
                 <outlet property="_composerMenuItem" destination="Bhs-45-5yR" id="Od6-HK-qOR"/>
                 <outlet property="_enterFullScreenMenuItem" destination="914" id="pbn-Hb-GK3"/>
-                <outlet property="_installPythonRuntime" destination="0D0-tt-wlA" id="nad-Fp-mh8"/>
                 <outlet property="_iterm2Menu" destination="57" id="xrG-8D-NNQ"/>
                 <outlet property="_namedMarksMenuItem" destination="bWZ-Rb-J4D" id="M8H-RD-WYb"/>
                 <outlet property="_removeRecentProfilesFromDockMenuItem" destination="WcV-7l-ycc" id="Fyb-Mv-FK0"/>
-                <outlet property="_scriptsMenu" destination="CZD-7u-bch" id="2Q5-aI-74T"/>
                 <outlet property="_splitHorizontally" destination="1289" id="Arv-ON-Put"/>
                 <outlet property="_splitHorizontallyWithCurrentProfile" destination="1201" id="FLl-hN-paX"/>
                 <outlet property="_splitVertically" destination="1291" id="HKF-80-dqT"/>

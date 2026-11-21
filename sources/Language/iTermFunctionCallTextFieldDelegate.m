@@ -7,7 +7,6 @@
 
 #import "iTermFunctionCallTextFieldDelegate.h"
 
-#import "iTermAPIHelper.h"
 #import "iTermBuiltInFunctions.h"
 #import "iTermFunctionCallSuggester.h"
 #import "iTermVariableReference.h"
@@ -48,12 +47,7 @@
 }
 
 + (NSDictionary<NSString *,NSArray<NSString *> *> *)combinedFunctionSignatures {
-    NSDictionary<NSString *,NSArray<NSString *> *> *registeredSignatures =
-        [iTermAPIHelper registeredFunctionSignatureDictionary];
-    NSDictionary<NSString *,NSArray<NSString *> *> *bifSignatures =
-        [[iTermBuiltInFunctions sharedInstance] registeredFunctionSignatureDictionary];
-    NSDictionary<NSString *,NSArray<NSString *> *> *combinedSignatures = [registeredSignatures dictionaryByMergingDictionary:bifSignatures];
-    return combinedSignatures;
+    return [[iTermBuiltInFunctions sharedInstance] registeredFunctionSignatureDictionary];
 }
 
 - (instancetype)initForExpressionsWithPathSource:(NSSet<NSString *> *(^)(NSString *))pathSource

@@ -61,7 +61,6 @@
 #import "VT100ScreenMutableState+Resizing.h"
 #import "VT100Terminal.h"
 #import "iTerm.h"
-#import "iTermAPIHelper.h"
 #import "iTermAdjustFontSizeHelper.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermModalSheetRunner.h"
@@ -13497,21 +13496,6 @@ backgroundColor:(NSColor *)backgroundColor {
 
 - (iTermVariableScope *)objectScope {
     return self.scope;
-}
-
-#pragma mark - iTermSubscribable
-
-- (NSString *)subscribableIdentifier {
-    return self.terminalGuid;
-}
-
-// Only variable-changed notifications are relevant for windows. Everything else is just for sessions.
-// Variable-changed notifs are handled before this is called.
-- (ITMNotificationResponse *)handleAPINotificationRequest:(ITMNotificationRequest *)request
-                                            connectionKey:(NSString *)connectionKey {
-    ITMNotificationResponse *response = [[[ITMNotificationResponse alloc] init] autorelease];
-    response.status = ITMNotificationResponse_Status_RequestMalformed;
-    return response;
 }
 
 #pragma mark - iTermPresentationControllerManagedWindowController

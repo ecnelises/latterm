@@ -57,10 +57,6 @@ class ImportExport: NSObject {
                 return .failure("Failed to load file: \(reason)")
             case ImportExportError.corruptDataFound(let reason):
                 return .failure("Malformed data found: \(reason)")
-            case ImportExportError.scriptExportFailed(let reason):
-                return .failure("Script could not be exported: \(reason)")
-            case ImportExportError.failedToInstallPythonRuntime:
-                return .failure("Failed to install Python runtime")
             default:
                 return .failure("Unexpected error: \(error.localizedDescription)")
             }
@@ -91,7 +87,7 @@ class ImportExport: NSObject {
 
         do {
             let selection = iTermWarning.show(
-                withTitle: "Any needed Python runtimes will be installed and secure settings will be updated, which may require you to enter your password. Then Latterm will restart and finish importing. This can take several minutes.",
+                withTitle: "Secure settings will be updated, which may require you to enter your password. Then Latterm will restart and finish importing.",
                 actions: ["OK", "Cancel"],
                 accessory: nil,
                 identifier: nil,
@@ -180,7 +176,6 @@ class ImportExport: NSObject {
 
             \u{2022} Preferences (profiles, key bindings, arrangements, advanced settings)
             \u{2022} Saved windows and sessions
-            \u{2022} Python API scripts and runtimes
             \u{2022} Secure settings
             \u{2022} The contents of ~/.iterm2 and ~/Library/Application Support/iTerm2
 
@@ -254,30 +249,12 @@ private struct EraseAction {
 private struct Eraser {
     private let config = ImportExportConfig()
     private let action: EraseAction
-    // Resolved before any erase happens because scriptsPath() depends on
-    // iTermPreferences.boolForKey(kPreferenceKeyUseCustomScriptsFolder)
-    // and the user-defaults entity wipes that key. If we resolved
-    // lazily, a user with a custom scripts folder would silently keep
-    // their scripts on disk after clicking "Erase Everything and Quit".
-    private let scriptsPath: String?
 
     init(dryRun: Bool) {
         self.action = EraseAction(dryRun: dryRun)
-        self.scriptsPath = (FileManager.default.scriptsPath() as String?).flatMap {
-            $0.isEmpty ? nil : $0
-        }
     }
 
     func eraseEverything() {
-        // Iterate the same entity list used by export/import so any new
-        // entity automatically participates in erase too. FolderImporter
-        // Exporter.erase resolves .applicationSupport via the canonical
-        // app-support path (not via the lazily-created ~/.iterm2/AppSupport
-        // symlink), so folder iteration order does not matter for
-        // correctness. The scripts entity is order-sensitive because it
-        // depends on a user-default that the user-defaults entity wipes;
-        // that lookup is captured eagerly in init so iteration order is
-        // not load-bearing here either.
         for entity in config.entities {
             erase(entity: entity)
         }
@@ -305,14 +282,6 @@ private struct Eraser {
 
     private func erase(entity: ImportExportConfig.Entity) {
         switch entity.flavor {
-        case .pythonRuntimes:
-            // Runtime files (iterm2env*) live inside the app-support folder
-            // and are removed by that entity's folder erase.
-            break
-        case .disableAutomationAuth:
-            // The disable-automation-auth file lives inside app-support and
-            // is removed by that entity's folder erase.
-            break
         case .secureUserDefaults:
             SecureUserDefaultsImporterExporter().erase(action: action)
         case .userDefaults:
@@ -321,8 +290,6 @@ private struct Eraser {
             // Exclusions exist for export (skip transient/redundant files).
             // Erase ignores them; we want a clean slate.
             FolderImporterExporter().erase(path: path, action: action)
-        case .scripts:
-            ScriptsImporterExporter().erase(scriptsPath: scriptsPath, action: action)
         }
     }
 }
@@ -336,8 +303,6 @@ private enum ImportExportError: Error {
     case failedToCreateArchive(String)
     case failedToLoadFile(String)
     case corruptDataFound(String)
-    case scriptExportFailed(String)
-    case failedToInstallPythonRuntime
 }
 
 private func iTermMakeTempDir() throws -> URL {
@@ -374,15 +339,10 @@ private struct ImportExportConfig {
 
     struct Entity {
         enum Flavor {
-            case pythonRuntimes
             // Exclusions are glob paths relative to the base directory + path.
             case folder(Path, exclude: Set<String>)
             case userDefaults
             case secureUserDefaults
-            // Remember that the scripts folder is customizable and you should not assume it's in
-            // application support.
-            case scripts
-            case disableAutomationAuth  // a legacy secure settings before it was made general
         }
 
         var key: String
@@ -390,15 +350,9 @@ private struct ImportExportConfig {
         var flavor: Flavor
     }
     var entities: [Entity] = [
-        Entity(key: "python-runtimes",
-               displayName: "Python Runtimes",
-               flavor: .pythonRuntimes),
         Entity(key: "secure-user-defaults",
                displayName: "Secure Settings",
                flavor: .secureUserDefaults),
-        Entity(key: "disable-automation-auth",
-               displayName: "Python API Authorization Setting",
-               flavor: .disableAutomationAuth),
         Entity(key: "user-defaults",
                displayName: "User Defaults",
                flavor: .userDefaults),
@@ -421,9 +375,6 @@ private struct ImportExportConfig {
                                              "private",
                                              "servers",
                                              "version.txt"]))),
-        Entity(key: "scripts",
-               displayName: "Python API Scripts",
-               flavor: .scripts),
     ]
 }
 
@@ -503,13 +454,6 @@ private class Importer {
         let url = baseURL.appendingPathComponent(entity.key)
         setStatus("Importing \(entity.displayName)")
         switch entity.flavor {
-        case .pythonRuntimes:
-            switch phase {
-            case .initial:
-                try PythonRuntimesImporterExporter().performImport(from: url)
-            case .final:
-                break
-            }
         case .secureUserDefaults:
             switch phase {
             case .initial:
@@ -517,19 +461,10 @@ private class Importer {
             case .final:
                 break
             }
-        case .disableAutomationAuth:
-            switch phase {
-            case .initial:
-                try AutomationAuthImporterExporter().performImport(from: url)
-            case .final:
-                break
-            }
         case .userDefaults:
             try UserDefaultsImporterExporter().performImport(from: url)
         case let .folder(path, _):
             try FolderImporterExporter().performImport(from: url, to: path)
-        case .scripts:
-            try ScriptsImporterExporter(setStatus: self.setStatus).performImport(from: url)
         }
     }
 
@@ -578,8 +513,6 @@ private class Exporter {
         }
 
         switch entity.flavor {
-        case .pythonRuntimes:
-            try PythonRuntimesImporterExporter().export(to: destination)
         case .folder(let path, exclude: let exclusions):
             try FolderImporterExporter().export(path: path,
                                                 exclude: exclusions,
@@ -588,10 +521,6 @@ private class Exporter {
             try UserDefaultsImporterExporter().export(to: destination)
         case .secureUserDefaults:
             try SecureUserDefaultsImporterExporter().export(to: destination)
-        case .scripts:
-            try ScriptsImporterExporter().export(to: destination)
-        case .disableAutomationAuth:
-            try AutomationAuthImporterExporter().export(to: destination)
         }
     }
 
@@ -675,147 +604,6 @@ private struct FolderImporterExporter {
             let fullPath = (target as NSString).appendingPathComponent(item)
             action.remove(atPath: fullPath)
         }
-    }
-}
-
-private struct PythonRuntimesImporterExporter {
-    struct Info: Codable {
-        var requirements: [Requirement]
-        var haveAnyBasicScripts: Bool
-    }
-    struct Requirement: Hashable, Codable, CustomDebugStringConvertible {
-        var debugDescription: String {
-            return "<Requirement runtime >= \(minimumRuntime), python=\(pythonVersion)>"
-        }
-        var minimumRuntime: Int
-        var pythonVersion: String
-    }
-    private let filename = "PythonRuntimes.json"
-    var setStatus: ((String) -> ())?
-
-    init(setStatus: ((String) -> ())? = nil) {
-        self.setStatus = setStatus
-    }
-
-    func export(to destination: URL) throws {
-        DLog("Begin")
-        var requirements = Set<Requirement>()
-        var haveAnyBasicScripts = false
-
-        let scriptsPath: String = FileManager.default.scriptsPath()
-        let base = URL(fileURLWithPath: scriptsPath)
-        let regularItems = (try? FileManager.default.contentsOfDirectory(at: base, includingPropertiesForKeys: nil)) ?? []
-        let autolaunch = base.appendingPathComponent("AutoLaunch")
-        let autolaunchItems = (try? FileManager.default.contentsOfDirectory(at: autolaunch, includingPropertiesForKeys: nil)) ?? []
-        for item in (regularItems + autolaunchItems) {
-            DLog("item is \(item)")
-            var isDirectory = ObjCBool(false)
-            guard FileManager.default.fileExists(atPath: item.path, isDirectory: &isDirectory) else {
-                DLog("skip \(item.path)")
-                continue
-            }
-            if !isDirectory.boolValue {
-                if item.lastPathComponent.hasSuffix(".py") {
-                    DLog("Found basic script")
-                    haveAnyBasicScripts = true
-                }
-                continue
-            }
-            let setup = item.appendingPathComponent("setup.cfg")
-            DLog("Parse \(setup.path)")
-            if let parser = iTermSetupCfgParser(path: setup.path) {
-                requirements.insert(Requirement(minimumRuntime: parser.minimumEnvironmentVersion,
-                                                pythonVersion: parser.pythonVersion))
-            }
-        }
-        DLog("Requirements are \(requirements)")
-        let encoder = JSONEncoder()
-        let encoded = try! encoder.encode(Info(requirements: Array(requirements),
-                                               haveAnyBasicScripts: haveAnyBasicScripts))
-        do {
-            DLog("Write \(encoded) to \(destination.appendingPathComponent(filename))")
-            try encoded.write(to: destination.appendingPathComponent(filename))
-        } catch {
-            DLog("\(error)")
-            throw ImportExportError.failedToSaveFile(error.localizedDescription)
-        }
-    }
-
-    func performImport(from source: URL) throws {
-        DLog("Begin")
-        let data: Data
-        let url = source.appendingPathComponent(filename)
-        do {
-            DLog("Read \(url.path)")
-            data = try Data(contentsOf: url)
-        } catch {
-            DLog("\(error)")
-            throw ImportExportError.failedToLoadFile(error.localizedDescription)
-        }
-
-        let decoder = JSONDecoder()
-        let info: Info
-        do {
-            info = try decoder.decode(Info.self, from: data)
-        } catch {
-            DLog("\(error) for \(data)")
-            throw ImportExportError.corruptDataFound(error.localizedDescription)
-        }
-
-        var i = 1
-        let n = (info.haveAnyBasicScripts ? 1 : 0) + info.requirements.count
-        if info.haveAnyBasicScripts {
-            DLog("Install most recent")
-            if !install(requirement: nil) {
-                throw ImportExportError.failedToInstallPythonRuntime
-            }
-            setStatus?("Installing Python runtime \(i) of \(n)")
-            i += 1
-        }
-        for requirement in info.requirements {
-            setStatus?("Installing Python runtime \(i) of \(n)")
-            i += 1
-            DLog("Install \(requirement)")
-            if !install(requirement: requirement) {
-                throw ImportExportError.failedToInstallPythonRuntime
-            }
-        }
-    }
-
-
-    private func install(requirement: Requirement?) -> Bool {
-        var result: Bool?
-        DLog("Begin \(String(describing: requirement))")
-        iTermPythonRuntimeDownloader.sharedInstance().downloadOptionalComponentsIfNeeded(
-            withConfirmation: false,
-            pythonVersion: requirement?.pythonVersion,
-            minimumEnvironmentVersion: requirement?.minimumRuntime ?? 0,
-            requiredToContinue: true) { status in
-                switch status {
-                case .unknown, .working:
-                    DLog("Unknown/working")
-                    break
-                case .notNeeded, .downloaded:
-                    DLog("not needed/downloaded")
-                    result = true
-                case .canceledByUser, .requestedVersionNotFound, .error:
-                    DLog("canceled/not found/error")
-                    result = false
-                @unknown default:
-                    it_fatalError()
-                }
-                if result != nil {
-                    DLog("Stop runloop")
-                    CFRunLoopStop(RunLoop.current.getCFRunLoop())
-                }
-            }
-        DLog("Begin spinning")
-        let runLoop = RunLoop.current
-        while result == nil && runLoop.run(mode: .default, before: .distantFuture) {
-            // Do nothing
-        }
-        DLog("Done")
-        return result ?? false
     }
 }
 
@@ -986,165 +774,6 @@ func relativePath(base: URL, absolutePath: URL) -> String? {
     }
 
     return absoluteComponents[baseComponents.count...].joined(separator: "/")
-}
-
-private struct ScriptsImporterExporter {
-    private let iterm2env = "iterm2env"
-    var setStatus: ((String) -> ())?
-
-    init(setStatus: ((String) -> ())? = nil) {
-        self.setStatus = setStatus
-    }
-
-    func export(to destination: URL) throws {
-        DLog("Begin")
-        let scriptsPath: String = FileManager.default.scriptsPath()
-        let base = URL(fileURLWithPath: scriptsPath)
-        do {
-            let items = try? FileManager.default.contentsOfDirectory(at: base, includingPropertiesForKeys: nil)
-            for item in (items ?? []) {
-                if item.lastPathComponent == ".DS_Store" {
-                    continue
-                }
-                if item.lastPathComponent.lowercased() == "autolaunch" {
-                    continue
-                }
-                try export(item: item, to: destination, autolaunch: false)
-            }
-        }
-        do {
-            let autolaunch = base.appendingPathComponent("AutoLaunch")
-            let items = try? FileManager.default.contentsOfDirectory(at: autolaunch, includingPropertiesForKeys: nil)
-            for item in (items ?? []) {
-                try export(item: item, to: destination, autolaunch: true)
-            }
-        }
-    }
-
-    private func export(item: URL, to destination: URL, autolaunch: Bool) throws {
-        DLog("Export \(item.path) to \(destination.path), autolaunch=\(autolaunch)")
-        if !iTermScriptExporter.urlIsScript(item) {
-            DLog("Skip non-script \(item.path)")
-            return
-        }
-        var isDirectory = ObjCBool(false)
-        guard FileManager.default.fileExists(atPath: item.path, isDirectory: &isDirectory) else {
-            return
-        }
-        let group = DispatchGroup()
-        group.enter()
-        var error: String?
-        let name: String
-        if autolaunch {
-            name = "autolaunch \(UUID().uuidString).zip"
-        } else {
-            name = "script \(UUID().uuidString).zip"
-        }
-        let zip = destination.appendingPathComponent(name)
-        iTermScriptExporter.exportScript(at: item,
-                                         signing: nil,
-                                         callbackQueue: DispatchQueue.global(),
-                                         destination: zip,
-                                         autolaunch: autolaunch) { maybeError, maybeZip in
-            error = maybeError
-            group.leave()
-        }
-        group.wait()
-        if let error {
-            RLog("Failed \(error)")
-            throw ImportExportError.scriptExportFailed(error)
-        }
-    }
-
-    func performImport(from source: URL) throws {
-        DLog("Begin")
-        guard let items = try? FileManager.default.contentsOfDirectory(at: source, includingPropertiesForKeys: nil) else {
-            return
-        }
-        for (i, path) in items.enumerated() {
-            DLog("\(path)")
-            setStatus?("Import script \(i + 1) of \(items.count)")
-            importScript(from: path, autolaunch: path.lastPathComponent.hasPrefix("autolaunch"))
-        }
-    }
-
-
-    private func importScript(from source: URL, autolaunch: Bool) {
-        var error: String?
-
-        var unblockRunloop = false
-        func waitForDone() {
-            let runLoop = RunLoop.current
-            while !unblockRunloop && runLoop.run(mode: .default, before: .distantFuture) {
-                // Do nothing
-            }
-        }
-
-        DLog("Start importing")
-        iTermScriptImporter.importScript(from: source,
-                                         userInitiated: true,
-                                         offerAutoLaunch: autolaunch,
-                                         callbackQueue: DispatchQueue.main,
-                                         avoidUI: true) { maybeErrorMessage, _, _ in
-            DLog("Done \(String(describing: maybeErrorMessage))")
-            error = maybeErrorMessage
-            unblockRunloop = true
-            CFRunLoopStop(RunLoop.current.getCFRunLoop())
-        }
-        waitForDone()
-        RLog("\(source.path) \(autolaunch) \(error ?? "ok")")
-    }
-
-    // The scripts path is passed in (rather than re-queried) because it
-    // depends on iTermPreferences keys that the user-defaults entity will
-    // wipe before this method runs. The Eraser captures it in init, before
-    // any erase happens, so a custom scripts folder is still discoverable
-    // here.
-    func erase(scriptsPath: String?, action: EraseAction) {
-        guard let scriptsPath, !scriptsPath.isEmpty else {
-            return
-        }
-        let fm = FileManager.default
-        guard let items = try? fm.contentsOfDirectory(atPath: scriptsPath) else {
-            return
-        }
-        for item in items {
-            let fullPath = (scriptsPath as NSString).appendingPathComponent(item)
-            action.remove(atPath: fullPath)
-        }
-    }
-}
-
-private struct AutomationAuthImporterExporter {
-    private let filename = "exists"
-    func export(to destination: URL) throws {
-        DLog("Begin")
-        switch iTermAPIHelper.noAuthStatus(nil) {
-        case .none, .corrupt:
-            return
-        case .valid:
-            break
-        @unknown default:
-            return
-        }
-        DLog("Write file")
-        do {
-            try "".write(to: destination.appendingPathComponent(filename),
-                         atomically: true,
-                         encoding: .utf8)
-        } catch {
-            throw ImportExportError.failedToSaveFile(error.localizedDescription)
-        }
-    }
-
-    func performImport(from: URL) throws {
-        DLog("Begin")
-        // The file exists if the authorization is not required (the dangerous setting)
-        let exists = FileManager.default.fileExists(atPath: from.path.appendingPathComponent(filename))
-        DLog("Exists = \(exists)")
-        iTermAPIHelper.setRequireApplescriptAuth(!exists,
-                                                 window: nil)
-    }
 }
 
 fileprivate extension Dictionary {

@@ -15,7 +15,6 @@
 #import "VT100RemoteHost.h"
 #import "VT100ScreenMark.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermAPIHelper.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplication.h"
 #import "iTermContextMenuUtilities.h"
@@ -307,7 +306,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
         [item action] == @selector(openImage:) ||
         [item action] == @selector(togglePauseAnimatingImage:) ||
         [item action] == @selector(inspectImage:) ||
-        [item action] == @selector(apiMenuItem:) ||
         [item action] == @selector(copyLinkAddress:) ||
         [item action] == @selector(copyDetectedURL:) ||
         [item action] == @selector(copyString:) ||
@@ -552,10 +550,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
         if ([self addCustomActionsToMenu:theMenu matchingText:selectedText line:coord.y]) {
             [theMenu addItem:[NSMenuItem separatorItem]];
         }
-    }
-
-    if ([self addAPIProvidedMenuItems:theMenu]) {
-        [theMenu addItem:[NSMenuItem separatorItem]];
     }
 
     // Split pane options
@@ -876,23 +870,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
         }
     }
     return didAdd;
-}
-
-- (BOOL)addAPIProvidedMenuItems:(NSMenu *)theMenu {
-    NSArray<ITMRPCRegistrationRequest *> *reqs = [iTermAPIHelper contextMenuProviderRegistrationRequests];
-    if (reqs.count == 0) {
-        return NO;
-    }
-    [theMenu addItem:[NSMenuItem separatorItem]];
-    for (ITMRPCRegistrationRequest *req in reqs) {
-        NSMenuItem *theItem = [[NSMenuItem alloc] initWithTitle:req.contextMenuAttributes.displayName
-                                                         action:@selector(apiMenuItem:)
-                                                  keyEquivalent:@""];
-        theItem.representedObject = req.contextMenuAttributes.uniqueIdentifier;
-        theItem.target = self;
-        [theMenu addItem:theItem];
-    }
-    return YES;
 }
 
 - (NSMenu *)menuForMark:(id<VT100ScreenMarkReading>)mark directory:(NSString *)directory {
@@ -1330,36 +1307,6 @@ const int kMaxSelectedTextLengthForCustomActions = 400;
 
 - (void)togglePauseAnimatingImage:(NSMenuItem *)item {
     [self.delegate contextMenu:self toggleAnimationOfImage:item.representedObject];
-}
-
-- (void)apiMenuItem:(NSMenuItem *)item {
-    NSString *identifier = item.representedObject;
-    NSArray<ITMRPCRegistrationRequest *> *reqs = [iTermAPIHelper contextMenuProviderRegistrationRequests];
-    for (ITMRPCRegistrationRequest *req in reqs) {
-        if (![req.contextMenuAttributes.uniqueIdentifier isEqualToString:identifier]) {
-            continue;
-        }
-        NSString *invocation = [self invocationForAPIRegistrationRequest:req];
-        [iTermScriptFunctionCall callFunction:invocation
-                                      timeout:req.hasTimeout ? req.timeout : 30
-                           sideEffectsAllowed:YES
-                                        scope:[self.delegate contextMenuSessionScope:self]
-                                   retainSelf:YES
-                                   completion:^(id value, NSError *error, NSSet<NSString *> *missingFunctions) {
-            if (error) {
-                [self.delegate contextMenu:self invocation:invocation failedWithError:error forMenuItem:item.title];
-            }
-        }];
-        return;
-    }
-}
-
-#pragma mark - API
-
-- (NSString *)invocationForAPIRegistrationRequest:(ITMRPCRegistrationRequest *)req {
-    NSArray<ITMRPCRegistrationRequest_RPCArgument *> *defaults = req.defaultsArray ?: @[];
-    return [iTermAPIHelper invocationWithFullyQualifiedName:req.it_fullyQualifiedName
-                                                   defaults:defaults];
 }
 
 #pragma mark - Title Bar Menu

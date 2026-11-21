@@ -9,10 +9,8 @@
 
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermAPIHelper.h"
 #import "iTermExpressionEvaluator.h"
 #import "iTermScriptFunctionCall.h"
-#import "iTermScriptHistory.h"
 #import "iTermVariableReference.h"
 #import "iTermVariableScope.h"
 #import "NSArray+iTerm.h"
@@ -49,10 +47,6 @@
         _missingFunctions = [NSMutableSet set];
         _sideEffectsAllowed = sideEffectsAllowed;
         _reevaluationJoiner = [iTermIdempotentOperationJoiner asyncJoiner:dispatch_get_main_queue()];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(registeredFunctionsDidChange:)
-                                                     name:iTermAPIRegisteredFunctionsDidChangeNotification
-                                                   object:nil];
         [self reevaluateIfNeeded];
     }
     return self;
@@ -76,10 +70,6 @@
         _sourceRef.onChangeBlock = ^{
             [weakSelf sourceDidChange];
         };
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(registeredFunctionsDidChange:)
-                                                     name:iTermAPIRegisteredFunctionsDidChangeNotification
-                                                   object:nil];
         [self reevaluateIfNeeded];
     }
     return self;
@@ -213,19 +203,9 @@
                                   keepExisting:NO];
         [strongSelf->_missingFunctions unionSet:missing];
         if (error) {
-            NSString *message =
-            [NSString stringWithFormat:@"Invocation of “%@” failed with error:\n%@\n",
-             strongSelf.stringToEvaluate,
-             [error localizedDescription]];
-
-            NSString *connectionKey =
-            error.userInfo[iTermAPIHelperFunctionCallErrorUserInfoKeyConnection];
-            iTermScriptHistoryEntry *entry =
-            [[iTermScriptHistory sharedInstance] entryWithIdentifier:connectionKey];
-            if (!entry) {
-                entry = [iTermScriptHistoryEntry globalEntry];
-            }
-            [entry addOutput:message completion:^{}];
+            DLog(@"Invocation of “%@” failed with error: %@",
+                 strongSelf.stringToEvaluate,
+                 [error localizedDescription]);
         }
         completion(result, error);
     }];
@@ -308,19 +288,6 @@
         [self evaluateSynchronously:YES sideEffectsAllowed:NO];
     }
     [self evaluateSynchronously:NO sideEffectsAllowed:_sideEffectsAllowed];
-}
-
-#pragma mark - Notifications
-
-- (void)registeredFunctionsDidChange:(NSNotification *)notification {
-    NSArray<NSString *> *registered = [_missingFunctions.allObjects filteredArrayUsingBlock:^BOOL(NSString *signature) {
-        return [[iTermAPIHelper sharedInstance] haveRegisteredFunctionWithSignature:signature];
-    }];
-    if (!registered.count) {
-        return;
-    }
-    [_missingFunctions minusSet:[NSSet setWithArray:registered]];
-    [self setNeedsReevaluation];
 }
 
 @end

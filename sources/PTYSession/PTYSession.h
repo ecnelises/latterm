@@ -1,8 +1,6 @@
 // Implements the model class for a terminal session.
 
-#import "Api.pbobjc.h"
 #import "DVR.h"
-#import "iTermAPIHelper.h"
 #import "iTermEchoProbe.h"
 #import "iTermEncoderAdapter.h"
 #import "iTermFindDriver.h"
@@ -13,7 +11,6 @@
 #import "iTermPopupWindowController.h"
 #import "iTermSessionNameController.h"
 
-#import "GPBEnumArray+iTerm.h"
 #import "LineBuffer.h"
 #import "PTYTask.h"
 #import "PTYTextView.h"
@@ -84,7 +81,6 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class iTermNaggingController;
 @class iTermPathCompletionHelper;
 @class iTermSSHReconnectionInfo;
-@class iTermScriptHistoryEntry;
 @class iTermSessionTabStatus;
 @class iTermSessionModeHandler;
 @class iTermStatusBarViewController;
@@ -363,7 +359,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 @interface PTYSession : NSResponder <
     iTermEchoProbeDelegate,
     iTermFindDriverDelegate,
-    iTermSubscribable,
     iTermTmuxControllerSession,
     iTermUniquelyIdentifiable,
     iTermWeaklyReferenceable,
@@ -758,11 +753,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 + (void)selectMenuItem:(NSString*)theName;
 + (void)registerBuiltInFunctions;
 + (NSMapTable<NSString *, PTYSession *> *)sessionMap;
-
-// The it2 authorization announcement identifier, keyed on the conductor's guid so
-// distinct conductors (even sharing an ssh display name) get distinct announcements and
-// cannot cross-cancel each other's prompt. Exposed for testing.
-+ (NSString *)it2AuthorizationAnnouncementIdentifierForGUID:(NSString *)guid;
 
 // Register the contents in the arrangement so that if the session is later
 // restored from an arrangement with the same guid as |arrangement|, the
@@ -1219,35 +1209,9 @@ backgroundColor:(nullable NSColor *)backgroundColor;
                    isProfile:(BOOL)isProfile;
 - (void)moveToolbarTo:(PTYSession *)destination;
 
-#pragma mark - API
+#pragma mark - Built-in Functions
 
-// Pure transformation: produces the protobuf cell style for a given screen_char_t
-// and its iTermExternalAttribute. Exposed as a class method for unit testing.
-+ (ITMCellStyle *)protoStyleForCharacter:(screen_char_t)c
-                       externalAttributes:(iTermExternalAttribute *)ea;
-
-// Pure transformation: produces the text of a line plus its run-length-encoded
-// code-point counts and cell styles. Exposed as a class method for unit testing.
-+ (NSString *)stringForLine:(const screen_char_t *)screenChars
-                     length:(int)length
-                    eaIndex:(iTermExternalAttributeIndex * _Nullable)eaIndex
-                  cppsArray:(NSMutableArray<ITMCodePointsPerCell *> *)cppsArray
-                stylesArray:(NSMutableArray<ITMCellStyle *> *)styleArray;
-
-- (nullable ITMGetBufferResponse *)handleGetBufferRequest:(ITMGetBufferRequest *)request;
-- (void)handleGetPromptRequest:(ITMGetPromptRequest *)request
-                    completion:(void (^)(ITMGetPromptResponse *response))completion;
-- (void)handleListPromptsRequest:(ITMListPromptsRequest *)request
-                      completion:(void (^)(ITMListPromptsResponse *response))completion;
-- (ITMNotificationResponse *)handleAPINotificationRequest:(ITMNotificationRequest *)request
-                                            connectionKey:(NSString *)connectionKey;
-
-- (ITMSetProfilePropertyResponse_Status)handleSetProfilePropertyForAssignments:(NSArray<iTermTuple<NSString *, id> *> *)tuples
-                                                            scriptHistoryEntry:(nullable iTermScriptHistoryEntry *)scriptHistoryEntry;
-
-- (ITMGetProfilePropertyResponse *)handleGetProfilePropertyForKeys:(NSArray<NSString *> *)keys;
-
-// Run a script-side function. Can include composition, references to variables.
+// Run a built-in function call. Can include composition, references to variables.
 // origin is used to show why the function was called and goes in the error's title. e.g., "Trigger".
 - (void)invokeFunctionCall:(NSString *)invocation
                      scope:(iTermVariableScope *)scope

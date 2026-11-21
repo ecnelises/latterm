@@ -9,15 +9,14 @@
 #import "iTermScriptFunctionCall+Private.h"
 
 #import "DebugLogging.h"
-#import "iTermAPIHelper.h"
 #import "iTermBuiltInFunctions.h"
 #import "iTermExpressionEvaluator.h"
 #import "iTermExpressionParser.h"
 #import "iTermObject.h"
-#import "iTermScriptHistory.h"
 #import "iTermTruncatedQuotedRecognizer.h"
 #import "iTermVariablesIndex.h"
 #import "iTermVariableScope.h"
+#import "iTermWarning.h"
 #import "NSArray+iTerm.h"
 #import "NSDate+iTerm.h"
 #import "NSDictionary+iTerm.h"
@@ -27,6 +26,8 @@
 #import "NSTimer+iTerm.h"
 
 #import <CoreParse/CoreParse.h>
+
+NSString *const iTermFunctionCallErrorDomain = @"com.iterm2.api";
 
 void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **namespacePtr, NSString **relativeNamePtr) {
     const NSRange range = [fqName rangeOfString:@"." options:NSBackwardsSearch];
@@ -384,6 +385,26 @@ void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **names
                                  completion:completion];
 }
 
++ (void)reportFunctionCallError:(NSError *)error
+                  forInvocation:(NSString *)invocation
+                         origin:(NSString *)origin
+                         window:(NSWindow *)window {
+    NSString *message = [NSString stringWithFormat:@"Error running “%@”:\n%@",
+                         invocation, error.localizedDescription];
+    NSString *traceback = error.localizedFailureReason;
+    if (traceback.length > 0) {
+        message = [message stringByAppendingFormat:@"\n\n%@", traceback];
+    }
+    DLog(@"An error occurred while running the function invocation “%@”: %@", invocation, message);
+    [iTermWarning showWarningWithTitle:message
+                               actions:@[ @"OK" ]
+                             accessory:nil
+                            identifier:@"NoSyncFunctionCallError"
+                           silenceable:kiTermWarningTypeTemporarilySilenceable
+                               heading:[NSString stringWithFormat:@"%@ Function Call Failed", origin]
+                                window:window];
+}
+
 - (void)functionCallDidTimeOutAfter:(NSTimeInterval)timeout
                          invocation:(NSString *)invocation
                          completion:(void (^)(id, NSError *, NSSet<NSString *> *))completion {
@@ -395,12 +416,7 @@ void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **names
                             @(timeout), invocation, self.name];
     }
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: reason };
-    if (self.connectionKey) {
-        userInfo = [userInfo dictionaryBySettingObject:self.connectionKey
-                                                forKey:iTermAPIHelperFunctionCallErrorUserInfoKeyConnection];
-    }
-    iTermScriptHistoryEntry *entry = [[iTermAPIHelper sharedInstance] scriptHistoryEntryForConnectionKey:self.connectionKey];
-    [entry addOutput:[reason stringByAppendingString:@"\n"] completion:^{}];
+    DLog(@"%@", reason);
 
     NSError *error = [NSError errorWithDomain:@"com.iterm2.call"
                                          code:2
@@ -532,30 +548,11 @@ void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **names
         return;
     }
 
-    // Fill in any default values not expliciltly specified.
-    NSDictionary<NSString *, id> *fullParameters = nil;
-    iTermAPIHelper *apiHelper = [iTermAPIHelper sharedInstanceIfEnabled];
-    if (apiHelper == nil) {
-        NSString *const signature = [self signature];
-        NSError *error = [NSError errorWithDomain:iTermAPIHelperErrorDomain
-                                             code:iTermAPIHelperErrorCodeAPIDisabled
-                                         userInfo:@{ NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Undefined function with signature “%@”", signature]}];
-        completion(nil, error, nil);
-        return;
-    }
-    self->_connectionKey = [[apiHelper connectionKeyForRPCWithName:self.fullyQualifiedName
-                                                explicitParameters:parameterValues
-                                                             scope:scope
-                                                    fullParameters:&fullParameters] copy];
-    [apiHelper dispatchRPCWithName:self.fullyQualifiedName
-                         arguments:fullParameters
-                        completion:^(id apiResult, NSError *apiError) {
-                            NSSet<NSString *> *missing = nil;
-                            if (apiError.code == iTermAPIHelperErrorCodeUnregisteredFunction) {
-                                missing = [NSSet setWithObject:self.signature];
-                            }
-                            completion(apiResult, apiError, missing);
-                        }];
+    NSString *const signature = [self signature];
+    NSError *error = [NSError errorWithDomain:iTermFunctionCallErrorDomain
+                                         code:iTermFunctionCallErrorCodeUnregisteredFunction
+                                     userInfo:@{ NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Undefined function with signature “%@”", signature]}];
+    completion(nil, error, [NSSet setWithObject:signature]);
 }
 
 - (BOOL)isBuiltinFunction {
@@ -654,18 +651,11 @@ void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **names
 - (NSError *)errorForDependentCall:(iTermScriptFunctionCall *)call
                thatFailedWithError:(NSError *)error
                      connectionKey:(id)connectionKey {
-    if (error.code == iTermAPIHelperErrorCodeUnregisteredFunction && [error.domain isEqualToString:iTermAPIHelperErrorDomain]) {
+    if (error.code == iTermFunctionCallErrorCodeUnregisteredFunction && [error.domain isEqualToString:iTermFunctionCallErrorDomain]) {
         return error;
     }
     NSString *reason = [NSString stringWithFormat:@"In call to %@: %@", call.name, error.localizedDescription];
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey: reason };
-    if (error.userInfo[iTermAPIHelperFunctionCallErrorUserInfoKeyConnection]) {
-        userInfo = [userInfo dictionaryBySettingObject:error.userInfo[iTermAPIHelperFunctionCallErrorUserInfoKeyConnection]
-                                                forKey:iTermAPIHelperFunctionCallErrorUserInfoKeyConnection];
-    } else if (connectionKey) {
-        userInfo = [userInfo dictionaryBySettingObject:connectionKey
-                                                forKey:iTermAPIHelperFunctionCallErrorUserInfoKeyConnection];
-    }
     NSString *traceback = error.localizedFailureReason;
     if (traceback) {
         userInfo = [userInfo dictionaryBySettingObject:traceback forKey:NSLocalizedFailureReasonErrorKey];

@@ -18,8 +18,6 @@
 #import "iTermMouseCursor.h"
 #import "iTermNotificationController.h"
 #import "iTermPreferences.h"
-#import "iTermScriptConsole.h"
-#import "iTermScriptHistory.h"
 #import "iTermSelection.h"
 #import "iTermSlowOperationGateway.h"
 #import "iTermSnippetsMenuController.h"
@@ -142,11 +140,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
             item.title = @"Disconnect";
         }
     }
-    if (item.action == @selector(toggleRemoteHostCanControlIterm2:)) {
-        BOOL available = NO;
-        item.state = [self.delegate textViewRemoteHostCanControlIterm2:&available] ? NSControlStateValueOn : NSControlStateValueOff;
-        return available;
-    }
     if (item.action == @selector(foldSelection:)) {
         if ([self.dataSource terminalSoftAlternateScreenMode] && [self foldWouldTouchMutableArea]) {
             return NO;
@@ -216,9 +209,6 @@ static const NSUInteger kRectangularSelectionModifierMask = (kRectangularSelecti
     [self.delegate textViewDisconnectSSH];
 }
 
-- (IBAction)toggleRemoteHostCanControlIterm2:(id)sender {
-    [self.delegate textViewToggleRemoteHostCanControlIterm2];
-}
 - (BOOL)selectionContainsFold {
     const long long offset = self.dataSource.totalScrollbackOverflow;
     for (iTermSubSelection *subSelection in self.selection.allSubSelections) {

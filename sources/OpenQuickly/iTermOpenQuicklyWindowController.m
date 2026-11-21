@@ -13,7 +13,7 @@
 #import "iTermOpenQuicklyTableCellView.h"
 #import "iTermOpenQuicklyTableRowView.h"
 #import "iTermOpenQuicklyTextField.h"
-#import "iTermScriptsMenuController.h"
+#import "iTermScriptFunctionCall.h"
 #import "iTermSessionLauncher.h"
 #import "iTermSessionPreviewPanel.h"
 #import "iTermSnippetsMenuController.h"
@@ -444,10 +444,7 @@
             [self update];
             return;
         } else if ([object isKindOfClass:[iTermOpenQuicklyScriptItem class]]) {
-            iTermOpenQuicklyScriptItem *item = [iTermOpenQuicklyScriptItem castFrom:object];
-            [[[[iTermApplication sharedApplication] delegate] scriptsMenuController] launchScriptWithRelativePath:item.identifier
-                                                                                                        arguments:@[]
-                                                                                               explicitUserAction:YES];
+            // Legacy Python API scripts have been removed.
         } else if ([object isKindOfClass:[iTermOpenQuicklyColorPresetItem class]]) {
             iTermOpenQuicklyColorPresetItem *item = [iTermOpenQuicklyColorPresetItem castFrom:object];
             PseudoTerminal *term = [[iTermController sharedInstance] currentTerminal];
@@ -489,10 +486,10 @@
                                            retainSelf:YES
                                            completion:^(id value, NSError *error, NSSet<NSString *> *missing) {
                     if (error) {
-                        [iTermAPIHelper reportFunctionCallError:error
-                                                  forInvocation:item.identifier
-                                                         origin:@"Open Quickly"
-                                                         window:nil];
+                        [iTermScriptFunctionCall reportFunctionCallError:error
+                                                           forInvocation:item.identifier
+                                                                  origin:@"Open Quickly"
+                                                                  window:nil];
                     } else {
                         NSAlert *alert = [[NSAlert alloc] init];
                         [alert setMessageText:@"Function Call Result"];

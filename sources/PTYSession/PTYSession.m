@@ -79,7 +79,6 @@
 #import "WindowControllerInterface.h"
 #import "iTerm.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermAPIHelper.h"
 #import "iTermActionsModel.h"
 #import "iTermAddTriggerViewController.h"
 #import "iTermAdvancedSettingsModel.h"
@@ -146,9 +145,7 @@
 #import "iTermRestorableSession.h"
 #import "iTermRightGutterPanelRegistry.h"
 #import "iTermSavePanel.h"
-#import "iTermScriptConsole.h"
 #import "iTermScriptFunctionCall.h"
-#import "iTermScriptHistory.h"
 #import "iTermSecureKeyboardEntryController.h"
 #import "iTermSelection.h"
 #import "iTermSemanticHistoryController.h"
@@ -188,7 +185,6 @@
 #import "iTermVariableScope+Session.h"
 #import "iTermVariableScope.h"
 #import "iTermWarning.h"
-#import "iTermWebSocketCookieJar.h"
 #import "iTermWorkingDirectoryPoller.h"
 #import <apr-1/apr_base64.h>
 #include <stdlib.h>
@@ -571,12 +567,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 
     id<VT100RemoteHostReading> _currentHost;
 
-    NSMutableDictionary<id, ITMNotificationRequest *> *_keystrokeSubscriptions;
-    NSMutableDictionary<id, ITMNotificationRequest *> *_keyboardFilterSubscriptions;
-    NSMutableDictionary<id, ITMNotificationRequest *> *_updateSubscriptions;
-    NSMutableDictionary<id, ITMNotificationRequest *> *_promptSubscriptions;
-    NSMutableDictionary<id, ITMNotificationRequest *> *_customEscapeSequenceNotifications;
-
     // Used by auto-hide. We can't auto hide the tmux gateway session until at least one window has been opened.
     BOOL _hideAfterTmuxWindowOpens;
 
@@ -877,11 +867,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         _cadenceController = [[iTermUpdateCadenceController alloc] init];
         _cadenceController.delegate = self;
 
-        _keystrokeSubscriptions = [[NSMutableDictionary alloc] init];
-        _keyboardFilterSubscriptions = [[NSMutableDictionary alloc] init];
-        _updateSubscriptions = [[NSMutableDictionary alloc] init];
-        _promptSubscriptions = [[NSMutableDictionary alloc] init];
-        _customEscapeSequenceNotifications = [[NSMutableDictionary alloc] init];
         _metalDisabledTokens = [[NSMutableSet alloc] init];
         _statusChangedAbsLine = -1;
         _nameController = [[iTermSessionNameController alloc] init];
@@ -949,10 +934,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
                                                  selector:@selector(sessionHotkeyDidChange:)
                                                      name:kProfileSessionHotkeyDidChange
                                                    object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(apiServerUnsubscribe:)
-                                                     name:iTermRemoveAPIServerSubscriptionsNotification
-                                                   object:nil];
         // Detach before windows get closed. That's why we have to use the
         // iTermApplicationWillTerminate notification instead of
         // NSApplicationWillTerminate, since this gets run before the windows
@@ -972,10 +953,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(windowDidEndLiveResize:)
                                                      name:NSWindowDidEndLiveResizeNotification
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(apiDidStop:)
-                                                     name:iTermAPIHelperDidStopNotification
                                                    object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(tmuxWillKillWindow:)
@@ -1118,12 +1095,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_currentHost release];
     [_hostnameToShell release];
 
-    [_keystrokeSubscriptions release];
-    [_keyboardFilterSubscriptions release];
-    [_updateSubscriptions release];
-    [_promptSubscriptions release];
-    [_customEscapeSequenceNotifications release];
-
     [_modeHandler release];
     _passwordInputDebouncer.onRecheck = nil;
     [_passwordInputDebouncer release];
@@ -1180,10 +1151,7 @@ ITERM_WEAKLY_REFERENCEABLE
     [_logging release];
     [_naggingController release];
     [_pasteBracketingOopsieExpectation release];
-    if (_cookie) {
-        [[iTermWebSocketCookieJar sharedInstance] removeCookie:_cookie];
-        [_cookie release];
-    }
+    [_cookie release];
     [_composerManager release];
     [_tmuxClientWritePipe release];
     [_arrangementGUID release];
@@ -2007,9 +1975,6 @@ ITERM_WEAKLY_REFERENCEABLE
         haveSavedProgramData = NO;
     }
 
-    if (arrangement[SESSION_ARRANGEMENT_REUSABLE_COOKIE]) {
-        [[iTermWebSocketCookieJar sharedInstance] addCookie:arrangement[SESSION_ARRANGEMENT_REUSABLE_COOKIE]];
-    }
     NSNumber *tmuxPaneNumber = [arrangement objectForKey:SESSION_ARRANGEMENT_TMUX_PANE];
     NSString *tmuxDCSIdentifier = nil;
     BOOL shouldEnterTmuxMode = NO;
@@ -2116,7 +2081,6 @@ ITERM_WEAKLY_REFERENCEABLE
                     [aSession.screen performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
                         [terminal.parser cancelConductorRecoveryMode];
                     }];
-                    [aSession->_conductor resolveIT2AuthorizationFailClosed];
                     [aSession removeChannelClientsForConductor:aSession->_conductor];
                     aSession->_conductor.delegate = nil;
                     [aSession->_conductor release];
@@ -2998,10 +2962,6 @@ ITERM_WEAKLY_REFERENCEABLE
     if (env[COLORFGBG_ENVNAME] == nil && _colorFgBgVariable != nil) {
         env[COLORFGBG_ENVNAME] = _colorFgBgVariable;
     }
-    if ([iTermAdvancedSettingsModel setCookie]) {
-        self.cookie = [[iTermWebSocketCookieJar sharedInstance] randomStringForCookie];
-        env[@"ITERM2_COOKIE"] = self.cookie;
-    }
 
     NSString *suiteName = [iTermUserDefaults customSuiteName];
     if (suiteName) {
@@ -3524,9 +3484,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_naggingController willRecycleSession];
 
     if (_conductor) {
-        // Dismiss any pending it2 auth prompt while the delegate is still live; deinit
-        // fulfills the seal but (being nonisolated) cannot dismiss the announcement.
-        [_conductor resolveIT2AuthorizationFailClosed];
         [self removeChannelClientsForConductor:_conductor];
         _conductor.delegate = nil;
         [_conductor release];
@@ -7402,22 +7359,6 @@ static NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger = @"
     }
 }
 
-- (void)apiDidStop:(NSNotification *)notification {
-    [_promptSubscriptions removeAllObjects];
-    [_keystrokeSubscriptions removeAllObjects];
-    [_keyboardFilterSubscriptions removeAllObjects];
-    [_updateSubscriptions removeAllObjects];
-    [_customEscapeSequenceNotifications removeAllObjects];
-}
-
-- (void)apiServerUnsubscribe:(NSNotification *)notification {
-    [_promptSubscriptions removeObjectForKey:notification.object];
-    [_keystrokeSubscriptions removeObjectForKey:notification.object];
-    [_keyboardFilterSubscriptions removeObjectForKey:notification.object];
-    [_updateSubscriptions removeObjectForKey:notification.object];
-    [_customEscapeSequenceNotifications removeObjectForKey:notification.object];
-}
-
 - (void)applicationWillTerminate:(NSNotification *)notification {
     // See comment where we observe this notification for why this is done.
     [self tmuxDetach];
@@ -9648,22 +9589,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [_conductor quit];
 }
 
-- (BOOL)textViewRemoteHostCanControlIterm2:(out BOOL *)available {
-    const BOOL isAvailable = (_conductor != nil && _conductor.it2ProxyActive);
-    if (available) {
-        *available = isAvailable;
-    }
-    return isAvailable && _conductor.it2AuthorizedByUser;
-}
-
-- (void)textViewToggleRemoteHostCanControlIterm2 {
-    if (!_conductor.it2ProxyActive) {
-        return;
-    }
-    [_conductor setIT2AuthorizationFromMenu:!_conductor.it2AuthorizedByUser];
-}
-
-
 - (void)highlightMarkOrNote:(id<IntervalTreeImmutableObject>)obj {
     if ([obj isKindOfClass:[iTermMark class]]) {
         BOOL hasErrorCode = NO;
@@ -10374,82 +10299,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [_pasteHelper enqueueEvent:event];
 }
 
-- (BOOL)event:(NSEvent *)event matchesPattern:(ITMKeystrokePattern *)pattern {
-    if (event.type != NSEventTypeKeyDown) {
-        return NO;
-    }
-    NSMutableArray *actualModifiers = [NSMutableArray array];
-    if (event.it_modifierFlags & NSEventModifierFlagControl) {
-        [actualModifiers addObject:@(ITMModifiers_Control)];
-    }
-    if (event.it_modifierFlags & NSEventModifierFlagOption) {
-        [actualModifiers addObject:@(ITMModifiers_Option)];
-    }
-    if (event.it_modifierFlags & NSEventModifierFlagCommand) {
-        [actualModifiers addObject:@(ITMModifiers_Command)];
-    }
-    if (event.it_modifierFlags & NSEventModifierFlagShift) {
-        [actualModifiers addObject:@(ITMModifiers_Shift)];
-    }
-    if (event.it_modifierFlags & NSEventModifierFlagFunction) {
-        [actualModifiers addObject:@(ITMModifiers_Function)];
-    }
-    if (event.it_modifierFlags & NSEventModifierFlagNumericPad) {
-        [actualModifiers addObject:@(ITMModifiers_Numpad)];
-    }
-    for (NSInteger i = 0; i < pattern.requiredModifiersArray_Count; i++) {
-        ITMModifiers modifier = [pattern.requiredModifiersArray valueAtIndex:i];
-        if (![actualModifiers containsObject:@(modifier)]) {
-            return NO;
-        }
-    }
-    for (NSInteger i = 0; i < pattern.forbiddenModifiersArray_Count; i++) {
-        ITMModifiers modifier = [pattern.forbiddenModifiersArray valueAtIndex:i];
-        if ([actualModifiers containsObject:@(modifier)]) {
-            return NO;
-        }
-    }
-
-    // All necessary conditions are satisifed. Now find one that is sufficient.
-    for (NSInteger i = 0; i < pattern.keycodesArray_Count; i++) {
-        if (event.keyCode == [pattern.keycodesArray valueAtIndex:i]) {
-            return YES;
-        }
-    }
-    for (NSString *characters in pattern.charactersArray) {
-        if ([event.characters isEqualToString:characters]) {
-            return YES;
-        }
-    }
-    for (NSString *charactersIgnoringModifiers in pattern.charactersIgnoringModifiersArray) {
-        if ([event.charactersIgnoringModifiers isEqualToString:charactersIgnoringModifiers]) {
-            return YES;
-        }
-    }
-    return NO;
-}
-
-- (BOOL)keystrokeIsFilteredByMonitor:(NSEvent *)event {
-    for (NSString *identifier in _keyboardFilterSubscriptions) {
-        ITMNotificationRequest *request = _keyboardFilterSubscriptions[identifier];
-        for (ITMKeystrokePattern *pattern in request.keystrokeFilterRequest.patternsToIgnoreArray) {
-            if ([self event:event matchesPattern:pattern]) {
-                return YES;
-            }
-        }
-        // Prior to 1.17, the filter monitor used keystrokeMonitorRequest instead of keystrokeFilterRequest.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        for (ITMKeystrokePattern *pattern in request.keystrokeMonitorRequest.patternsToIgnoreArray) {
-#pragma clang diagnostic pop
-            if ([self event:event matchesPattern:pattern]) {
-                return YES;
-            }
-        }
-    }
-    return NO;
-}
-
 - (VT100SyncResult)textViewWillRefresh {
     return [self syncCheckingTriggers:VT100ScreenTriggerCheckTypePartialLines
                         resetOverflow:YES];
@@ -10699,19 +10548,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     return (right ? self.rightOptionKey : self.optionKey) != OPT_NORMAL;
 }
 
-- (BOOL)shouldReportOrFilterKeystrokesForAPI {
-    if (self.isTmuxClient && _tmuxPaused) {
-        // This ignores the monitor filter and subscriptions because it might be the only way to
-        // unpause.
-        return NO;
-    }
-    return YES;
-}
-
 - (void)textViewDidReceiveFlagsChangedEvent:(NSEvent *)event {
-    if ([self shouldReportOrFilterKeystrokesForAPI]) {
-        [self sendKeystrokeNotificationForEvent:event advanced:YES];
-    }
     // Change of cmd modifier means we need mouseMoved events to highlight/unhighlight URLs.
     [self.view updateTrackingAreas];
 }
@@ -10721,116 +10558,47 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)shouldAcceptKeyDownEvent:(NSEvent *)event {
-    const BOOL accept = ![self keystrokeIsFilteredByMonitor:event];
+    if (_textview.selection.hasSelection &&
+        !_textview.selection.live &&
+        [_modeHandler.copyModeHandler shouldAutoEnterWithEvent:event]) {
+        // Avoid handling the event twice (which is the cleverness)
+        [_modeHandler enterCopyModeWithoutCleverness];
+        [_modeHandler.copyModeHandler handleAutoEnteringEvent:event];
+        return NO;
+    }
+    if (_modeHandler.mode != iTermSessionModeDefault) {
+        [_modeHandler handleEvent:event];
+        return NO;
+    }
+    if (event.keyCode == kVK_Return) {
+        [_screen userDidPressReturn];
+    }
 
-    if (accept) {
-        if (_textview.selection.hasSelection &&
-            !_textview.selection.live &&
-            [_modeHandler.copyModeHandler shouldAutoEnterWithEvent:event]) {
-            // Avoid handling the event twice (which is the cleverness)
-            [_modeHandler enterCopyModeWithoutCleverness];
-            [_modeHandler.copyModeHandler handleAutoEnteringEvent:event];
-            return NO;
-        }
-        if (_modeHandler.mode != iTermSessionModeDefault) {
-            [_modeHandler handleEvent:event];
-            return NO;
-        }
-        if (event.keyCode == kVK_Return) {
-            [_screen userDidPressReturn];
-        }
-
-        if ((event.it_modifierFlags & NSEventModifierFlagControl) && [event.charactersIgnoringModifiers isEqualToString:@"c"]) {
-            if (_screen.terminalReceivingFile) {
-                // Offer to abort download if you press ^c while downloading an inline file
-                [self.naggingController askAboutAbortingDownload];
-            } else if (self.upload) {
-                [self.naggingController askAboutAbortingUpload];
-            }
-        }
-        _lastInput = [NSDate timeIntervalSinceReferenceDate];
-        [_directoryTracker userDidPressKey];
-        if ([_view.currentAnnouncement handleKeyDown:event]) {
-            return NO;
+    if ((event.it_modifierFlags & NSEventModifierFlagControl) && [event.charactersIgnoringModifiers isEqualToString:@"c"]) {
+        if (_screen.terminalReceivingFile) {
+            // Offer to abort download if you press ^c while downloading an inline file
+            [self.naggingController askAboutAbortingDownload];
+        } else if (self.upload) {
+            [self.naggingController askAboutAbortingUpload];
         }
     }
-    if (![self shouldReportOrFilterKeystrokesForAPI]) {
+    _lastInput = [NSDate timeIntervalSinceReferenceDate];
+    [_directoryTracker userDidPressKey];
+    if ([_view.currentAnnouncement handleKeyDown:event]) {
+        return NO;
+    }
+    if (self.isTmuxClient && _tmuxPaused) {
         [self setTmuxPaused:NO allowAutomaticUnpause:YES];
         return NO;
     }
-    if (_keystrokeSubscriptions.count && ![event it_eventGetsSpecialHandlingForAPINotifications]) {
-        [self sendKeystrokeNotificationForEvent:event advanced:NO];
-    }
 
-    if (accept) {
-        [_metaFrustrationDetector didSendKeyEvent:event];
-    }
+    [_metaFrustrationDetector didSendKeyEvent:event];
     if ([self eventAbortsPasteWaitingForPrompt:event]) {
         [_pasteHelper abort];
         return NO;
     }
 
-    return accept;
-}
-
-- (NSArray<NSNumber *> *)apiModifiersForModifierFlags:(NSEventModifierFlags)flags {
-    NSMutableArray<NSNumber *> *mods = [NSMutableArray array];
-    if (flags & NSEventModifierFlagControl) {
-        [mods addObject:@(ITMModifiers_Control)];
-    }
-    if (flags & NSEventModifierFlagOption) {
-        [mods addObject:@(ITMModifiers_Option)];
-    }
-    if (flags & NSEventModifierFlagCommand) {
-        [mods addObject:@(ITMModifiers_Command)];
-    }
-    if (flags & NSEventModifierFlagShift) {
-        [mods addObject:@(ITMModifiers_Shift)];
-    }
-    if (flags & NSEventModifierFlagNumericPad) {
-        [mods addObject:@(ITMModifiers_Numpad)];
-    }
-    if (flags & NSEventModifierFlagFunction) {
-        [mods addObject:@(ITMModifiers_Function)];
-    }
-    return mods;
-}
-
-- (void)sendKeystrokeNotificationForEvent:(NSEvent *)event
-                                 advanced:(BOOL)advanced {
-    ITMKeystrokeNotification *keystrokeNotification = [[[ITMKeystrokeNotification alloc] init] autorelease];
-    if (!advanced || event.type != NSEventTypeFlagsChanged) {
-        keystrokeNotification.characters = event.characters;
-        keystrokeNotification.charactersIgnoringModifiers = event.charactersIgnoringModifiers;
-    }
-    for (NSNumber *number in [self apiModifiersForModifierFlags:event.it_modifierFlags]) {
-        [keystrokeNotification.modifiersArray addValue:number.intValue];
-    }
-    switch (event.type) {
-        case NSEventTypeKeyDown:
-            keystrokeNotification.action = ITMKeystrokeNotification_Action_KeyDown;
-            break;
-        case NSEventTypeKeyUp:
-            keystrokeNotification.action = ITMKeystrokeNotification_Action_KeyUp;
-            break;
-        case NSEventTypeFlagsChanged:
-            keystrokeNotification.action = ITMKeystrokeNotification_Action_FlagsChanged;
-            break;
-        default:
-            break;
-    }
-    keystrokeNotification.keyCode = event.keyCode;
-    keystrokeNotification.session = self.guid;
-    ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
-    notification.keystrokeNotification = keystrokeNotification;
-
-    [_keystrokeSubscriptions enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (advanced && !obj.keystrokeMonitorRequest.advanced) {
-            return;
-        }
-        [[iTermAPIHelper sharedInstance] postAPINotification:notification
-                                             toConnectionKey:key];
-    }];
+    return YES;
 }
 
 - (BOOL)eventAbortsPasteWaitingForPrompt:(NSEvent *)event {
@@ -10853,7 +10621,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 + (void)reportFunctionCallError:(NSError *)error forInvocation:(NSString *)invocation origin:(NSString *)origin window:(NSWindow *)window {
-    [iTermAPIHelper reportFunctionCallError:error forInvocation:invocation origin:origin window:window];
+    [iTermScriptFunctionCall reportFunctionCallError:error forInvocation:invocation origin:origin window:window];
 }
 
 - (void)invokeFunctionCall:(NSString *)invocation
@@ -11465,16 +11233,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                            silenceable:kiTermWarningTypePersistent
                                                heading:@"Error Evaluating Interpolated String"
                                                 window:weakSelf.view.window];
-
-                    iTermScriptHistoryEntry *entry =
-                    [[[iTermScriptHistoryEntry alloc] initWithName:@"Copy Interpolated String"
-                                                          fullPath:parameter
-                                                        identifier:[[NSUUID UUID] UUIDString]
-                                                          relaunch:nil] autorelease];
-                    [[iTermScriptHistory sharedInstance] addHistoryEntry:entry];
-                    [entry addOutput:[NSString stringWithFormat:@"Error evaluating interpolated string “%@”:\n%@", parameter, evaluator.error]
-                          completion:^{}];
-
+                    DLog(@"Error evaluating interpolated string “%@”: %@", parameter, evaluator.error);
                     return;
                 }
                 [[NSPasteboard generalPasteboard] clearContents];
@@ -11836,9 +11595,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)keyUp:(NSEvent *)event {
-    if ([self shouldReportOrFilterKeystrokesForAPI]) {
-        [self sendKeystrokeNotificationForEvent:event advanced:YES];
-    }
     if (_screen.terminalReportKeyUp || _keyMapper.keyMapperWantsKeyUp) {
         NSData *const dataToSend = [_keyMapper keyMapperDataForKeyUp:event];
         if (dataToSend) {
@@ -12372,15 +12128,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 - (void)textViewDidFindDirtyRects {
     _lastScreenContentsChangeTime = [NSDate it_timeSinceBoot];
     _screenContentsHaveEverChanged = YES;
-    if (_updateSubscriptions.count) {
-        ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
-        notification.screenUpdateNotification = [[[ITMScreenUpdateNotification alloc] init] autorelease];
-        notification.screenUpdateNotification.session = self.guid;
-        [_updateSubscriptions enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
-            [[iTermAPIHelper sharedInstance] postAPINotification:notification
-                                                 toConnectionKey:key];
-        }];
-    }
 
     // Commit 86477b98076802412a9a02c4b88ca1ee4b5b4d66 wrongly removed code to restart
     // tail find. Because of its removal tail find didn't really work. This isn't terribly
@@ -13950,7 +13697,14 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                     modifiers:(NSEventModifierFlags)modifiers
                   sideEffects:(iTermClickSideEffects)sideEffects
                         state:(iTermMouseState)state {
-    self.variablesScope.mouseInfo = @[ @(coord.x), @(coord.y), @(button), @(count), [self apiModifiersForModifierFlags:modifiers], @(sideEffects), @(state) ];
+    NSMutableArray<NSNumber *> *mods = [NSMutableArray array];
+    if (modifiers & NSEventModifierFlagControl) { [mods addObject:@1]; }
+    if (modifiers & NSEventModifierFlagOption) { [mods addObject:@2]; }
+    if (modifiers & NSEventModifierFlagCommand) { [mods addObject:@3]; }
+    if (modifiers & NSEventModifierFlagShift) { [mods addObject:@4]; }
+    if (modifiers & NSEventModifierFlagNumericPad) { [mods addObject:@6]; }
+    if (modifiers & NSEventModifierFlagFunction) { [mods addObject:@5]; }
+    self.variablesScope.mouseInfo = @[ @(coord.x), @(coord.y), @(button), @(count), mods, @(sideEffects), @(state) ];
 }
 
 - (void)closeTriggerWindowController {
@@ -14112,9 +13866,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (void)textViewhandleSpecialKeyDown:(NSEvent *)event {
-    if (_keystrokeSubscriptions.count) {
-        [self sendKeystrokeNotificationForEvent:event advanced:NO];
-    }
 }
 
 - (NSString *)userShell {
@@ -15525,21 +15276,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         [_eventTriggerEvaluator promptDetected];
     }
     _composerManager.haveShellProvidedText = NO;
-    [_promptSubscriptions enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (obj.argumentsOneOfCase == ITMNotificationRequest_Arguments_OneOfCase_GPBUnsetOneOfCase ||
-            [obj.promptMonitorRequest.modesArray it_contains:ITMPromptMonitorMode_Prompt]) {
-            ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
-            notification.promptNotification = [[[ITMPromptNotification alloc] init] autorelease];
-            notification.promptNotification.session = self.guid;
-            notification.promptNotification.prompt.placeholder = @"";
-            notification.promptNotification.prompt.prompt = [self getPromptResponseForMark:mark];
-            if (mark) {
-                notification.promptNotification.uniquePromptId = mark.guid;
-            }
-            [[iTermAPIHelper sharedInstance] postAPINotification:notification
-                                                 toConnectionKey:key];
-        }
-    }];
     if ([iTermAdvancedSettingsModel smartLoggingWithAutoComposer]) {
         if ([iTermPreferences boolForKey:kPreferenceAutoComposer]) {
             NSArray<ScreenCharArray *> *lines = mark.promptText;
@@ -16830,15 +16566,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                                                                           payload:payload ?: @""];
         [_eventTriggerEvaluator customEscapeSequenceWithInfo:info];
     }
-    ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
-    notification.customEscapeSequenceNotification = [[[ITMCustomEscapeSequenceNotification alloc] init] autorelease];
-    notification.customEscapeSequenceNotification.session = self.guid;
-    notification.customEscapeSequenceNotification.senderIdentity = parameters[@"id"];
-    notification.customEscapeSequenceNotification.payload = payload;
-    [_customEscapeSequenceNotifications enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
-        [[iTermAPIHelper sharedInstance] postAPINotification:notification
-                                             toConnectionKey:key];
-    }];
 }
 
 - (iTermNaggingController *)naggingController {
@@ -17103,19 +16830,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     // `_screen.commandRange` is from the beginning of command, to the cursor, not necessarily the end of the command.
     // `absRange` here includes the entire command and a new line.
     _lastOrCurrentlyRunningCommandAbsRange = absRange;
-    [_promptSubscriptions enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj.promptMonitorRequest.modesArray it_contains:ITMPromptMonitorMode_CommandStart]) {
-            ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
-            notification.promptNotification = [[[ITMPromptNotification alloc] init] autorelease];
-            notification.promptNotification.session = self.guid;
-            notification.promptNotification.commandStart.command = command;
-            if (mark) {
-                notification.promptNotification.uniquePromptId = mark.guid;
-            }
-            [[iTermAPIHelper sharedInstance] postAPINotification:notification
-                                                 toConnectionKey:key];
-        }
-    }];
     if ([iTermPreferences boolForKey:kPreferenceAutoComposer]) {
         if (paused) {
             [_composerManager reset];
@@ -17169,19 +16883,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         [_eventTriggerEvaluator commandFinishedWithInfo:info];
     }
     [_appSwitchingPreventionDetector commandDidFinishWithStatus:code];
-    [_promptSubscriptions enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, ITMNotificationRequest * _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj.promptMonitorRequest.modesArray it_contains:ITMPromptMonitorMode_CommandEnd]) {
-            ITMNotification *notification = [[[ITMNotification alloc] init] autorelease];
-            notification.promptNotification = [[[ITMPromptNotification alloc] init] autorelease];
-            notification.promptNotification.session = self.guid;
-            notification.promptNotification.commandEnd.status = code;
-            if (maybeMark) {
-                notification.promptNotification.uniquePromptId = maybeMark.guid;
-            }
-            [[iTermAPIHelper sharedInstance] postAPINotification:notification
-                                                 toConnectionKey:key];
-        }
-    }];
 
     if (maybeMark) {
         const VT100GridRange lineRange = [_screen lineNumberRangeOfInterval:maybeMark.entry.interval];
@@ -18565,11 +18266,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         [_screen restoreSavedState:config];
     }
     if (_conductor) {
-        // Dismiss any pending it2 auth prompt while the delegate is still live (covers
-        // conductorQuit / conductorAbortWithReason and the root-recovery unhook loop);
-        // otherwise the announcement lingers pointing at a released conductor. Idempotent
-        // and a no-op when no prompt is pending.
-        [_conductor resolveIT2AuthorizationFailClosed];
         [self removeChannelClientsForConductor:_conductor];
         _conductor.delegate = nil;
         [_conductor autorelease];
@@ -18621,10 +18317,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)screenHandleIT2:(NSString *)string depth:(int)depth {
-    if (!string) {
-        return;
-    }
-    [_conductor handleIT2:string depth:depth];
 }
 
 - (NSInteger)screenEndSSH:(NSString *)uniqueID {
@@ -18648,19 +18340,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)screenBeginFramerRecovery:(int)parentDepth {
-    // Preserve the it2 proxy state (nonce/socket/authorization) of the conductor being
-    // recovered so it carries into the shim below. For a root single-hop recovery the
-    // old conductor is unhooked (and released) before the shim exists, so retain it
-    // across that teardown; for nested recovery it becomes the shim's parent.
-    iTermConductor *recovering = [_conductor retain];
-    // Dismiss any it2 auth prompt for the retiring conductor WHILE its delegate is still
-    // live. unhookSSHConductor does resolve the prompt too, but it nils the delegate on
-    // the way, and it only runs on the root (parentDepth < 0) path's loop -- the nested
-    // path keeps the old conductor as parent and never unhooks it. So resolve here,
-    // before the loop, to cover the nested path and to run before the delegate is cleared.
-    // persist:false, so this does not touch it2Authorized and is safe before adopt (which
-    // carries any decided grant); an undecided prompt re-appears on the next command.
-    [recovering resolveIT2AuthorizationFailClosed];
     if (parentDepth < 0) {
         while (_conductor) {
             [self unhookSSHConductor];
@@ -18675,8 +18354,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
                                    clientVars:@{}
                              initialDirectory:nil
                                        parent:previousConductor];
-    [_conductor adoptIT2RecoveryStateFrom:recovering];
-    [recovering release];
     [self updateVariablesFromConductor];
     _conductor.delegate = self;
     [_conductor startRecovery];
@@ -18688,10 +18365,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     if (!recovery) {
         return nil;
     }
-    // Dismiss any pending it2 auth prompt while the delegate is still live (deinit fulfills
-    // the seal but cannot dismiss the announcement). The recovery shim usually has no
-    // prompt, but close the gap so a released conductor never leaves a live announcement.
-    [_conductor resolveIT2AuthorizationFailClosed];
     _conductor.delegate = nil;
     [_conductor autorelease];
     _conductor = [[iTermConductor alloc] initWithRecovery:recovery];
@@ -20081,447 +19754,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [self sync];
 }
 
-+ (ITMCellStyle *)protoStyleForCharacter:(screen_char_t)c externalAttributes:(iTermExternalAttribute *)ea {
-    ITMCellStyle *style = [[[ITMCellStyle alloc] init] autorelease];
-    // For image cells, foregroundColor/backgroundColor store X/Y image coordinates,
-    // not actual colors. Skip color mode processing to avoid invalid enum values.
-    if (!c.image) {
-        switch (c.foregroundColorMode) {
-            case ColorModeAlternate: {
-                switch ((ITMAlternateColor)c.foregroundColor) {
-                    case ITMAlternateColor_Default:
-                    case ITMAlternateColor_SystemMessage:
-                    case ITMAlternateColor_ReversedDefault:
-                        style.fgAlternate = (ITMAlternateColor)c.foregroundColor;
-                        break;
-                }
-                break;
-            }
-            case ColorModeNormal: {
-                style.fgStandard = c.foregroundColor;
-                break;
-            }
-            case ColorMode24bit: {
-                ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-                rgb.red = c.foregroundColor;
-                rgb.green = c.fgGreen;
-                rgb.blue = c.fgBlue;
-                style.fgRgb = rgb;
-                break;
-            }
-            case ColorModeExternal: {
-                // Dual-mode cell: prefer the EA's light variant in its native
-                // form (indexed or RGB). If the EA is missing or invalid, fall
-                // back to the cell's stored bytes — matches the rendering path
-                // and avoids reporting black for chars loaded from a state
-                // that's missing the EA.
-                if (ea.dualModeForeground.valid) {
-                    const VT100TerminalColorValue light = ea.dualModeForeground.light;
-                    if (light.mode == ColorModeNormal) {
-                        style.fgStandard = light.red;
-                    } else {
-                        ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-                        rgb.red = light.red;
-                        rgb.green = light.green;
-                        rgb.blue = light.blue;
-                        style.fgRgb = rgb;
-                    }
-                } else {
-                    ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-                    rgb.red = c.foregroundColor;
-                    rgb.green = c.fgGreen;
-                    rgb.blue = c.fgBlue;
-                    style.fgRgb = rgb;
-                }
-                break;
-            }
-        }
-
-        switch (c.backgroundColorMode) {
-            case ColorModeAlternate: {
-                switch ((ITMAlternateColor)c.backgroundColor) {
-                    case ITMAlternateColor_Default:
-                    case ITMAlternateColor_SystemMessage:
-                    case ITMAlternateColor_ReversedDefault:
-                        style.bgAlternate = (ITMAlternateColor)c.backgroundColor;
-                        break;
-                }
-                break;
-            }
-            case ColorModeNormal: {
-                style.bgStandard = c.backgroundColor;
-                break;
-            }
-            case ColorMode24bit: {
-                ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-                rgb.red = c.backgroundColor;
-                rgb.green = c.bgGreen;
-                rgb.blue = c.bgBlue;
-                style.bgRgb = rgb;
-                break;
-            }
-            case ColorModeExternal: {
-                if (ea.dualModeBackground.valid) {
-                    const VT100TerminalColorValue light = ea.dualModeBackground.light;
-                    if (light.mode == ColorModeNormal) {
-                        style.bgStandard = light.red;
-                    } else {
-                        ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-                        rgb.red = light.red;
-                        rgb.green = light.green;
-                        rgb.blue = light.blue;
-                        style.bgRgb = rgb;
-                    }
-                } else {
-                    ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-                    rgb.red = c.backgroundColor;
-                    rgb.green = c.bgGreen;
-                    rgb.blue = c.bgBlue;
-                    style.bgRgb = rgb;
-                }
-                break;
-            }
-        }
-    }
-
-    style.bold = c.bold;
-    style.faint = c.faint;
-    style.italic = c.italic;
-    style.blink = c.blink;
-    style.underline = c.underline;
-    style.strikethrough = c.strikethrough;
-    style.invisible = c.invisible;
-    style.inverse = c.inverse;
-    style.guarded = c.guarded;
-
-    if (c.image) {
-        style.image = ITMImagePlaceholderType_Iterm2;
-    } else if (c.virtualPlaceholder) {
-        style.image = ITMImagePlaceholderType_Kitty;
-    } else {
-        style.image = ITMImagePlaceholderType_None;
-    }
-
-    if (ea.hasUnderlineColor) {
-        ITMRGBColor *rgb = [[[ITMRGBColor alloc] init] autorelease];
-        rgb.red = ea.underlineColor.red;
-        rgb.green = ea.underlineColor.green;
-        rgb.blue = ea.underlineColor.blue;
-        style.underlineColor = rgb;
-    }
-    if (ea.blockIDList) {
-        style.blockId = [[ea.blockIDList componentsSeparatedByString:iTermExternalAttributeBlockIDDelimiter] firstObject];
-    }
-    if (ea.url) {
-        ITMURL *url = [[[ITMURL alloc] init] autorelease];
-        url.URL = ea.url.url.absoluteString;
-        url.identifier = ea.url.identifier;
-        style.URL = url;
-    }
-    style.repeats = 1;
-    return style;
-}
-
-+ (NSString *)stringForLine:(const screen_char_t *)screenChars
-                     length:(int)length
-                    eaIndex:(iTermExternalAttributeIndex *)eaIndex
-                  cppsArray:(NSMutableArray<ITMCodePointsPerCell *> *)cppsArray
-                stylesArray:(NSMutableArray<ITMCellStyle *> *)styleArray {
-    unichar *characters = iTermMalloc(sizeof(unichar) * length * kMaxParts + 1);
-    ITMCodePointsPerCell *cpps = [[[ITMCodePointsPerCell alloc] init] autorelease];
-    cpps.numCodePoints = 1;
-    cpps.repeats = 0;
-
-    ITMCellStyle *style = nil;
-
-    iTermExternalAttribute *prevAttr = nil;
-    screen_char_t prev = { 0 };
-
-    int o = 0;
-    for (int i = 0; i < length; ++i) {
-        int numCodePoints;
-
-        if (style != nil) {
-            if (ScreenCharacterAttributesEqual(screenChars[i], prev) &&
-                [NSObject object:prevAttr isEqualToObject:eaIndex[i]]) {
-                style.repeats += 1;
-            } else {
-                [styleArray addObject:style];
-                style = nil;
-            }
-        }
-        if (style == nil) {
-            style = [PTYSession protoStyleForCharacter:screenChars[i] externalAttributes:eaIndex[i]];
-        }
-        prev = screenChars[i];
-        prevAttr = eaIndex[i];
-
-        unichar c = screenChars[i].code;
-        if (!screenChars[i].complexChar && c >= ITERM2_PRIVATE_BEGIN && c <= ITERM2_PRIVATE_END) {
-            numCodePoints = 0;
-        } else if (screenChars[i].image) {
-            numCodePoints = 0;
-        } else {
-            const int len = ExpandScreenChar(&screenChars[i], characters + o);
-            o += len;
-            numCodePoints = len;
-        }
-
-        if (numCodePoints != cpps.numCodePoints && cpps.repeats > 0) {
-            [cppsArray addObject:cpps];
-            cpps = [[[ITMCodePointsPerCell alloc] init] autorelease];
-            cpps.repeats = 0;
-        }
-        cpps.numCodePoints = numCodePoints;
-        cpps.repeats = cpps.repeats + 1;
-    }
-    if (cpps.repeats > 0) {
-        [cppsArray addObject:cpps];
-    }
-    if (style) {
-        [styleArray addObject:style];
-    }
-    NSString *string = [[[NSString alloc] initWithCharacters:characters length:o] autorelease];
-    free(characters);
-    return string;
-}
-
-- (VT100GridAbsWindowedRange)absoluteWindowedCoordRangeFromLineRange:(ITMLineRange *)lineRange {
-    if (lineRange.hasWindowedCoordRange) {
-        return VT100GridAbsWindowedRangeMake(VT100GridAbsCoordRangeMake(lineRange.windowedCoordRange.coordRange.start.x,
-                                                                        lineRange.windowedCoordRange.coordRange.start.y,
-                                                                        lineRange.windowedCoordRange.coordRange.end.x,
-                                                                        lineRange.windowedCoordRange.coordRange.end.y),
-                                             lineRange.windowedCoordRange.columns.location,
-                                             lineRange.windowedCoordRange.columns.length);
-    }
-    int n = 0;
-    if (lineRange.hasScreenContentsOnly) {
-        n++;
-    }
-    if (lineRange.hasTrailingLines) {
-        n++;
-    }
-    if (n != 1) {
-        return VT100GridAbsWindowedRangeMake(VT100GridAbsCoordRangeMake(-1, -1, -1, -1), -1, -1);
-    }
-
-    NSRange range;
-    if (lineRange.hasScreenContentsOnly) {
-        range.location = [_screen numberOfScrollbackLines] + _screen.totalScrollbackOverflow;
-        range.length = _screen.height;
-    } else if (lineRange.hasTrailingLines) {
-        // Requests are capped at 1M lines to avoid doing too much work.
-        int64_t length = MIN(1000000, MIN(lineRange.trailingLines, _screen.numberOfLines));
-        range.location = _screen.numberOfLines + _screen.totalScrollbackOverflow - length;
-        range.length = length;
-    } else {
-        range = NSMakeRange(NSNotFound, 0);
-    }
-    return VT100GridAbsWindowedRangeMake(VT100GridAbsCoordRangeMake(0, range.location, 0, NSMaxRange(range)), 0, 0);
-}
-
-- (ITMGetBufferResponse *)handleGetBufferRequest:(ITMGetBufferRequest *)request {
-    ITMGetBufferResponse *response = [[[ITMGetBufferResponse alloc] init] autorelease];
-
-    const VT100GridAbsWindowedRange windowedRange = [self absoluteWindowedCoordRangeFromLineRange:request.lineRange];
-    if (windowedRange.coordRange.start.x < 0) {
-        response.status = ITMGetBufferResponse_Status_InvalidLineRange;
-        return nil;
-    }
-
-    const VT100GridWindowedRange range = VT100GridWindowedRangeFromVT100GridAbsWindowedRange(windowedRange, _screen.totalScrollbackOverflow);
-    iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_screen];
-    __block int firstIndex = -1;
-    __block int lastIndex = -1;
-    __block const screen_char_t *line = nil;
-    BOOL (^handleEol)(unichar, int, int) = ^BOOL(unichar code, int numPreceedingNulls, int linenumber) {
-        iTermExternalAttributeIndex *eaIndex = [_screen externalAttributeIndexForLine:linenumber];
-        ITMLineContents *lineContents = [[[ITMLineContents alloc] init] autorelease];
-        lineContents.text = [PTYSession stringForLine:line + firstIndex
-                                               length:lastIndex - firstIndex
-                                              eaIndex:eaIndex
-                                            cppsArray:lineContents.codePointsPerCellArray
-                                          stylesArray:lineContents.styleArray];
-        switch (code) {
-            case EOL_HARD:
-                lineContents.continuation = ITMLineContents_Continuation_ContinuationHardEol;
-                break;
-
-            case EOL_SOFT:
-            case EOL_DWC:
-                lineContents.continuation = ITMLineContents_Continuation_ContinuationSoftEol;
-                break;
-        }
-        [response.contentsArray addObject:lineContents];
-        firstIndex = lastIndex = -1;
-        line = nil;
-        return NO;
-    };
-    // TODO: Some day add bidi support to the python API.
-    [extractor enumerateCharsInRange:range
-                         supportBidi:NO
-                           charBlock:^BOOL(const screen_char_t *currentLine,
-                                           screen_char_t theChar,
-                                           iTermExternalAttribute *ea,
-                                           VT100GridCoord logicalCoord,
-                                           VT100GridCoord coord) {
-                               line = currentLine;
-                               if (firstIndex < 0) {
-                                   firstIndex = coord.x;
-                               }
-                               lastIndex = coord.x + 1;
-                               line = currentLine;
-                               return NO;
-                           }
-                            eolBlock:^BOOL(unichar code, int numPreceedingNulls, int line) {
-                                return handleEol(code, numPreceedingNulls, line);
-                            }];
-    if (line) {
-        handleEol(EOL_SOFT, 0, 0);
-    }
-    response.cursor = [[[ITMCoord alloc] init] autorelease];
-    response.cursor.x = _screen.currentGrid.cursor.x;
-    response.cursor.y = _screen.currentGrid.cursor.y + _screen.numberOfScrollbackLines + _screen.totalScrollbackOverflow;
-
-    response.status = ITMGetBufferResponse_Status_Ok;
-    response.windowedCoordRange.coordRange.start.x = windowedRange.coordRange.start.x;
-    response.windowedCoordRange.coordRange.start.y = windowedRange.coordRange.start.y;
-    response.windowedCoordRange.coordRange.end.x = windowedRange.coordRange.end.x;
-    response.windowedCoordRange.coordRange.end.y = windowedRange.coordRange.end.y;
-    response.windowedCoordRange.columns.location = windowedRange.columnWindow.location;
-    response.windowedCoordRange.columns.length = windowedRange.columnWindow.length;
-
-    return response;
-}
-
-- (void)handleListPromptsRequest:(ITMListPromptsRequest *)request completion:(void (^)(ITMListPromptsResponse *))completion {
-    ITMListPromptsResponse *response = [[[ITMListPromptsResponse alloc] init] autorelease];
-    [_screen enumeratePromptsFrom:request.hasFirstUniqueId ? request.firstUniqueId : nil
-                               to:request.hasLastUniqueId ? request.lastUniqueId : nil
-                            block:^(id<VT100ScreenMarkReading> mark) {
-        [response.uniquePromptIdArray addObject:mark.guid];
-    }];
-    completion(response);
-}
-
-- (void)handleGetPromptRequest:(ITMGetPromptRequest *)request completion:(void (^)(ITMGetPromptResponse *response))completion {
-    id<VT100ScreenMarkReading> mark;
-    if (request.hasUniquePromptId) {
-        mark = [_screen promptMarkWithGUID:request.uniquePromptId];
-    } else {
-        mark = [_screen lastPromptMark];
-    }
-    ITMGetPromptResponse *response = [self getPromptResponseForMark:mark];
-    // excluded_subranges is populated only on the synchronous RPC path
-    // (here), not in the Prompt notification builder. At 133;B time the
-    // mark hasn't accumulated any non-INITIAL OSC 133;A;k= pairs yet, so
-    // surfacing the empty list there would let a notification consumer
-    // assume "no PS2 / right-prompt, ever" — even after later subranges
-    // get recorded. Scripts that want the data subscribe to COMMAND_END
-    // and call back through this RPC.
-    for (iTermResilientCoordinateRange *r in mark.excludedSubranges ?: @[]) {
-        if (r.start.status != StatusValid || r.end.status != StatusValid) {
-            continue;
-        }
-        const VT100GridAbsCoordRange absRange = r.absRange;
-        ITMCoordRange *coordRange = [[[ITMCoordRange alloc] init] autorelease];
-        coordRange.start = [[[ITMCoord alloc] init] autorelease];
-        coordRange.start.x = absRange.start.x;
-        coordRange.start.y = absRange.start.y;
-        coordRange.end = [[[ITMCoord alloc] init] autorelease];
-        coordRange.end.x = absRange.end.x;
-        coordRange.end.y = absRange.end.y;
-        [response.excludedSubrangesArray addObject:coordRange];
-    }
-    completion(response);
-}
-
-- (ITMGetPromptResponse *)getPromptResponseForMark:(id<VT100ScreenMarkReading>)mark {
-    ITMGetPromptResponse *response = [[[ITMGetPromptResponse alloc] init] autorelease];
-    if (!mark) {
-        response.status = ITMGetPromptResponse_Status_PromptUnavailable;
-        return response;
-    }
-
-    if (mark.promptRange.start.x >= 0) {
-        response.promptRange = [[[ITMCoordRange alloc] init] autorelease];
-        response.promptRange.start.x = mark.promptRange.start.x;
-        response.promptRange.start.y = mark.promptRange.start.y;
-        response.promptRange.end.x = mark.promptRange.end.x;
-        response.promptRange.end.y = mark.promptRange.end.y;
-    }
-    if (mark.commandRange.start.x >= 0) {
-        response.commandRange = [[[ITMCoordRange alloc] init] autorelease];
-        response.commandRange.start.x = mark.commandRange.start.x;
-        response.commandRange.start.y = mark.commandRange.start.y;
-        response.commandRange.end.x = mark.commandRange.end.x;
-        response.commandRange.end.y = mark.commandRange.end.y;
-    }
-    if (mark.outputStart.x >= 0) {
-        response.outputRange = [[[ITMCoordRange alloc] init] autorelease];
-        response.outputRange.start.x = mark.outputStart.x;
-        response.outputRange.start.y = mark.outputStart.y;
-        response.outputRange.end.x = _screen.currentGrid.cursor.x;
-        response.outputRange.end.y = _screen.currentGrid.cursor.y + _screen.numberOfScrollbackLines + _screen.totalScrollbackOverflow;
-    }
-
-    response.command = mark.fullCommand ?: self.currentCommand;
-    response.status = ITMGetPromptResponse_Status_Ok;
-    response.workingDirectory = [_screen workingDirectoryOnLine:mark.promptRange.end.y] ?: self.lastDirectory;
-    if (mark.hasCode) {
-        response.promptState = ITMGetPromptResponse_State_Finished;
-        response.exitStatus = mark.code;
-    } else if (mark.outputStart.x >= 0) {
-        response.promptState = ITMGetPromptResponse_State_Running;
-    } else {
-        response.promptState = ITMGetPromptResponse_State_Editing;
-    }
-    response.uniquePromptId = mark.guid;
-    return response;
-}
-
-- (ITMSetProfilePropertyResponse_Status)handleSetProfilePropertyForAssignments:(NSArray<iTermTuple<NSString *, id> *> *)tuples
-                                                            scriptHistoryEntry:(iTermScriptHistoryEntry *)scriptHistoryEntry {
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    for (iTermTuple<NSString *, id> *tuple in tuples) {
-        NSString *key = tuple.firstObject;
-        id value = tuple.secondObject;
-        if (![iTermProfilePreferences valueIsLegal:value forKey:key]) {
-            XLog(@"Value %@ is not legal for key %@", value, key);
-            [scriptHistoryEntry addOutput:[NSString stringWithFormat:@"Value %@ is not legal type for key %@\n", value, key]
-                               completion:^{}];
-            return ITMSetProfilePropertyResponse_Status_RequestMalformed;
-        }
-        dict[key] = value;
-    }
-
-    [self setSessionSpecificProfileValues:dict];
-    return ITMSetProfilePropertyResponse_Status_Ok;
-}
-
-- (ITMGetProfilePropertyResponse *)handleGetProfilePropertyForKeys:(NSArray<NSString *> *)keys {
-    ITMGetProfilePropertyResponse *response = [[[ITMGetProfilePropertyResponse alloc] init] autorelease];
-    if (!keys.count) {
-        return [self handleGetProfilePropertyForKeys:[iTermProfilePreferences allKeys]];
-    }
-
-    for (NSString *key in keys) {
-        id value = [iTermProfilePreferences objectForKey:key inProfile:self.profile];
-        if (value) {
-            NSString *jsonString = [iTermProfilePreferences jsonEncodedValueForKey:key inProfile:self.profile];
-            if (jsonString) {
-                ITMProfileProperty *property = [[[ITMProfileProperty alloc] init] autorelease];
-                property.key = key;
-                property.jsonValue = jsonString;
-                [response.propertiesArray addObject:property];
-            }
-        }
-    }
-    response.status = ITMGetProfilePropertyResponse_Status_Ok;
-    return response;
-}
-
 #pragma mark - iTermSessionDirectoryTrackerDelegate
 
 - (void)directoryTrackerDidChangeDirectory:(iTermSessionDirectoryTracker *)tracker {
@@ -21513,76 +20745,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (iTermVariableScope *)objectScope {
     return self.variablesScope;
-}
-
-#pragma mark - iTermSubscribable
-
-- (NSString *)subscribableIdentifier {
-    return self.guid;
-}
-
-- (ITMNotificationResponse *)handleAPINotificationRequest:(ITMNotificationRequest *)request
-                                            connectionKey:(NSString *)connectionKey {
-    ITMNotificationResponse *response = [[[ITMNotificationResponse alloc] init] autorelease];
-    if (!request.hasSubscribe) {
-        response.status = ITMNotificationResponse_Status_RequestMalformed;
-        return response;
-    }
-
-    NSMutableDictionary<id, ITMNotificationRequest *> *subscriptions = nil;
-    switch (request.notificationType) {
-        case ITMNotificationType_NotifyOnPrompt:
-            subscriptions = _promptSubscriptions;
-            break;
-        case ITMNotificationType_NotifyOnKeystroke:
-            subscriptions = _keystrokeSubscriptions;
-            break;
-        case ITMNotificationType_KeystrokeFilter:
-            subscriptions = _keyboardFilterSubscriptions;
-            break;
-        case ITMNotificationType_NotifyOnScreenUpdate:
-            subscriptions = _updateSubscriptions;
-            break;
-        case ITMNotificationType_NotifyOnCustomEscapeSequence:
-            subscriptions = _customEscapeSequenceNotifications;
-            break;
-
-        case ITMNotificationType_NotifyOnVariableChange:  // Gets special handling before this method is called
-        case ITMNotificationType_NotifyOnNewSession:
-        case ITMNotificationType_NotifyOnTerminateSession:
-        case ITMNotificationType_NotifyOnLayoutChange:
-        case ITMNotificationType_NotifyOnFocusChange:
-        case ITMNotificationType_NotifyOnServerOriginatedRpc:
-        case ITMNotificationType_NotifyOnBroadcastChange:
-        case ITMNotificationType_NotifyOnProfileChange:
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        case ITMNotificationType_NotifyOnLocationChange:
-#pragma clang diagnostic pop
-            // We won't get called for this
-            assert(NO);
-            break;
-    }
-    if (!subscriptions) {
-        response.status = ITMNotificationResponse_Status_RequestMalformed;
-        return response;
-    }
-    if (request.subscribe) {
-        if (subscriptions[connectionKey]) {
-            response.status = ITMNotificationResponse_Status_AlreadySubscribed;
-            return response;
-        }
-        subscriptions[connectionKey] = request;
-    } else {
-        if (!subscriptions[connectionKey]) {
-            response.status = ITMNotificationResponse_Status_NotSubscribed;
-            return response;
-        }
-        [subscriptions removeObjectForKey:connectionKey];
-    }
-
-    response.status = ITMNotificationResponse_Status_Ok;
-    return response;
 }
 
 #pragma mark - iTermLogging
@@ -23102,47 +22264,6 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
 - (void)conductorWriteString:(NSString *)string {
     DLog(@"Conductor write: %@", string);
     [self writeTaskNoBroadcast:string];
-}
-
-// Identifier used to queue and later dismiss the it2 authorization announcement. Keyed
-// on the conductor's guid (not the display name) so two conductors sharing an ssh
-// identity in one session get distinct announcements and queueAnnouncement's
-// dismiss-same-identifier cannot cross-cancel a different conductor's live prompt.
-static NSString *IT2AuthorizationAnnouncementIdentifier(NSString *guid) {
-    return [NSString stringWithFormat:@"IT2Authorization-%@", guid];
-}
-
-+ (NSString *)it2AuthorizationAnnouncementIdentifierForGUID:(NSString *)guid {
-    return IT2AuthorizationAnnouncementIdentifier(guid);
-}
-
-- (void)conductorRequestIT2AuthorizationWithGUID:(NSString *)guid
-                                     displayName:(NSString *)displayName
-                                      completion:(void (^)(BOOL granted, BOOL remember))completion {
-    NSString *who = displayName.length ? displayName : @"A remote session";
-    NSString *title =
-        [NSString stringWithFormat:
-         @"%@ wants to control Latterm using the API over SSH integration. The API can "
-         @"view and modify Latterm’s contents. Allow it for this session?", who];
-    iTermAnnouncementViewController *announcement =
-        [iTermAnnouncementViewController announcementWithTitle:title
-                                                         style:iTermAnnouncementViewStyleWarning
-                                                   withActions:@[ @"Allow", @"Deny" ]
-                                                    completion:^(int selection) {
-            // 0 = Allow, 1 = Deny: explicit choices we remember for the connection.
-            // Closing (-1) or dismissing (-2) is not a choice, so deny just this request
-            // without remembering; the next it2 command prompts again. There is no
-            // default action, so a stray Return in the pane cannot grant access.
-            const BOOL granted = (selection == 0);
-            const BOOL remember = (selection == 0 || selection == 1);
-            completion(granted, remember);
-        }];
-    [self queueAnnouncement:announcement
-                 identifier:IT2AuthorizationAnnouncementIdentifier(guid)];
-}
-
-- (void)conductorDismissIT2AuthorizationPromptWithGUID:(NSString *)guid {
-    [self dismissAnnouncementWithIdentifier:IT2AuthorizationAnnouncementIdentifier(guid)];
 }
 
 - (void)conductorSendInitialText {
