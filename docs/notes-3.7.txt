@@ -15,6 +15,13 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Add declarative TOML configuration support at
+  ~/.config/latterm/config.toml with live hot
+  reloading, bidirectional export, and Settings
+  controls under Backup & Sync.
+- Remove the Python WebSocket/Protobuf RPC stack,
+  it2cli, and all remote Swift packages while
+  retaining streamlined AppleScript support.
 - Replace the 10,100-line PreferencePanel.xib and
   PreferencePanel.strings with programmatic
   controls and responsive SwiftUI section cards

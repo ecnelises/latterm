@@ -2640,3 +2640,26 @@
 "⌘ Number" = "⌘ 数字";
 "⌥ Number" = "⌥ 数字";
 "⌥⌘ Number" = "⌥⌘ 数字";
+
+/* Declarative configuration (config.toml) and streamlined automation strings. */
+"Declarative Configuration (config.toml)" = "声明式配置文件（config.toml）";
+"Archive & Legacy Sync" = "归档与旧版同步";
+"Config file:" = "配置文件：";
+"Open Config File" = "打开配置文件";
+"Export Current Settings" = "导出当前设置";
+"Reload Now" = "立即重载";
+"Reveal in Finder" = "在访达中显示";
+"Declarative configuration file (config.toml)" = "声明式配置文件（config.toml）";
+"Loaded · Live reload active" = "已加载 · 实时热重载已启用";
+"Configuration file ready" = "配置文件已就绪";
+"Not created yet — click “Export Current Settings” or “Open Config File” to begin." = "尚未创建 — 点按“导出当前设置”或“打开配置文件”即可生成并开始使用。";
+"Error: %@" = "错误：%@";
+"TOML syntax error at line %d, column %d: %@" = "TOML 语法错误（第 %1$d 行，第 %2$d 列）：%3$@";
+"Invalid value for ‘%@’: %@" = "“%1$@”的值无效：%2$@";
+"Unable to Open Config File" = "无法打开配置文件";
+"Overwrite existing config.toml?" = "覆盖现有的 config.toml？";
+"Exporting current settings will replace %@." = "导出当前设置将替换 %@。";
+"Overwrite" = "覆盖";
+"Problem Exporting Config File" = "导出配置文件时出现问题";
+"Problem Reloading Config File" = "重载配置文件时出现问题";
+"Write Automatic Profile Switching debug logs" = "记录自动方案切换调试日志";
