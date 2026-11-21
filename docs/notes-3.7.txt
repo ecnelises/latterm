@@ -15,6 +15,10 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Render ASCII and non-ASCII ligatures natively on
+  the Metal GPU pipeline, supporting 4+ cell runs,
+  per-language baseline offsets, and box-cursor
+  ligature splitting without CPU fallback.
 - Replace libsixel with a native Swift SIXEL
   decoder (including P2=1 transparency and 1024
   palette registers) and remove the final git

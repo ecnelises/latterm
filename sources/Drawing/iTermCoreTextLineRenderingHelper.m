@@ -79,7 +79,7 @@
     }
 }
 
-- (void)enumerateGridAlignedRunsWithColumnPositions:(const CGFloat *)xOriginsForCharacters
+- (void)enumerateGridAlignedRunsWithColumnPositions:(nullable const CGFloat *)xOriginsForCharacters
                                         alignToZero:(BOOL)alignToZero
                                             closure:(void (^ NS_NOESCAPE)(CTRunRef run,
                                                                           CTFontRef font,

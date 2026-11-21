@@ -39,6 +39,7 @@ typedef struct {
     NSPoint position;
     unsigned int fakeBold : 1;
     unsigned int fakeItalic : 1;
+    unsigned int antiAlias : 1;
 } iTermDecomposedGlyphPayload;
 
 typedef struct iTermMetalGlyphKey {

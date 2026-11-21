@@ -7,5 +7,5 @@
 
 #import "iTermCharacterParts.h"
 
-const int iTermTextureMapMaxCharacterParts = 5;
-const int iTermTextureMapMiddleCharacterPart = (iTermTextureMapMaxCharacterParts / 2) * iTermTextureMapMaxCharacterParts + (iTermTextureMapMaxCharacterParts / 2);
+const int iTermTextureMapMaxCharacterParts = 9;
+const int iTermTextureMapMiddleCharacterPart = iTermCharacterPartEncodingRadius * iTermCharacterPartEncodingStride + iTermCharacterPartEncodingRadius;

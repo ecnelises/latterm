@@ -15,8 +15,6 @@ NSString *iTermMetalUnavailableReasonDescription(iTermMetalUnavailableReason rea
             return @"no usable GPU found on this machine.";
         case iTermMetalUnavailableReasonDisabled:
             return @"GPU Renderer is disabled in Settings > General.";
-        case iTermMetalUnavailableReasonLigatures:
-            return @"ligatures are enabled. You can disable them in Settings > Profiles > Text > Use ligatures.";
         case iTermMetalUnavailableReasonInitializing:
             return @"the GPU renderer is initializing. It should be ready soon.";
         case iTermMetalUnavailableReasonInvalidSize:
@@ -25,22 +23,10 @@ NSString *iTermMetalUnavailableReasonDescription(iTermMetalUnavailableReason rea
             return @"the session is initializing.";
         case iTermMetalUnavailableReasonTransparency:
             return @"transparent windows are not supported. They can be disabled in Settings > Profiles > Window > Transparency.";
-        case iTermMetalUnavailableReasonVerticalSpacing:
-            return @"the font's vertical spacing set to less than 100%. You can change it in Settings > Profiles > Text > Change Font.";
-        case iTermMetalUnavailableReasonMarginSize:
-            return @"terminal window margins are too small. You can edit them in Settings > Advanced.";
         case iTermMetalUnavailableReasonAnnotations:
             return @"annotations or URL shortcuts are open.";
         case iTermMetalUnavailableReasonPortholes:
             return @"this session has natively rendered items.";
-        case iTermMetalUnavailableReasonFindPanel:
-            return @"the find panel is open.";
-        case iTermMetalUnavailableReasonPasteIndicator:
-            return @"the paste progress indicator is open.";
-        case iTermMetalUnavailableReasonAnnouncement:
-            return @"an announcement (yellow bar) is visible.";
-        case iTermMetalUnavailableReasonURLPreview:
-            return @"a URL preview is visible.";
         case iTermMetalUnavailableReasonWindowResizing:
             return @"the window is being resized.";
         case iTermMetalUnavailableReasonDisconnectedFromPower:
@@ -60,8 +46,6 @@ NSString *iTermMetalUnavailableReasonDescription(iTermMetalUnavailableReason rea
             return @"the screen configuration has just changed.";
         case iTermMetalUnavailableReasonContextAllocationFailure:
             return @"of a temporary failure to allocate a graphics context.";
-        case iTermMetalUnavailableReasonTabDragInProgress:
-            return @"a tab is being dragged.";
         case iTermMetalUnavailableReasonSessionHasNoWindow:
             return @"the current session has no window (this shouldn't happen).";
         case iTermMetalUnavailableReasonDropTargetsVisible:

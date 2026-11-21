@@ -123,9 +123,9 @@ NS_ASSUME_NONNULL_BEGIN
       lineStyleMarkRightInset:(out int *)lineStyleMarkRightInset
                           row:(int)row
                         width:(int)width
-                     bidiInfo:(iTermBidiDisplayInfo *)bidiInfo
+                     bidiInfo:(nullable iTermBidiDisplayInfo *)bidiInfo
                drawableGlyphs:(int *)drawableGlyphsPtr
-                         date:(out NSDate * _Nonnull * _Nonnull)date
+                         date:(out NSDate * _Nullable * _Nonnull)date
                belongsToBlock:(out BOOL * _Nonnull)belongsToBlock
    hasUnderlineOrStrikethrough:(out BOOL * _Nonnull)hasUnderlineOrStrikethroughPtr;
 

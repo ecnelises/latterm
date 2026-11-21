@@ -2094,7 +2094,8 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
         CGContextSetBlendMode(ctx, kCGBlendModeSourceAtop);
     }
     CGContextSetFillColor(ctx, components);
-    double y = point.y + _cellSize.height + _baselineOffset - virtualOffset;
+    const CGFloat customBaselineOffset = [cheapString.attributes[iTermCustomBaselineOffsetAttribute] doubleValue];
+    double y = point.y + _cellSize.height + _baselineOffset - customBaselineOffset - virtualOffset;
     CGFloat vScale = -1.0;
     if (_currentLineAttribute == iTermLineAttributeDoubleHeightTop) {
         vScale = -2.0;
@@ -2351,7 +2352,8 @@ static BOOL NSRangesAdjacent(NSRange lhs, NSRange rhs) {
                                useThinStrokes:useThinStrokes
                                    antialised:antiAlias];
 
-    CGFloat ty = origin.y + _baselineOffset + _cellSize.height - virtualOffset;
+    const CGFloat customBaselineOffset = [attributes[iTermCustomBaselineOffsetAttribute] doubleValue];
+    CGFloat ty = origin.y + _baselineOffset + _cellSize.height - customBaselineOffset - virtualOffset;
     CGFloat vScale = -1.0;
     if (_currentLineAttribute == iTermLineAttributeDoubleHeightTop) {
         // Render glyphs at 2x vertical. Shift baseline down by ascent so the

@@ -419,8 +419,10 @@
 }
 
 - (void)updateLigatureWarning {
-    _ligatureWarning.hidden = ![self shouldShowASCIILigaturesWarning];
-    _ligatureWarningNonAscii.hidden = ![self shouldShowNonASCIILigaturesWarning];
+    // Metal now renders both ASCII and non-ASCII ligatures natively on the GPU,
+    // so enabling ligatures no longer forces a fallback to the legacy CPU renderer.
+    _ligatureWarning.hidden = YES;
+    _ligatureWarningNonAscii.hidden = YES;
 
     // Show the options button only when ligatures are enabled. I didn't want to do this but the
     // only way to prevent ligatures from being drawn is to use the "fast path" drawing code.
@@ -440,36 +442,6 @@
         [_nonASCIIFontPicker removeOptionsButton];
     }
     [self.view it_invalidateProfileFormLayout];
-}
-
-- (BOOL)shouldShowASCIILigaturesWarning {
-    if ([iTermPreferences boolForKey:kPreferenceKeyBidi]) {
-        return NO;
-    }
-    if (self.normalFont.it_defaultLigatures) {
-        return NO;
-    }
-    if (self.normalFont.it_ligatureLevel > 0 && [self boolForKey:KEY_ASCII_LIGATURES]) {
-        return YES;
-    }
-    return NO;
-}
-
-- (BOOL)shouldShowNonASCIILigaturesWarning {
-    if ([iTermPreferences boolForKey:kPreferenceKeyBidi]) {
-        return NO;
-    }
-    if (![self boolForKey:KEY_USE_NONASCII_FONT]) {
-        return NO;
-    }
-
-    if (self.nonAsciiFont.it_defaultLigatures) {
-        return NO;
-    }
-    if (self.nonAsciiFont.it_ligatureLevel > 0 && [self boolForKey:KEY_NON_ASCII_LIGATURES]) {
-        return YES;
-    }
-    return NO;
 }
 
 

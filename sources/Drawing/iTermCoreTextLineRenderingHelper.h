@@ -28,8 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
                                             const CFIndex *glyphIndexToCharacterIndex,
                                             BOOL *stop))closure;
 
-// `positions` is relative to xOriginsForCharacters[0].
-- (void)enumerateGridAlignedRunsWithColumnPositions:(const CGFloat *)xOriginsForCharacters
+// `positions` is relative to xOriginsForCharacters[0]. `xOriginsForCharacters` may be NULL when `alignToZero` is YES.
+- (void)enumerateGridAlignedRunsWithColumnPositions:(nullable const CGFloat *)xOriginsForCharacters
                                         alignToZero:(BOOL)alignToZero
                                             closure:(void (^ NS_NOESCAPE)(CTRunRef run,
                                                                           CTFontRef font,

@@ -10,7 +10,7 @@ extension iTermCoreTextLineRenderingHelper {
     @objc(alignGlyphsToGridWithGlyphIndex:length:xOriginsForCharacters:alignToZero:positions:advances:lastMaxExtent:characterIndexToDisplayCell:)
     func alignGlyphsToGrid(glyphIndex glyphIndexToCharacterIndex: UnsafePointer<CFIndex>,
                            length glyphCount: Int32,
-                           xOriginsForCharacters: UnsafePointer<CGFloat>,
+                           xOriginsForCharacters: UnsafePointer<CGFloat>?,
                            alignToZero: Bool,
                            positions: UnsafeMutablePointer<CGPoint>,
                            advances: UnsafePointer<CGSize>,
@@ -66,8 +66,10 @@ extension iTermCoreTextLineRenderingHelper {
             }
             if alignToZero {
                 positions[j].x = savedPosition - columnBaseline
-            } else {
+            } else if let xOriginsForCharacters {
                 positions[j].x = xOriginsForCharacters[c] + (savedPosition - columnBaseline)
+            } else {
+                it_fatalError("xOriginsForCharacters required when alignToZero is false")
             }
             lastDisplayColumn = displayColumn
             maxExtent = max(maxExtent, savedPosition + advances[j].width)
