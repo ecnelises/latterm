@@ -259,7 +259,8 @@
 #import "iTermCarbonHotKeyController.h"
 #import "iTermOpenQuicklyWindowController.h"
 #import "iTermSessionPreviewPanel.h"
-#import <CoreParse/CoreParse.h>
+#import "iTermExpressionParser+Private.h"
+#import "iTermSwiftyStringParser.h"
 
 #import "iTermURLActionFactory+Testing.h"
 

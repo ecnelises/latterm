@@ -6,10 +6,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CoreParse/CoreParse.h>
 #import "iTermParsedExpression.h"
 
-@interface iTermExpressionParser : NSObject <CPParserDelegate, CPTokeniserDelegate>
+@interface iTermExpressionParser : NSObject
 
 // Use this to get an instance. Only on the main thread.
 // Parses strings like: foo(x:y)
@@ -39,4 +38,3 @@
                                            error:(out NSError *__autoreleasing *)error;
 
 @end
-

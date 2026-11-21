@@ -331,8 +331,6 @@
 		530AB7BA20A638A600D2AA08 /* iTermDisclosableView.m in Sources */ = {isa = PBXBuildFile; fileRef = A66444B91DEEA534000AC615 /* iTermDisclosableView.m */; };
 		530AB89620AFDF5000D2AA08 /* iTermScriptFunctionCall.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB89420AFDF5000D2AA08 /* iTermScriptFunctionCall.h */; };
 		530AB89720AFDF5000D2AA08 /* iTermScriptFunctionCall.m in Sources */ = {isa = PBXBuildFile; fileRef = 530AB89520AFDF5000D2AA08 /* iTermScriptFunctionCall.m */; };
-		530AB89920AFF21300D2AA08 /* CoreParse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 530AB89820AFF21200D2AA08 /* CoreParse.framework */; };
-		530AB89C20AFF23400D2AA08 /* CoreParse.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 530AB89820AFF21200D2AA08 /* CoreParse.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		530AB89F20B08CAF00D2AA08 /* NSJSONSerialization+iTerm.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB89D20B08CAF00D2AA08 /* NSJSONSerialization+iTerm.h */; };
 		530AB8A020B08CAF00D2AA08 /* NSJSONSerialization+iTerm.m in Sources */ = {isa = PBXBuildFile; fileRef = 530AB89E20B08CAF00D2AA08 /* NSJSONSerialization+iTerm.m */; };
 		530AB8A320B12B9500D2AA08 /* iTermFunctionCallTextFieldDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB8A120B12B9500D2AA08 /* iTermFunctionCallTextFieldDelegate.h */; };
@@ -342,8 +340,6 @@
 		530AB8B020B201AB00D2AA08 /* iTermFunctionCallSuggester.m in Sources */ = {isa = PBXBuildFile; fileRef = 530AB8AE20B201AB00D2AA08 /* iTermFunctionCallSuggester.m */; };
 		530AB8B420B2098000D2AA08 /* iTermVariables.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB8B220B2098000D2AA08 /* iTermVariables.h */; };
 		530AB8B520B2098000D2AA08 /* iTermVariables.m in Sources */ = {isa = PBXBuildFile; fileRef = 530AB8B320B2098000D2AA08 /* iTermVariables.m */; };
-		530AB8B820B3627200D2AA08 /* iTermGrammarProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB8B620B3627200D2AA08 /* iTermGrammarProcessor.h */; };
-		530AB8B920B3627200D2AA08 /* iTermGrammarProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 530AB8B720B3627200D2AA08 /* iTermGrammarProcessor.m */; };
 		530AB8BC20B3D3D000D2AA08 /* iTermWindowHacks.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB8BA20B3D3D000D2AA08 /* iTermWindowHacks.h */; };
 		530AB8BD20B3D3D000D2AA08 /* iTermWindowHacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 530AB8BB20B3D3D000D2AA08 /* iTermWindowHacks.m */; };
 		530AB8C020B4E1DE00D2AA08 /* iTermRPCTrigger.h in Headers */ = {isa = PBXBuildFile; fileRef = 530AB8BE20B4E1DD00D2AA08 /* iTermRPCTrigger.h */; };
@@ -372,8 +368,6 @@
 		534B6C6723DC139C0031FED2 /* PTYSession+Scripting.m in Sources */ = {isa = PBXBuildFile; fileRef = A6B70FCC1986FB39007A4284 /* PTYSession+Scripting.m */; };
 		534B6C6823DC165D0031FED2 /* PasteContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D085F8516F02E7400B7FCE9 /* PasteContext.m */; };
 		534B6C6923DC20120031FED2 /* PasteEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D085F9916F1135F00B7FCE9 /* PasteEvent.m */; };
-		5357E41E22682B2100FE5A55 /* CPParser+Cache.h in Headers */ = {isa = PBXBuildFile; fileRef = 5357E41C22682B2100FE5A55 /* CPParser+Cache.h */; };
-		5357E41F22682B2100FE5A55 /* CPParser+Cache.m in Sources */ = {isa = PBXBuildFile; fileRef = 5357E41D22682B2100FE5A55 /* CPParser+Cache.m */; };
 		535B3BB92228DC5500D6D410 /* iTermAlertBuiltInFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = 535B3BB72228DC5500D6D410 /* iTermAlertBuiltInFunction.h */; };
 		535B3BBA2228DC5500D6D410 /* iTermAlertBuiltInFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = 535B3BB82228DC5500D6D410 /* iTermAlertBuiltInFunction.m */; };
 		535D0910224DBE7D00A79581 /* iTermPreferencesSearchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 535D090F224DBE7D00A79581 /* iTermPreferencesSearchTests.m */; };
@@ -381,10 +375,6 @@
 		535D0915224DD13F00A79581 /* iTermPreferencesSearchEngineResultsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 535D0912224DD13F00A79581 /* iTermPreferencesSearchEngineResultsWindowController.m */; };
 		535EA4F120D0CB7A00FC81E0 /* iTermSwiftyString.h in Headers */ = {isa = PBXBuildFile; fileRef = 535EA4EF20D0CB7A00FC81E0 /* iTermSwiftyString.h */; };
 		535EA4F220D0CB7A00FC81E0 /* iTermSwiftyString.m in Sources */ = {isa = PBXBuildFile; fileRef = 535EA4F020D0CB7A00FC81E0 /* iTermSwiftyString.m */; };
-		535EA4FC20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 535EA4FA20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.h */; };
-		535EA4FD20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 535EA4FB20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.m */; };
-		535EA50020D0F15400FC81E0 /* iTermQuotedRecognizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 535EA4FE20D0F15400FC81E0 /* iTermQuotedRecognizer.h */; };
-		535EA50120D0F15400FC81E0 /* iTermQuotedRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 535EA4FF20D0F15400FC81E0 /* iTermQuotedRecognizer.m */; };
 		535EA50420D1869800FC81E0 /* iTermSwiftyStringParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 535EA50220D1869800FC81E0 /* iTermSwiftyStringParser.h */; };
 		535EA50520D1869800FC81E0 /* iTermSwiftyStringParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 535EA50320D1869800FC81E0 /* iTermSwiftyStringParser.m */; };
 		535EA51220D82A9C00FC81E0 /* PTYSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1DD6707614934ADE008E4361 /* PTYSplitView.m */; };
@@ -913,10 +903,8 @@
 		A62A784A2F987D5B007CAA0B /* iTermSocketAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A78312F987D5B007CAA0B /* iTermSocketAddress.h */; };
 		A62A784D2F987D7B007CAA0B /* iTermScriptingWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A784B2F987D7B007CAA0B /* iTermScriptingWindow.h */; };
 		A62A784E2F987D7B007CAA0B /* iTermScriptingWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A784C2F987D7B007CAA0B /* iTermScriptingWindow.m */; };
-		A62A788F2F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A78882F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.m */; };
 		A62A789E2F987E11007CAA0B /* iTermSocketUnixDomainAddress.m in Sources */ = {isa = PBXBuildFile; fileRef = A62A78862F987E11007CAA0B /* iTermSocketUnixDomainAddress.m */; };
 		A62A78A32F987E11007CAA0B /* iTermSocketUnixDomainAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A78852F987E11007CAA0B /* iTermSocketUnixDomainAddress.h */; };
-		A62A78B22F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A78872F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.h */; };
 		A62A78CA2F987E96007CAA0B /* iTermParameterPanelWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A78C72F987E96007CAA0B /* iTermParameterPanelWindowController.xib */; };
 		A62A78CE2F987EE4007CAA0B /* iTermSavePanelFileFormatAccessory.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A78CC2F987EE4007CAA0B /* iTermSavePanelFileFormatAccessory.xib */; };
 		A62A78D62F987F71007CAA0B /* iTermJobTreeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A78D52F987F71007CAA0B /* iTermJobTreeViewController.xib */; };
@@ -2833,7 +2821,7 @@
 		D456895D420CBEEDC331D5F7 /* StatusPrioritySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB44D00ABCD3E5DC090E2D2 /* StatusPrioritySettings.swift */; };
 		D5EF7F4036204859817200E0 /* iTermLayoutCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 93EDFB853885460AA504C6B9 /* iTermLayoutCalculator.h */; };
 		D730EE99C79E77BDAFA30E2C /* ApplyLayoutBuiltInFunction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9801DA0646B0541548CD6B0E /* ApplyLayoutBuiltInFunction.swift */; };
-		D7391EB323E94EAC34943C01 /* iTermOptionalPathRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF73E7832C84F926A6CE54CA /* iTermOptionalPathRecognizer.swift */; };
+		D7391EB323E94EAC34943C01 /* ExpressionParserCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF73E7832C84F926A6CE54CA /* ExpressionParserCore.swift */; };
 		D91F883FD3D1E555EF9CFC86 /* VT100ScreenMutableState+RCDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B686BCDF76FA9118F116990 /* VT100ScreenMutableState+RCDataSource.m */; };
 		D9A2368683D7DDB73A826821 /* iTermStreamingPNGWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C735CA9A1AF5E864EC718E /* iTermStreamingPNGWriter.m */; };
 		D9C96BBF2AC6992941BBF7D7 /* TmuxPaneKeyMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669A7368A85279F81ADA8C9D /* TmuxPaneKeyMode.swift */; };
@@ -2987,7 +2975,6 @@
 			files = (
 				A672F3DFF75C495E953BC9D8 /* SearchableComboListView in CopyFiles */,
 				5383AC1C9AFD4C8BA8B7A81C /* BetterFontPicker in CopyFiles */,
-				530AB89C20AFF23400D2AA08 /* CoreParse.framework in CopyFiles */,
 				A69FEECE2E123B8700AFF7A8 /* iTermSwiftPackages.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3499,7 +3486,6 @@
 		5308BF9422828A28004BECAC /* StatusBarIconCharging@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "StatusBarIconCharging@2x.png"; path = "images/StatusBarIcons/StatusBarIconCharging@2x.png"; sourceTree = "<group>"; };
 		530AB89420AFDF5000D2AA08 /* iTermScriptFunctionCall.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermScriptFunctionCall.h; sourceTree = "<group>"; };
 		530AB89520AFDF5000D2AA08 /* iTermScriptFunctionCall.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermScriptFunctionCall.m; sourceTree = "<group>"; };
-		530AB89820AFF21200D2AA08 /* CoreParse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreParse.framework; path = ThirdParty/CoreParse.framework; sourceTree = "<group>"; };
 		530AB89D20B08CAF00D2AA08 /* NSJSONSerialization+iTerm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSJSONSerialization+iTerm.h"; sourceTree = "<group>"; };
 		530AB89E20B08CAF00D2AA08 /* NSJSONSerialization+iTerm.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSJSONSerialization+iTerm.m"; sourceTree = "<group>"; };
 		530AB8A120B12B9500D2AA08 /* iTermFunctionCallTextFieldDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermFunctionCallTextFieldDelegate.h; sourceTree = "<group>"; };
@@ -3511,8 +3497,6 @@
 		530AB8B120B206DF00D2AA08 /* iTermScriptFunctionCall+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iTermScriptFunctionCall+Private.h"; sourceTree = "<group>"; };
 		530AB8B220B2098000D2AA08 /* iTermVariables.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermVariables.h; sourceTree = "<group>"; };
 		530AB8B320B2098000D2AA08 /* iTermVariables.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermVariables.m; sourceTree = "<group>"; };
-		530AB8B620B3627200D2AA08 /* iTermGrammarProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermGrammarProcessor.h; sourceTree = "<group>"; };
-		530AB8B720B3627200D2AA08 /* iTermGrammarProcessor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermGrammarProcessor.m; sourceTree = "<group>"; };
 		530AB8BA20B3D3D000D2AA08 /* iTermWindowHacks.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermWindowHacks.h; sourceTree = "<group>"; };
 		530AB8BB20B3D3D000D2AA08 /* iTermWindowHacks.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermWindowHacks.m; sourceTree = "<group>"; };
 		530AB8BE20B4E1DD00D2AA08 /* iTermRPCTrigger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermRPCTrigger.h; sourceTree = "<group>"; };
@@ -3539,8 +3523,6 @@
 		534690271C94FF0000B7E4E9 /* overflowImagePressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = overflowImagePressed.png; sourceTree = "<group>"; };
 		534690281C94FF0000B7E4E9 /* overflowImagePressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "overflowImagePressed@2x.png"; sourceTree = "<group>"; };
 		5346902B1C94FF1900B7E4E9 /* overflowImage@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "overflowImage@2x.png"; sourceTree = "<group>"; };
-		5357E41C22682B2100FE5A55 /* CPParser+Cache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CPParser+Cache.h"; sourceTree = "<group>"; };
-		5357E41D22682B2100FE5A55 /* CPParser+Cache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "CPParser+Cache.m"; sourceTree = "<group>"; };
 		535B3BB72228DC5500D6D410 /* iTermAlertBuiltInFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermAlertBuiltInFunction.h; sourceTree = "<group>"; };
 		535B3BB82228DC5500D6D410 /* iTermAlertBuiltInFunction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermAlertBuiltInFunction.m; sourceTree = "<group>"; };
 		535D090F224DBE7D00A79581 /* iTermPreferencesSearchTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermPreferencesSearchTests.m; sourceTree = "<group>"; };
@@ -3550,10 +3532,6 @@
 		535EA4F020D0CB7A00FC81E0 /* iTermSwiftyString.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSwiftyString.m; sourceTree = "<group>"; };
 		535EA4F320D0D6A300FC81E0 /* iTermFunctionCallSuggesterTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermFunctionCallSuggesterTest.m; sourceTree = "<group>"; };
 		535EA4F920D0E90A00FC81E0 /* iTermParsedExpression+Tests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "iTermParsedExpression+Tests.h"; sourceTree = "<group>"; };
-		535EA4FA20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSwiftyStringRecognizer.h; sourceTree = "<group>"; };
-		535EA4FB20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSwiftyStringRecognizer.m; sourceTree = "<group>"; };
-		535EA4FE20D0F15400FC81E0 /* iTermQuotedRecognizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermQuotedRecognizer.h; sourceTree = "<group>"; };
-		535EA4FF20D0F15400FC81E0 /* iTermQuotedRecognizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermQuotedRecognizer.m; sourceTree = "<group>"; };
 		535EA50220D1869800FC81E0 /* iTermSwiftyStringParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSwiftyStringParser.h; sourceTree = "<group>"; };
 		535EA50320D1869800FC81E0 /* iTermSwiftyStringParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSwiftyStringParser.m; sourceTree = "<group>"; };
 		5365206F21433ED2003C58FD /* iTermGitState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermGitState.h; sourceTree = "<group>"; };
@@ -4068,8 +4046,6 @@
 		A62A784C2F987D7B007CAA0B /* iTermScriptingWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermScriptingWindow.m; sourceTree = "<group>"; };
 		A62A78852F987E11007CAA0B /* iTermSocketUnixDomainAddress.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermSocketUnixDomainAddress.h; sourceTree = "<group>"; };
 		A62A78862F987E11007CAA0B /* iTermSocketUnixDomainAddress.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermSocketUnixDomainAddress.m; sourceTree = "<group>"; };
-		A62A78872F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermTruncatedQuotedRecognizer.h; sourceTree = "<group>"; };
-		A62A78882F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermTruncatedQuotedRecognizer.m; sourceTree = "<group>"; };
 		A62A78C72F987E96007CAA0B /* iTermParameterPanelWindowController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermParameterPanelWindowController.xib; sourceTree = "<group>"; };
 		A62A78CC2F987EE4007CAA0B /* iTermSavePanelFileFormatAccessory.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermSavePanelFileFormatAccessory.xib; sourceTree = "<group>"; };
 		A62A78D52F987F71007CAA0B /* iTermJobTreeViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermJobTreeViewController.xib; sourceTree = "<group>"; };
@@ -5525,95 +5501,6 @@
 		B170E6B7392546739AD6C10D /* iTermAutomaticProfileSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iTermAutomaticProfileSwitcher.swift; sourceTree = "<group>"; };
 		A6E9AA1C2F1701F900A04BAE /* Subexpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subexpression.swift; sourceTree = "<group>"; };
 		A6E9AA1E2F1710D500A04BAE /* iTermIndirectValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iTermIndirectValue.swift; sourceTree = "<group>"; };
-		A6E9AA212F19699B00A04BAE /* CPJSONParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPJSONParser.h; sourceTree = "<group>"; };
-		A6E9AA222F19699B00A04BAE /* CPJSONParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPJSONParser.m; sourceTree = "<group>"; };
-		A6E9AA242F19699B00A04BAE /* CPGrammar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPGrammar.h; sourceTree = "<group>"; };
-		A6E9AA252F19699B00A04BAE /* CPGrammar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPGrammar.m; sourceTree = "<group>"; };
-		A6E9AA262F19699B00A04BAE /* CPGrammarInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPGrammarInternal.h; sourceTree = "<group>"; };
-		A6E9AA272F19699B00A04BAE /* CPGrammarInternal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPGrammarInternal.m; sourceTree = "<group>"; };
-		A6E9AA282F19699B00A04BAE /* CPGrammarPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPGrammarPrivate.h; sourceTree = "<group>"; };
-		A6E9AA292F19699B00A04BAE /* CPGrammarPrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPGrammarPrivate.m; sourceTree = "<group>"; };
-		A6E9AA2A2F19699B00A04BAE /* CPGrammarSymbol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPGrammarSymbol.h; sourceTree = "<group>"; };
-		A6E9AA2B2F19699B00A04BAE /* CPGrammarSymbol.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPGrammarSymbol.m; sourceTree = "<group>"; };
-		A6E9AA2C2F19699B00A04BAE /* CPRHSItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPRHSItem.h; sourceTree = "<group>"; };
-		A6E9AA2D2F19699B00A04BAE /* CPRHSItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPRHSItem.m; sourceTree = "<group>"; };
-		A6E9AA2E2F19699B00A04BAE /* CPRHSItem+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CPRHSItem+Private.h"; sourceTree = "<group>"; };
-		A6E9AA2F2F19699B00A04BAE /* CPRHSItemResult.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPRHSItemResult.h; sourceTree = "<group>"; };
-		A6E9AA302F19699B00A04BAE /* CPRHSItemResult.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPRHSItemResult.m; sourceTree = "<group>"; };
-		A6E9AA312F19699B00A04BAE /* CPRule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPRule.h; sourceTree = "<group>"; };
-		A6E9AA322F19699B00A04BAE /* CPRule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPRule.m; sourceTree = "<group>"; };
-		A6E9AA332F19699B00A04BAE /* CPRule+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CPRule+Internal.h"; sourceTree = "<group>"; };
-		A6E9AA352F19699B00A04BAE /* CPItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPItem.h; sourceTree = "<group>"; };
-		A6E9AA362F19699B00A04BAE /* CPItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPItem.m; sourceTree = "<group>"; };
-		A6E9AA372F19699B00A04BAE /* CPLALR1Parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPLALR1Parser.h; sourceTree = "<group>"; };
-		A6E9AA382F19699B00A04BAE /* CPLALR1Parser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPLALR1Parser.m; sourceTree = "<group>"; };
-		A6E9AA392F19699B00A04BAE /* CPLR1Item.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPLR1Item.h; sourceTree = "<group>"; };
-		A6E9AA3A2F19699B00A04BAE /* CPLR1Item.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPLR1Item.m; sourceTree = "<group>"; };
-		A6E9AA3B2F19699B00A04BAE /* CPLR1Parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPLR1Parser.h; sourceTree = "<group>"; };
-		A6E9AA3C2F19699B00A04BAE /* CPLR1Parser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPLR1Parser.m; sourceTree = "<group>"; };
-		A6E9AA3D2F19699B00A04BAE /* CPShiftAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftAction.h; sourceTree = "<group>"; };
-		A6E9AA3E2F19699B00A04BAE /* CPShiftAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPShiftAction.m; sourceTree = "<group>"; };
-		A6E9AA3F2F19699B00A04BAE /* CPShiftReduceAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftReduceAction.h; sourceTree = "<group>"; };
-		A6E9AA402F19699B00A04BAE /* CPShiftReduceAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPShiftReduceAction.m; sourceTree = "<group>"; };
-		A6E9AA412F19699B00A04BAE /* CPShiftReduceActionTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftReduceActionTable.h; sourceTree = "<group>"; };
-		A6E9AA422F19699B00A04BAE /* CPShiftReduceActionTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPShiftReduceActionTable.m; sourceTree = "<group>"; };
-		A6E9AA432F19699B00A04BAE /* CPShiftReduceGotoTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftReduceGotoTable.h; sourceTree = "<group>"; };
-		A6E9AA442F19699B00A04BAE /* CPShiftReduceGotoTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPShiftReduceGotoTable.m; sourceTree = "<group>"; };
-		A6E9AA452F19699B00A04BAE /* CPShiftReduceParserProtectedMethods.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftReduceParserProtectedMethods.h; sourceTree = "<group>"; };
-		A6E9AA462F19699B00A04BAE /* CPShiftReduceState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftReduceState.h; sourceTree = "<group>"; };
-		A6E9AA472F19699B00A04BAE /* CPShiftReduceState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPShiftReduceState.m; sourceTree = "<group>"; };
-		A6E9AA482F19699B00A04BAE /* CPSLRParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPSLRParser.h; sourceTree = "<group>"; };
-		A6E9AA492F19699B00A04BAE /* CPSLRParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPSLRParser.m; sourceTree = "<group>"; };
-		A6E9AA4B2F19699B00A04BAE /* CPRecoveryAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPRecoveryAction.h; sourceTree = "<group>"; };
-		A6E9AA4C2F19699B00A04BAE /* CPRecoveryAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPRecoveryAction.m; sourceTree = "<group>"; };
-		A6E9AA4E2F19699B00A04BAE /* CPParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPParser.h; sourceTree = "<group>"; };
-		A6E9AA4F2F19699B00A04BAE /* CPParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPParser.m; sourceTree = "<group>"; };
-		A6E9AA502F19699B00A04BAE /* CPShiftReduceParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPShiftReduceParser.h; sourceTree = "<group>"; };
-		A6E9AA512F19699B00A04BAE /* CPShiftReduceParser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPShiftReduceParser.m; sourceTree = "<group>"; };
-		A6E9AA532F19699B00A04BAE /* CPSyntaxTree.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPSyntaxTree.h; sourceTree = "<group>"; };
-		A6E9AA542F19699B00A04BAE /* CPSyntaxTree.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPSyntaxTree.m; sourceTree = "<group>"; };
-		A6E9AA562F19699B00A04BAE /* CPIdentifierRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPIdentifierRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA572F19699B00A04BAE /* CPIdentifierRecogniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPIdentifierRecogniser.m; sourceTree = "<group>"; };
-		A6E9AA582F19699B00A04BAE /* CPKeywordRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPKeywordRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA592F19699B00A04BAE /* CPKeywordRecogniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPKeywordRecogniser.m; sourceTree = "<group>"; };
-		A6E9AA5A2F19699B00A04BAE /* CPNumberRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPNumberRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA5B2F19699B00A04BAE /* CPNumberRecogniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPNumberRecogniser.m; sourceTree = "<group>"; };
-		A6E9AA5C2F19699B00A04BAE /* CPQuotedRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPQuotedRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA5D2F19699B00A04BAE /* CPQuotedRecogniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPQuotedRecogniser.m; sourceTree = "<group>"; };
-		A6E9AA5E2F19699B00A04BAE /* CPRegexpRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPRegexpRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA5F2F19699B00A04BAE /* CPRegexpRecogniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPRegexpRecogniser.m; sourceTree = "<group>"; };
-		A6E9AA602F19699B00A04BAE /* CPTokenRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPTokenRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA612F19699B00A04BAE /* CPWhiteSpaceRecogniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPWhiteSpaceRecogniser.h; sourceTree = "<group>"; };
-		A6E9AA622F19699B00A04BAE /* CPWhiteSpaceRecogniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPWhiteSpaceRecogniser.m; sourceTree = "<group>"; };
-		A6E9AA642F19699B00A04BAE /* CPEOFToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPEOFToken.h; sourceTree = "<group>"; };
-		A6E9AA652F19699B00A04BAE /* CPEOFToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPEOFToken.m; sourceTree = "<group>"; };
-		A6E9AA662F19699B00A04BAE /* CPErrorToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPErrorToken.h; sourceTree = "<group>"; };
-		A6E9AA672F19699B00A04BAE /* CPErrorToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPErrorToken.m; sourceTree = "<group>"; };
-		A6E9AA682F19699B00A04BAE /* CPIdentifierToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPIdentifierToken.h; sourceTree = "<group>"; };
-		A6E9AA692F19699B00A04BAE /* CPIdentifierToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPIdentifierToken.m; sourceTree = "<group>"; };
-		A6E9AA6A2F19699B00A04BAE /* CPKeywordToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPKeywordToken.h; sourceTree = "<group>"; };
-		A6E9AA6B2F19699B00A04BAE /* CPKeywordToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPKeywordToken.m; sourceTree = "<group>"; };
-		A6E9AA6C2F19699B00A04BAE /* CPNumberToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPNumberToken.h; sourceTree = "<group>"; };
-		A6E9AA6D2F19699B00A04BAE /* CPNumberToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPNumberToken.m; sourceTree = "<group>"; };
-		A6E9AA6E2F19699B00A04BAE /* CPQuotedToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPQuotedToken.h; sourceTree = "<group>"; };
-		A6E9AA6F2F19699B00A04BAE /* CPQuotedToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPQuotedToken.m; sourceTree = "<group>"; };
-		A6E9AA702F19699B00A04BAE /* CPToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPToken.h; sourceTree = "<group>"; };
-		A6E9AA712F19699B00A04BAE /* CPToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPToken.m; sourceTree = "<group>"; };
-		A6E9AA722F19699B00A04BAE /* CPWhiteSpaceToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPWhiteSpaceToken.h; sourceTree = "<group>"; };
-		A6E9AA732F19699B00A04BAE /* CPWhiteSpaceToken.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPWhiteSpaceToken.m; sourceTree = "<group>"; };
-		A6E9AA752F19699B00A04BAE /* CPTokeniser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPTokeniser.h; sourceTree = "<group>"; };
-		A6E9AA762F19699B00A04BAE /* CPTokeniser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPTokeniser.m; sourceTree = "<group>"; };
-		A6E9AA772F19699B00A04BAE /* CPTokenStream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPTokenStream.h; sourceTree = "<group>"; };
-		A6E9AA782F19699B00A04BAE /* CPTokenStream.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CPTokenStream.m; sourceTree = "<group>"; };
-		A6E9AA7A2F19699B00A04BAE /* CoreParse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CoreParse.h; sourceTree = "<group>"; };
-		A6E9AA7B2F19699B00A04BAE /* CoreParse-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CoreParse-Info.plist"; sourceTree = "<group>"; };
-		A6E9AA7C2F19699B00A04BAE /* CoreParse-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CoreParse-Prefix.pch"; sourceTree = "<group>"; };
-		A6E9AA7D2F19699B00A04BAE /* CPSenTestKitAssertions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CPSenTestKitAssertions.h; sourceTree = "<group>"; };
-		A6E9AA7E2F19699B00A04BAE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		A6E9AA802F19699B00A04BAE /* NSArray+Functional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSArray+Functional.h"; sourceTree = "<group>"; };
-		A6E9AA812F19699B00A04BAE /* NSArray+Functional.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Functional.m"; sourceTree = "<group>"; };
-		A6E9AA822F19699B00A04BAE /* NSSetFunctional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSSetFunctional.h; sourceTree = "<group>"; };
-		A6E9AA832F19699B00A04BAE /* NSSetFunctional.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSSetFunctional.m; sourceTree = "<group>"; };
 		A6E9ACC81A19956D008B0B6F /* NSWindow+PSM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindow+PSM.h"; sourceTree = "<group>"; };
 		A6E9ACC91A19956D008B0B6F /* NSWindow+PSM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindow+PSM.m"; sourceTree = "<group>"; };
 		A6EA071C24EA441900DD6E17 /* NSURL+IDN.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSURL+IDN.m"; path = "NSURL-IDN/NSURL+IDN.m"; sourceTree = "<group>"; };
@@ -5857,7 +5744,7 @@
 		A6FFAE742CF682D40031FB21 /* iTermDoubleWidthCharacterCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermDoubleWidthCharacterCache.m; sourceTree = "<group>"; };
 		AE6718DDCFD2CA382391CDFD /* iTermScreenshotPreviewOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermScreenshotPreviewOverlay.swift; sourceTree = "<group>"; };
 		AF19E441FF824539A275D8DA /* iTermLayoutCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iTermLayoutCalculator.m; sourceTree = "<group>"; };
-		AF73E7832C84F926A6CE54CA /* iTermOptionalPathRecognizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermOptionalPathRecognizer.swift; sourceTree = "<group>"; };
+		AF73E7832C84F926A6CE54CA /* ExpressionParserCore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExpressionParserCore.swift; sourceTree = "<group>"; };
 		AFD19CFAEAD729BC0984E43E /* iTermRowRenderInputs.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermRowRenderInputs.h; sourceTree = "<group>"; };
 		B017AB697F0D773A08D2C2E5 /* iTermAttributedStringBuilderBenchmark.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermAttributedStringBuilderBenchmark.h; sourceTree = "<group>"; };
 		B048AAFA78F22F2C8CB157F3 /* iTermWorkgroupPeerPort.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermWorkgroupPeerPort.swift; sourceTree = "<group>"; };
@@ -6033,7 +5920,6 @@
 				A60BD9191B3F5D76007D7F11 /* OpenDirectory.framework in Frameworks */,
 				1DFA7C9E1923F77100DF1410 /* Security.framework in Frameworks */,
 				874206530564169600CFC3F1 /* AppKit.framework in Frameworks */,
-				530AB89920AFF21300D2AA08 /* CoreParse.framework in Frameworks */,
 				1D6C18BE12951A3C00937A4A /* Carbon.framework in Frameworks */,
 				1DF0897113DBAF4C00A52AD8 /* Quartz.framework in Frameworks */,
 				A6C763D21B45C5B200E3C992 /* libiTerm2Shared.a in Frameworks */,
@@ -6346,7 +6232,6 @@
 				DD02571D09CB9363008F320C /* PSMTabBarControl */,
 				A663012119D08638004AF81C /* SCEvents */,
 				1DFA7C621923E77900DF1410 /* SSKeychain */,
-				A6E9AA842F19699B00A04BAE /* CoreParse */,
 			);
 			name = ThirdParty;
 			path = ThirdParty/;
@@ -6633,7 +6518,6 @@
 				A60EAE7C23F9CEB3007536CE /* ApplicationServices.framework */,
 				1DEB293D1288899A00B2CB9F /* Carbon.framework */,
 				1DD39AD6180B8118004E56D5 /* Cocoa.framework */,
-				530AB89820AFF21200D2AA08 /* CoreParse.framework */,
 				A6588821201708D8006F48DB /* IOKit.framework */,
 				756C32C12597AC9C0047B3A9 /* libaprutil-1.tbd */,
 				A656AE4B1DBBE1CE00CE8448 /* libaprutil-1.tbd */,
@@ -7278,8 +7162,6 @@
 			isa = PBXGroup;
 			children = (
 				A6B150032F985CD3006C7417 /* BuiltInFunctions */,
-				5357E41C22682B2100FE5A55 /* CPParser+Cache.h */,
-				5357E41D22682B2100FE5A55 /* CPParser+Cache.m */,
 				5312269820CB1D3A004831C6 /* iTermBuiltInFunctions.h */,
 				5312269920CB1D3A004831C6 /* iTermBuiltInFunctions.m */,
 				A638D29F222230A3001CD688 /* iTermDirectedGraph.h */,
@@ -7297,17 +7179,13 @@
 				A63B92222F05A27E00591B9E /* iTermGenericEvaluator.m */,
 				A63493E623E945BA0047C31B /* iTermGlobalScopeController.h */,
 				A63493E723E945BA0047C31B /* iTermGlobalScopeController.m */,
-				530AB8B620B3627200D2AA08 /* iTermGrammarProcessor.h */,
-				530AB8B720B3627200D2AA08 /* iTermGrammarProcessor.m */,
 				A6E9AA1E2F1710D500A04BAE /* iTermIndirectValue.swift */,
 				A6481656228FDB89008E7E0C /* iTermObject.h */,
 				A6481657228FE6B1008E7E0C /* iTermObject.m */,
-				AF73E7832C84F926A6CE54CA /* iTermOptionalPathRecognizer.swift */,
+				AF73E7832C84F926A6CE54CA /* ExpressionParserCore.swift */,
 				531E71F22229A54500915960 /* iTermParsedExpression.h */,
 				531E71F32229A54500915960 /* iTermParsedExpression.m */,
 				535EA4F920D0E90A00FC81E0 /* iTermParsedExpression+Tests.h */,
-				535EA4FE20D0F15400FC81E0 /* iTermQuotedRecognizer.h */,
-				535EA4FF20D0F15400FC81E0 /* iTermQuotedRecognizer.m */,
 				A6BF035621E179680097DA86 /* iTermRecordedVariable.h */,
 				A6BF035721E179680097DA86 /* iTermRecordedVariable.m */,
 				A648165D2290773A008E7E0C /* iTermReflection.h */,
@@ -7323,8 +7201,6 @@
 				A638D29C22222B5D001CD688 /* iTermSwiftyStringGraph.m */,
 				535EA50220D1869800FC81E0 /* iTermSwiftyStringParser.h */,
 				535EA50320D1869800FC81E0 /* iTermSwiftyStringParser.m */,
-				535EA4FA20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.h */,
-				535EA4FB20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.m */,
 				A6BF035221E179380097DA86 /* iTermVariableHistory.h */,
 				A6BF035321E179380097DA86 /* iTermVariableHistory.m */,
 				A6BC9B1C214A2AE900F50C09 /* iTermVariableReference.h */,
@@ -7348,8 +7224,6 @@
 				A6BF035B21E179BD0097DA86 /* iTermWeakVariables.m */,
 				A6E9AA1C2F1701F900A04BAE /* Subexpression.swift */,
 				A62EE25427448CDB00D57B54 /* SwiftyStringWithBackreferencesEvaluator.swift */,
-				A62A78872F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.h */,
-				A62A78882F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.m */,
 			);
 			path = Language;
 			sourceTree = "<group>";
@@ -10224,175 +10098,6 @@
 			path = unordered_dense;
 			sourceTree = "<group>";
 		};
-		A6E9AA232F19699B00A04BAE /* Built In Parsers */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA212F19699B00A04BAE /* CPJSONParser.h */,
-				A6E9AA222F19699B00A04BAE /* CPJSONParser.m */,
-			);
-			path = "Built In Parsers";
-			sourceTree = "<group>";
-		};
-		A6E9AA342F19699B00A04BAE /* Grammar */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA242F19699B00A04BAE /* CPGrammar.h */,
-				A6E9AA252F19699B00A04BAE /* CPGrammar.m */,
-				A6E9AA262F19699B00A04BAE /* CPGrammarInternal.h */,
-				A6E9AA272F19699B00A04BAE /* CPGrammarInternal.m */,
-				A6E9AA282F19699B00A04BAE /* CPGrammarPrivate.h */,
-				A6E9AA292F19699B00A04BAE /* CPGrammarPrivate.m */,
-				A6E9AA2A2F19699B00A04BAE /* CPGrammarSymbol.h */,
-				A6E9AA2B2F19699B00A04BAE /* CPGrammarSymbol.m */,
-				A6E9AA2C2F19699B00A04BAE /* CPRHSItem.h */,
-				A6E9AA2D2F19699B00A04BAE /* CPRHSItem.m */,
-				A6E9AA2E2F19699B00A04BAE /* CPRHSItem+Private.h */,
-				A6E9AA2F2F19699B00A04BAE /* CPRHSItemResult.h */,
-				A6E9AA302F19699B00A04BAE /* CPRHSItemResult.m */,
-				A6E9AA312F19699B00A04BAE /* CPRule.h */,
-				A6E9AA322F19699B00A04BAE /* CPRule.m */,
-				A6E9AA332F19699B00A04BAE /* CPRule+Internal.h */,
-			);
-			path = Grammar;
-			sourceTree = "<group>";
-		};
-		A6E9AA4A2F19699B00A04BAE /* CPShiftReduceParsers */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA352F19699B00A04BAE /* CPItem.h */,
-				A6E9AA362F19699B00A04BAE /* CPItem.m */,
-				A6E9AA372F19699B00A04BAE /* CPLALR1Parser.h */,
-				A6E9AA382F19699B00A04BAE /* CPLALR1Parser.m */,
-				A6E9AA392F19699B00A04BAE /* CPLR1Item.h */,
-				A6E9AA3A2F19699B00A04BAE /* CPLR1Item.m */,
-				A6E9AA3B2F19699B00A04BAE /* CPLR1Parser.h */,
-				A6E9AA3C2F19699B00A04BAE /* CPLR1Parser.m */,
-				A6E9AA3D2F19699B00A04BAE /* CPShiftAction.h */,
-				A6E9AA3E2F19699B00A04BAE /* CPShiftAction.m */,
-				A6E9AA3F2F19699B00A04BAE /* CPShiftReduceAction.h */,
-				A6E9AA402F19699B00A04BAE /* CPShiftReduceAction.m */,
-				A6E9AA412F19699B00A04BAE /* CPShiftReduceActionTable.h */,
-				A6E9AA422F19699B00A04BAE /* CPShiftReduceActionTable.m */,
-				A6E9AA432F19699B00A04BAE /* CPShiftReduceGotoTable.h */,
-				A6E9AA442F19699B00A04BAE /* CPShiftReduceGotoTable.m */,
-				A6E9AA452F19699B00A04BAE /* CPShiftReduceParserProtectedMethods.h */,
-				A6E9AA462F19699B00A04BAE /* CPShiftReduceState.h */,
-				A6E9AA472F19699B00A04BAE /* CPShiftReduceState.m */,
-				A6E9AA482F19699B00A04BAE /* CPSLRParser.h */,
-				A6E9AA492F19699B00A04BAE /* CPSLRParser.m */,
-			);
-			path = CPShiftReduceParsers;
-			sourceTree = "<group>";
-		};
-		A6E9AA4D2F19699B00A04BAE /* Error Recovery */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA4B2F19699B00A04BAE /* CPRecoveryAction.h */,
-				A6E9AA4C2F19699B00A04BAE /* CPRecoveryAction.m */,
-			);
-			path = "Error Recovery";
-			sourceTree = "<group>";
-		};
-		A6E9AA522F19699B00A04BAE /* Parsers */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA4A2F19699B00A04BAE /* CPShiftReduceParsers */,
-				A6E9AA4D2F19699B00A04BAE /* Error Recovery */,
-				A6E9AA4E2F19699B00A04BAE /* CPParser.h */,
-				A6E9AA4F2F19699B00A04BAE /* CPParser.m */,
-				A6E9AA502F19699B00A04BAE /* CPShiftReduceParser.h */,
-				A6E9AA512F19699B00A04BAE /* CPShiftReduceParser.m */,
-			);
-			path = Parsers;
-			sourceTree = "<group>";
-		};
-		A6E9AA552F19699B00A04BAE /* Syntax Tree */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA532F19699B00A04BAE /* CPSyntaxTree.h */,
-				A6E9AA542F19699B00A04BAE /* CPSyntaxTree.m */,
-			);
-			path = "Syntax Tree";
-			sourceTree = "<group>";
-		};
-		A6E9AA632F19699B00A04BAE /* Token Recognisers */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA562F19699B00A04BAE /* CPIdentifierRecogniser.h */,
-				A6E9AA572F19699B00A04BAE /* CPIdentifierRecogniser.m */,
-				A6E9AA582F19699B00A04BAE /* CPKeywordRecogniser.h */,
-				A6E9AA592F19699B00A04BAE /* CPKeywordRecogniser.m */,
-				A6E9AA5A2F19699B00A04BAE /* CPNumberRecogniser.h */,
-				A6E9AA5B2F19699B00A04BAE /* CPNumberRecogniser.m */,
-				A6E9AA5C2F19699B00A04BAE /* CPQuotedRecogniser.h */,
-				A6E9AA5D2F19699B00A04BAE /* CPQuotedRecogniser.m */,
-				A6E9AA5E2F19699B00A04BAE /* CPRegexpRecogniser.h */,
-				A6E9AA5F2F19699B00A04BAE /* CPRegexpRecogniser.m */,
-				A6E9AA602F19699B00A04BAE /* CPTokenRecogniser.h */,
-				A6E9AA612F19699B00A04BAE /* CPWhiteSpaceRecogniser.h */,
-				A6E9AA622F19699B00A04BAE /* CPWhiteSpaceRecogniser.m */,
-			);
-			path = "Token Recognisers";
-			sourceTree = "<group>";
-		};
-		A6E9AA742F19699B00A04BAE /* Token Types */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA642F19699B00A04BAE /* CPEOFToken.h */,
-				A6E9AA652F19699B00A04BAE /* CPEOFToken.m */,
-				A6E9AA662F19699B00A04BAE /* CPErrorToken.h */,
-				A6E9AA672F19699B00A04BAE /* CPErrorToken.m */,
-				A6E9AA682F19699B00A04BAE /* CPIdentifierToken.h */,
-				A6E9AA692F19699B00A04BAE /* CPIdentifierToken.m */,
-				A6E9AA6A2F19699B00A04BAE /* CPKeywordToken.h */,
-				A6E9AA6B2F19699B00A04BAE /* CPKeywordToken.m */,
-				A6E9AA6C2F19699B00A04BAE /* CPNumberToken.h */,
-				A6E9AA6D2F19699B00A04BAE /* CPNumberToken.m */,
-				A6E9AA6E2F19699B00A04BAE /* CPQuotedToken.h */,
-				A6E9AA6F2F19699B00A04BAE /* CPQuotedToken.m */,
-				A6E9AA702F19699B00A04BAE /* CPToken.h */,
-				A6E9AA712F19699B00A04BAE /* CPToken.m */,
-				A6E9AA722F19699B00A04BAE /* CPWhiteSpaceToken.h */,
-				A6E9AA732F19699B00A04BAE /* CPWhiteSpaceToken.m */,
-			);
-			path = "Token Types";
-			sourceTree = "<group>";
-		};
-		A6E9AA792F19699B00A04BAE /* Tokenisation */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA632F19699B00A04BAE /* Token Recognisers */,
-				A6E9AA742F19699B00A04BAE /* Token Types */,
-				A6E9AA752F19699B00A04BAE /* CPTokeniser.h */,
-				A6E9AA762F19699B00A04BAE /* CPTokeniser.m */,
-				A6E9AA772F19699B00A04BAE /* CPTokenStream.h */,
-				A6E9AA782F19699B00A04BAE /* CPTokenStream.m */,
-			);
-			path = Tokenisation;
-			sourceTree = "<group>";
-		};
-		A6E9AA842F19699B00A04BAE /* CoreParse */ = {
-			isa = PBXGroup;
-			children = (
-				A6E9AA232F19699B00A04BAE /* Built In Parsers */,
-				A6E9AA342F19699B00A04BAE /* Grammar */,
-				A6E9AA522F19699B00A04BAE /* Parsers */,
-				A6E9AA552F19699B00A04BAE /* Syntax Tree */,
-				A6E9AA792F19699B00A04BAE /* Tokenisation */,
-				A6E9AA7A2F19699B00A04BAE /* CoreParse.h */,
-				A6E9AA7B2F19699B00A04BAE /* CoreParse-Info.plist */,
-				A6E9AA7C2F19699B00A04BAE /* CoreParse-Prefix.pch */,
-				A6E9AA7D2F19699B00A04BAE /* CPSenTestKitAssertions.h */,
-				A6E9AA7F2F19699B00A04BAE /* InfoPlist.strings */,
-				A6E9AA802F19699B00A04BAE /* NSArray+Functional.h */,
-				A6E9AA812F19699B00A04BAE /* NSArray+Functional.m */,
-				A6E9AA822F19699B00A04BAE /* NSSetFunctional.h */,
-				A6E9AA832F19699B00A04BAE /* NSSetFunctional.m */,
-			);
-			name = CoreParse;
-			path = CoreParse/CoreParse;
-			sourceTree = "<group>";
-		};
 		A6EA071B24EA440600DD6E17 /* NSURL-IDN */ = {
 			isa = PBXGroup;
 			children = (
@@ -10990,7 +10695,6 @@
 				A62A7B3C2F988B78007CAA0B /* iTermStatusBarKnobCheckboxViewController.h in Headers */,
 				A62A7B3D2F988B78007CAA0B /* iTermStatusBarComponentKnob.h in Headers */,
 				A62A78A32F987E11007CAA0B /* iTermSocketUnixDomainAddress.h in Headers */,
-				A62A78B22F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.h in Headers */,
 				A6AAD5F322F7EB61002DD12C /* iTermWindowSizeView.h in Headers */,
 				A619DC3B2CD43510004B8996 /* iTermAttributedStringBuilder.h in Headers */,
 				A66719191DCE36C3000CE608 /* iTermShortcut.h in Headers */,
@@ -11137,11 +10841,9 @@
 				A62A780B2F987BDB007CAA0B /* Interval+Additions.h in Headers */,
 				A6FCAF65250D4D6500B89EB0 /* iTermModifyOtherKeysMapper.h in Headers */,
 				A6758568245AA32400827C25 /* iTermGCDTimer.h in Headers */,
-				530AB8B820B3627200D2AA08 /* iTermGrammarProcessor.h in Headers */,
 				5308BF8922828268004BECAC /* iTermStatusBarBatteryComponent.h in Headers */,
 				A6A2D6D524331F0600A4DF5B /* iTermHamburgerButton.h in Headers */,
 				A6393599210401C700A16D1C /* iTermStatusBarMemoryUtilizationComponent.h in Headers */,
-				535EA4FC20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.h in Headers */,
 				A66719301DCE36C3000CE608 /* SSKeychainQuery.h in Headers */,
 				A63493E423E7AC160047C31B /* iTermStatusBarAutoRainbowController.h in Headers */,
 				A6D90D5E2E2F4F7D00BA9F4F /* PTYTextView+MouseHandler.h in Headers */,
@@ -11173,7 +10875,6 @@
 				A6DBC2FC2790F6700043F329 /* VT100ScreenMutableState+TerminalDelegate.h in Headers */,
 				A69D559B232A0CF3002E0F99 /* iTermSessionLauncher.h in Headers */,
 				A6E74ADF2383AA1D0089004A /* iTermTTYState.h in Headers */,
-				535EA50020D0F15400FC81E0 /* iTermQuotedRecognizer.h in Headers */,
 				A6D463EA2404482D005D073D /* iTermAlphaBlendingHelper.h in Headers */,
 				A655E699207153CB00DC21B9 /* NSSavePanel+iTerm.h in Headers */,
 				A66719371DCE36C3000CE608 /* iTermToolbeltSplitView.h in Headers */,
@@ -11243,7 +10944,6 @@
 				A6725AD623D63B7A001CA48A /* iTermProfileModelJournal.h in Headers */,
 				A653F6AC24D122440062377E /* iTermRestorableStateDriver.h in Headers */,
 				A6A802E9226ED20800BC70DC /* iTermPrintGuard.h in Headers */,
-				5357E41E22682B2100FE5A55 /* CPParser+Cache.h in Headers */,
 				A6F718BB226596DB0053488E /* PTYTextView+ARC.h in Headers */,
 				A66F52AD21045B7E00571168 /* iTermStatusBarNetworkUtilizationComponent.h in Headers */,
 				A69C93412121140100531438 /* iTermStatusBarLargeComposerViewController.h in Headers */,
@@ -12840,7 +12540,6 @@
 				A6A9839B27E6BDE1003319D1 /* ModalPasswordAlert.swift in Sources */,
 				A6E2D0F32AC38E6F005C6677 /* TerminalButton.swift in Sources */,
 				A6DCDF2E2EECD784006DE530 /* BufferInputTrigger.swift in Sources */,
-				5357E41F22682B2100FE5A55 /* CPParser+Cache.m in Sources */,
 				A6E5A9282F2DD832002331AE /* iTermKeyMappingRepair.swift in Sources */,
 				A6A4866820B6785400493302 /* iTermAdvancedSettingsViewController.m in Sources */,
 				A6A4867C20B67EFB00493302 /* ProfilesTextPreferencesViewController.m in Sources */,
@@ -13042,7 +12741,6 @@
 				A678C50B279B32C600C59927 /* ComplexCharRegistry.swift in Sources */,
 				A65105A229F24A4200657EB0 /* PromptStateMachine.swift in Sources */,
 				A6DCDD212560B410004EA8A1 /* NSAttributedString+PSM.m in Sources */,
-				530AB8B920B3627200D2AA08 /* iTermGrammarProcessor.m in Sources */,
 				A6C93DD5238A447900F21E0D /* iTermLogicalMovementHelper.m in Sources */,
 				A6A2D6DA243453BA00A4DF5B /* iTermComposerManager.m in Sources */,
 				53A96EE822A48A1A001C2C6F /* iTermTmuxOptionMonitor.m in Sources */,
@@ -13393,7 +13091,6 @@
 				A6BBBFD32CC876E7000A697C /* IndexSet+iTerm.swift in Sources */,
 				A6A4867620B67B9D00493302 /* ProfilePreferencesViewController.m in Sources */,
 				A6A4866120B6763900493302 /* ArrangementPreviewView.m in Sources */,
-				535EA50120D0F15400FC81E0 /* iTermQuotedRecognizer.m in Sources */,
 				A6BBBFD12CC876D3000A697C /* Range+iTerm.swift in Sources */,
 				A6A9839127E5C427003319D1 /* PasswordManagerDataSourceProvider.swift in Sources */,
 				A6A7235C2DB7362D00A8115D /* iTermMutableStringProtocol.swift in Sources */,
@@ -13501,7 +13198,6 @@
 				A6E2B49529FA3DB4002737AD /* FileChecker.swift in Sources */,
 				5337A316203E065300024BEA /* iTermPowerManager.m in Sources */,
 				A6A4867320B67ADB00493302 /* PointerPrefsController.m in Sources */,
-				A62A788F2F987E11007CAA0B /* iTermTruncatedQuotedRecognizer.m in Sources */,
 				A6F6AF9A2F989B2C00F9F8F3 /* iTermMinimalComposerViewController.m in Sources */,
 				A62A789E2F987E11007CAA0B /* iTermSocketUnixDomainAddress.m in Sources */,
 				A643B7F22DA88CF500EF918E /* PathMark.swift in Sources */,
@@ -13549,7 +13245,6 @@
 				A66F52AA210458CA00571168 /* iTermNetworkUtilization.m in Sources */,
 				A63011CE20E85B16008114B7 /* SessionTitleView.m in Sources */,
 				53E9DFE8220D53980070C9C0 /* iTermHyperlinkTrigger.m in Sources */,
-				535EA4FD20D0EBD300FC81E0 /* iTermSwiftyStringRecognizer.m in Sources */,
 				534B6C6823DC165D0031FED2 /* PasteContext.m in Sources */,
 				A6069F062DF21DA000EE6CC7 /* LocalhostEndpoint.swift in Sources */,
 				A6B50EBA29BE42B1000D243D /* FontTable.swift in Sources */,
@@ -13676,7 +13371,7 @@
 				82C8876B3E6C833593501F97 /* SetTabStatusTrigger.swift in Sources */,
 				D456895D420CBEEDC331D5F7 /* StatusPrioritySettings.swift in Sources */,
 				8E9796208C12DD69744D3606 /* iTermLocatedString+ScreenCharArray.swift in Sources */,
-				D7391EB323E94EAC34943C01 /* iTermOptionalPathRecognizer.swift in Sources */,
+				D7391EB323E94EAC34943C01 /* ExpressionParserCore.swift in Sources */,
 				A9921A948B70F521BD2B14B0 /* SessionNoteModel.swift in Sources */,
 				AA5D2BB2D31EDEA4C68D4C3D /* SessionNoteView.swift in Sources */,
 				70F805A3A750CCB540F58C9A /* MovePaneController+API.swift in Sources */,
@@ -14193,14 +13888,6 @@
 				A6A5BDFE2A070C3D00F5FD44 /* Base */,
 			);
 			name = MainMenu.xib;
-			sourceTree = "<group>";
-		};
-		A6E9AA7F2F19699B00A04BAE /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				A6E9AA7E2F19699B00A04BAE /* en */,
-			);
-			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

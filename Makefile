@@ -303,15 +303,8 @@ preview:
 	cp plists/preview-iTerm2.plist plists/iTerm2.plist
 	make Deployment
 
-CoreParse: force
-	rm -rf ThirdParty/CoreParse.framework
-	cd ThirdParty/CoreParse && xcodebuild -target CoreParse -configuration Release CONFIGURATION_BUILD_DIR=.. MACOSX_DEPLOYMENT_TARGET=$(DEPLOYMENT_TARGET) $(SIGNING_FLAGS) $(ARCH_FLAGS)
-
 pwmadapters: force
 	cd pwmplugin/ && ./build.sh
-
-paranoid-CoreParse: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" CoreParse
 
 paranoid-deps: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" deps
@@ -321,7 +314,7 @@ paranoid-pwmadapters: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" pwmadapters
 
 # You probably want make paranoid-deps to avoid depending on Homebrew stuff.
-deps: force CoreParse pwmadapters
+deps: force pwmadapters
 
 # Regenerate NSCharacterSet+iTerm.m and iTermCharacterSets.m from latest Unicode data.
 # Run this when a new Unicode version is released.
@@ -333,7 +326,6 @@ DepsIfNeeded: force
 	tools/rebuild-deps-if-needed
 
 cleandeps: force
-	rm -rf ThirdParty/CoreParse/build
 
 test: force
 	tools/run_tests.expect ModernTests

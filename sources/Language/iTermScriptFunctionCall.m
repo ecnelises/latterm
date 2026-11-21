@@ -13,7 +13,6 @@
 #import "iTermExpressionEvaluator.h"
 #import "iTermExpressionParser.h"
 #import "iTermObject.h"
-#import "iTermTruncatedQuotedRecognizer.h"
 #import "iTermVariablesIndex.h"
 #import "iTermVariableScope.h"
 #import "iTermWarning.h"
@@ -24,8 +23,6 @@
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"
 #import "NSTimer+iTerm.h"
-
-#import <CoreParse/CoreParse.h>
 
 NSString *const iTermFunctionCallErrorDomain = @"com.iterm2.api";
 

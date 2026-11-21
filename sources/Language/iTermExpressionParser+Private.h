@@ -15,13 +15,22 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) BOOL passByReference;
 @end
 
-@class CPSLRParser;
-
 @interface iTermExpressionParser ()
 
-+ (CPTokeniser *)newTokenizer;
-+ (id<CPTokenRecogniser>)stringRecognizerWithClass:(Class)theClass;
-+ (void)setEscapeReplacerInStringRecognizer:(id)stringRecogniser;
+- (iTermParsedExpression *)callSequenceWithCalls:(NSArray<iTermScriptFunctionCall *> *)calls;
+- (iTermParsedExpression *)buildFunctionCallParsedExpressionWithFqName:(NSString *)fqName
+                                                                  args:(NSArray<iTermFunctionArgument *> *)argsArray
+    NS_SWIFT_NAME(buildFunctionCallParsedExpression(fqName:args:));
+- (iTermFunctionArgument *)newFunctionArgumentWithName:(NSString *)name
+                                            expression:(iTermParsedExpression *)expression
+                                       passByReference:(BOOL)passByReference;
+- (iTermParsedExpression *)parsedExpressionWithReferenceToPath:(NSString *)path
+    NS_SWIFT_NAME(parsedExpression(withReferenceToPath:));
+- (iTermParsedExpression *)parsedExpressionWithIndirectValue:(iTermIndirectValue *)indirectValue
+    NS_SWIFT_NAME(parsedExpression(with:));
+- (iTermParsedExpression *)parsedExpressionWithInterpolatedString:(NSString *)swifty;
+- (iTermIndirectValue *)indirectValueWithPath:(NSString *)path
+                                        index:(nullable iTermSubexpression *)indexExpression;
 
 @end
 

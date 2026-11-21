@@ -8,15 +8,12 @@
 #import "iTermExpressionParser.h"
 #import "iTermExpressionParser+Private.h"
 
-#import "CPParser+Cache.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermGrammarProcessor.h"
 #import "iTermParsedExpression+Tests.h"
 #import "iTermScriptFunctionCall+Private.h"
 #import "iTermScriptFunctionCall.h"
 #import "iTermSwiftyStringParser.h"
-#import "iTermSwiftyStringRecognizer.h"
 #import "iTermVariableReference.h"
 #import "iTermVariableScope.h"
 #import "NSArray+iTerm.h"
@@ -27,13 +24,8 @@
 @end
 
 @implementation iTermExpressionParser {
-    @protected
-    CPTokeniser *_tokenizer;
-    CPLALR1Parser *_parser;
+    NSString *_start;
     iTermVariableScope *_scope;
-    NSError *_error;
-    NSString *_input;
-    iTermGrammarProcessor *_grammarProcessor;
 }
 
 + (NSString *)signatureForFunctionCallInvocation:(NSString *)invocation
@@ -90,9 +82,9 @@
             }
             return nil;
     }
-    assert(NO);
+    ITAssertWithMessage(NO, @"Unexpected expression type");
+    return nil;
 }
-
 
 + (instancetype)expressionParser {
     static iTermExpressionParser *sCachedInstance;
@@ -112,130 +104,20 @@
     return sCachedInstance;
 }
 
-+ (void)setEscapeReplacerInStringRecognizer:(id)stringRecogniser {
-    [stringRecogniser setEscapeReplacer:^ NSString * (NSString *str, NSUInteger *loc) {
-        if (str.length > *loc) {
-            switch ([str characterAtIndex:*loc]) {
-                case 'b':
-                    *loc = *loc + 1;
-                    return @"\b";
-                case 'f':
-                    *loc = *loc + 1;
-                    return @"\f";
-                case 'a':
-                    *loc = *loc + 1;
-                    return @"\x07";
-                case 'n':
-                    *loc = *loc + 1;
-                    return @"\n";
-                case 'r':
-                    *loc = *loc + 1;
-                    return @"\r";
-                case 't':
-                    *loc = *loc + 1;
-                    return @"\t";
-                default:
-                    break;
-            }
-        }
-        return nil;
-    }];
-}
-
-+ (id<CPTokenRecogniser>)stringRecognizerWithClass:(Class)theClass {
-    CPQuotedRecogniser *stringRecogniser = [theClass quotedRecogniserWithStartQuote:@"\""
-                                                                           endQuote:@"\""
-                                                                     escapeSequence:@"\\"
-                                                                               name:@"String"];
-    [self setEscapeReplacerInStringRecognizer:stringRecogniser];
-    return stringRecogniser;
-}
-
-// Note that iTermFunctionCallSuggester also uses this.
-+ (CPTokeniser *)newTokenizer {
-    CPTokeniser *tokenizer;
-    tokenizer = [[CPTokeniser alloc] init];
-
-    // OptionalPath must come first — matches "name?" (no space before ?)
-    // as a single token, before identifier or ? keyword recognizers can split it.
-    [tokenizer addTokenRecogniser:[iTermOptionalPathRecognizer recognizer]];
-
-    // Multi-character operators MUST come before single-character ones
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"=="]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"!="]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"<="]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@">="]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"&&"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"||"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"<"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@">"]];
-
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"("]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@")"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@":"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@","]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"."]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"?"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"["]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"]"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@";"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"&"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"+"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"-"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"*"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"/"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"!"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"true"]];
-    [tokenizer addTokenRecogniser:[CPKeywordRecogniser recogniserForKeyword:@"false"]];
-    [tokenizer addTokenRecogniser:[CPNumberRecogniser numberRecogniser]];
-    [tokenizer addTokenRecogniser:[CPWhiteSpaceRecogniser whiteSpaceRecogniser]];
-    [tokenizer addTokenRecogniser:[CPIdentifierRecogniser identifierRecogniser]];
-
-    return tokenizer;
-}
-
-- (id)initWithStart:(NSString *)start {
+- (instancetype)initWithStart:(NSString *)start {
     self = [super init];
     if (self) {
-        _tokenizer = [iTermExpressionParser newTokenizer];
-        [self addSwiftyStringRecognizers];
-        _tokenizer.delegate = self;
-
-        _grammarProcessor = [[iTermGrammarProcessor alloc] init];
-        [self loadRulesAndTransforms];
-
-        _parser = [CPLALR1Parser parserWithBNF:_grammarProcessor.backusNaurForm start:start];
-        assert(_parser);
-        _parser.delegate = self;
+        _start = [start copy];
     }
     return self;
 }
 
-- (void)dealloc {
-    [_parser it_releaseParser];
-}
-
-- (void)addSwiftyStringRecognizers {
-    iTermSwiftyStringRecognizer *left =
-        [[iTermSwiftyStringRecognizer alloc] initWithStartQuote:@"\""
-                                                       endQuote:@"\""
-                                                 escapeSequence:@"\\"
-                                                  maximumLength:NSNotFound
-                                                           name:@"SwiftyString"
-                                             tolerateTruncation:NO];
-
-    [self.class setEscapeReplacerInStringRecognizer:left];
-    [_tokenizer addTokenRecogniser:left];
-}
-
-- (iTermParsedExpression *)callSequenceWithCalls:(NSArray *)calls {
+- (iTermParsedExpression *)callSequenceWithCalls:(NSArray<iTermScriptFunctionCall *> *)calls {
     return [[iTermParsedExpression alloc] initWithFunctionCalls:calls];
 }
 
-
-- (iTermParsedExpression *)parsedExpressionForFunctionCallWithFullyQualifiedName:(NSString *)fqName
-                                                                         arglist:(NSArray<iTermFunctionArgument *> *)argsArray
-                                                                           error:(out NSError **)error {
+- (iTermParsedExpression *)buildFunctionCallParsedExpressionWithFqName:(NSString *)fqName
+                                                                  args:(NSArray<iTermFunctionArgument *> *)argsArray {
     NSString *name;
     NSString *namespace;
     iTermFunctionCallSplitFullyQualifiedName(fqName, &namespace, &name);
@@ -244,16 +126,10 @@
     call.namespace = namespace;
     for (iTermFunctionArgument *arg in argsArray) {
         if (arg.expression.expressionType == iTermParsedExpressionTypeError) {
-            if (error) {
-                *error = arg.expression.error;
-            }
-            return nil;
+            return [[iTermParsedExpression alloc] initWithError:arg.expression.error];
         }
         [call addParameterWithName:arg.name
                   parsedExpression:arg.expression];
-    }
-    if (error) {
-        *error = nil;
     }
     return [[iTermParsedExpression alloc] initWithFunctionCall:call];
 }
@@ -297,8 +173,7 @@
     // For undefined variables, set a fallback error but do NOT auto-optionalize.
     // The user must write "var?" explicitly to treat undefined as null.
     // The ConditionalExpression '?' rule will optionalize when appropriate.
-    NSString *fallbackError;
-    fallbackError = [NSString stringWithFormat:@"Reference to undefined variable \"%@\". Change it to \"%@?\" to treat the undefined value as null.", indirectValue.path, indirectValue.path];
+    NSString *fallbackError = [NSString stringWithFormat:@"Reference to undefined variable \"%@\". Change it to \"%@?\" to treat the undefined value as null.", indirectValue.path, indirectValue.path];
     return [[iTermParsedExpression alloc] initWithObject:indirectValue.value
                                               errorReason:fallbackError];
 }
@@ -355,9 +230,6 @@
         if (!strict &&
             [iTermAdvancedSettingsModel laxNilPolicyInInterpolatedStrings] &&
             expression.expressionType == iTermParsedExpressionTypeError) {
-            // If the expression was a variable reference, replace it with empty string. This works
-            // around the annoyance of remembering to add question marks in interpolated strings,
-            // where you know the result you want is always an empty string.
             iTermParsedExpression *expressionWithPlaceholders = [parser parse:substring
                                                                         scope:[[iTermVariablePlaceholderScope alloc] init]];
             if ([expressionWithPlaceholders.object conformsToProtocol:@protocol(iTermExpressionParserPlaceholder)]) {
@@ -404,11 +276,9 @@
     }
 
     if (!indexExpression) {
-        // This is a plain variable reference, e.g. \(name)
         return [[iTermIndirectValue alloc] initWithValue:untypedValue path:path];
     }
 
-    // Succeed iff this is an array dereference, like \(user.myarray[1])
     NSArray *array = [NSArray castFrom:untypedValue];
     if (!array) {
         NSString *reason = [NSString stringWithFormat:@"Variable “%@” is of type %@, not array", path, NSStringFromClass([untypedValue class])];
@@ -433,409 +303,15 @@
     }
 }
 
-- (void)loadRulesAndTransforms {
-    __weak __typeof(self) weakSelf = self;
-
-    [_grammarProcessor addProductionRule:@"callsequence ::= <callsequence> ';' <call>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermParsedExpression *callSequence = syntaxTree.children[0];
-        iTermParsedExpression *call = syntaxTree.children[2];
-        if (call.expressionType == iTermParsedExpressionTypeError) {
-            return call;
-        }
-        if (callSequence.expressionType == iTermParsedExpressionTypeError) {
-            return callSequence;
-        }
-        // Handle both single FunctionCall and FunctionCalls array
-        NSArray *existingCalls;
-        if (callSequence.expressionType == iTermParsedExpressionTypeFunctionCall) {
-            existingCalls = @[callSequence.functionCall];
-        } else {
-            existingCalls = callSequence.functionCalls;
-        }
-        return [weakSelf callSequenceWithCalls:[existingCalls arrayByAddingObject:call.functionCall]];
-    }];
-    [_grammarProcessor addProductionRule:@"callsequence ::= <call>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        // Return the single call directly (not wrapped in array)
-        return syntaxTree.children[0];
-    }];
-
-    [_grammarProcessor addProductionRule:@"call ::= <path> <arglist>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        NSError *error = nil;
-        iTermParsedExpression *result = [weakSelf parsedExpressionForFunctionCallWithFullyQualifiedName:(NSString *)syntaxTree.children[0]
-                                                                                                arglist:syntaxTree.children[1]
-                                                                                                  error:&error];
-        if (error) {
-            return [[iTermParsedExpression alloc] initWithError:error];
-        }
-        return result;
-    }];
-    [_grammarProcessor addProductionRule:@"arglist ::= '(' <args> ')'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[1];
-    }];
-    [_grammarProcessor addProductionRule:@"arglist ::= '(' ')'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return @[];
-    }];
-    [_grammarProcessor addProductionRule:@"args ::= <arg>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return @[ syntaxTree.children[0] ];
-    }];
-    [_grammarProcessor addProductionRule:@"args ::= <arg> ',' <args>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [@[ syntaxTree.children[0] ] arrayByAddingObjectsFromArray:syntaxTree.children[2]];
-    }];
-    [_grammarProcessor addProductionRule:@"arg ::= 'Identifier' ':' '&' <path>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        NSString *path = syntaxTree.children[3];
-        iTermParsedExpression *ref = [weakSelf parsedExpressionWithReferenceToPath:path];
-        if ([path isEqualToString:@"null"]) {
-            NSError *error = [NSError errorWithDomain:@"com.iterm2.parser"
-                                                 code:2
-                                             userInfo:@{ NSLocalizedDescriptionKey: @"&null is never allowed" }];
-            return [[iTermParsedExpression alloc] initWithError:error];
-        }
-        [weakSelf indirectValueWithPath:path index:nil];  // just for the recording scope side-effect
-        return [weakSelf newFunctionArgumentWithName:[(CPIdentifierToken *)syntaxTree.children[0] identifier]
-                                          expression:ref
-                                     passByReference:YES];
-    }];
-    [_grammarProcessor addProductionRule:@"arg ::= 'Identifier' ':' <expression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [weakSelf newFunctionArgumentWithName:[(CPIdentifierToken *)syntaxTree.children[0] identifier]
-                                          expression:syntaxTree.children[2]
-                                     passByReference:NO];
-    }];
-    [_grammarProcessor addProductionRule:@"expression ::= <Subexpression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        // Pass through the parsed expression - it's already properly typed
-        // (could be Subexpression, IndirectValue, etc.)
-        return syntaxTree.children[0];
-    }];
-
-    [_grammarProcessor addProductionRule:@"Subexpression ::= <ConditionalExpression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-    // Rule 1: Passthrough — no trailing ?. Deoptionalize to convert undefined vars to errors.
-    [_grammarProcessor addProductionRule:@"ConditionalExpression ::= <LogicalOrExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [syntaxTree.children[0] deoptionalized];
-    }];
-
-    // Rule 2: Plain ternary — expr ? trueExpr : falseExpr
-    [_grammarProcessor addProductionRule:@"ConditionalExpression ::= <LogicalOrExpr> '?' <ConditionalExpression> ':' <ConditionalExpression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermParsedExpression *condition = syntaxTree.children[0];
-        iTermParsedExpression *trueExpr = syntaxTree.children[2];
-        iTermParsedExpression *falseExpr = syntaxTree.children[4];
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] initCondition:[condition asSubexpression]
-                                                                                         whenTrue:[trueExpr asSubexpression]
-                                                                                        otherwise:[falseExpr asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-
-    // Standalone optional with space — expr ? (no ternary branch).
-    // The preferred form is "expr?" (no space), which is handled by the OptionalPath token
-    // at the PrimaryExpression level. This rule provides backward compatibility for "expr ?"
-    // with a space.
-    [_grammarProcessor addProductionRule:@"ConditionalExpression ::= <LogicalOrExpr> '?'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [syntaxTree.children[0] optionalized];
-    }];
-
-    // LogicalOrExpr: handles || operator
-    [_grammarProcessor addProductionRule:@"LogicalOrExpr ::= <LogicalOrExpr> '||' <LogicalAndExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                                logicalOr:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"LogicalOrExpr ::= <LogicalAndExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    // LogicalAndExpr: handles && operator
-    [_grammarProcessor addProductionRule:@"LogicalAndExpr ::= <LogicalAndExpr> '&&' <EqualityExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                               logicalAnd:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"LogicalAndExpr ::= <EqualityExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    // EqualityExpr: handles == and != operators
-    [_grammarProcessor addProductionRule:@"EqualityExpr ::= <EqualityExpr> '==' <RelationalExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                                  equalTo:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"EqualityExpr ::= <EqualityExpr> '!=' <RelationalExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                               notEqualTo:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"EqualityExpr ::= <RelationalExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    // RelationalExpr: handles <, >, <=, >= operators
-    [_grammarProcessor addProductionRule:@"RelationalExpr ::= <RelationalExpr> '<' <AddExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                                 lessThan:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"RelationalExpr ::= <RelationalExpr> '>' <AddExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                              greaterThan:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"RelationalExpr ::= <RelationalExpr> '<=' <AddExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                         lessThanOrEqual:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"RelationalExpr ::= <RelationalExpr> '>=' <AddExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                      greaterThanOrEqual:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"RelationalExpr ::= <AddExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    [_grammarProcessor addProductionRule:@"AddExpr ::= <AddExpr> '+' <MulExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                                    plus:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"AddExpr ::= <AddExpr> '-' <MulExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                                   minus:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"AddExpr ::= <MulExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    [_grammarProcessor addProductionRule:@"MulExpr ::= <MulExpr> '*' <UnaryExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                                   times:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"MulExpr ::= <MulExpr> '/' <UnaryExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression = [[iTermSubexpression alloc] init:[syntaxTree.children[0] asSubexpression]
-                                                                               dividedBy:[syntaxTree.children[2] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-    [_grammarProcessor addProductionRule:@"MulExpr ::= <UnaryExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    // UnaryExpr: handles unary ! (logical NOT)
-    [_grammarProcessor addProductionRule:@"UnaryExpr ::= <PostfixExpression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-
-    [_grammarProcessor addProductionRule:@"UnaryExpr ::= '!' <UnaryExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression =
-            [[iTermSubexpression alloc] initLogicalNot:[syntaxTree.children[1] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-
-    [_grammarProcessor addProductionRule:@"UnaryExpr ::= '-' <UnaryExpr>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermSubexpression *subexpression =
-            [[iTermSubexpression alloc] initNegated:[syntaxTree.children[1] asSubexpression]];
-        return [[iTermParsedExpression alloc] initWithSubexpression:subexpression];
-    }];
-
-    [_grammarProcessor addProductionRule:@"PostfixExpression ::= <PrimaryExpression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= <NumericLiteral>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[0];
-    }];
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= <indirect_value>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermIndirectValue *indirectValue = syntaxTree.children[0];
-        // Don't deoptionalize here - let ConditionalExpression handle it.
-        // This allows foo? to stay optional until the ? is processed.
-        return [weakSelf parsedExpressionWithIndirectValue:indirectValue];
-    }];
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= <call>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        // Pass through function call - will be converted to Subexpression
-        // by arithmetic operations as needed
-        return syntaxTree.children[0];
-    }];
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= '(' <Subexpression> ')'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return syntaxTree.children[1];
-    }];
-
-    // OptionalPath token: "name?" or "user.path?" (no space before ?).
-    // Handled at PrimaryExpression level so it can participate in ==, !=, etc.
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= 'OptionalPath'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermOptionalPathToken *token = syntaxTree.children[0];
-        NSString *path = token.identifier;
-        iTermIndirectValue *indirectValue = [weakSelf indirectValueWithPath:path index:nil];
-        iTermParsedExpression *expr = [weakSelf parsedExpressionWithIndirectValue:indirectValue];
-        return [expr optionalized];
-    }];
-
-    [_grammarProcessor addProductionRule:@"NumericLiteral ::= 'Number'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        CPNumberToken *number = syntaxTree.children[0];
-        return [[iTermParsedExpression alloc] initWithSubexpression:[[iTermSubexpression alloc] initWithNumber:number.numberValue]];
-    }];
-
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= 'true'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [[iTermParsedExpression alloc] initWithSubexpression:[[iTermSubexpression alloc] initWithNumber:@YES]];
-    }];
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= 'false'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [[iTermParsedExpression alloc] initWithSubexpression:[[iTermSubexpression alloc] initWithNumber:@NO]];
-    }];
-    [_grammarProcessor addProductionRule:@"PrimaryExpression ::= 'SwiftyString'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        NSString *swifty = [(CPQuotedToken *)syntaxTree.children[0] content];
-        return [weakSelf parsedExpressionWithInterpolatedString:swifty];
-    }];
-    [_grammarProcessor addProductionRule:@"expression ::= '[' ']'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [[iTermParsedExpression alloc] initWithArrayOfExpressions:@[]];
-    }];
-    [_grammarProcessor addProductionRule:@"expression ::= '[' <comma_delimited_expressions> ']'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [[iTermParsedExpression alloc] initWithArrayOfExpressions:syntaxTree.children[1]];
-    }];
-    [_grammarProcessor addProductionRule:@"comma_delimited_expressions ::= <expression>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return @[ syntaxTree.children[0] ];
-    }];
-    [_grammarProcessor addProductionRule:@"comma_delimited_expressions ::= <expression> ',' <comma_delimited_expressions>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        id firstExpression = syntaxTree.children[0];
-        NSArray *tail = syntaxTree.children[2];
-        return [@[firstExpression] arrayByAddingObjectsFromArray:tail];
-    }];
-    // Note: expression ::= <call> removed because calls are now reachable via
-    // expression -> Subexpression -> ... -> PrimaryExpression -> call
-
-    [_grammarProcessor addProductionRule:@"indirect_value ::= <path>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [weakSelf indirectValueWithPath:syntaxTree.children[0]
-                                         index:nil];
-    }];
-    [_grammarProcessor addProductionRule:@"indirect_value ::= <path> '[' <Subexpression> ']'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        iTermParsedExpression *numberParsedExpression = syntaxTree.children[2];
-        iTermSubexpression *indexExpression = [numberParsedExpression asSubexpression];
-        if (!indexExpression) {
-            // Cannot convert index to numeric expression (e.g., NSNull, string, array)
-            NSString *path = syntaxTree.children[0];
-            NSString *errorMsg = [NSString stringWithFormat:@"Array index for \"%@\" must be a number, not %@",
-                                  path, NSStringFromClass([numberParsedExpression.object class])];
-            return [[iTermIndirectValue alloc] initWithError:errorMsg path:path];
-        }
-        return [weakSelf indirectValueWithPath:syntaxTree.children[0]
-                                         index:indexExpression];
-    }];
-    [_grammarProcessor addProductionRule:@"path ::= 'Identifier'"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [(CPIdentifierToken *)syntaxTree.children[0] identifier];
-    }];
-    [_grammarProcessor addProductionRule:@"path ::= 'Identifier' '.' <path>"
-                           treeTransform:^id(CPSyntaxTree *syntaxTree) {
-        return [NSString stringWithFormat:@"%@.%@",
-                [(CPIdentifierToken *)syntaxTree.children[0] identifier],
-                syntaxTree.children[2]];
-    }];
-}
-
 - (iTermParsedExpression *)parse:(NSString *)invocation scope:(iTermVariableScope *)scope {
-    _input = [invocation copy];
+    if (!invocation) {
+        NSError *error = [NSError errorWithDomain:@"com.iterm2.parser"
+                                             code:2
+                                         userInfo:@{ NSLocalizedDescriptionKey: @"Syntax error" }];
+        return [[iTermParsedExpression alloc] initWithError:error];
+    }
     _scope = scope;
-    CPTokenStream *tokenStream = [_tokenizer tokenise:invocation];
-
-    iTermParsedExpression *expression = [_parser parse:tokenStream];
-    if (expression) {
-        return expression;
-    }
-
-    if (_error) {
-        return [[iTermParsedExpression alloc] initWithError:_error];
-    }
-
-    NSError *error = [NSError errorWithDomain:@"com.iterm2.parser"
-                                         code:2
-                                     userInfo:@{ NSLocalizedDescriptionKey: @"Syntax error" }];
-    return [[iTermParsedExpression alloc] initWithError:error];
-}
-
-#pragma mark - CPTokeniserDelegate
-
-- (BOOL)tokeniser:(CPTokeniser *)tokeniser shouldConsumeToken:(CPToken *)token {
-    return YES;
-}
-
-- (void)tokeniser:(CPTokeniser *)tokeniser requestsToken:(CPToken *)token pushedOntoStream:(CPTokenStream *)stream {
-    if ([token isWhiteSpaceToken]) {
-        return;
-    }
-
-    [stream pushToken:token];
-}
-
-#pragma mark - CPParserDelegate
-
-- (id)parser:(CPParser *)parser didProduceSyntaxTree:(CPSyntaxTree *)syntaxTree {
-    return [_grammarProcessor transformSyntaxTree:syntaxTree];
-}
-
-- (CPRecoveryAction *)parser:(CPParser *)parser
-    didEncounterErrorOnInput:(CPTokenStream *)inputStream
-                   expecting:(NSSet *)acceptableTokens {
-    NSArray *quotedExpected = [acceptableTokens.allObjects mapWithBlock:^id(id anObject) {
-        return [NSString stringWithFormat:@"“%@”", anObject];
-    }];
-    NSString *expectedString = [quotedExpected componentsJoinedByString:@", "];
-    NSString *reason = [NSString stringWithFormat:@"Syntax error at index %@ of “%@”. Expected%@: %@",
-                        @(inputStream.peekToken.characterNumber), _input,
-                        quotedExpected.count > 1 ? @" one of" : @"",
-                        expectedString];
-    _error = [NSError errorWithDomain:@"com.iterm2.parser"
-                                 code:3
-                             userInfo:@{ NSLocalizedDescriptionKey: reason }];
-    return [CPRecoveryAction recoveryActionStop];
+    return [iTermNativeExpressionCore parseInvocation:invocation start:_start parserOwner:self];
 }
 
 @end
