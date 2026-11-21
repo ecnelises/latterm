@@ -1333,6 +1333,9 @@ void TurnOnDebugLoggingAutomatically(void) {
     DLog(@"Make ITAddressBookMgr");
     [ITAddressBookMgr sharedInstance];
 
+    DLog(@"Start declarative config.toml manager");
+    [[iTermDeclarativeConfigManager shared] startIfAppropriate];
+
     // Prompt for local network permission if this is a new version.
     // This is needed because macOS doesn't show the permission prompt until the app
     // actually accesses the local network. Without this, users may find that commands

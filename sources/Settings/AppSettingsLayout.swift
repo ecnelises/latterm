@@ -159,7 +159,29 @@ final class GeneralFormLayout: NSObject {
 
         let backupSyncSections: [ProfileSectionCard] = [
             ProfileSectionCard(
-                title: nil,
+                title: SettingsControlFactory.localized("Declarative Configuration (config.toml)"),
+                rows: [
+                    ProfileFormRow(
+                        label: field("Config file:"),
+                        content: .single(control("declarativeConfigPathLabel"),
+                                         fillsWidth: true,
+                                         minWidth: 160,
+                                         maxWidth: .greatestFiniteMagnitude),
+                        helperViews: [control("declarativeConfigStatusLabel")],
+                        suppressSeparatorAfter: true
+                    ),
+                    ProfileFormRow(
+                        content: .wrappingLine([
+                            .natural(control("openConfigFileButton"), minWidth: 96, maxWidth: 220, wraps: true),
+                            .natural(control("exportConfigFileButton"), minWidth: 110, maxWidth: 240, wraps: true),
+                            .natural(control("reloadConfigFileButton"), minWidth: 84, maxWidth: 180, wraps: true),
+                            .natural(control("revealConfigFileButton"), minWidth: 96, maxWidth: 200, wraps: true)
+                        ])
+                    )
+                ]
+            ),
+            ProfileSectionCard(
+                title: SettingsControlFactory.localized("Archive & Legacy Sync"),
                 rows: [
                     checkbox("loadPrefsFromCustomFolder", label: field("External  settings:"), suppressSeparatorAfter: true),
                     ProfileFormRow(

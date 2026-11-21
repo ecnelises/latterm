@@ -160,6 +160,13 @@ enum {
     NSButton *_exportAllButton;
     NSButton *_importAllButton;
     NSButton *_eraseAllButton;
+
+    NSTextField *_declarativeConfigPathLabel;
+    NSTextField *_declarativeConfigStatusLabel;
+    NSButton *_openConfigFileButton;
+    NSButton *_exportConfigFileButton;
+    NSButton *_reloadConfigFileButton;
+    NSButton *_revealConfigFileButton;
 }
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -172,6 +179,10 @@ enum {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateAlwaysOpenLegend)
                                                      name:iTermSessionBuriedStateChangeTabNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(updateDeclarativeConfigStatus)
+                                                     name:[iTermDeclarativeConfigManager didChangeNotificationName]
                                                    object:nil];
         _observer = [[iTermUserDefaultsObserver alloc] init];
         __weak __typeof(self) weakSelf = self;
@@ -308,6 +319,15 @@ enum {
     _exportAllButton = [iTermSettingsControlFactory pushButton:@"Export All Settings and Data…" target:self action:@selector(exportAllSettingsAndData:)];
     _importAllButton = [iTermSettingsControlFactory pushButton:@"Import All Settings and Data…" target:self action:@selector(importAllSettingsAndData:)];
     _eraseAllButton = [iTermSettingsControlFactory pushButton:@"Erase All Settings and Data…" target:self action:@selector(eraseAllSettingsAndData:)];
+
+    _declarativeConfigPathLabel = [iTermSettingsControlFactory wrappingLabel:@"" smallSecondary:NO];
+    _declarativeConfigPathLabel.font = [NSFont monospacedSystemFontOfSize:NSFont.smallSystemFontSize weight:NSFontWeightRegular];
+    _declarativeConfigPathLabel.selectable = YES;
+    _declarativeConfigStatusLabel = [iTermSettingsControlFactory wrappingLabel:@"" smallSecondary:YES];
+    _openConfigFileButton = [iTermSettingsControlFactory pushButton:@"Open Config File" target:self action:@selector(openDeclarativeConfigFile:)];
+    _exportConfigFileButton = [iTermSettingsControlFactory pushButton:@"Export Current Settings" target:self action:@selector(exportDeclarativeConfigFile:)];
+    _reloadConfigFileButton = [iTermSettingsControlFactory pushButton:@"Reload Now" target:self action:@selector(reloadDeclarativeConfigFile:)];
+    _revealConfigFileButton = [iTermSettingsControlFactory pushButton:@"Reveal in Finder" target:self action:@selector(revealDeclarativeConfigFile:)];
 
     _openTmuxWindowsAsTabsInAttachingWindow = [iTermSettingsControlFactory checkbox:@"Open tmux windows as tabs in the attaching window" target:self action:changed toolTip:nil];
     _whenAttachingTmuxLabel = [iTermSettingsControlFactory label:@"When attaching, open unrecognized windows in"];
@@ -765,6 +785,12 @@ enum {
              relatedView:nil
                     type:kPreferenceInfoTypeCheckbox];
 
+    [self addViewToSearchIndex:_openConfigFileButton
+                   displayName:@"Declarative configuration file (config.toml)"
+                       phrases:@[ @"config.toml", @"toml", @"dotfiles", @"hot reload", @"Export Current Settings", @"配置文件" ]
+                           key:nil];
+    [self updateDeclarativeConfigStatus];
+
     [self updateEnabledState];
     [self commitControls];
     [self updateValueForInfo:allowSendingClipboardInfo];
@@ -819,6 +845,12 @@ enum {
         @"maxVertically": _maxVertically,
         @"lionStyleFullscreen": _lionStyleFullscreen,
         @"separateWindowTitlePerTab": _separateWindowTitlePerTab,
+        @"declarativeConfigPathLabel": _declarativeConfigPathLabel,
+        @"declarativeConfigStatusLabel": _declarativeConfigStatusLabel,
+        @"openConfigFileButton": _openConfigFileButton,
+        @"exportConfigFileButton": _exportConfigFileButton,
+        @"reloadConfigFileButton": _reloadConfigFileButton,
+        @"revealConfigFileButton": _revealConfigFileButton,
         @"loadPrefsFromCustomFolder": _loadPrefsFromCustomFolder,
         @"prefsCustomFolder": _prefsCustomFolder,
         @"prefsDirWarning": _prefsDirWarning,
@@ -915,6 +947,57 @@ enum {
 - (IBAction)eraseAllSettingsAndData:(id)sender {
     [self showMessage:[iTerm2ImportExport eraseAllWithWindow:self.view.window]
                 title:NSLocalizedString(@"Problem Erasing Settings and Data", @"General settings")];
+}
+
+- (void)updateDeclarativeConfigStatus {
+    iTermDeclarativeConfigManager *manager = [iTermDeclarativeConfigManager shared];
+    _declarativeConfigPathLabel.stringValue = manager.abbreviatedConfigFilePath;
+    _declarativeConfigStatusLabel.stringValue = manager.statusDescription;
+    _reloadConfigFileButton.enabled = manager.configFileExists;
+    [self.view it_invalidateProfileFormLayout];
+}
+
+- (IBAction)openDeclarativeConfigFile:(id)sender {
+    NSError *error = nil;
+    if (![[iTermDeclarativeConfigManager shared] openConfigFileInEditorReturningError:&error]) {
+        [self showMessage:error.localizedDescription
+                    title:NSLocalizedString(@"Unable to Open Config File", @"Declarative config alert")];
+    }
+    [self updateDeclarativeConfigStatus];
+}
+
+- (IBAction)exportDeclarativeConfigFile:(id)sender {
+    iTermDeclarativeConfigManager *manager = [iTermDeclarativeConfigManager shared];
+    if (manager.configFileExists) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = NSLocalizedString(@"Overwrite existing config.toml?", @"Declarative config alert");
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedString(@"Exporting current settings will replace %@.", @"Declarative config alert"),
+                                 manager.abbreviatedConfigFilePath];
+        [alert addButtonWithTitle:NSLocalizedString(@"Overwrite", @"Declarative config alert")];
+        [alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Declarative config alert")];
+        if ([alert runModal] != NSAlertFirstButtonReturn) {
+            return;
+        }
+    }
+    NSError *error = nil;
+    if (![manager exportCurrentSettingsReturningError:&error]) {
+        [self showMessage:error.localizedDescription
+                    title:NSLocalizedString(@"Problem Exporting Config File", @"Declarative config alert")];
+    }
+    [self updateDeclarativeConfigStatus];
+}
+
+- (IBAction)reloadDeclarativeConfigFile:(id)sender {
+    NSError *error = nil;
+    if (![[iTermDeclarativeConfigManager shared] reloadReturningError:&error]) {
+        [self showMessage:error.localizedDescription
+                    title:NSLocalizedString(@"Problem Reloading Config File", @"Declarative config alert")];
+    }
+    [self updateDeclarativeConfigStatus];
+}
+
+- (IBAction)revealDeclarativeConfigFile:(id)sender {
+    [[iTermDeclarativeConfigManager shared] revealConfigFileInFinder];
 }
 
 - (void)showMessage:(NSString *)message title:(NSString *)title {
