@@ -66,6 +66,7 @@
     IBOutlet NSButton *_restrictAlternateMouseScrollToVertical;
 
     IBOutlet NSButton *_tmuxNewline;
+    BOOL _controlsInitialized;
 }
 
 - (NSTextField *)numScrollbackLines { return _numScrollbackLines; }
@@ -107,7 +108,134 @@
 - (NSButton *)shellIntegrationRequiredButton { return _shellIntegrationRequiredButton; }
 - (NSButton *)tmuxNewline { return _tmuxNewline; }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 596, 887)];
+    NSBundle *bundle = [NSBundle bundleForClass:self.class];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Profiles Terminal setting");
+    };
+
+    self.historySectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"History:"];
+    _numScrollbackLinesLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Scrollback lines:"];
+    _numScrollbackLines = [iTermSettingsControlFactory textFieldWithWidth:112 placeholder:nil target:nil action:nil delegate:self];
+    _unlimitedScrollback = [iTermSettingsControlFactory checkboxWithTitle:@"Unlimited scrollback" target:self action:@selector(settingChanged:)];
+    _scrollbackWithStatusBar = [iTermSettingsControlFactory checkboxWithTitle:@"Save lines to scrollback when an app status bar is present" target:self action:@selector(settingChanged:)];
+    _scrollbackInAlternateScreen = [iTermSettingsControlFactory checkboxWithTitle:@"Save lines to scrollback in alternate screen mode" target:self action:@selector(settingChanged:)];
+    _dragToScrollInAlternateScreenModeDisabled = [iTermSettingsControlFactory checkboxWithTitle:@"Drag-to-scroll disabled in alternate screen mode" target:self action:@selector(settingChanged:)];
+
+    self.emulationSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Emulation features:"];
+    _characterEncodingLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Character encoding:"];
+    _characterEncoding = [iTermSettingsControlFactory popUpButtonWithTitles:@[] tags:@[] target:self action:@selector(settingChanged:)];
+    _terminalTypeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Report terminal type:"];
+    _terminalType = [iTermSettingsControlFactory comboBoxWithItems:@[ @"vt100", @"xterm", @"xterm-new", @"xterm-256color", @"ansi", @"rxvt", @"linux" ]
+                                                             width:320
+                                                            target:self
+                                                            action:@selector(settingChanged:)
+                                                          delegate:self];
+    _terminalType.stringValue = @"vt100";
+    _answerBackStringLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"ENQ answer back:"];
+    _answerBackString = [iTermSettingsControlFactory textFieldWithWidth:320 placeholder:nil target:nil action:nil delegate:self];
+    _allowTitleReporting = [iTermSettingsControlFactory checkboxWithTitle:@"Terminal may report window title" target:self action:@selector(settingChanged:)];
+    _allowTitleReporting.toolTip = loc(@"This may be a security risk in an untrusted environment, especially if the terminal can set the title.");
+    _allowCursorBlinkControlSequence = [iTermSettingsControlFactory checkboxWithTitle:@"Terminal may change cursor blink" target:self action:@selector(settingChanged:)];
+    _allowCursorBlinkControlSequence.toolTip = loc(@"Allow control sequences to enable or disable cursor blink?");
+    _allowPasteBracketing = [iTermSettingsControlFactory checkboxWithTitle:@"Terminal may enable paste bracketing" target:self action:@selector(settingChanged:)];
+    _disablePrinting = [iTermSettingsControlFactory checkboxWithTitle:@"Disable session-initiated printing" target:self action:@selector(settingChanged:)];
+    _disableAltScreen = [iTermSettingsControlFactory checkboxWithTitle:@"Disable save/restore alternate screen" target:self action:@selector(settingChanged:)];
+    _disableWindowResizing = [iTermSettingsControlFactory checkboxWithTitle:@"A session may cause the window to resize" target:self action:@selector(settingChanged:)];
+    _disableUnfocusedWindowResizing = [iTermSettingsControlFactory checkboxWithTitle:@"…even if it is in an unselected tab or split pane" target:self action:@selector(settingChanged:)];
+
+    self.mouseReportingSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Mouse reporting:"];
+    _xtermMouseReporting = [iTermSettingsControlFactory checkboxWithTitle:@"Enable mouse reporting" target:self action:@selector(settingChanged:)];
+    _xtermMouseReportingAllowMouseWheel = [iTermSettingsControlFactory checkboxWithTitle:@"Report mouse wheel events" target:self action:@selector(settingChanged:)];
+    _xtermMouseReportingAllowClicksAndDrags = [iTermSettingsControlFactory checkboxWithTitle:@"Report mouse clicks & drags" target:self action:@selector(settingChanged:)];
+    _restrictMouseReportingToAlternateScreenMode = [iTermSettingsControlFactory checkboxWithTitle:@"Restrict mouse reporting to alternate screen mode" target:self action:@selector(settingChanged:)];
+    _allowAlternateMouseScroll = [iTermSettingsControlFactory checkboxWithTitle:@"Terminal may enable alternate mouse scroll" target:self action:@selector(settingChanged:)];
+    _automaticallyEnableAlternatemouseScroll = [iTermSettingsControlFactory checkboxWithTitle:@"Automatically enable alternate mouse scroll" target:self action:@selector(settingChanged:)];
+    _restrictAlternateMouseScrollToVertical = [iTermSettingsControlFactory checkboxWithTitle:@"Restrict alternate mouse scroll to vertical scrolling" target:self action:@selector(settingChanged:)];
+
+    self.bellSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Bell:"];
+    _flashingBell = [iTermSettingsControlFactory checkboxWithTitle:@"Flash visual bell" target:self action:@selector(settingChanged:)];
+    _bellIconInTabs = [iTermSettingsControlFactory checkboxWithTitle:@"Show bell icon in tabs" target:self action:@selector(settingChanged:)];
+    _silenceBell = [iTermSettingsControlFactory checkboxWithTitle:@"Silence bell" target:self action:@selector(settingChanged:)];
+
+    self.notificationsSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Notifications:"];
+    _postNotifications = [iTermSettingsControlFactory checkboxWithTitle:@"Notification Center alerts" target:self action:@selector(settingChanged:)];
+    _filterAlertsButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Filter Alerts" target:self action:@selector(showFilterAlertsPanel:)];
+
+    _filterAlertsPanel = [[NSPanel alloc] initWithContentRect:NSMakeRect(120, 138, 406, 170)
+                                                    styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
+                                                      backing:NSBackingStoreBuffered
+                                                        defer:YES];
+    _filterAlertsPanel.releasedWhenClosed = NO;
+    _filterAlertsPanel.hidesOnDeactivate = NO;
+    NSView *alertsContent = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 406, 170)];
+    _filterAlertsPanel.contentView = alertsContent;
+    _bellAlert = [iTermSettingsControlFactory checkboxWithTitle:@"Send “Bell” alert" target:self action:@selector(settingChanged:)];
+    [_bellAlert sizeToFit];
+    _bellAlert.frame = NSMakeRect(18, 134, NSWidth(_bellAlert.frame), 18);
+    [alertsContent addSubview:_bellAlert];
+    _sessionEndedAlert = [iTermSettingsControlFactory checkboxWithTitle:@"Send “Session Ended” alert" target:self action:@selector(settingChanged:)];
+    [_sessionEndedAlert sizeToFit];
+    _sessionEndedAlert.frame = NSMakeRect(195, 134, NSWidth(_sessionEndedAlert.frame), 18);
+    [alertsContent addSubview:_sessionEndedAlert];
+    _idleAlert = [iTermSettingsControlFactory checkboxWithTitle:@"Send “Idle” alert" target:self action:@selector(settingChanged:)];
+    [_idleAlert sizeToFit];
+    _idleAlert.frame = NSMakeRect(18, 110, NSWidth(_idleAlert.frame), 18);
+    [alertsContent addSubview:_idleAlert];
+    _newOutputAlert = [iTermSettingsControlFactory checkboxWithTitle:@"Send “New Output” alert" target:self action:@selector(settingChanged:)];
+    [_newOutputAlert sizeToFit];
+    _newOutputAlert.frame = NSMakeRect(195, 110, NSWidth(_newOutputAlert.frame), 18);
+    [alertsContent addSubview:_newOutputAlert];
+    _terminalGeneratedAlerts = [iTermSettingsControlFactory checkboxWithTitle:@"Send escape sequence-generated alerts" target:self action:@selector(settingChanged:)];
+    [_terminalGeneratedAlerts sizeToFit];
+    _terminalGeneratedAlerts.frame = NSMakeRect(18, 76, NSWidth(_terminalGeneratedAlerts.frame), 18);
+    [alertsContent addSubview:_terminalGeneratedAlerts];
+    _suppressAlertsInActiveSession = [iTermSettingsControlFactory checkboxWithTitle:@"Suppress alerts from active session" target:self action:@selector(settingChanged:)];
+    [_suppressAlertsInActiveSession sizeToFit];
+    _suppressAlertsInActiveSession.frame = NSMakeRect(18, 52, NSWidth(_suppressAlertsInActiveSession.frame), 18);
+    [alertsContent addSubview:_suppressAlertsInActiveSession];
+    NSButton *okButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Ok" target:self action:@selector(closeFilterAlertsPanel:)];
+    okButton.keyEquivalent = @"\r";
+    okButton.frame = NSMakeRect(330, 16, 60, 32);
+    [alertsContent addSubview:okButton];
+
+    self.environmentSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Environment:"];
+    _localeVars = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Set locale environment variables automatically",
+        @"Do not set locale environment variables",
+        @"Use custom locale…",
+        @"Use“POSIX” locale (LC_CTYPE=encoding)"
+    ]
+                                                                tags:@[ @1, @0, @2, @3 ]
+                                                              target:self
+                                                              action:@selector(settingChanged:)];
+    _changeLocale = [iTermSettingsControlFactory pushButtonWithTitle:@"Change…" target:self action:@selector(changeCustomLocale:)];
+    _localeName = [iTermSettingsControlFactory secondaryLabelWithTitle:@"" wrapping:YES];
+
+    self.terminalMetadataSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Terminal Metadata:"];
+    _forceCommandPromptToFirstColumn = [iTermSettingsControlFactory checkboxWithTitle:@"Insert newline before start of command prompt if needed"
+                                                                               target:self
+                                                                               action:@selector(settingChanged:)];
+    _shellIntegrationRequiredButton = [iTermSettingsControlFactory warningButtonWithTarget:self action:@selector(shellIntegrationRequired:)];
+    _promptPathClickOpensNavigator = [iTermSettingsControlFactory checkboxWithTitle:@"Click on a path in a shell prompt to open Navigator"
+                                                                             target:self
+                                                                             action:@selector(settingChanged:)];
+
+    self.tmuxIntegrationSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"tmux Integration:"];
+    _tmuxNewline = [iTermSettingsControlFactory checkboxWithTitle:@"Send \\n rather than \\r to terminate commands"
+                                                           target:self
+                                                           action:@selector(settingChanged:)];
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     PreferenceInfo *info;
     __weak __typeof(self) weakSelf = self;
     info = [self defineControl:_numScrollbackLines
@@ -351,6 +479,7 @@
 - (void)layoutSubviewsForEditCurrentSessionMode {
     _terminalType.enabled = NO;
     _setLocaleVars.enabled = NO;
+    _localeVars.enabled = NO;
 }
 
 - (void)sizeRememberingView:(iTermSizeRememberingView *)sender

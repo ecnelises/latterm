@@ -116,6 +116,46 @@ enum {
 - (NSPopUpButton *)editorsPopup { return editors_; }
 - (NSTextField *)caveatField { return caveat_; }
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        action_ = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+            @"Open with default app",
+            @"Open URL…",
+            @"Open with editor…",
+            @"Run command…",
+            @"Always run command…",
+            @"Run coprocess…",
+            @"Send text…"
+        ]
+                                                                tags:@[ @1, @2, @3, @4, @5, @6, @7 ]
+                                                              target:self
+                                                              action:@selector(actionChanged:)];
+        text_ = [iTermSettingsControlFactory textFieldWithWidth:371 placeholder:nil target:nil action:nil delegate:nil];
+        editors_ = [iTermSettingsControlFactory popUpButtonWithTitles:@[]
+                                                                 tags:@[]
+                                                               target:self
+                                                               action:@selector(actionChanged:)];
+        caveat_ = [[iTermSemanticHistoryPrefsControllerCaveatTextField alloc] initWithFrame:NSMakeRect(0, 0, 525, 42)];
+        caveat_.editable = NO;
+        caveat_.selectable = YES;
+        caveat_.bordered = NO;
+        caveat_.drawsBackground = NO;
+        caveat_.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+        caveat_.textColor = [NSColor secondaryLabelColor];
+        caveat_.usesSingleLineMode = NO;
+        caveat_.lineBreakMode = NSLineBreakByWordWrapping;
+        caveat_.cell.wraps = YES;
+        caveat_.cell.scrollable = NO;
+        [self configureSemanticHistoryControls];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 + (NSDictionary *)defaultPrefs {
     return @{ kSemanticHistoryActionKey: kSemanticHistoryBestEditorAction };
 }
@@ -265,6 +305,10 @@ enum {
 }
 
 - (void)awakeFromNib {
+    [self configureSemanticHistoryControls];
+}
+
+- (void)configureSemanticHistoryControls {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showPopover)
                                                  name:iTermSemanticHistoryPrefsControllerCaveatTextFieldDidClickOnLink

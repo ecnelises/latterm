@@ -95,6 +95,7 @@
     NSTextField *_cellMetricsLabel;
     iTermLanguageFontRulesEditorView *_languageFontRulesEditorView;
     SpecialExceptionsWindowController *_specialExceptionsWindowController;
+    BOOL _controlsInitialized;
 }
 
 - (NSMatrix *)cursorType { return _cursorType; }
@@ -136,7 +137,182 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 694, 721)];
+    NSBundle *bundle = [NSBundle bundleForClass:self.class];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Profiles Text setting");
+    };
+
+    _cursorTypeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Cursor:"];
+    _cursorType = [iTermSettingsControlFactory radioMatrixWithTitles:@[ @"_", @"⏐", @"▋" ]
+                                                                tags:@[ @0, @1, @2 ]
+                                                          horizontal:YES
+                                                              target:self
+                                                              action:@selector(settingChanged:)];
+    _blinkingCursor = [iTermSettingsControlFactory checkboxWithTitle:@"Blink" target:self action:@selector(settingChanged:)];
+    _cursorSmoothBlink = [iTermSettingsControlFactory checkboxWithTitle:@"Smooth blink" target:self action:@selector(settingChanged:)];
+    _cursorSmoothBlinkConfigureButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Configure…"
+                                                                                  target:self
+                                                                                  action:@selector(configureSmoothBlink:)];
+    _cursorSmoothSlide = [iTermSettingsControlFactory checkboxWithTitle:@"Smooth-typing animation" target:self action:@selector(settingChanged:)];
+    _cursorSmoothSlide.toolTip = loc(@"When enabled, small horizontal cursor movements are animated. Not available for block cursors.");
+    _shadow = [iTermSettingsControlFactory checkboxWithTitle:@"Shadow" target:self action:@selector(settingChanged:)];
+    _hideOnLostFocus = [iTermSettingsControlFactory checkboxWithTitle:@"Hide when keyboard focus lost" target:self action:@selector(settingChanged:)];
+    _animateMovement = [iTermSettingsControlFactory checkboxWithTitle:@"Animate large movements" target:self action:@selector(settingChanged:)];
+    _animateMovement.toolTip = loc(@"When enabled, large cursor movements get an animation to help your eye follow the cursor.");
+    _animateMovementOnlyInInteractiveApps = [iTermSettingsControlFactory checkboxWithTitle:@"…but only in interactive apps" target:self action:@selector(settingChanged:)];
+    _animateMovementOnlyInInteractiveApps.toolTip = loc(@"When enabled, cursor animation only occurs in alternate screen mode. When disabled, cursor movements are always animated.");
+
+    _cursorBlinkFadePopoverView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 297, 276)];
+    _cursorBlinkFadeInDurationLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Fade in duration:"];
+    _cursorBlinkFadeInDurationLabel.frame = NSMakeRect(12, 240, 121, 16);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeInDurationLabel];
+    _cursorBlinkFadeInDuration = [iTermSettingsControlFactory textFieldWithWidth:96 placeholder:nil target:nil action:nil delegate:self];
+    _cursorBlinkFadeInDuration.frame = NSMakeRect(139, 236, 96, 24);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeInDuration];
+    NSTextField *sec1 = [iTermSettingsControlFactory labelWithTitle:@"sec"];
+    sec1.frame = NSMakeRect(241, 240, 44, 16);
+    [_cursorBlinkFadePopoverView addSubview:sec1];
+
+    _cursorBlinkFadeInCurveLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Fade in curve:"];
+    _cursorBlinkFadeInCurveLabel.frame = NSMakeRect(12, 206, 121, 16);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeInCurveLabel];
+    _cursorBlinkFadeInCurve = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Linear", @"Ease In", @"Ease Out", @"Ease In-Out" ]
+                                                                            tags:@[ @0, @1, @2, @3 ]
+                                                                          target:self
+                                                                          action:@selector(settingChanged:)];
+    _cursorBlinkFadeInCurve.frame = NSMakeRect(139, 201, 138, 24);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeInCurve];
+
+    _cursorBlinkVisibleDwellLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Dwell visible:"];
+    _cursorBlinkVisibleDwellLabel.frame = NSMakeRect(12, 173, 121, 16);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkVisibleDwellLabel];
+    _cursorBlinkVisibleDwell = [iTermSettingsControlFactory textFieldWithWidth:96 placeholder:nil target:nil action:nil delegate:self];
+    _cursorBlinkVisibleDwell.frame = NSMakeRect(139, 169, 96, 24);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkVisibleDwell];
+    NSTextField *sec2 = [iTermSettingsControlFactory labelWithTitle:@"sec"];
+    sec2.frame = NSMakeRect(241, 173, 44, 16);
+    [_cursorBlinkFadePopoverView addSubview:sec2];
+
+    NSBox *sep1 = [[NSBox alloc] initWithFrame:NSMakeRect(20, 158, 265, 5)];
+    sep1.boxType = NSBoxSeparator;
+    [_cursorBlinkFadePopoverView addSubview:sep1];
+
+    _cursorBlinkFadeOutDurationLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Fade out duration:"];
+    _cursorBlinkFadeOutDurationLabel.frame = NSMakeRect(12, 132, 121, 16);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeOutDurationLabel];
+    _cursorBlinkFadeOutDuration = [iTermSettingsControlFactory textFieldWithWidth:96 placeholder:nil target:nil action:nil delegate:self];
+    _cursorBlinkFadeOutDuration.frame = NSMakeRect(139, 128, 96, 24);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeOutDuration];
+    NSTextField *sec3 = [iTermSettingsControlFactory labelWithTitle:@"sec"];
+    sec3.frame = NSMakeRect(241, 132, 44, 16);
+    [_cursorBlinkFadePopoverView addSubview:sec3];
+
+    _cursorBlinkFadeOutCurveLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Fade out curve:"];
+    _cursorBlinkFadeOutCurveLabel.frame = NSMakeRect(12, 97, 121, 16);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeOutCurveLabel];
+    _cursorBlinkFadeOutCurve = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Linear", @"Ease In", @"Ease Out", @"Ease In-Out" ]
+                                                                             tags:@[ @0, @1, @2, @3 ]
+                                                                           target:self
+                                                                           action:@selector(settingChanged:)];
+    _cursorBlinkFadeOutCurve.frame = NSMakeRect(139, 93, 138, 24);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkFadeOutCurve];
+
+    _cursorBlinkHiddenDwellLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Dwell invisible:"];
+    _cursorBlinkHiddenDwellLabel.frame = NSMakeRect(12, 65, 121, 16);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkHiddenDwellLabel];
+    _cursorBlinkHiddenDwell = [iTermSettingsControlFactory textFieldWithWidth:96 placeholder:nil target:nil action:nil delegate:self];
+    _cursorBlinkHiddenDwell.frame = NSMakeRect(139, 61, 96, 24);
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkHiddenDwell];
+    NSTextField *sec4 = [iTermSettingsControlFactory labelWithTitle:@"sec"];
+    sec4.frame = NSMakeRect(241, 65, 44, 16);
+    [_cursorBlinkFadePopoverView addSubview:sec4];
+
+    NSBox *sep2 = [[NSBox alloc] initWithFrame:NSMakeRect(20, 50, 265, 5)];
+    sep2.boxType = NSBoxSeparator;
+    [_cursorBlinkFadePopoverView addSubview:sep2];
+
+    _cursorBlinkPresets = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(20, 20, 265, 24) pullsDown:YES];
+    _cursorBlinkPresets.target = self;
+    _cursorBlinkPresets.action = @selector(applyBlinkPreset:);
+    NSMenuItem *presetHeader = [[NSMenuItem alloc] initWithTitle:loc(@"Presets") action:nil keyEquivalent:@""];
+    presetHeader.hidden = YES;
+    [_cursorBlinkPresets.menu addItem:presetHeader];
+    NSArray<NSArray *> *presetPairs = @[
+        @[ @"Breathing", @0 ],
+        @[ @"Linear", @1 ],
+        @[ @"Fast", @2 ],
+        @[ @"Slow", @3 ],
+        @[ @"Subtle", @4 ]
+    ];
+    for (NSArray *pair in presetPairs) {
+        NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:loc(pair[0]) action:nil keyEquivalent:@""];
+        item.tag = [pair[1] integerValue];
+        [_cursorBlinkPresets.menu addItem:item];
+    }
+    [_cursorBlinkFadePopoverView addSubview:_cursorBlinkPresets];
+
+    self.asciiFontLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Font:"];
+    _asciiFontPicker = [[BFPCompositeView alloc] initWithFrame:NSMakeRect(0, 0, 544, 27)];
+    _asciiAntiAliased = [iTermSettingsControlFactory checkboxWithTitle:@"Anti-aliased" target:self action:@selector(settingChanged:)];
+    _normalFontWantsAntialiasing = [iTermSettingsControlFactory secondaryLabelWithTitle:@"(recommended for this font)" wrapping:NO];
+    _asciiLigatures = [iTermSettingsControlFactory checkboxWithTitle:@"Use ligatures" target:self action:@selector(settingChanged:)];
+    _ligatureWarning = [iTermSettingsControlFactory secondaryLabelWithTitle:@"⚠️ This may reduce performance" wrapping:NO];
+    _thinStrokesLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Thin strokes:"];
+    _thinStrokes = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Never",
+        @"Always",
+        @"On Retina Displays",
+        @"-",
+        @"With Dark Backgrounds",
+        @"On Retina Displays and Dark Backgrounds"
+    ]
+                                                                 tags:@[ @0, @3, @4, @(-1), @2, @1 ]
+                                                          separators:@[ @3 ]
+                                                               target:self
+                                                               action:@selector(settingChanged:)];
+
+    self.manageCharacterFontsButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Character Fonts…"
+                                                                                target:self
+                                                                                action:@selector(manageSpecialExceptions:)];
+    self.nonAsciiFontLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Non-ASCII Font:"];
+    _useNonAsciiFont = [iTermSettingsControlFactory checkboxWithTitle:@"Use a different font for non-ASCII text"
+                                                               target:self
+                                                               action:@selector(settingChanged:)];
+    _useNonAsciiFont.toolTip = loc(@"The non-ASCII font affects all characters above code point 127.");
+    _nonAsciiFontView = [[NSView alloc] initWithFrame:NSZeroRect];
+    _nonASCIIFontPicker = [[BFPCompositeView alloc] initWithFrame:NSMakeRect(0, 0, 400, 27)];
+    _nonasciiAntiAliased = [iTermSettingsControlFactory checkboxWithTitle:@"Anti-aliased" target:self action:@selector(settingChanged:)];
+    _nonasciiFontWantsAntialiasing = [iTermSettingsControlFactory secondaryLabelWithTitle:@"(recommended for this font)" wrapping:NO];
+    _nonAsciiLigatures = [iTermSettingsControlFactory checkboxWithTitle:@"Use ligatures" target:self action:@selector(settingChanged:)];
+    _ligatureWarningNonAscii = [iTermSettingsControlFactory secondaryLabelWithTitle:@"⚠️ This may reduce performance" wrapping:NO];
+
+    self.textRenderingLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Text Rendering:"];
+    _useBoldFont = [iTermSettingsControlFactory checkboxWithTitle:@"Draw bold text in bold font" target:self action:@selector(settingChanged:)];
+    _blinkAllowed = [iTermSettingsControlFactory checkboxWithTitle:@"Allow blinking text" target:self action:@selector(settingChanged:)];
+    _useItalicFont = [iTermSettingsControlFactory checkboxWithTitle:@"Allow italic text" target:self action:@selector(settingChanged:)];
+    _powerline = [iTermSettingsControlFactory checkboxWithTitle:@"Use built-in Powerline glyphs" target:self action:@selector(settingChanged:)];
+
+    self.unicodeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Unicode:"];
+    _unicodeVersion9 = [iTermSettingsControlFactory checkboxWithTitle:@"Use Unicode version 9+ widths" target:self action:@selector(settingChanged:)];
+    _ambiguousIsDoubleWidth = [iTermSettingsControlFactory checkboxWithTitle:@"Ambiguous characters are double-width" target:self action:@selector(settingChanged:)];
+    _ambiguousIsDoubleWidth.toolTip = loc(@"If you work mostly in East Asian languages this can be helpful. For most users, it causes misalignment.");
+    _normalizationLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Normalization:"];
+    _normalization = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"None", @"NFC", @"NFD", @"HFS+" ]
+                                                                   tags:@[ @0, @1, @2, @3 ]
+                                                                 target:self
+                                                                 action:@selector(settingChanged:)];
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadProfiles)
                                                  name:kReloadAllProfiles

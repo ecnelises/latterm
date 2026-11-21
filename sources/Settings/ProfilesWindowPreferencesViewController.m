@@ -95,6 +95,7 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     IBOutlet NSTextField *_customTabTitle;
     iTermFunctionCallTextFieldDelegate *_customTabTitleDelegate;
     NSString *_lastGuid;
+    BOOL _controlsInitialized;
 }
 
 - (NSSlider *)transparency { return _transparency; }
@@ -145,7 +146,202 @@ typedef NS_ENUM(NSUInteger, iTermWindowUnitsTag) {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 609, 838)];
+    NSBundle *bundle = [NSBundle bundleForClass:self.class];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Profiles Window setting");
+    };
+
+    _transparencyLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Transparency:"];
+    _transparency = [iTermSettingsControlFactory sliderWithMinValue:0
+                                                           maxValue:1
+                                                       initialValue:0
+                                                              width:218
+                                                  wrapInSliderView:YES
+                                                             target:self
+                                                             action:@selector(settingChanged:)];
+    self.transparencyMinLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Opaque" wrapping:NO];
+    self.transparencyMaxLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Transparent" wrapping:NO];
+    _transparencyOverrideNotice = [iTermSettingsControlFactory secondaryLabelWithTitle:@"View > Use Transparency can override this setting temporarily per window."
+                                                                              wrapping:YES];
+    _transparencyAffectsOnlyDefaultBackgroundColor = [iTermSettingsControlFactory checkboxWithTitle:@"Keep background colors opaque"
+                                                                                             target:self
+                                                                                             action:@selector(settingChanged:)];
+    _transparencyAffectsOnlyDefaultBackgroundColor.toolTip = loc(@"Enable this to make non-default background colors always opaque. This is useful when using Powerline in a translucent window.");
+
+    self.blurLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Blur:"];
+    _useBlur = [iTermSettingsControlFactory checkboxWithTitle:@"Blur content behind the window"
+                                                       target:self
+                                                       action:@selector(settingChanged:)];
+    _blurRadius = [iTermSettingsControlFactory sliderWithMinValue:0.1
+                                                         maxValue:iTermMaxBlurRadius()
+                                                     initialValue:0.1
+                                                            width:218
+                                                wrapInSliderView:YES
+                                                           target:self
+                                                           action:@selector(settingChanged:)];
+    self.blurMinLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Small Radius" wrapping:NO];
+    self.blurMaxLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Large Radius" wrapping:NO];
+    _largeBlurRadiusWarning = [iTermSettingsControlFactory secondaryLabelWithTitle:@"⚠️ Large radius may reduce performance" wrapping:NO];
+    _largeBlurRadiusWarning.hidden = YES;
+
+    self.backgroundImageSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Background Image:"];
+    _useBackgroundImage = [iTermSettingsControlFactory checkboxWithTitle:@"Use background image"
+                                                                  target:self
+                                                                  action:@selector(useBackgroundImageDidChange:)];
+    self.backgroundImageSourceLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Source:"];
+    _backgroundImageSourceMode = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Single Image", @"Folder Rotation" ]
+                                                                               tags:@[ @0, @1 ]
+                                                                             target:self
+                                                                             action:@selector(settingChanged:)];
+    _backgroundImageLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Image:"];
+    _backgroundImageTextField = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                                    placeholder:@"Path (Interpolated String)"
+                                                                         target:self
+                                                                         action:@selector(settingChanged:)
+                                                                       delegate:self];
+    _backgroundImageFolderTextField = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                                          placeholder:@"Folder path"
+                                                                               target:self
+                                                                               action:@selector(settingChanged:)
+                                                                             delegate:self];
+    _backgroundImageFolderIntervalLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Rotation Interval:"];
+    _backgroundImageFolderIntervalField = [iTermSettingsControlFactory textFieldWithWidth:80
+                                                                              placeholder:nil
+                                                                                   target:self
+                                                                                   action:@selector(settingChanged:)
+                                                                                 delegate:self];
+    _backgroundImageFolderIntervalField.stringValue = @"300";
+    _rotationIntervalUnitsLabel = [iTermSettingsControlFactory labelWithTitle:@"seconds"];
+
+    _backgroundImagePreview = [[iTermImageWell alloc] initWithFrame:NSMakeRect(0, 0, 426, 72)];
+    _backgroundImagePreview.imageFrameStyle = NSImageFrameGrayBezel;
+    _backgroundImagePreview.editable = NO;
+    _backgroundImagePreview.wantsLayer = YES;
+    _backgroundImagePreview.delegate = self;
+
+    self.backgroundImageScalingLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Scaling mode:"];
+    _backgroundImageMode = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Stretch", @"Tile", @"Scale to Fill", @"Scale to Fit" ]
+                                                                         tags:@[ @0, @1, @2, @3 ]
+                                                                       target:self
+                                                                       action:@selector(settingChanged:)];
+    self.backgroundImageBlendingLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Blending:"];
+    _blendAmount = [iTermSettingsControlFactory sliderWithMinValue:0
+                                                          maxValue:1
+                                                      initialValue:0.4
+                                                             width:215
+                                                 wrapInSliderView:YES
+                                                            target:self
+                                                            action:@selector(settingChanged:)];
+    _blendAmount.toolTip = loc(@"How much of the background image is visible through the background color.");
+    self.blendBackgroundColorLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Background Color" wrapping:NO];
+    self.blendImageLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Image" wrapping:NO];
+
+    _settingsForNewWindows = [[NSView alloc] initWithFrame:NSZeroRect];
+    self.newTabsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"New tabs:"];
+    _useCustomTabTitle = [iTermSettingsControlFactory checkboxWithTitle:@"Use custom title for new tabs using this profile"
+                                                                 target:self
+                                                                 action:@selector(settingChanged:)];
+    _customTabTitle = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                          placeholder:@"Tab Title (Interpolated String)"
+                                                               target:self
+                                                               action:@selector(settingChanged:)
+                                                             delegate:self];
+
+    self.newWindowsSizeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"New windows:"];
+    _columnsField = [iTermSettingsControlFactory textFieldWithWidth:54 placeholder:nil target:nil action:nil delegate:self];
+    _columnsField.identifier = @"columns";
+    _percentageWidthField = [iTermSettingsControlFactory textFieldWithWidth:54 placeholder:nil target:nil action:nil delegate:self];
+    _percentageWidthField.identifier = @"percent_width";
+    _columnsUnitsButton = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Cells", @"% of screen" ]
+                                                                        tags:@[ @0, @1 ]
+                                                                      target:self
+                                                                      action:@selector(unitsChanged:)];
+    _columnsUnitsButton.identifier = @"column units";
+    _widthLabel = [iTermSettingsControlFactory labelWithTitle:@"columns by"];
+    _widthLabel.identifier = @"width_label";
+    _byLabel = [iTermSettingsControlFactory labelWithTitle:@"by"];
+    _byLabel.identifier = @"by_label";
+
+    _rowsField = [iTermSettingsControlFactory textFieldWithWidth:54 placeholder:nil target:nil action:nil delegate:self];
+    _rowsField.identifier = @"rows";
+    _percentageHeightField = [iTermSettingsControlFactory textFieldWithWidth:54 placeholder:nil target:nil action:nil delegate:self];
+    _percentageHeightField.identifier = @"percent_height";
+    _rowsUnitsButton = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Cells", @"% of screen" ]
+                                                                     tags:@[ @0, @1 ]
+                                                                   target:self
+                                                                   action:@selector(unitsChanged:)];
+    _rowsUnitsButton.identifier = @"row units";
+    _heightLabel = [iTermSettingsControlFactory labelWithTitle:@"rows"];
+    _heightLabel.identifier = @"height_label";
+
+    _windowStyleLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Style:"];
+    _windowStyle = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Normal",
+        @"Full Screen",
+        @"Maximized",
+        @"-",
+        @"No Title Bar",
+        @"-",
+        @"Centered",
+        @"-",
+        @"Bottom of Screen",
+        @"Top of Screen",
+        @"Left of Screen",
+        @"Right of Screen"
+    ]
+                                                                 tags:@[ @0, @1, @15, @(-1), @12, @(-1), @17, @(-1), @5, @2, @6, @7 ]
+                                                          separators:@[ @3, @5, @7 ]
+                                                               target:self
+                                                               action:@selector(settingChanged:)];
+
+    _screenLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Screen:"];
+    _screen = [iTermSettingsControlFactory popUpButtonWithTitles:@[] tags:@[] target:self action:@selector(settingChanged:)];
+
+    _spaceLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Space:"];
+    _space = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Current Space",
+        @"All Spaces",
+        @"-",
+        @"Space 1",
+        @"Space 2",
+        @"Space 3",
+        @"Space 4",
+        @"Space 5",
+        @"Space 6",
+        @"Space 7",
+        @"Space 8",
+        @"Space 9"
+    ]
+                                                           tags:@[ @0, @(-1), @(-999), @1, @2, @3, @4, @5, @6, @7, @8, @9 ]
+                                                    separators:@[ @2 ]
+                                                         target:self
+                                                         action:@selector(settingChanged:)];
+
+    _hideAfterOpening = [iTermSettingsControlFactory checkboxWithTitle:@"Hide after opening" target:self action:@selector(settingChanged:)];
+    _lockSizeAutomatically = [iTermSettingsControlFactory checkboxWithTitle:@"Lock window size automatically" target:self action:@selector(settingChanged:)];
+    _openToolbelt = [iTermSettingsControlFactory checkboxWithTitle:@"Open toolbelt" target:self action:@selector(settingChanged:)];
+    _preventTab = [iTermSettingsControlFactory checkboxWithTitle:@"Always open in a new window, never in a tab" target:self action:@selector(settingChanged:)];
+    _initialUseTransparency = [iTermSettingsControlFactory checkboxWithTitle:@"Use transparency" target:self action:@selector(settingChanged:)];
+    _useCustomWindowTitle = [iTermSettingsControlFactory checkboxWithTitle:@"Use custom window title for new windows using this profile"
+                                                                    target:self
+                                                                    action:@selector(settingChanged:)];
+    _customWindowTitle = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                             placeholder:@"Window Title (Interpolated String)"
+                                                                  target:self
+                                                                  action:@selector(settingChanged:)
+                                                                delegate:self];
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadProfile)  // In superclass
                                                  name:kReloadAllProfiles

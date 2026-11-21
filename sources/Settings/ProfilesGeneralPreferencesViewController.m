@@ -139,6 +139,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
     NSRect _desiredFrame;
     NSString *_shell;  // cached open directory userShell for performance
     iTermSSHConfigurationWindowController *_sshConfigurationWindowController;
+    BOOL _controlsInitialized;
 }
 
 - (NSTextField *)profileNameFieldLabel { return _profileNameFieldLabel; }
@@ -187,9 +188,316 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
 
 - (void)dealloc {
     _profileNameFieldForEditCurrentSession.delegate = nil;
+    _profiles.delegate = nil;
+}
+
++ (void)populateTitleComponentsMenu:(NSPopUpButton *)popup forEditSession:(BOOL)editSession {
+    popup.pullsDown = YES;
+    popup.autoenablesItems = NO;
+    [popup removeAllItems];
+    NSBundle *bundle = [NSBundle bundleForClass:self];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Title component menu item");
+    };
+    NSMenuItem *titleItem = [[NSMenuItem alloc] initWithTitle:loc(@"Components") action:nil keyEquivalent:@""];
+    titleItem.hidden = YES;
+    [popup.menu addItem:titleItem];
+
+    NSMenuItem *nameHeader = [[NSMenuItem alloc] initWithTitle:loc(@"Name") action:nil keyEquivalent:@""];
+    nameHeader.enabled = NO;
+    [popup.menu addItem:nameHeader];
+
+    NSArray<NSArray *> *nameItems = @[
+        @[ @"Session Name", @1 ],
+        @[ @"Profile Name", @32 ],
+        @[ @"Profile & Session Name", @64 ]
+    ];
+    for (NSArray *pair in nameItems) {
+        NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:loc(pair[0]) action:nil keyEquivalent:@""];
+        item.tag = [pair[1] integerValue];
+        item.indentationLevel = 1;
+        [popup.menu addItem:item];
+    }
+
+    [popup.menu addItem:[NSMenuItem separatorItem]];
+
+    if (editSession) {
+        NSArray<NSArray *> *rest = @[
+            @[ @"Job", @2 ],
+            @[ @"User", @128 ],
+            @[ @"Host", @256 ],
+            @[ @"PWD", @4 ],
+            @[ @"TTY", @8 ]
+        ];
+        for (NSArray *pair in rest) {
+            NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:loc(pair[0]) action:nil keyEquivalent:@""];
+            item.tag = [pair[1] integerValue];
+            [popup.menu addItem:item];
+        }
+    } else {
+        NSMenuItem *jobHeader = [[NSMenuItem alloc] initWithTitle:loc(@"Foreground Job") action:nil keyEquivalent:@""];
+        jobHeader.enabled = NO;
+        [popup.menu addItem:jobHeader];
+
+        NSArray<NSArray *> *jobItems = @[
+            @[ @"Job Name", @2 ],
+            @[ @"Job Name with Arguments", @512 ]
+        ];
+        for (NSArray *pair in jobItems) {
+            NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:loc(pair[0]) action:nil keyEquivalent:@""];
+            item.tag = [pair[1] integerValue];
+            item.indentationLevel = 1;
+            [popup.menu addItem:item];
+        }
+
+        [popup.menu addItem:[NSMenuItem separatorItem]];
+
+        NSArray<NSArray *> *rest = @[
+            @[ @"Columns × Rows", @1024 ],
+            @[ @"Host", @256 ],
+            @[ @"User", @128 ],
+            @[ @"PWD", @4 ],
+            @[ @"TTY", @8 ]
+        ];
+        for (NSArray *pair in rest) {
+            NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:loc(pair[0]) action:nil keyEquivalent:@""];
+            item.tag = [pair[1] integerValue];
+            [popup.menu addItem:item];
+        }
+    }
+}
+
+- (void)loadView {
+    iTermPrefsProfilesGeneralView *root = [[iTermPrefsProfilesGeneralView alloc] initWithFrame:NSMakeRect(0, 0, 686, 494)];
+    _advancedWorkingDirWindowController = [[AdvancedWorkingDirectoryWindowController alloc] init];
+
+    _profileNameFieldLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Name:"];
+    _profileNameField = [iTermSettingsControlFactory textFieldWithWidth:320 placeholder:nil target:nil action:nil delegate:self];
+
+    _shortcutLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Shortcut key:"];
+    NSMutableArray<NSString *> *shortcutTitles = [NSMutableArray arrayWithObject:@""];
+    NSMutableArray<NSNumber *> *shortcutTags = [NSMutableArray arrayWithObject:@(-1)];
+    for (int i = 0; i < 26; i++) {
+        [shortcutTitles addObject:[NSString stringWithFormat:@"⌃⌘%c", 'A' + i]];
+        [shortcutTags addObject:@(i)];
+    }
+    for (int i = 0; i < 10; i++) {
+        [shortcutTitles addObject:[NSString stringWithFormat:@"%d", i]];
+        [shortcutTags addObject:@(100 + i)];
+    }
+    _profileShortcut = [iTermSettingsControlFactory popUpButtonWithTitles:shortcutTitles
+                                                                     tags:shortcutTags
+                                                                   target:self
+                                                                   action:@selector(settingChanged:)];
+
+    _tagsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Tags:"];
+    _tagsTokenField = [iTermSettingsControlFactory tokenFieldWithWidth:320
+                                                           placeholder:@"Example: linux, dark bg, tag/subtag/subsubtag"
+                                                                target:self
+                                                                action:@selector(settingChanged:)
+                                                              delegate:self];
+
+    _subtitleLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Subtitle"];
+    _subtitleText = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                        placeholder:@"Interpolated string"
+                                                             target:nil
+                                                             action:nil
+                                                           delegate:self];
+    _subtitleText.toolTip = NSLocalizedStringFromTableInBundle(@"In the Minimal theme, tabs can show a subtitle as a second line of text.",
+                                                               @"Localizable",
+                                                               [NSBundle bundleForClass:self.class],
+                                                               @"Subtitle tooltip");
+
+    _tallTabBarRequestView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 520, 27)];
+    NSTextField *tallTabNote = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Subtitle support requires a taller tab bar." wrapping:YES];
+    NSButton *enableTallTab = [iTermSettingsControlFactory pushButtonWithTitle:@"Enable Tall Tab Bar"
+                                                                        target:self
+                                                                        action:@selector(enableTallTabBar:)];
+    [_tallTabBarRequestView addSubview:tallTabNote];
+    [_tallTabBarRequestView addSubview:enableTallTab];
+
+    _iconLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Icon:"];
+    _icon = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"No Icon",
+        @"Built-in Icon for Current App",
+        @"Custom"
+    ]
+                                                          tags:@[ @0, @1, @2 ]
+                                                        target:self
+                                                        action:@selector(settingChanged:)];
+    iTermImageWell *iconWell = [[iTermImageWell alloc] initWithFrame:NSMakeRect(0, 0, 23, 23)];
+    iconWell.imageFrameStyle = NSImageFrameGrayBezel;
+    iconWell.editable = NO;
+    iconWell.delegate = self;
+    _imageWell = iconWell;
+    _iconContainer = [[NSView alloc] initWithFrame:NSZeroRect];
+
+    _badgeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Badge:"];
+    _badgeText = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                     placeholder:@"Enter badge text (interpolated string)"
+                                                          target:nil
+                                                          action:nil
+                                                        delegate:self];
+    _badgeText.toolTip = NSLocalizedStringFromTableInBundle(@"The badge is text that appears in the top right of a session.",
+                                                            @"Localizable",
+                                                            [NSBundle bundleForClass:self.class],
+                                                            @"Badge tooltip");
+    _editBadgeButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Edit…"
+                                                                 target:self
+                                                                 action:@selector(configureBadge:)];
+
+    _titleSettingsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Title:"];
+    _titleSettings = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 280, 25) pullsDown:YES];
+    _titleSettings.target = self;
+    _titleSettings.action = @selector(settingChanged:);
+    [self.class populateTitleComponentsMenu:_titleSettings forEditSession:NO];
+    _customTitleHelp = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(titleHelp:)];
+    _allowTitleSetting = [iTermSettingsControlFactory checkboxWithTitle:@"Applications in terminal may change the title"
+                                                                 target:self
+                                                                 action:@selector(settingChanged:)];
+
+    _commandLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Command:"];
+    _commandType = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Login Shell",
+        @"Command",
+        @"Custom Shell",
+        @"SSH"
+    ]
+                                                                 tags:@[ @1, @0, @2, @3 ]
+                                                               target:self
+                                                               action:@selector(settingChanged:)];
+    _customCommand = [[iTermExpandingTextField alloc] initWithFrame:NSMakeRect(0, 0, 320, 22)];
+    _commandCell = [[iTermStatusIndicatingTextFieldCell alloc] initTextCell:@""];
+    _commandCell.editable = YES;
+    _commandCell.selectable = YES;
+    _commandCell.bordered = YES;
+    _commandCell.bezeled = YES;
+    _commandCell.bezelStyle = NSTextFieldSquareBezel;
+    _commandCell.drawsBackground = YES;
+    _commandCell.scrollable = YES;
+    _commandCell.usesSingleLineMode = YES;
+    _commandCell.font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+    _commandCell.placeholderString = NSLocalizedStringFromTableInBundle(@"Command for new sessions (interpolated string)",
+                                                                        @"Localizable",
+                                                                        [NSBundle bundleForClass:self.class],
+                                                                        @"Custom command placeholder");
+    _customCommand.cell = _commandCell;
+    _customCommand.target = self;
+    _customCommand.action = @selector(settingChanged:);
+    _customCommand.delegate = self;
+
+    _configureSSHButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Configure…"
+                                                                    target:self
+                                                                    action:@selector(configureSSH:)];
+    _runCommandInLoginShell = [iTermSettingsControlFactory checkboxWithTitle:@"Run command through your shell"
+                                                                      target:self
+                                                                      action:@selector(settingChanged:)];
+    _runCommandInLoginShell.hiddenFromActions = YES;
+    _commandWarningImageView = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 16, 16)];
+    _commandWarningImageView.image = [NSImage imageNamed:NSImageNameCaution];
+    _commandWarningImageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+    _commandWarningImageView.hidden = YES;
+
+    _sendTextAtStartLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Send text at start:"];
+    _sendTextAtStart = [iTermSettingsControlFactory expandingTextFieldWithWidth:320
+                                                                    placeholder:@"Enter text to send at start (interpolated string)"
+                                                                         target:self
+                                                                         action:@selector(settingChanged:)
+                                                                       delegate:self];
+
+    _directoryLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Initial directory:"];
+    _initialDirectoryType = [iTermSettingsControlFactory radioMatrixWithTitles:@[
+        @"Home directory",
+        @"Reuse previous session's directory",
+        @"Directory:",
+        @"Advanced Configuration"
+    ]
+                                                                          tags:@[ @1, @2, @0, @3 ]
+                                                                    horizontal:NO
+                                                                        target:self
+                                                                        action:@selector(settingChanged:)];
+    _customDirectory = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                           placeholder:@"Enter initial directory (interpolated string)"
+                                                                target:self
+                                                                action:@selector(settingChanged:)
+                                                              delegate:self];
+    _editAdvancedConfigButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Edit…"
+                                                                          target:self
+                                                                          action:@selector(showAdvancedWorkingDirConfigPanel:)];
+
+    _schemesLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"URL schemes:"];
+    _urlSchemes = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 280, 25) pullsDown:YES];
+    _urlSchemes.target = self;
+    _urlSchemes.action = @selector(urlSchemeHandlerDidChange:);
+
+    // Edit Current Session view & controls
+    _editCurrentSessionView = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 566, 466)];
+    self.editSessionNameLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Session Name:"];
+    _profileNameFieldForEditCurrentSession = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                                                 placeholder:nil
+                                                                                      target:nil
+                                                                                      action:nil
+                                                                                    delegate:self];
+    _locked = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 18, 18)];
+    _locked.bordered = NO;
+    [_locked setButtonType:NSButtonTypeMomentaryChange];
+    _locked.imagePosition = NSImageOnly;
+    _locked.target = self;
+    _locked.action = @selector(settingChanged:);
+
+    self.editSessionBadgeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Badge:"];
+    _badgeTextForEditCurrentSession = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                                          placeholder:@"Enter Badge Text"
+                                                                               target:nil
+                                                                               action:nil
+                                                                             delegate:self];
+
+    self.editSessionTitleLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Session Title:"];
+    self.editSessionTitleLabel.identifier = @"debug";
+    _titleSettingsForEditCurrentSession = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 280, 25) pullsDown:YES];
+    _titleSettingsForEditCurrentSession.target = self;
+    _titleSettingsForEditCurrentSession.action = @selector(settingChanged:);
+    [self.class populateTitleComponentsMenu:_titleSettingsForEditCurrentSession forEditSession:YES];
+
+    self.editSessionTabTitleLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Tab Title:"];
+    _tabTitle = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                    placeholder:@"Interpolated string. If empty, use session title."
+                                                         target:nil
+                                                         action:nil
+                                                       delegate:self];
+
+    self.editSessionWindowTitleLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Window Title:"];
+    _windowTitle = [iTermSettingsControlFactory textFieldWithWidth:320
+                                                       placeholder:@"Interpolated string. If empty, use tab title."
+                                                            target:nil
+                                                            action:nil
+                                                          delegate:self];
+
+    _profiles = [[ProfileListView alloc] initWithFrame:NSMakeRect(0, 0, 530, 200)];
+    _profiles.delegate = self;
+    _copySettingsToProfile = [iTermSettingsControlFactory pushButtonWithTitle:@"Copy Current Settings to Selected Profile"
+                                                                       target:self.delegate
+                                                                       action:@selector(copyToProfile:)];
+    _copyProfileToSession = [iTermSettingsControlFactory pushButtonWithTitle:@"Use Selected Profile"
+                                                                      target:self
+                                                                      action:@selector(changeProfile:)];
+
+    self.editSessionHotkeyLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Jump to this session by pressing a global hotkey:"];
+    _sessionHotkeyInputView = [[iTermShortcutInputView alloc] initWithFrame:NSMakeRect(0, 0, 215, 22)];
+    _sessionHotkeyInputView.shortcutDelegate = self;
+    _preventAutomaticProfileSwitching = [iTermSettingsControlFactory checkboxWithTitle:@"Prevent Automatic Profile Switching from changing this session’s profile"
+                                                                                target:self
+                                                                                action:@selector(settingChanged:)];
+
+    self.view = root;
+    [self awakeFromNib];
 }
 
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     _sessionHotkeyInputView.leaderAllowed = NO;
     _sessionHotkeyInputView.purpose = @"as a hotkey";
     _rateLimit = [[iTermRateLimitedUpdate alloc] initWithName:@"General prefs" minimumInterval:0.75];
@@ -471,6 +779,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
 }
 
 - (void)organizeSettingsForm {
+    (void)self.view;
     [self installProfileLayout];
 }
 
@@ -593,6 +902,7 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
 }
 
 - (void)layoutSubviewsForEditCurrentSessionMode {
+    (void)self.view;
     self.view = _editCurrentSessionView;
 
     PreferenceInfo *info = [self infoForControl:_allowTitleSetting];

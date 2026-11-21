@@ -434,7 +434,10 @@ static PreferencePanel *gSessionsPreferencePanel;
 
 @end
 
-@interface PreferencePanel() <iTermPrefsPanelDelegate, iTermPreferencesSearchEngineResultsWindowControllerDelegate, NSSearchFieldDelegate, NSTabViewDelegate, iTermPreferencePanelSizing, NSMenuItemValidation>
+@interface iTermPreferencesPanelRootView : NSView
+@end
+
+@interface PreferencePanel() <iTermPrefsPanelDelegate, iTermPreferencesSearchEngineResultsWindowControllerDelegate, NSSearchFieldDelegate, NSTabViewDelegate, iTermPreferencePanelSizing, NSMenuItemValidation, ProfilePreferencesViewControllerDelegate>
 
 @end
 
@@ -500,14 +503,16 @@ static iTermPreferencesSearchEngine *gSearchEngine;
 
 - (instancetype)initWithProfileModel:(ProfileModel*)model
               editCurrentSessionMode:(BOOL)editCurrentSessionMode {
-    NSString *path = [iTermSettingsLocalization nibPath:@"PreferencePanel"];
-    self = path ? [super initWithWindowNibPath:path owner:self] : [super initWithWindowNibName:@"PreferencePanel"];
+    self = [super initWithWindow:nil];
     if (self) {
         _profileModel = model;
-
         _editCurrentSessionMode = editCurrentSessionMode;
     }
     return self;
+}
+
+- (NSNibName)windowNibName {
+    return @"PreferencePanel";
 }
 
 - (BOOL)autoHidesHotKeyWindow {
@@ -516,7 +521,69 @@ static iTermPreferencesSearchEngine *gSearchEngine;
 
 #pragma mark - View layout
 
-- (void)awakeFromNib {
+- (void)loadWindow {
+    const NSRect initialRect = NSMakeRect(269, 110, 924, 463);
+    const NSWindowStyleMask styleMask = (NSWindowStyleMaskTitled |
+                                         NSWindowStyleMaskClosable |
+                                         NSWindowStyleMaskMiniaturizable |
+                                         NSWindowStyleMaskResizable);
+    iTermPrefsPanel *panel = [[iTermPrefsPanel alloc] initWithContentRect:initialRect
+                                                                styleMask:styleMask
+                                                                  backing:NSBackingStoreBuffered
+                                                                    defer:YES];
+    panel.releasedWhenClosed = NO;
+    panel.hidesOnDeactivate = NO;
+    panel.delegate = self;
+
+    iTermPreferencesPanelRootView *rootView = [[iTermPreferencesPanelRootView alloc] initWithFrame:NSMakeRect(0, 0, 924, 463)];
+    panel.contentView = rootView;
+
+    NSBundle *bundle = [NSBundle bundleForClass:self.class];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Top-level Settings tab");
+    };
+
+    _tabView = [[NSTabView alloc] initWithFrame:NSMakeRect(13, 0, 911, 454)];
+    _tabView.tabViewType = NSNoTabsNoBorder;
+    _tabView.drawsBackground = NO;
+
+    _globalTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"1"];
+    _globalTabViewItem.label = loc(@"Global Settings");
+    _appearanceTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"Item 4"];
+    _appearanceTabViewItem.label = loc(@"Appearance");
+    _profilesTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"2"];
+    _profilesTabViewItem.label = loc(@"Bookmarks");
+    _keyboardTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"Keys"];
+    _keyboardTabViewItem.label = loc(@"Keys");
+    _mouseTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"Mouse"];
+    _mouseTabViewItem.label = loc(@"Mouse");
+    _shortcutsTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"Shortcuts"];
+    _shortcutsTabViewItem.label = loc(@"Shortcuts");
+    _arrangementsTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"Keys"];
+    _arrangementsTabViewItem.label = loc(@"Arrangements");
+    _advancedTabViewItem = [[NSTabViewItem alloc] initWithIdentifier:@"Advanced"];
+    _advancedTabViewItem.label = loc(@"Advanced");
+
+    for (NSTabViewItem *item in @[ _globalTabViewItem,
+                                   _appearanceTabViewItem,
+                                   _profilesTabViewItem,
+                                   _keyboardTabViewItem,
+                                   _mouseTabViewItem,
+                                   _shortcutsTabViewItem,
+                                   _arrangementsTabViewItem,
+                                   _advancedTabViewItem ]) {
+        [_tabView addTabViewItem:item];
+    }
+    [rootView addSubview:_tabView];
+
+    _profilesViewController = [[ProfilePreferencesViewController alloc] init];
+    _profilesViewController.delegate = self;
+    _profilesTabViewItem.view = _profilesViewController.view;
+
+    self.window = panel;
+}
+
+- (void)configurePreferencePanel {
     ITAssertWithMessage(self.isWindowLoaded, @"window not loaded in %@", NSStringFromSelector(_cmd));
     [self.window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
 
@@ -535,6 +602,7 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     _mouseTabViewItem.view = _pointerViewController.view;
     _advancedTabViewItem.view = _advancedViewController.view;
     _shortcutsTabViewItem.view = _shortcutsViewController.view;
+    _tabView.delegate = self;
 
     _generalPreferencesViewController.preferencePanel = self;
     _appearancePreferencesViewController.preferencePanel = self;
@@ -879,6 +947,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)windowDidLoad {
+    [super windowDidLoad];
+    [self configurePreferencePanel];
     // We shouldn't use setFrameAutosaveName: because this window controller controls two windows
     // with different frames (besides, I tried it and it doesn't work here for some reason).
     if (![(iTermPrefsPanel *)self.window haveSavedFrameForFrameWithName:self.nameForFrame]) {
@@ -1120,8 +1190,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
         return;
     }
 
-    iTermSizeRememberingView *theView = (iTermSizeRememberingView *)tabViewItem.view;
-    NSSize size = theView.originalSize;
+    NSView *rawView = tabViewItem.view;
+    NSSize size = [rawView isKindOfClass:[iTermSizeRememberingView class]] ? [(iTermSizeRememberingView *)rawView originalSize] : rawView.bounds.size;
     size.width += 26;
     size.height += 9;
     [self preferencePanelSetContentSize:size];
@@ -1397,9 +1467,6 @@ andEditComponentWithIdentifier:(NSString *)identifier
     return _editCurrentSessionMode ? 0 : iTermSettingsSidebarView.preferredWidth;
 }
 
-@end
-
-@interface iTermPreferencesPanelRootView: NSView
 @end
 
 @implementation iTermPreferencesPanelRootView

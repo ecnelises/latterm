@@ -353,4 +353,159 @@ final class SettingsControlFactory: NSObject {
         }
         return tabView
     }
+
+    // MARK: - Objective-C Ergonomic Overloads
+
+    @objc(labelWithTitle:)
+    static func objcLabel(_ title: String) -> NSTextField {
+        label(title)
+    }
+
+    @objc(rightAlignedLabelWithTitle:)
+    static func objcRightAlignedLabel(_ title: String) -> NSTextField {
+        let field = label(title)
+        field.alignment = .right
+        return field
+    }
+
+    @objc(secondaryLabelWithTitle:wrapping:)
+    static func objcSecondaryLabel(_ title: String, wrapping: Bool) -> NSTextField {
+        if wrapping {
+            return wrappingLabel(title, smallSecondary: true)
+        }
+        let field = NSTextField(labelWithString: localized(title))
+        field.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        field.textColor = .secondaryLabelColor
+        field.sizeToFit()
+        return field
+    }
+
+    @objc(checkboxWithTitle:target:action:)
+    static func objcCheckbox(_ title: String, target: AnyObject?, action: Selector?) -> SettingsCheckbox {
+        checkbox(title, target: target, action: action)
+    }
+
+    @objc(pushButtonWithTitle:target:action:)
+    static func objcPushButton(_ title: String, target: AnyObject?, action: Selector?) -> NSButton {
+        pushButton(title, target: target, action: action)
+    }
+
+    @objc(popoverHelpButtonWithHelpText:)
+    static func objcPopoverHelpButton(_ helpTextKey: String) -> PopoverHelpButton {
+        popoverHelpButton(helpTextKey)
+    }
+
+    @objc(textFieldWithWidth:placeholder:target:action:delegate:)
+    static func objcTextField(width: CGFloat,
+                              placeholder: String?,
+                              target: AnyObject?,
+                              action: Selector?,
+                              delegate: NSTextFieldDelegate?) -> NSTextField {
+        textField(placeholder: placeholder, width: width, target: target, action: action, delegate: delegate)
+    }
+
+    @objc(expandingTextFieldWithWidth:placeholder:target:action:delegate:)
+    static func objcExpandingTextField(width: CGFloat,
+                                       placeholder: String?,
+                                       target: AnyObject?,
+                                       action: Selector?,
+                                       delegate: NSTextFieldDelegate?) -> ExpandingTextField {
+        expandingTextField(placeholder: placeholder, width: width, target: target, action: action, delegate: delegate)
+    }
+
+    @objc(tokenFieldWithWidth:placeholder:target:action:delegate:)
+    static func objcTokenField(width: CGFloat,
+                               placeholder: String?,
+                               target: AnyObject?,
+                               action: Selector?,
+                               delegate: NSTokenFieldDelegate?) -> NSTokenField {
+        tokenField(placeholder: placeholder, width: width, target: target, action: action, delegate: delegate)
+    }
+
+    @objc(popUpButtonWithTitles:tags:target:action:)
+    static func objcPopUpButton(titles: [String],
+                                tags: [NSNumber],
+                                target: AnyObject?,
+                                action: Selector?) -> NSPopUpButton {
+        objcPopUpButton(titles: titles, tags: tags, separators: [], target: target, action: action)
+    }
+
+    @objc(popUpButtonWithTitles:tags:separators:target:action:)
+    static func objcPopUpButton(titles: [String],
+                                tags: [NSNumber],
+                                separators: [NSNumber],
+                                target: AnyObject?,
+                                action: Selector?) -> NSPopUpButton {
+        let separatorSet = Set(separators.map(\.intValue))
+        var entries: [[Any]] = []
+        for (idx, title) in titles.enumerated() {
+            if separatorSet.contains(idx) {
+                entries.append(["---"])
+            } else {
+                let tag = idx < tags.count ? tags[idx] : NSNumber(value: 0)
+                entries.append([title, tag])
+            }
+        }
+        return popupButton(pullsDown: false, width: 160, target: target, action: action, items: entries)
+    }
+
+    @objc(pullDownButtonWithTitle:itemTitles:target:action:)
+    static func objcPullDownButton(title: String,
+                                   itemTitles: [String],
+                                   target: AnyObject?,
+                                   action: Selector?) -> NSPopUpButton {
+        var entries: [[Any]] = [[title, NSNumber(value: 0)]]
+        for (idx, itemTitle) in itemTitles.enumerated() {
+            entries.append([itemTitle, NSNumber(value: idx)])
+        }
+        return popupButton(pullsDown: true, width: 200, target: target, action: action, items: entries)
+    }
+
+    @objc(comboBoxWithItems:width:target:action:delegate:)
+    static func objcComboBox(items: [String],
+                             width: CGFloat,
+                             target: AnyObject?,
+                             action: Selector?,
+                             delegate: NSComboBoxDelegate?) -> NSComboBox {
+        comboBox(defaultTitle: items.first ?? "", items: items, width: width, target: target, action: action, delegate: delegate)
+    }
+
+    @objc(sliderWithMinValue:maxValue:initialValue:width:wrapInSliderView:target:action:)
+    static func objcSlider(minValue: Double,
+                           maxValue: Double,
+                           initialValue: Double,
+                           width: CGFloat,
+                           wrapInSliderView: Bool,
+                           target: AnyObject?,
+                           action: Selector?) -> NSSlider {
+        slider(minValue: minValue,
+               maxValue: maxValue,
+               doubleValue: initialValue,
+               width: width,
+               target: target,
+               action: action,
+               wrappedInSteppedSlider: wrapInSliderView)
+    }
+
+    @objc(stepperWithMinValue:maxValue:target:action:)
+    static func objcStepper(minValue: Double,
+                            maxValue: Double,
+                            target: AnyObject?,
+                            action: Selector?) -> NSStepper {
+        stepper(minValue: minValue, maxValue: maxValue, increment: 1, target: target, action: action)
+    }
+
+    @objc(radioMatrixWithTitles:tags:horizontal:target:action:)
+    static func objcRadioMatrix(titles: [String],
+                                tags: [NSNumber],
+                                horizontal: Bool,
+                                target: AnyObject?,
+                                action: Selector?) -> NSMatrix {
+        var entries: [[Any]] = []
+        for (idx, title) in titles.enumerated() {
+            let tag = idx < tags.count ? tags[idx] : NSNumber(value: 0)
+            entries.append([title, tag])
+        }
+        return radioMatrix(items: entries, horizontal: horizontal, target: target, action: action)
+    }
 }

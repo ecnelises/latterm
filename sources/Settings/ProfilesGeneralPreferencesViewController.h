@@ -24,6 +24,7 @@
 - (void)profilesGeneralPreferencesSessionHotkeyDidChange;
 
 - (iTermVariableScope<iTermSessionScope> *)profilesGeneralPreferencesScope;
+- (IBAction)copyToProfile:(id)sender;
 @end
 
 @interface ProfilesGeneralPreferencesViewController : iTermProfilePreferencesBaseViewController

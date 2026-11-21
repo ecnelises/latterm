@@ -123,6 +123,7 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     NSDictionary<NSString *, id> *_savedColors;
     BOOL _didPreviewPreset;
     NSTimer *_timer;
+    BOOL _controlsInitialized;
 }
 
 - (NSButton *)useSeparateColorsForLightAndDarkMode { return _useSeparateColorsForLightAndDarkMode; }
@@ -237,7 +238,177 @@ static NSString * const kColorGalleryURL = @"https://www.iterm2.com/colorgallery
     return nil;
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 560, 916)];
+
+    self.modesSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Modes:"];
+    _useSeparateColorsForLightAndDarkMode = [iTermSettingsControlFactory checkboxWithTitle:@"Use separate colors for light and dark mode"
+                                                                                    target:self
+                                                                                    action:@selector(settingChanged:)];
+    _modeWarning = [iTermSettingsControlFactory warningButtonWithTarget:self action:@selector(showModeWarning:)];
+    _modeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Editing:"];
+    _mode = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Light Mode", @"Dark Mode" ]
+                                                          tags:@[ @0, @1 ]
+                                                        target:self
+                                                        action:@selector(modeDidChange:)];
+    self.presetsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Color Preset:"];
+    _presetsPopupButton = [iTermSettingsControlFactory pullDownButtonWithTitle:@"Color Presets…"
+                                                                    itemTitles:@[]
+                                                                        target:nil
+                                                                        action:nil];
+    _presetsMenu = _presetsPopupButton.menu;
+
+    _foregroundColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Defaults:"];
+    _backgroundColorLabel = [iTermSettingsControlFactory labelWithTitle:@"Background"];
+    self.defaultsForegroundHeader = [iTermSettingsControlFactory labelWithTitle:@"Foreground"];
+    _backgroundColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _foregroundColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+
+    _cursorColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Cursor:"];
+    self.cursorBackgroundHeader = [iTermSettingsControlFactory labelWithTitle:@"Background"];
+    _cursorTextColorLabel = [iTermSettingsControlFactory labelWithTitle:@"Foreground"];
+    _cursorColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _cursorTextColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _useSmartCursorColor = [iTermSettingsControlFactory checkboxWithTitle:@"Context-aware cursor color (affects box cursor only)"
+                                                                   target:self
+                                                                   action:@selector(settingChanged:)];
+
+    _imeCursorColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Input Method Editor:"];
+    _imeCursorColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:YES];
+
+    _selectionColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Selection:"];
+    self.selectionBackgroundHeader = [iTermSettingsControlFactory labelWithTitle:@"Background"];
+    self.selectionForegroundHeader = [iTermSettingsControlFactory labelWithTitle:@"Foreground"];
+    _selectionColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _selectedTextColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _selectedTextColorEnabledButton = [iTermSettingsControlFactory checkboxWithTitle:@"Use custom color for selected text"
+                                                                              target:self
+                                                                              action:@selector(settingChanged:)];
+
+    _matchColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Search results:"];
+    _matchColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+
+    _linkColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Links:"];
+    _linkColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+
+    self.boldColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Bold:"];
+    _boldColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _useBrightBold = [iTermSettingsControlFactory checkboxWithTitle:@"Use custom color for bold text"
+                                                             target:self
+                                                             action:@selector(settingChanged:)];
+    _brightenBoldText = [iTermSettingsControlFactory checkboxWithTitle:@"Use bright version of ANSI colors for bold text"
+                                                                target:self
+                                                                action:@selector(settingChanged:)];
+
+    self.underlineColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Underlines:"];
+    _underlineColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _useUnderlineColor = [iTermSettingsControlFactory checkboxWithTitle:@"Use custom underline color"
+                                                                 target:self
+                                                                 action:@selector(settingChanged:)];
+
+    self.cursorGuideLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Cursor Guide:"];
+    _guideColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:YES];
+    _useGuide = [iTermSettingsControlFactory checkboxWithTitle:@"Use cursor guide"
+                                                        target:self
+                                                        action:@selector(settingChanged:)];
+
+    _badgeColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Badge:"];
+    _badgeColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:YES];
+
+    self.ansiColorsSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"ANSI Colors:"];
+    self.ansiNormalHeader = [iTermSettingsControlFactory labelWithTitle:@"Normal"];
+    self.ansiNormalHeader.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+    self.ansiBrightHeader = [iTermSettingsControlFactory labelWithTitle:@"Bright"];
+    self.ansiBrightHeader.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+
+    _ansi0ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Black"];
+    _ansi1ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Red"];
+    _ansi2ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Green"];
+    _ansi3ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Yellow"];
+    _ansi4ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Blue"];
+    _ansi5ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Magenta"];
+    _ansi6ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Cyan"];
+    _ansi7ColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"White"];
+
+    _ansi0Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi1Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi2Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi3Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi4Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi5Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi6Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi7Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi8Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi9Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi10Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi11Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi12Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi13Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi14Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _ansi15Color = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+
+    _hueVisualization = [[iTermHueVisualizationView alloc] initWithFrame:NSMakeRect(0, 0, 203, 203)];
+    _harmonize256 = [iTermSettingsControlFactory checkboxWithTitle:@"Select 8-bit colors to match ANSI colors"
+                                                            target:self
+                                                            action:@selector(settingChanged:)];
+
+    _minimumContrastLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Minimum Contrast:"];
+    _minimumContrast = [iTermSettingsControlFactory sliderWithMinValue:0
+                                                              maxValue:1
+                                                          initialValue:0
+                                                                 width:180
+                                                     wrapInSliderView:YES
+                                                                target:self
+                                                                action:@selector(settingChanged:)];
+    NSTextField *bwWarn1 = [iTermSettingsControlFactory labelWithTitle:@"⚠️"];
+    bwWarn1.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+    bwWarn1.hidden = YES;
+    _bwWarning1 = bwWarn1;
+    NSTextField *bwWarn2 = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Black & White Text Only" wrapping:NO];
+    bwWarn2.hidden = YES;
+    _bwWarning2 = bwWarn2;
+
+    _faintTextAlphaLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Faint text:"];
+    _faintTextAlpha = [iTermSettingsControlFactory sliderWithMinValue:0.1
+                                                             maxValue:1
+                                                         initialValue:0.1
+                                                                width:180
+                                                    wrapInSliderView:YES
+                                                               target:self
+                                                               action:@selector(settingChanged:)];
+    self.faintTransparentLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Transparent" wrapping:NO];
+    self.faintOpaqueLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Opaque" wrapping:NO];
+
+    _cursorBoostLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Cursor Boost:"];
+    _cursorBoost = [iTermSettingsControlFactory sliderWithMinValue:0
+                                                          maxValue:0.8
+                                                      initialValue:0
+                                                             width:180
+                                                 wrapInSliderView:YES
+                                                            target:self
+                                                            action:@selector(settingChanged:)];
+
+    self.tabColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Tab:"];
+    _tabColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _useTabColor = [iTermSettingsControlFactory checkboxWithTitle:@"Use custom tab color"
+                                                           target:self
+                                                           action:@selector(settingChanged:)];
+
+    self.paneColorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Pane:"];
+    _activePaneBorderColor = [iTermSettingsControlFactory colorWellWithAlphaAllowed:NO];
+    _useActivePaneBorder = [iTermSettingsControlFactory checkboxWithTitle:@"Border around active pane"
+                                                                   target:self
+                                                                   action:@selector(settingChanged:)];
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     ((iTermSizeRememberingView *)self.view).delegate = self;
 
     // Updates fields when a preset is loaded.

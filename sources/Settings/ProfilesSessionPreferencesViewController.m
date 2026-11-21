@@ -12,6 +12,7 @@
 #import "iTermFunctionCallTextFieldDelegate.h"
 #import "iTermPreferences.h"
 #import "iTermProfilePreferences.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermStatusBarSetupViewController.h"
 #import "iTermTheme.h"
 #import "iTermUserDefaultsObserver.h"
@@ -147,8 +148,139 @@ static NSString *const ProfilesSessionPreferencesViewControllerPhonyShortLivedSe
 - (NSTextField *)bufferWarning { return _bufferWarning; }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     _jobsTable.dataSource = nil;
     _jobsTable.delegate = nil;
+}
+
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 660, 810)];
+    NSBundle *bundle = [NSBundle bundleForClass:self.class];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Profiles Session setting");
+    };
+
+    self.closingSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Closing:"];
+    _warnAboutShortLivedSessions = [iTermSettingsControlFactory checkboxWithTitle:@"Warn about short-lived sessions"
+                                                                           target:self
+                                                                           action:@selector(settingChanged:)];
+    _warnAboutShortLivedSessions.toolTip = loc(@"If a session ends immediately after starting and this setting is enabled, keep it open so you can see what went wrong.");
+    self.undoRevivePrefixLabel = [iTermSettingsControlFactory labelWithTitle:@"“Undo” can revive a session that has been closed for up to"];
+    _undoTimeout = [iTermSettingsControlFactory textFieldWithWidth:64 placeholder:nil target:nil action:nil delegate:self];
+    self.undoSecondsLabel = [iTermSettingsControlFactory labelWithTitle:@"seconds"];
+    self.afterSessionEndsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"After a session ends:"];
+    _onEndAction = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"No Action", @"Close", @"Restart" ]
+                                                                 tags:@[ @0, @1, @2 ]
+                                                               target:self
+                                                               action:@selector(settingChanged:)];
+    self.promptBeforeClosingLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Prompt before closing?"];
+    _promptBeforeClosing = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Never", @"Always", @"If there are jobs besides:" ]
+                                                                         tags:@[ @0, @1, @2 ]
+                                                                       target:self
+                                                                       action:@selector(settingChanged:)];
+
+    iTermSettingsEmbeddedScrollView *jobsScroll = [[iTermSettingsEmbeddedScrollView alloc] initWithFrame:NSMakeRect(0, 0, 452, 97)];
+    jobsScroll.borderType = NSBezelBorder;
+    jobsScroll.hasVerticalScroller = YES;
+    jobsScroll.hasHorizontalScroller = NO;
+    jobsScroll.autohidesScrollers = YES;
+    _jobsTable = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 450, 95)];
+    _jobsTable.headerView = nil;
+    _jobsTable.usesAlternatingRowBackgroundColors = YES;
+    _jobsTable.allowsMultipleSelection = NO;
+    _jobsTable.allowsColumnReordering = NO;
+    _jobsTable.allowsColumnResizing = NO;
+    _jobsTable.columnAutoresizingStyle = NSTableViewLastColumnOnlyAutoresizingStyle;
+    NSTableColumn *jobCol = [[NSTableColumn alloc] initWithIdentifier:@"job"];
+    jobCol.width = 409;
+    jobCol.minWidth = 40;
+    jobCol.maxWidth = 1000;
+    [_jobsTable addTableColumn:jobCol];
+    _jobsTable.dataSource = self;
+    _jobsTable.delegate = self;
+    jobsScroll.documentView = _jobsTable;
+    _addJob = [iTermSettingsControlFactory addButtonWithTarget:self action:@selector(addJob:)];
+    _removeJob = [iTermSettingsControlFactory removeButtonWithTarget:self action:@selector(removeJob:)];
+
+    self.loggingSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Logging:"];
+    _autoLog = [iTermSettingsControlFactory checkboxWithTitle:@"Enable automatic session logging" target:self action:@selector(settingChanged:)];
+    self.logFormatLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Log format:"];
+    _loggingStyle = [iTermSettingsControlFactory popUpButtonWithTitles:@[ @"Raw data", @"Plain text", @"HTML", @"asciinema" ]
+                                                                  tags:@[ @0, @1, @2, @3 ]
+                                                                target:self
+                                                                action:@selector(settingChanged:)];
+    self.logFolderLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Folder:"];
+    _logDir = [iTermSettingsControlFactory textFieldWithWidth:299 placeholder:@"Interpolated String" target:nil action:nil delegate:self];
+    _logDirWarning = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 16, 16)];
+    _logDirWarning.image = [NSImage imageNamed:NSImageNameCaution];
+    _logDirWarning.imageScaling = NSImageScaleProportionallyUpOrDown;
+    _logDirWarning.hidden = YES;
+    _changeLogDir = [iTermSettingsControlFactory pushButtonWithTitle:@"Change" target:self action:@selector(selectLogDir:)];
+    self.logFilenameLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Filename:"];
+    _logFilenameFormat = [iTermSettingsControlFactory textFieldWithWidth:299 placeholder:@"Interpolated String" target:self action:@selector(settingChanged:) delegate:nil];
+
+    self.archivingSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Archiving:"];
+    _archive = [iTermSettingsControlFactory checkboxWithTitle:@"Archive sessions on closure" target:self action:@selector(settingChanged:)];
+    self.archivingHelpButton = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"When a session is archived, a full-fidelity copy of it gets saved to disk. You can view archives under the menu item Shell > Archives."];
+    self.archiveFolderLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Folder:"];
+    _archiveDir = [iTermSettingsControlFactory textFieldWithWidth:299 placeholder:nil target:nil action:nil delegate:self];
+    _archiveDirWarning = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, 16, 16)];
+    _archiveDirWarning.image = [NSImage imageNamed:NSImageNameCaution];
+    _archiveDirWarning.imageScaling = NSImageScaleProportionallyUpOrDown;
+    _archiveDirWarning.hidden = YES;
+    _changeArchiveDir = [iTermSettingsControlFactory pushButtonWithTitle:@"Change" target:self action:@selector(selectArchiveDir:)];
+
+    self.statusBarSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Status Bar:"];
+    _showTimestampsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Timestamps:"];
+    _timestampsEnabled = [iTermSettingsControlFactory checkboxWithTitle:@"Enabled" target:self action:@selector(settingChanged:)];
+    _showTimestampsPopup = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Over contents",
+        @"Over contents when mouse hovers over scrollbar",
+        @"Next to contents"
+    ]
+                                                                         tags:@[ @1, @2, @3 ]
+                                                                       target:self
+                                                                       action:@selector(settingChanged:)];
+    _statusBarEnabled = [iTermSettingsControlFactory checkboxWithTitle:@"Status bar enabled" target:self action:@selector(settingChanged:)];
+    _statusBarEnabled.toolTip = loc(@"Shows a configurable status bar at the top of each session.");
+    _configureStatusBar = [iTermSettingsControlFactory pushButtonWithTitle:@"Configure Status Bar"
+                                                                    target:self
+                                                                    action:@selector(configureStatusBar:)];
+
+    self.progressBarsSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Progress Bars:"];
+    _enableProgressBars = [iTermSettingsControlFactory checkboxWithTitle:@"Show progress bars" target:self action:@selector(settingChanged:)];
+    self.progressBarHeightLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Height:"];
+    _progressBarHeight = [iTermSettingsControlFactory textFieldWithWidth:54 placeholder:nil target:self action:@selector(settingChanged:) delegate:self];
+    _progressBarHeight.toolTip = loc(@"The progress bar goes at the top of the session. It cannot exceed the top margin height to avoid overlapping terminal contents.");
+    _progressBarHeightStepper = [iTermSettingsControlFactory stepperWithMinValue:0 maxValue:100 target:self action:@selector(settingChanged:)];
+    self.progressBarColorSchemeLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Color Scheme:"];
+    _progressBarColorScheme = [iTermSettingsControlFactory popUpButtonWithTitles:@[] tags:@[] target:self action:@selector(settingChanged:)];
+    _progressBarColorScheme.toolTip = loc(@"This sets the color of the indeterminate progress bar.");
+    self.passwordManagerLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Password manager:"];
+    _openPasswordManagerAutomatically = [iTermSettingsControlFactory checkboxWithTitle:@"Open password manager automatically when a password prompt is detected"
+                                                                                target:self
+                                                                                action:@selector(settingChanged:)];
+    _openPasswordManagerAutomatically.toolTip = loc(@"When a password prompt appears, automatically open the password manager?");
+
+    self.miscSectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Miscellaneous:"];
+    _sendCodeWhenIdle = [iTermSettingsControlFactory checkboxWithTitle:@"When idle, send ASCII code" target:self action:@selector(settingChanged:)];
+    _sendCodeWhenIdle.toolTip = loc(@"Only use this if you really know what you’re doing!");
+    _idleCode = [iTermSettingsControlFactory textFieldWithWidth:58 placeholder:@"ASCII Code" target:nil action:nil delegate:self];
+    self.idleEveryLabel = [iTermSettingsControlFactory labelWithTitle:@"every"];
+    _idlePeriod = [iTermSettingsControlFactory textFieldWithWidth:58 placeholder:@"interval" target:nil action:nil delegate:self];
+    self.idleSecondsLabel = [iTermSettingsControlFactory labelWithTitle:@"seconds"];
+    _reduceFlicker = [iTermSettingsControlFactory checkboxWithTitle:@"Avoid repainting while cursor is hidden to reduce flicker while scrolling"
+                                                             target:self
+                                                             action:@selector(settingChanged:)];
+    _reduceFlicker.toolTip = loc(@"This is not recommended.");
+    _defaultPaneLocked = [iTermSettingsControlFactory checkboxWithTitle:@"Lock pane by default" target:self action:@selector(settingChanged:)];
+    _defaultPaneLocked.toolTip = loc(@"Locked panes cannot be moved by dragging and require confirmation to close.");
+    _bufferByDefault = [iTermSettingsControlFactory checkboxWithTitle:@"Buffer input by default" target:self action:@selector(settingChanged:)];
+    self.bufferHelpButton = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"When enabled, anything you type just after creating a session with this profile will be stored to be sent later. In order to stop buffering, you may either select the menu item Shell > Toggle Buffer Input, or you can add a Trigger with the action “Buffer Input…” configured to “Stop Buffering Input” to allow buffered input to be sent and keyboard interaction to work normally."];
+    _bufferWarning = [iTermSettingsControlFactory secondaryLabelWithTitle:@"⚠️ You may want a trigger to stop buffering" wrapping:NO];
+
+    self.view = root;
+    [self awakeFromNib];
 }
 
 - (NSSet<NSString *> *(^)(NSString *))prenatalPathSource {

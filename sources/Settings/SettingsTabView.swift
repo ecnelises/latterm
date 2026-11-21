@@ -104,19 +104,6 @@ final class SettingsTabView: NSTabView {
     private func rebuildSections() {
         guard presentsSections else { return }
         let previous = sections
-        var pendingBodies: [NSView] = []
-        for item in tabViewItems {
-            guard let view = item.view, previous.first(where: { $0.item === item }) == nil,
-                  let body = compactBody(in: view) else { continue }
-            SettingsFormView.alignControls(in: body)
-            if !["ActionCustomView", "SnippetCustomView", "PointerBindingsCustomView"].contains(body.identifier?.rawValue ?? "") &&
-                !(body.subviews.contains { $0 is NSScrollView && $0.frame.width > body.bounds.width * 0.7 }) {
-                pendingBodies.append(body)
-            }
-        }
-        if !pendingBodies.isEmpty {
-            SettingsFormView.unifyFormColumns(in: pendingBodies)
-        }
         sections = tabViewItems.compactMap { item in
             guard let view = item.view else { return nil }
             let existing = previous.first { $0.item === item }

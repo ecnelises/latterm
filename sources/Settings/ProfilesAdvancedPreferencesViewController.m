@@ -13,6 +13,7 @@
 #import "ITAddressBookMgr.h"
 #import "iTermProfilePreferences.h"
 #import "iTermSemanticHistoryPrefsController.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
 #import "NSTextField+iTerm.h"
@@ -59,6 +60,7 @@
 
     BOOL _addingBoundHost;  // Don't remove empty-named hosts while this is set
     BOOL _triggersModelHasChanged;
+    BOOL _controlsInitialized;
 }
 
 - (NSButton *)triggersButton { return _triggersButton; }
@@ -78,11 +80,95 @@
 - (NSTextField *)disabledTip { return _disabledTip; }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     _boundHostsTableView.delegate = nil;
     _boundHostsTableView.dataSource = nil;
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 800, 382)];
+
+    _triggerWindowController = [[TriggerController alloc] init];
+    _triggerWindowController.delegate = self;
+
+    _smartSelectionWindowController = [[SmartSelectionController alloc] init];
+    _smartSelectionWindowController.delegate = self;
+
+    _semanticHistoryPrefController = [[iTermSemanticHistoryPrefsController alloc] init];
+    _semanticHistoryPrefController.delegate = self;
+    _semanticHistoryAction = _semanticHistoryPrefController.actionPopup;
+
+    self.triggersLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Triggers:"];
+    _triggersButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Edit" target:self action:@selector(editTriggers:)];
+    _triggersHelp = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"Triggers watch for text matching a regular expression to arrive in a terminal session and then perform an action in response."];
+    _enableTriggersInInteractiveApps = [iTermSettingsControlFactory checkboxWithTitle:@"Enabled in interactive apps"
+                                                                               target:self
+                                                                               action:@selector(settingChanged:)];
+
+    self.smartSelectionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Smart Selection:"];
+    _smartSelectionButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Edit" target:self action:@selector(editSmartSelection:)];
+    self.smartSelectionHelp = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"Quad-click selects a string under the cursor that best matches a regular expression from a collection of rules."];
+
+    NSTextField *apsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Automatic Profile Switching:"];
+    _boundHostLabel = apsLabel;
+    _boundHostTitle = apsLabel;
+    _boundHostHelp = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"Any session will switch to this profile automatically when your hostname, username, and current path match one of the rules specified in the adjacent table.\n\nA rule may specify a username, hostname, path, or job. It can also specify combinations of them.\n\nFor example:\n\n * `user@host:/path`\n * `user@`\n * `host`\n * `/path`\n * `&job`\n\nHostnames, paths, and jobs may use `*` wildcards. When a rule that had matched no longer matches (e.g., because the hostname changes), the profile switches back. You can prevent that by adding `!` at the end of the rule. For example, `user@example.com!`.\n\nSee the [documentation](https://iterm2.com/automatic-profile-switching.html) for all the details."];
+
+    iTermSettingsEmbeddedScrollView *apsScroll = [[iTermSettingsEmbeddedScrollView alloc] initWithFrame:NSMakeRect(0, 0, 553, 78)];
+    apsScroll.borderType = NSBezelBorder;
+    apsScroll.hasVerticalScroller = YES;
+    apsScroll.hasHorizontalScroller = NO;
+    apsScroll.autohidesScrollers = YES;
+    _boundHostsTableView = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 551, 76)];
+    _boundHostsTableView.headerView = nil;
+    _boundHostsTableView.usesAlternatingRowBackgroundColors = YES;
+    _boundHostsTableView.allowsMultipleSelection = NO;
+    _boundHostsTableView.allowsColumnSelection = YES;
+    _boundHostsTableView.allowsColumnReordering = NO;
+    _boundHostsTableView.allowsColumnResizing = NO;
+    _boundHostsTableView.columnAutoresizingStyle = NSTableViewLastColumnOnlyAutoresizingStyle;
+    NSTableColumn *apsCol = [[NSTableColumn alloc] initWithIdentifier:@"host"];
+    apsCol.width = 478;
+    apsCol.minWidth = 40;
+    apsCol.maxWidth = 1000;
+    [_boundHostsTableView addTableColumn:apsCol];
+    _boundHostsTableView.dataSource = self;
+    _boundHostsTableView.delegate = self;
+    apsScroll.documentView = _boundHostsTableView;
+    _automaticProfileSwitchingView = _boundHostsTableView;
+
+    _addBoundHost = [iTermSettingsControlFactory addButtonWithTarget:self action:@selector(addBoundHost:)];
+    NSButton *removeHostButton = [iTermSettingsControlFactory removeButtonWithTarget:self action:@selector(removeBoundHost:)];
+    removeHostButton.enabled = NO;
+    _removeBoundHost = removeHostButton;
+    _boundHostShellIntegrationWarning = [iTermSettingsControlFactory secondaryLabelWithTitle:@"This feature requires terminal-reported host metadata."
+                                                                                    wrapping:YES];
+    _enableAPSLogging = [iTermSettingsControlFactory checkboxWithTitle:@"Write Automatic Profile Switching debug logs to Script Console (⌥⌘J)"
+                                                                target:self
+                                                                action:@selector(didToggleAutomaticProfileSwitchingDebugLogging:)];
+
+    _snippetsFilterLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Snippets Filter:"];
+    _snippetsFilter = [iTermSettingsControlFactory tokenFieldWithWidth:320
+                                                           placeholder:nil
+                                                                target:nil
+                                                                action:nil
+                                                              delegate:self];
+    self.snippetsFilterHelp = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"While this session has keyboard focus, the available Snippets will be limited to those containing all the tags listed in this field."];
+
+    self.semanticHistoryLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Semantic History:"];
+    self.semanticHistoryHelp = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"⌘-Click on a filename referring to an existing file performs an action on that file."];
+    _disabledTip = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Disabled by “⌘-Click Opens Filename/URL” setting in Pointer settings"
+                                                               wrapping:YES];
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadProfiles:)
                                                  name:kReloadAllProfiles

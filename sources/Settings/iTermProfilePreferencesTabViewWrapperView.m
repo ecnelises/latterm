@@ -11,6 +11,14 @@
     IBOutlet NSView *_tabView;
 }
 
+- (instancetype)initWithFrame:(NSRect)frameRect tabView:(NSView *)tabView {
+    self = [super initWithFrame:frameRect];
+    if (self) {
+        _tabView = tabView;
+    }
+    return self;
+}
+
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize {
     [super resizeWithOldSuperviewSize:oldSize];
     [self layoutTabView];

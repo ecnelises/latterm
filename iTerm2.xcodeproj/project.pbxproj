@@ -822,7 +822,6 @@
 		A61E0C502D5ACD4F00D4633A /* PTYSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61E0C4F2D5ACD4C00D4633A /* PTYSession.swift */; };
 		A61E513B2F98971E00EB2B55 /* MiniPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513A2F98971E00EB2B55 /* MiniPasteView.xib */; };
 		A61E51442F98978000EB2B55 /* iTermTriggersPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E51422F98978000EB2B55 /* iTermTriggersPanel.xib */; };
-		A61E51452F98978000EB2B55 /* PreferencePanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E51432F98978000EB2B55 /* PreferencePanel.xib */; };
 		A61E51462F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513E2F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib */; };
 		A61E51472F98978000EB2B55 /* BulkCopyProfilePreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513F2F98978000EB2B55 /* BulkCopyProfilePreferences.xib */; };
 		A61E51482F98978000EB2B55 /* iTermEditKeyActionWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E51402F98978000EB2B55 /* iTermEditKeyActionWindowController.xib */; };
@@ -1714,7 +1713,6 @@
 		A67D0D4A1A2EE12A003A8B35 /* configPanel.strings in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D191A2EE12A003A8B35 /* configPanel.strings */; };
 		A67D0D591A2EE12A003A8B35 /* iTerm.strings in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D1E1A2EE12A003A8B35 /* iTerm.strings */; };
 		A67D0D6E1A2EE12A003A8B35 /* MainMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D251A2EE12A003A8B35 /* MainMenu.strings */; };
-		A67D0D7D1A2EE12A003A8B35 /* PreferencePanel.strings in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D2A1A2EE12A003A8B35 /* PreferencePanel.strings */; };
 		A67D0D861A2EE12A003A8B35 /* PseudoTerminal.strings in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D2D1A2EE12A003A8B35 /* PseudoTerminal.strings */; };
 		A67D0D8F1A2EE12A003A8B35 /* TmuxDashboard.xib in Resources */ = {isa = PBXBuildFile; fileRef = A67D0D301A2EE12A003A8B35 /* TmuxDashboard.xib */; };
 		A67D1953223704C400BD0D4D /* VT100SixelParser.m in Sources */ = {isa = PBXBuildFile; fileRef = A67D1952223704C400BD0D4D /* VT100SixelParser.m */; };
@@ -4218,7 +4216,6 @@
 		A61E51402F98978000EB2B55 /* iTermEditKeyActionWindowController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermEditKeyActionWindowController.xib; sourceTree = "<group>"; };
 		A61E51412F98978000EB2B55 /* iTermKeyMapping.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermKeyMapping.xib; sourceTree = "<group>"; };
 		A61E51422F98978000EB2B55 /* iTermTriggersPanel.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermTriggersPanel.xib; sourceTree = "<group>"; };
-		A61E51432F98978000EB2B55 /* PreferencePanel.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PreferencePanel.xib; sourceTree = "<group>"; };
 		A61E51562F9897A800EB2B55 /* Autocomplete.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Autocomplete.xib; sourceTree = "<group>"; };
 		A61ED2A320E99DCD0035BECD /* iTermStatusBarClockComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermStatusBarClockComponent.h; sourceTree = "<group>"; };
 		A61ED2A420E99DCD0035BECD /* iTermStatusBarClockComponent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermStatusBarClockComponent.m; sourceTree = "<group>"; };
@@ -5051,7 +5048,6 @@
 		A67D0D191A2EE12A003A8B35 /* configPanel.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = configPanel.strings; path = Interfaces/configPanel.strings; sourceTree = "<group>"; };
 		A67D0D1E1A2EE12A003A8B35 /* iTerm.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = iTerm.strings; path = Interfaces/iTerm.strings; sourceTree = "<group>"; };
 		A67D0D251A2EE12A003A8B35 /* MainMenu.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = MainMenu.strings; path = Interfaces/MainMenu.strings; sourceTree = "<group>"; };
-		A67D0D2A1A2EE12A003A8B35 /* PreferencePanel.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = PreferencePanel.strings; path = Interfaces/PreferencePanel.strings; sourceTree = "<group>"; };
 		A67D0D2D1A2EE12A003A8B35 /* PseudoTerminal.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = PseudoTerminal.strings; path = Interfaces/PseudoTerminal.strings; sourceTree = "<group>"; };
 		A67D0D301A2EE12A003A8B35 /* TmuxDashboard.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TmuxDashboard.xib; sourceTree = "<group>"; };
 		A67D1952223704C400BD0D4D /* VT100SixelParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VT100SixelParser.m; sourceTree = "<group>"; };
@@ -6732,7 +6728,6 @@
 				A67D0D191A2EE12A003A8B35 /* configPanel.strings */,
 				A67D0D1E1A2EE12A003A8B35 /* iTerm.strings */,
 				A67D0D251A2EE12A003A8B35 /* MainMenu.strings */,
-				A67D0D2A1A2EE12A003A8B35 /* PreferencePanel.strings */,
 				A67D0D2D1A2EE12A003A8B35 /* PseudoTerminal.strings */,
 			);
 			name = "Interface Builder Files";
@@ -9611,7 +9606,6 @@
 				A6E7138318F263BC008D94DD /* PreferenceInfo.m */,
 				1D407A2A14BABE8700BD5035 /* PreferencePanel.h */,
 				FB019DE103670C6501F955DB /* PreferencePanel.m */,
-				A61E51432F98978000EB2B55 /* PreferencePanel.xib */,
 				A6E7139118F50762008D94DD /* ProfilePreferencesViewController.h */,
 				A6E7139218F50762008D94DD /* ProfilePreferencesViewController.m */,
 				A6B14FF52F98532E006C7417 /* Profiles */,
@@ -13037,7 +13031,6 @@
 				A697CEBB2D987C5A0031583F /* OpenQuicklyNamedMark@2x.png in Resources */,
 				A6AC04C921F0FDBD00CD2774 /* StatusBarComposerExpand.png in Resources */,
 				A6BEE47726E0A624009C0C2C /* FilterIndicator@2x.png in Resources */,
-				A67D0D7D1A2EE12A003A8B35 /* PreferencePanel.strings in Resources */,
 				A68E333C1DE78D08003F1D8E /* Man Page Touch Bar Icon@2x.png in Resources */,
 				A6F1B3C22693B82C00546767 /* DebugLogging.png in Resources */,
 				A6F31A30295BC41700C1A51E /* uniE0C8_PowerlineExtraSymbols.pdf in Resources */,
@@ -13173,7 +13166,6 @@
 				A6A64E692508C5B50040490B /* OpenQuicklySnippetIcon.png in Resources */,
 				A6B3A73B1AC74E02008E8D4E /* FindCursorCell2.png in Resources */,
 				A61E51442F98978000EB2B55 /* iTermTriggersPanel.xib in Resources */,
-				A61E51452F98978000EB2B55 /* PreferencePanel.xib in Resources */,
 				A61E51462F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib in Resources */,
 				A61E51472F98978000EB2B55 /* BulkCopyProfilePreferences.xib in Resources */,
 				A61E51482F98978000EB2B55 /* iTermEditKeyActionWindowController.xib in Resources */,
@@ -13347,7 +13339,6 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/sources/MainMenu/MainMenu.xib",
-				"$(SRCROOT)/sources/Settings/PreferencePanel.xib",
 				"$(SRCROOT)/sources/Settings/SpecialExceptionsWindowController.xib",
 				"$(SRCROOT)/zh-Hans.lproj/SpecialExceptionsWindowController.strings",
 				"$(SRCROOT)/sources/Settings/iTermEditSnippetWindowController.xib",
@@ -13361,7 +13352,6 @@
 				"$(SRCROOT)/zh-Hans.lproj/InfoPlist.strings",
 				"$(SRCROOT)/zh-Hans.lproj/Localizable.strings",
 				"$(SRCROOT)/zh-Hans.lproj/MainMenu.strings",
-				"$(SRCROOT)/zh-Hans.lproj/PreferencePanel.strings",
 			);
 			name = "Copy zh-Hans localization";
 			outputFileListPaths = (
@@ -13369,7 +13359,6 @@
 			outputPaths = (
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MainMenu.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/MainMenu.nib",
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/PreferencePanel.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/SpecialExceptionsWindowController.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/SpecialExceptionsWindowController.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/iTermEditSnippetWindowController.nib",
@@ -13380,17 +13369,15 @@
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/ProfilesWindow.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/en.lproj/iTermTriggersPanel.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/iTermTriggersPanel.nib",
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/PreferencePanel.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh_CN.lproj",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/InfoPlist.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/Localizable.strings",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/MainMenu.nib",
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/MainMenu.strings",
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/zh-Hans.lproj/PreferencePanel.strings",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\nset -euo pipefail\n\nresources_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nenglish_destination=\"${resources_root}/en.lproj\"\ndestination=\"${resources_root}/zh-Hans.lproj\"\nrm -rf \"${resources_root}/zh_CN.lproj\"\nmkdir -p \"$english_destination\" \"$destination\"\ncp \"${SRCROOT}/zh-Hans.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"$destination/PreferencePanel.strings\"\nxcrun ibtool --compile \"$english_destination/MainMenu.nib\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\nxcrun ibtool --compile \"$destination/MainMenu.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\n\nxcrun ibtool --compile \"$english_destination/PreferencePanel.nib\" \"${SRCROOT}/sources/Settings/PreferencePanel.xib\"\nxcrun ibtool --compile \"$destination/PreferencePanel.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/PreferencePanel.strings\" \"${SRCROOT}/sources/Settings/PreferencePanel.xib\"\nxcrun ibtool --compile \"$english_destination/iTermEditSnippetWindowController.nib\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$destination/iTermEditSnippetWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermEditSnippetWindowController.strings\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$english_destination/iTermEditKeyActionWindowController.nib\" \"${SRCROOT}/sources/Settings/iTermEditKeyActionWindowController.xib\"\nxcrun ibtool --compile \"$destination/iTermEditKeyActionWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermEditKeyActionWindowController.strings\" \"${SRCROOT}/sources/Settings/iTermEditKeyActionWindowController.xib\"\nxcrun ibtool --compile \"$english_destination/ProfilesWindow.nib\" \"${SRCROOT}/sources/Settings/ProfilesWindow.xib\"\nxcrun ibtool --compile \"$destination/ProfilesWindow.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/ProfilesWindow.strings\" \"${SRCROOT}/sources/Settings/ProfilesWindow.xib\"\nxcrun ibtool --compile \"$english_destination/iTermTriggersPanel.nib\" \"${SRCROOT}/sources/Settings/iTermTriggersPanel.xib\"\nxcrun ibtool --compile \"$destination/iTermTriggersPanel.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermTriggersPanel.strings\" \"${SRCROOT}/sources/Settings/iTermTriggersPanel.xib\"\nxcrun ibtool --compile \"$english_destination/SpecialExceptionsWindowController.nib\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\nxcrun ibtool --compile \"$destination/SpecialExceptionsWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/SpecialExceptionsWindowController.strings\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\n\n# Remove the old unlocalized menu from incremental builds. Cocoa prefers it\n# over the language-specific nibs compiled above.\nrm -rf \"${resources_root}/MainMenu.nib\"\n";
+			shellScript = "#!/bin/bash\nset -euo pipefail\n\nresources_root=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\nenglish_destination=\"${resources_root}/en.lproj\"\ndestination=\"${resources_root}/zh-Hans.lproj\"\nrm -rf \"${resources_root}/zh_CN.lproj\"\nmkdir -p \"$english_destination\" \"$destination\"\ncp \"${SRCROOT}/zh-Hans.lproj/InfoPlist.strings\" \"$destination/InfoPlist.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/Localizable.strings\" \"$destination/Localizable.strings\"\ncp \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"$destination/MainMenu.strings\"\nxcrun ibtool --compile \"$english_destination/MainMenu.nib\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\nxcrun ibtool --compile \"$destination/MainMenu.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/MainMenu.strings\" \"${SRCROOT}/sources/MainMenu/MainMenu.xib\"\n\nxcrun ibtool --compile \"$english_destination/iTermEditSnippetWindowController.nib\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$destination/iTermEditSnippetWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermEditSnippetWindowController.strings\" \"${SRCROOT}/sources/Settings/iTermEditSnippetWindowController.xib\"\nxcrun ibtool --compile \"$english_destination/iTermEditKeyActionWindowController.nib\" \"${SRCROOT}/sources/Settings/iTermEditKeyActionWindowController.xib\"\nxcrun ibtool --compile \"$destination/iTermEditKeyActionWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermEditKeyActionWindowController.strings\" \"${SRCROOT}/sources/Settings/iTermEditKeyActionWindowController.xib\"\nxcrun ibtool --compile \"$english_destination/ProfilesWindow.nib\" \"${SRCROOT}/sources/Settings/ProfilesWindow.xib\"\nxcrun ibtool --compile \"$destination/ProfilesWindow.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/ProfilesWindow.strings\" \"${SRCROOT}/sources/Settings/ProfilesWindow.xib\"\nxcrun ibtool --compile \"$english_destination/iTermTriggersPanel.nib\" \"${SRCROOT}/sources/Settings/iTermTriggersPanel.xib\"\nxcrun ibtool --compile \"$destination/iTermTriggersPanel.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/iTermTriggersPanel.strings\" \"${SRCROOT}/sources/Settings/iTermTriggersPanel.xib\"\nxcrun ibtool --compile \"$english_destination/SpecialExceptionsWindowController.nib\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\nxcrun ibtool --compile \"$destination/SpecialExceptionsWindowController.nib\" --strings-file \"${SRCROOT}/zh-Hans.lproj/SpecialExceptionsWindowController.strings\" \"${SRCROOT}/sources/Settings/SpecialExceptionsWindowController.xib\"\n\n# Remove the old unlocalized menu from incremental builds. Cocoa prefers it\n# over the language-specific nibs compiled above.\nrm -rf \"${resources_root}/MainMenu.nib\" \"${resources_root}/PreferencePanel.nib\" \"$english_destination/PreferencePanel.nib\" \"$destination/PreferencePanel.nib\" \"$destination/PreferencePanel.strings\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

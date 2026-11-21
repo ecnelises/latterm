@@ -15,6 +15,10 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Replace the 10,100-line PreferencePanel.xib and
+  PreferencePanel.strings with programmatic
+  controls and responsive SwiftUI section cards
+  for instant Settings startup.
 - Render ASCII and non-ASCII ligatures natively on
   the Metal GPU pipeline, supporting 4+ cell runs,
   per-language baseline offsets, and box-cursor
