@@ -32,7 +32,7 @@ extern NSString *const iTermPreferencesDidToggleIndicateNonDefaultValues;
 // abstract. The pattern is to call -defineControl:key:type: in -awakeFromNib for each control.
 // In IB, assign all controls the -settingChanged: selector, and for text fields, make your view
 // controller the delegate.
-@interface iTermPreferencesBaseViewController : NSViewController<iTermSearchableViewController, PreferenceController, NSTabViewDelegate, NSTextViewDelegate>
+@interface iTermPreferencesBaseViewController : NSViewController<iTermSearchableViewController, PreferenceController, NSTabViewDelegate, NSTextFieldDelegate, NSTextViewDelegate>
 
 @property(nonatomic, readonly) NSMapTable *keyMap;
 @property(nonatomic, readonly) NSArray<NSString *> *keysForBulkCopy;

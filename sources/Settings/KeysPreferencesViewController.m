@@ -32,6 +32,8 @@
 #import "NSTextField+iTerm.h"
 #import "PreferencePanel.h"
 #import "PSMTabBarControl.h"
+#import "iTermShortcutInputView.h"
+#import "iTermSizeRememberingView.h"
 
 #import "iTerm2SharedARC-Swift.h"
 
@@ -97,6 +99,7 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
     IBOutlet NSButton *_allowSymbolicHotKeys;
 
     IBOutlet NSButton *_repairKeyMappingsButton;
+    BOOL _configured;
 }
 
 - (void)dealloc {
@@ -112,7 +115,107 @@ static NSString *const kKeyCode0MitigationSuffixGlobal = @"Global";
     _leader.it_showNonDefaultIndicator = [iTermPreferences boolForKey:kPreferenceKeyIndicateNonDefaultValues] && _leader.stringValue.length > 0;
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 932, 471)];
+    iTermSettingsTabView *tabs = [iTermSettingsControlFactory sectionTabViewWithFrame:NSMakeRect(0, 10, 919, 462)
+                                                                                items:@[
+        @[ @"KeyBindings", @"Key Bindings" ],
+        @[ @"2", @"Navigation Shortcuts" ],
+        @[ @"Hotkey", @"Hotkey" ],
+        @[ @"1", @"Remap Modifiers" ],
+        @[ @"System", @"System" ]
+    ]];
+    tabs.delegate = self;
+
+    SEL changed = @selector(settingChanged:);
+    NSArray<NSArray *> *remapItems = @[
+        @[ @"⌃ Left Control", @11 ],
+        @[ @"⌃ Right Control", @12 ],
+        @[ @"⌥ Left Option", @2 ],
+        @[ @"⌥ Right Option", @3 ],
+        @[ @"⌘ Left Command", @7 ],
+        @[ @"⌘ Right Command", @8 ],
+        @[ @"fn Function", @10 ]
+    ];
+    NSArray<NSArray *> *switchModifierItems = @[
+        @[ @"No Shortcut", @9 ],
+        @[ @"⌥ Number", @5 ],
+        @[ @"⌘ Number", @4 ],
+        @[ @"⌥⌘ Number", @6 ],
+        @[ @"^ Number", @1 ]
+    ];
+
+    _keyMappingView = [[NSView alloc] initWithFrame:NSMakeRect(20, 71, 825, 344)];
+    _keyMappingViewController = [[iTermKeyMappingViewController alloc] init];
+    _keyMappingViewController.delegate = self;
+    _keyMappingViewController.placeholderView = _keyMappingView;
+
+    _leader = [[iTermShortcutInputView alloc] initWithFrame:NSMakeRect(0, 0, 216, 22)];
+    _leader.shortcutDelegate = self;
+    _leaderHelpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(showLeaderHelp:)];
+    _languageAgnosticKeyBindings = [iTermSettingsControlFactory checkbox:@"Interpret key bindings based on physical key, ignoring input language" target:self action:changed toolTip:nil];
+    _repairKeyMappingsButton = [iTermSettingsControlFactory pushButton:@"Repair Broken Bindings" target:self action:@selector(repairKeyMappings:)];
+
+    _switchWindowModifierButtonLabel = [iTermSettingsControlFactory label:@"Shortcut to activate a window:"];
+    _switchWindowModifierButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:165 target:self action:changed items:switchModifierItems];
+    _switchTabModifierButtonLabel = [iTermSettingsControlFactory label:@"Shortcut to select a tab:"];
+    _switchTabModifierButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:165 target:self action:changed items:switchModifierItems];
+    _switchPaneModifierButtonLabel = [iTermSettingsControlFactory label:@"Shortcut to choose a split pane:"];
+    _switchPaneModifierButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:165 target:self action:changed items:switchModifierItems];
+    _emulateUSKeyboard = [iTermSettingsControlFactory checkbox:@"Emulate U.S. Keyboard" target:self action:changed toolTip:nil];
+    NSButton *emulateHelp = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(emulateUsKeyboardHelp:)];
+    [tabs.tabViewItems[1].view addSubview:emulateHelp];
+
+    _hotkeyEnabled = [iTermSettingsControlFactory checkbox:@"Show/hide all windows with a system-wide hotkey" target:self action:changed toolTip:nil];
+    _hotkeyLabel = [iTermSettingsControlFactory label:@"App Hotkey:"];
+    _hotkeyField = [[iTermShortcutInputView alloc] initWithFrame:NSMakeRect(0, 0, 241, 22)];
+    _hotkeyField.shortcutDelegate = self;
+    _shortcutOverloaded = [iTermSettingsControlFactory wrappingLabel:@"⚠️ A profile also uses this shortcut" smallSecondary:YES];
+    _openQuicklyHotkeyField = [[iTermShortcutInputView alloc] initWithFrame:NSMakeRect(0, 0, 241, 24)];
+    _openQuicklyHotkeyField.shortcutDelegate = self;
+    NSTextField *openQuicklyNote = [iTermSettingsControlFactory wrappingLabel:@"When set, the Open Quickly window can be opened even when another app is active." smallSecondary:YES];
+    [tabs.tabViewItems[2].view addSubview:openQuicklyNote];
+    _configureHotKeyWindow = [iTermSettingsControlFactory pushButton:@"Create a Dedicated Hotkey Window…" target:self action:@selector(configureHotKeyWindow:)];
+
+    _leftControlButtonLabel = [iTermSettingsControlFactory label:@"Remap left control (⌃) key to:"];
+    _leftControlButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _rightControlButtonLabel = [iTermSettingsControlFactory label:@"Remap right control (⌃) key to:"];
+    _rightControlButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _leftOptionButtonLabel = [iTermSettingsControlFactory label:@"Remap left option (⌥) key to:"];
+    _leftOptionButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _rightOptionButtonLabel = [iTermSettingsControlFactory label:@"Remap right option (⌥) key to:"];
+    _rightOptionButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _leftCommandButtonLabel = [iTermSettingsControlFactory label:@"Remap left command (⌘) key to:"];
+    _leftCommandButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _rightCommandButtonLabel = [iTermSettingsControlFactory label:@"Remap right command (⌘) key to:"];
+    _rightCommandButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _functionButtonLabel = [iTermSettingsControlFactory label:@"Remap fn key to:"];
+    _functionButton = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:remapItems];
+    _remapModifiersGlobally = [iTermSettingsControlFactory checkbox:@"Remap modifiers globally" target:self action:changed toolTip:nil];
+    _resetRemappingButton = [iTermSettingsControlFactory pushButton:@"Reset to Defaults" target:self action:@selector(resetModifierRemapping:)];
+    NSButton *remapGlobalHelp = [iTermSettingsControlFactory popoverHelpButton:@"When enabled, modifiers are remapped in a way that affects system shortcuts and third-party apps that receive keystrokes in the background. For example, if you remap the  ⌥ to ⌘ and **Remap modifiers globally** is enabled then you could press ⌥-Tab to switch apps."];
+    [tabs.tabViewItems[3].view addSubview:remapGlobalHelp];
+
+    _forceKeyboard = [iTermSettingsControlFactory checkbox:@"Force keyboard" target:self action:changed toolTip:nil];
+    _keyboardLocale = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:260 target:self action:changed items:@[]];
+    _forceKeyboardOncePerSession = [iTermSettingsControlFactory checkbox:@"Only force once per session when it first receives keyboard focus" target:self action:changed toolTip:nil];
+    _allowSymbolicHotKeys = [iTermSettingsControlFactory checkbox:@"Respect shortcuts from System Settings > Keyboard > Keyboard Shortcuts > Keyboard" target:self action:changed toolTip:nil];
+
+    [root addSubview:tabs];
+    _tabView = tabs;
+    self.view = root;
+    [self configureKeysSettings];
+}
+
 - (void)awakeFromNib {
+    [self configureKeysSettings];
+}
+
+- (void)configureKeysSettings {
+    if (_configured) {
+        return;
+    }
+    _configured = YES;
     PreferenceInfo *info;
     __weak __typeof(self) weakSelf = self;
 

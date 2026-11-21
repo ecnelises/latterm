@@ -2606,3 +2606,37 @@
 "Update Light Mode Only" = "仅更新浅色模式";
 "Update Dark Mode Only" = "仅更新深色模式";
 "Your current theme overrides the system light and dark mode setting, so color switching will not occur. You can change it in Settings > Appearance > General > Theme." = "当前主题覆盖了系统的浅色与深色外观设置，因此颜色不会随系统外观自动切换。可在“设置 > 外观 > 通用 > 主题”中修改。";
+
+/* Programmatic Settings UI strings migrated from PreferencePanel.xib. */
+"Backup & Sync" = "备份与同步";
+"Basics" = "基本信息";
+"Bulk Copy from Selected Profile…" = "从选中方案批量复制设置…";
+"Confirm “Quit Latterm (⌘Q)”" = "退出 Latterm（⌘Q）前确认";
+"Fonts & Text" = "字体与文本";
+"Interpolated string. If empty, use session title." = "插值字符串；留空则使用会话标题。";
+"Interpolated string. If empty, use tab title." = "插值字符串；留空则使用标签页标题。";
+"Items are added to the context menu when you right click on text matching this smart selection." = "右键点按匹配此智能选区的文本时，以下项目会添加到上下文菜单。";
+"More…" = "更多操作…";
+"Requires tmux 2.9 or later." = "需要 tmux 2.9 或更高版本。";
+"Right" = "右侧";
+"Select a profile to access its settings." = "选择一个配置方案以查看其设置。";
+"Send \\n rather than \\r to terminate commands" = "发送 \\n 而非 \\r 来结束命令";
+"Shortcut key:" = "快捷键：";
+"Space 1" = "空间 1";
+"Space 2" = "空间 2";
+"Space 3" = "空间 3";
+"Space 4" = "空间 4";
+"Space 5" = "空间 5";
+"Space 6" = "空间 6";
+"Space 7" = "空间 7";
+"Space 8" = "空间 8";
+"Space 9" = "空间 9";
+"The “pause” feature requires tmux 3.2 or later." = "“暂停”功能需要 tmux 3.2 或更高版本。";
+"Tools & Performance" = "工具与性能";
+"Use \\0 for match, \\1…\\9 for match groups, \\d for directory, \\u for user, \\h for host." = "使用 \\0 表示完整匹配，\\1…\\9 表示捕获组，\\d 表示目录，\\u 表示用户，\\h 表示主机。";
+"View > Use Transparency can override this setting temporarily per window." = "可通过“视图 > 使用透明背景”按窗口临时覆盖此设置。";
+"When set, the Open Quickly window can be opened even when another app is active." = "设置后，即使当前处于其他应用也可随时呼出“快速打开”窗口。";
+"^ Number" = "^ 数字";
+"⌘ Number" = "⌘ 数字";
+"⌥ Number" = "⌥ 数字";
+"⌥⌘ Number" = "⌥⌘ 数字";

@@ -8,7 +8,7 @@
 import AppKit
 import BetterFontPicker
 
-private enum ProfilePageHelpers {
+enum ProfilePageHelpers {
     static func sectionTitle(from label: NSTextField?, fallback: String = "") -> String {
         guard let raw = label?.stringValue, !raw.isEmpty else {
             return fallback

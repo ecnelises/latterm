@@ -22,6 +22,7 @@ static char iTermSliderEnabledKVOKey;
     __weak id _target;
     SEL _action;
     BOOL _percentage;
+    BOOL _observingSlider;
 }
 
 - (instancetype)init {
@@ -32,6 +33,17 @@ static char iTermSliderEnabledKVOKey;
     self = [super initWithFrame:frameRect];
     if (self) {
         [self initCommon];
+    }
+    return self;
+}
+
+- (instancetype)initWithFrame:(NSRect)frameRect slider:(NSSlider *)slider {
+    self = [super initWithFrame:frameRect];
+    if (self) {
+        [self initCommon];
+        _slider = slider;
+        [self addSubview:slider];
+        [self configureWithSlider];
     }
     return self;
 }
@@ -102,6 +114,10 @@ static char iTermSliderEnabledKVOKey;
 }
 
 - (void)awakeFromNib {
+    [self configureWithSlider];
+}
+
+- (void)configureWithSlider {
     if (!_slider) {
         for (NSView *view in [self subviews]) {
             if ([view isKindOfClass:[NSSlider class]]) {
@@ -109,6 +125,9 @@ static char iTermSliderEnabledKVOKey;
                 break;
             }
         }
+    }
+    if (!_slider || _observingSlider) {
+        return;
     }
     self.autoresizingMask = _slider.autoresizingMask;
     _stepper.minValue = _slider.minValue;
@@ -130,6 +149,7 @@ static char iTermSliderEnabledKVOKey;
               forKeyPath:@"enabled"
                  options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
                  context:(void *)&iTermSliderEnabledKVOKey];
+    _observingSlider = YES;
     [self loadFromSlider];
 }
 
@@ -165,8 +185,10 @@ static char iTermSliderEnabledKVOKey;
 }
 
 - (void)dealloc {
-    [_slider removeObserver:self forKeyPath:@"doubleValue" context:(void *)&iTermSliderValueKVOKey];
-    [_slider removeObserver:self forKeyPath:@"enabled" context:(void *)&iTermSliderEnabledKVOKey];
+    if (_observingSlider) {
+        [_slider removeObserver:self forKeyPath:@"doubleValue" context:(void *)&iTermSliderValueKVOKey];
+        [_slider removeObserver:self forKeyPath:@"enabled" context:(void *)&iTermSliderEnabledKVOKey];
+    }
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {

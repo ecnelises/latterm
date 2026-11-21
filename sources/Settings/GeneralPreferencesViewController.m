@@ -24,6 +24,7 @@
 #import "iTermPreferenceDidChangeNotification.h"
 #import "iTermRemotePreferences.h"
 #import "iTermScriptsMenuController.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermUserDefaults.h"
 #import "iTermUserDefaultsObserver.h"
 #import "iTermWarning.h"
@@ -166,6 +167,11 @@ enum {
 
     IBOutlet NSButton *_enableRTL;
     IBOutlet NSButton *_sshIntegrationForURLs;
+    NSButton *_pythonAPIAuthHelpButton;
+    NSButton *_wordCharsHelpButton;
+    NSButton *_exportAllButton;
+    NSButton *_importAllButton;
+    NSButton *_eraseAllButton;
 }
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -199,6 +205,157 @@ enum {
         }];
     }
     return self;
+}
+
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 788, 556)];
+    iTermSettingsTabView *tabs = [iTermSettingsControlFactory sectionTabViewWithFrame:NSMakeRect(0, 3, 775, 559)
+                                                                                items:@[
+        @[ @"1", @"Startup & Exit" ],
+        @[ @"ToolsPerformance", @"Tools & Performance" ],
+        @[ @"Selection", @"Selection" ],
+        @[ @"Window", @"Window" ],
+        @[ @"BackupSync", @"Backup & Sync" ],
+        @[ @"tmux", @"tmux" ],
+        @[ @"Experimental", @"Experimental" ]
+    ]];
+    tabs.delegate = self;
+
+    SEL changed = @selector(settingChanged:);
+    _openWindowsAtStartupLabel = [iTermSettingsControlFactory label:@"Window restoration policy:"];
+    _openWindowsAtStartup = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:290 target:self action:changed items:@[
+        @[ @"Use System Window Restoration Setting", @0 ],
+        @[ @"Open Default Window Arrangement", @1 ],
+        @[ @"Only Restore Hotkey Window", @2 ]
+    ]];
+    _openDefaultWindowArrangementItem = [_openWindowsAtStartup.menu itemWithTag:kOpenDefaultWindowArrangementTag];
+    _warningButton = [iTermSettingsControlFactory warningButtonWithTarget:self action:@selector(warning:)];
+    _openBookmark = [iTermSettingsControlFactory checkbox:@"Open profiles window" target:self action:changed toolTip:nil];
+    _restoreWindowsToSameSpaces = [iTermSettingsControlFactory checkbox:@"Restore windows to same Spaces" target:self action:changed toolTip:nil];
+    _alwaysOpenWindowAtStartup = [iTermSettingsControlFactory checkbox:@"Always open at least one terminal window at startup" target:self action:changed toolTip:nil];
+    _alwaysOpenLegend = [iTermSettingsControlFactory wrappingLabel:@"" smallSecondary:YES];
+
+    _quitWhenAllWindowsClosed = [iTermSettingsControlFactory checkbox:@"Quit when all windows are closed" target:self action:changed toolTip:nil];
+    _confirmClosingMultipleSessions = [iTermSettingsControlFactory checkbox:@"Confirm closing multiple sessions" target:self action:changed toolTip:nil];
+    _promptOnQuit = [iTermSettingsControlFactory checkbox:@"Confirm “Quit Latterm (⌘Q)”" target:self action:changed toolTip:nil];
+    _evenIfThereAreNoWindows = [iTermSettingsControlFactory checkbox:@"Even if there are no windows" target:self action:changed toolTip:nil];
+    _disableConfirmationOnShutdown = [iTermSettingsControlFactory checkbox:@"Disable all confirmations on system shutdown, restart, and log out" target:self action:changed toolTip:nil];
+
+    _irMemoryLabel = [iTermSettingsControlFactory label:@"Instant Replay uses "];
+    _irMemory = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:56 target:self action:changed delegate:self];
+    _savePasteHistory = [iTermSettingsControlFactory checkbox:@"Save copy/paste history to disk" target:self action:changed toolTip:nil];
+    _gpuRendering = [iTermSettingsControlFactory checkbox:@"GPU rendering"
+                                                   target:self
+                                                   action:changed
+                                                  toolTip:@"When enabled, terminals are rendered using the GPU. This improves performance."];
+    _advancedGPU = [iTermSettingsControlFactory pushButton:@"Advanced GPU Settings…" target:self action:@selector(advancedGPU:)];
+    _advancedGPUPrefsButton = _advancedGPU;
+    _maximizeThroughput = [iTermSettingsControlFactory checkbox:@"Maximize throughput at the cost of higher latency" target:self action:changed toolTip:nil];
+    _enableAPI = [iTermSettingsControlFactory checkbox:@"Enable Python API" target:self action:changed toolTip:nil];
+    _apiPermission = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:260 target:self action:changed items:@[
+        @[ @"Require “Automation” permission", @0 ],
+        @[ @"Allow all apps to connect", @1 ]
+    ]];
+    _pythonAPIAuthHelpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(pythonAPIAuthHelp:)];
+    _useCustomScriptsFolder = [iTermSettingsControlFactory checkbox:@"Custom Python API Scripts Folder" target:self action:changed toolTip:nil];
+    _customScriptsFolder = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:233 target:nil action:nil delegate:self];
+    _customScriptsFolderWarning = [iTermSettingsControlFactory statusImageView];
+    _browseCustomScriptsFolder = [iTermSettingsControlFactory pushButton:@"Browse" target:self action:@selector(browseScriptsFolder:)];
+    _enableBonjour = [iTermSettingsControlFactory checkbox:@"Add Bonjour hosts to Profiles" target:self action:changed toolTip:nil];
+
+    _selectionCopiesText = [iTermSettingsControlFactory checkbox:@"Copy to clipboard on selection" target:self action:changed toolTip:nil];
+    _copyLastNewline = [iTermSettingsControlFactory checkbox:@"Copied text includes trailing newline" target:self action:changed toolTip:nil];
+    _allowClipboardAccessFromTerminal = [iTermSettingsControlFactory checkbox:@"Applications in terminal may access clipboard"
+                                                                       target:self
+                                                                       action:changed
+                                                                      toolTip:@"Clipboard access via an escape code poses a security risk if running untrusted applications."];
+    _allowsSendingClipboardContentsLabel = [iTermSettingsControlFactory label:@"Allow sending of clipboard contents?"];
+    _allowsSendingClipboardContents = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:140 target:self action:changed items:@[
+        @[ @"Ask Each Time", @2 ],
+        @[ @"Never", @0 ],
+        @[ @"Always", @1 ]
+    ]];
+    _wordCharsLabel = [iTermSettingsControlFactory label:@"Characters considered part of a word"];
+    _wordCharsHelpButton = [iTermSettingsControlFactory popoverHelpButton:@"When you double-click in the terminal, a single word is selected. When your click is on a letter, the word boundary is found by grouping letters adjacent to the click location. You can extend the set of characters that are treated as belonging to a word with this setting.\n\nFor example, if `/` is considered part of a word, then double clicking on a path would select all the path components.\n\nYou can choose to define the characters considered part of a word with a regular expression. Then you can add specific substrings, such as `https://`, if you would prefer double-clicks on URLs to include the scheme. Generally the regular expression you provide will be a sequence of alternates separated by `|`."];
+    _wordMode = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:170 target:self action:changed items:@[
+        @[ @"List of Characters", @0 ],
+        @[ @"Regular Expression", @1 ]
+    ]];
+    _wordChars = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:245 target:self action:changed delegate:self];
+    _wordCharsRegex = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:245 target:self action:changed delegate:self];
+    _tripleClickSelectsFullLines = [iTermSettingsControlFactory checkbox:@"Triple-click selects entire wrapped lines"
+                                                                  target:self
+                                                                  action:changed
+                                                                 toolTip:@"If disabled, then triple click selects one line as it appears onscreen."];
+    _doubleClickPerformsSmartSelection = [iTermSettingsControlFactory checkbox:@"Double-click performs smart selection" target:self action:changed toolTip:nil];
+    _enterCopyModeAutomatically = [iTermSettingsControlFactory checkbox:@"Automatically enter copy mode on Shift+Arrow key with selection"
+                                                                 target:self
+                                                                 action:changed
+                                                                toolTip:@"When this is enabled, shift+arrow key will extend an existing selection. If there is no selection, this has no effect."];
+    _wrapDroppedFilenamesInQuotesWhenPasting = [iTermSettingsControlFactory checkbox:@"When pasting a dropped filename, wrap it in double quotes" target:self action:changed toolTip:nil];
+
+    _placementContainer = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 519, 96)];
+    _rememberPositionOnly = [iTermSettingsControlFactory radioButton:@"Remember the position of previously closed windows and use size from profile" tag:3 target:self action:changed toolTip:nil];
+    _defaultPositioning = [iTermSettingsControlFactory radioButton:@"Let macOS decide the position of new windows and use size from profile" tag:0 target:self action:changed toolTip:nil];
+    _useAutoSaveFrames = [iTermSettingsControlFactory radioButton:@"Remember the size and position of previously closed windows" tag:2 target:self action:changed toolTip:nil];
+    _smartPlacement = [iTermSettingsControlFactory radioButton:@"Smart Window Placement"
+                                                           tag:1
+                                                        target:self
+                                                        action:changed
+                                                       toolTip:@"Smart window placement puts new windows where the most free space is available."];
+    [_placementContainer addSubview:_rememberPositionOnly];
+    [_placementContainer addSubview:_defaultPositioning];
+    [_placementContainer addSubview:_useAutoSaveFrames];
+    [_placementContainer addSubview:_smartPlacement];
+
+    _adjustWindowForFontSizeChange = [iTermSettingsControlFactory checkbox:@"Adjust window when changing font size"
+                                                                    target:self
+                                                                    action:changed
+                                                                   toolTip:@"If enabled, changes to font size will try to preserve session dimensions."];
+    _adjustWindowForFontSizeChange.identifier = @"adjustWindowForFontSizeChange";
+    _maxVertically = [iTermSettingsControlFactory checkbox:@"Zoom maximizes vertically only"
+                                                    target:self
+                                                    action:changed
+                                                   toolTip:@"“Zoom” is the green button."];
+    _lionStyleFullscreen = [iTermSettingsControlFactory checkbox:@"Native full screen windows" target:self action:changed toolTip:nil];
+    _separateWindowTitlePerTab = [iTermSettingsControlFactory checkbox:@"Each tab may have its own window title" target:self action:changed toolTip:nil];
+
+    _loadPrefsFromCustomFolder = [iTermSettingsControlFactory checkbox:@"Load settings from a custom folder or URL" target:self action:changed toolTip:nil];
+    _prefsCustomFolder = [iTermSettingsControlFactory textFieldWithPlaceholder:@"Enter path to folder with settings" width:360 target:nil action:nil delegate:self];
+    _prefsDirWarning = [iTermSettingsControlFactory statusImageView];
+    _browseCustomFolder = [iTermSettingsControlFactory pushButton:@"Browse" target:self action:@selector(browseCustomFolder:)];
+    _saveChangesLabel = [iTermSettingsControlFactory label:@"Save changes"];
+    _saveChanges = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:220 target:self action:changed items:@[
+        @[ @"Automatically", @2 ],
+        @[ @"Manually", @1 ],
+        @[ @"When Quitting", @0 ]
+    ]];
+    _pushToCustomFolder = [iTermSettingsControlFactory pushButton:@"Save Now" target:self action:@selector(pushToCustomFolder:)];
+    _exportAllButton = [iTermSettingsControlFactory pushButton:@"Export All Settings and Data…" target:self action:@selector(exportAllSettingsAndData:)];
+    _importAllButton = [iTermSettingsControlFactory pushButton:@"Import All Settings and Data…" target:self action:@selector(importAllSettingsAndData:)];
+    _eraseAllButton = [iTermSettingsControlFactory pushButton:@"Erase All Settings and Data…" target:self action:@selector(eraseAllSettingsAndData:)];
+
+    _openTmuxWindowsAsTabsInAttachingWindow = [iTermSettingsControlFactory checkbox:@"Open tmux windows as tabs in the attaching window" target:self action:changed toolTip:nil];
+    _whenAttachingTmuxLabel = [iTermSettingsControlFactory label:@"When attaching, open unrecognized windows in"];
+    _openUnrecognizedTmuxWindowsIn = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:180 target:self action:changed items:@[
+        @[ @"Windows", @0 ],
+        @[ @"Tabs in a new window", @1 ]
+    ]];
+    _autoHideTmuxClientSession = [iTermSettingsControlFactory checkbox:@"Automatically bury the tmux client session after connecting" target:self action:changed toolTip:nil];
+    _useTmuxProfile = [iTermSettingsControlFactory checkbox:@"Use “tmux” profile rather than profile of the connecting session" target:self action:changed toolTip:nil];
+    _useTmuxStatusBar = [iTermSettingsControlFactory checkbox:@"Status bar shows tmux status bar content, not native components" target:self action:changed toolTip:nil];
+    _tmuxPauseModeAgeLimit = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:60 target:self action:changed delegate:self];
+    _tmuxWarnBeforePausing = [iTermSettingsControlFactory checkbox:@"Warn before pausing" target:self action:changed toolTip:nil];
+    _unpauseTmuxAutomatically = [iTermSettingsControlFactory checkbox:@"Unpause automatically" target:self action:changed toolTip:nil];
+    _syncTmuxClipboard = [iTermSettingsControlFactory checkbox:@"Mirror tmux paste buffer to local clipboard" target:self action:changed toolTip:nil];
+
+    _enableRTL = [iTermSettingsControlFactory checkbox:@"Enable support for right-to-left scripts" target:self action:changed toolTip:nil];
+    _sshIntegrationForURLs = [iTermSettingsControlFactory checkbox:@"Use SSH integration for ssh: URLs" target:self action:changed toolTip:nil];
+
+    [root addSubview:tabs];
+    _tabView = tabs;
+    self.view = root;
+    [self awakeFromNib];
 }
 
 - (void)awakeFromNib {
@@ -529,6 +686,7 @@ enum {
         // Show/hide the appropriate text field based on mode
         strongSelf->_wordChars.hidden = isRegexMode;
         strongSelf->_wordCharsRegex.hidden = !isRegexMode;
+        [strongSelf.view it_invalidateProfileFormLayout];
     };
 
     [self defineControl:_wordChars
@@ -707,48 +865,80 @@ enum {
 // complete start/exit lifecycle together instead of two mostly empty panes.
 - (void)organizeStartupAndClosing {
     _startupClosingTab = [_tabView tabViewItemAtIndex:[_tabView indexOfTabViewItemWithIdentifier:@"1"]];
-    NSTabViewItem *closingTab = [_tabView tabViewItemAtIndex:[_tabView indexOfTabViewItemWithIdentifier:@"2"]];
-    NSArray<NSView *> *startup = @[_openWindowsAtStartupLabel, _openWindowsAtStartup, _warningButton,
-                                  _openBookmark, _restoreWindowsToSameSpaces, _alwaysOpenWindowAtStartup, _alwaysOpenLegend];
-    NSArray<NSView *> *closing = @[_quitWhenAllWindowsClosed, _confirmClosingMultipleSessions,
-                                  _promptOnQuit, _evenIfThereAreNoWindows, _disableConfirmationOnShutdown];
-    NSView *canvas = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 600, 500)];
-    NSArray<NSValue *> *startupFrames = @[
-        [NSValue valueWithRect:NSMakeRect(16, 158, 568, 18)],
-        [NSValue valueWithRect:NSMakeRect(13, 120, 340, 28)],
-        [NSValue valueWithRect:NSMakeRect(361, 124, 23, 20)],
-        [NSValue valueWithRect:NSMakeRect(14, 90, 570, 18)],
-        [NSValue valueWithRect:NSMakeRect(14, 62, 570, 18)],
-        [NSValue valueWithRect:NSMakeRect(14, 34, 570, 18)],
-        [NSValue valueWithRect:NSMakeRect(36, 16, 548, 12)]
-    ];
-    for (NSUInteger index = 0; index < startup.count; index++) {
-        NSView *control = startup[index];
-        [control removeFromSuperview];
-        control.frame = startupFrames[index].rectValue;
-        control.autoresizingMask = control == _openWindowsAtStartupLabel || control == _alwaysOpenLegend
-            ? NSViewWidthSizable
-            : (NSViewMaxXMargin | NSViewMinYMargin);
-        [canvas addSubview:control];
+    const NSInteger closingIndex = [_tabView indexOfTabViewItemWithIdentifier:@"2"];
+    if (closingIndex != NSNotFound) {
+        [_tabView removeTabViewItem:[_tabView tabViewItemAtIndex:closingIndex]];
     }
-    for (NSUInteger index = 0; index < closing.count; index++) {
-        NSView *control = closing[index];
-        [control removeFromSuperview];
-        const CGFloat indent = control == _evenIfThereAreNoWindows ? 36 : 14;
-        control.frame = NSMakeRect(indent, 132 - index * 28, 584 - indent, 18);
-        control.autoresizingMask = NSViewWidthSizable;
-        [canvas addSubview:control];
-    }
-    iTermSettingsFormView *form = [[iTermSettingsFormView alloc] initWithContainer:canvas
-        titles:@[NSLocalizedString(@"When Latterm Starts", @"Settings section"),
-                 NSLocalizedString(@"Closing & Confirmation", @"Settings section")]
-        groups:@[startup, closing]];
-    iTermSettingsContentView *scroll = [[iTermSettingsContentView alloc] initWithContent:form];
-    [scroll setMinimumContentSize:NSMakeSize(540, form.preferredHeight)];
-    scroll.frame = _startupClosingTab.view.bounds;
-    _startupClosingTab.view = scroll;
     _startupClosingTab.label = NSLocalizedString(@"Startup & Exit", @"Settings section");
-    [_tabView removeTabViewItem:closingTab];
+    [iTermGeneralFormLayout installIn:_tabView controls:@{
+        @"openWindowsAtStartupLabel": _openWindowsAtStartupLabel,
+        @"openWindowsAtStartup": _openWindowsAtStartup,
+        @"warningButton": _warningButton,
+        @"openBookmark": _openBookmark,
+        @"restoreWindowsToSameSpaces": _restoreWindowsToSameSpaces,
+        @"alwaysOpenWindowAtStartup": _alwaysOpenWindowAtStartup,
+        @"alwaysOpenLegend": _alwaysOpenLegend,
+        @"quitWhenAllWindowsClosed": _quitWhenAllWindowsClosed,
+        @"confirmClosingMultipleSessions": _confirmClosingMultipleSessions,
+        @"promptOnQuit": _promptOnQuit,
+        @"evenIfThereAreNoWindows": _evenIfThereAreNoWindows,
+        @"disableConfirmationOnShutdown": _disableConfirmationOnShutdown,
+        @"gpuRendering": _gpuRendering,
+        @"advancedGPU": _advancedGPU,
+        @"maximizeThroughput": _maximizeThroughput,
+        @"irMemoryLabel": _irMemoryLabel,
+        @"irMemory": _irMemory,
+        @"savePasteHistory": _savePasteHistory,
+        @"enableAPI": _enableAPI,
+        @"apiPermission": _apiPermission,
+        @"pythonAPIAuthHelp": _pythonAPIAuthHelpButton ?: [NSButton new],
+        @"useCustomScriptsFolder": _useCustomScriptsFolder,
+        @"customScriptsFolder": _customScriptsFolder,
+        @"customScriptsFolderWarning": _customScriptsFolderWarning,
+        @"browseCustomScriptsFolder": _browseCustomScriptsFolder,
+        @"enableBonjour": _enableBonjour,
+        @"selectionCopiesText": _selectionCopiesText,
+        @"copyLastNewline": _copyLastNewline,
+        @"allowClipboardAccessFromTerminal": _allowClipboardAccessFromTerminal,
+        @"allowsSendingClipboardContentsLabel": _allowsSendingClipboardContentsLabel,
+        @"allowsSendingClipboardContents": _allowsSendingClipboardContents,
+        @"wordCharsLabel": _wordCharsLabel,
+        @"wordCharsHelp": _wordCharsHelpButton ?: [NSButton new],
+        @"wordMode": _wordMode,
+        @"wordChars": _wordChars,
+        @"wordCharsRegex": _wordCharsRegex,
+        @"tripleClickSelectsFullLines": _tripleClickSelectsFullLines,
+        @"doubleClickPerformsSmartSelection": _doubleClickPerformsSmartSelection,
+        @"enterCopyModeAutomatically": _enterCopyModeAutomatically,
+        @"wrapDroppedFilenamesInQuotesWhenPasting": _wrapDroppedFilenamesInQuotesWhenPasting,
+        @"placementContainer": _placementContainer,
+        @"adjustWindowForFontSizeChange": _adjustWindowForFontSizeChange,
+        @"maxVertically": _maxVertically,
+        @"lionStyleFullscreen": _lionStyleFullscreen,
+        @"separateWindowTitlePerTab": _separateWindowTitlePerTab,
+        @"loadPrefsFromCustomFolder": _loadPrefsFromCustomFolder,
+        @"prefsCustomFolder": _prefsCustomFolder,
+        @"prefsDirWarning": _prefsDirWarning,
+        @"browseCustomFolder": _browseCustomFolder,
+        @"saveChangesLabel": _saveChangesLabel,
+        @"saveChanges": _saveChanges,
+        @"pushToCustomFolder": _pushToCustomFolder,
+        @"exportAllButton": _exportAllButton ?: [NSButton new],
+        @"importAllButton": _importAllButton ?: [NSButton new],
+        @"eraseAllButton": _eraseAllButton ?: [NSButton new],
+        @"openTmuxWindowsAsTabsInAttachingWindow": _openTmuxWindowsAsTabsInAttachingWindow,
+        @"whenAttachingTmuxLabel": _whenAttachingTmuxLabel,
+        @"openUnrecognizedTmuxWindowsIn": _openUnrecognizedTmuxWindowsIn,
+        @"autoHideTmuxClientSession": _autoHideTmuxClientSession,
+        @"useTmuxProfile": _useTmuxProfile,
+        @"useTmuxStatusBar": _useTmuxStatusBar,
+        @"tmuxPauseModeAgeLimit": _tmuxPauseModeAgeLimit,
+        @"tmuxWarnBeforePausing": _tmuxWarnBeforePausing,
+        @"unpauseTmuxAutomatically": _unpauseTmuxAutomatically,
+        @"syncTmuxClipboard": _syncTmuxClipboard,
+        @"enableRTL": _enableRTL,
+        @"sshIntegrationForURLs": _sshIntegrationForURLs
+    }];
 }
 
 - (void)resizeWindowForTabViewItem:(NSTabViewItem *)item animated:(BOOL)animated {
@@ -793,12 +983,17 @@ enum {
 
 - (void)updateAlwaysOpenLegend {
     NSString *legend = [self alwaysOpenLegend];
-    if (!legend) {
+    const BOOL shouldHide = (legend == nil);
+    const BOOL changed = (_alwaysOpenLegend.hidden != shouldHide);
+    if (shouldHide) {
         _alwaysOpenLegend.hidden = YES;
-        return;
+    } else {
+        _alwaysOpenLegend.stringValue = legend;
+        _alwaysOpenLegend.hidden = NO;
     }
-    _alwaysOpenLegend.stringValue = legend;
-    _alwaysOpenLegend.hidden = NO;
+    if (changed) {
+        [self.view it_invalidateProfileFormLayout];
+    }
 }
 
 - (void)updateAPIEnabledState {

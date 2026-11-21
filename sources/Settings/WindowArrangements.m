@@ -15,6 +15,7 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermApplicationDelegate.h"
 #import "iTermSavePanel.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermUserDefaults.h"
 
 static NSString* WINDOW_ARRANGEMENTS = @"Window Arrangements";
@@ -46,10 +47,17 @@ static NSString *const kSavedArrangementWillChangeNotification = @"kSavedArrange
     IBOutlet NSButton *defaultButton_;
     IBOutlet iTermWorkgroupsEditingViewController *_workgroupsViewController;
     IBOutlet NSView *_workgroupsContainer;
+    BOOL _configured;
 }
 
 + (WindowArrangements *)sharedInstance {
     return [[PreferencePanel sharedInstance] arrangements];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    tableView_.delegate = nil;
+    tableView_.dataSource = nil;
 }
 
 - (void)updateActionsEnabled {
@@ -57,13 +65,101 @@ static NSString *const kSavedArrangementWillChangeNotification = @"kSavedArrange
     [defaultButton_ setEnabled:([WindowArrangements count] > 0) && ([tableView_ numberOfSelectedRows] == 1)];
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 944, 453)];
+    iTermSettingsTabView *tabs = [[iTermSettingsTabView alloc] initWithFrame:NSMakeRect(-7, 10, 958, 447)];
+
+    NSTabViewItem *arrangementsItem = [[NSTabViewItem alloc] initWithIdentifier:@"1"];
+    arrangementsItem.label = NSLocalizedString(@"Arrangements", @"Workspaces settings section");
+    iTermSettingsArrangementsView *arrangementsView = [[iTermSettingsArrangementsView alloc] initWithFrame:NSMakeRect(10, 33, 938, 401)];
+
+    NSScrollView *listScroll = [[NSScrollView alloc] initWithFrame:NSMakeRect(17, 55, 240, 329)];
+    listScroll.borderType = NSBezelBorder;
+    listScroll.hasVerticalScroller = YES;
+    listScroll.hasHorizontalScroller = NO;
+    listScroll.autohidesScrollers = YES;
+
+    NSTableView *tableView = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 238, 327)];
+    tableView.headerView = nil;
+    tableView.columnAutoresizingStyle = NSTableViewLastColumnOnlyAutoresizingStyle;
+    tableView.allowsColumnReordering = NO;
+    tableView.allowsColumnResizing = NO;
+    tableView.allowsTypeSelect = NO;
+    tableView.allowsExpansionToolTips = YES;
+
+    NSTableColumn *defaultCol = [[NSTableColumn alloc] initWithIdentifier:@"default"];
+    defaultCol.width = 20.5;
+    defaultCol.editable = NO;
+    defaultCol.headerCell.title = NSLocalizedString(@"Default", @"Arrangements column");
+    [tableView addTableColumn:defaultCol];
+
+    NSTableColumn *titleCol = [[NSTableColumn alloc] initWithIdentifier:@"title"];
+    titleCol.width = 174.5;
+    titleCol.editable = NO;
+    titleCol.headerCell.title = NSLocalizedString(@"Name", @"Arrangements column");
+    [tableView addTableColumn:titleCol];
+
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    listScroll.documentView = tableView;
+    [arrangementsView addSubview:listScroll];
+
+    ArrangementPreviewView *previewView = [[ArrangementPreviewView alloc] initWithFrame:NSMakeRect(4, 0, 647, 329)];
+    [arrangementsView addSubview:previewView];
+
+    NSButton *defaultButton = [iTermSettingsControlFactory pushButton:@"Set Default"
+                                                               target:self
+                                                               action:@selector(setDefault:)];
+    [arrangementsView addSubview:defaultButton];
+
+    NSButton *deleteButton = [iTermSettingsControlFactory pushButton:@"Remove"
+                                                              target:self
+                                                              action:@selector(deleteSelectedArrangement:)];
+    [arrangementsView addSubview:deleteButton];
+
+    arrangementsItem.view = arrangementsView;
+    [tabs addTabViewItem:arrangementsItem];
+
+    NSTabViewItem *workgroupsItem = [[NSTabViewItem alloc] initWithIdentifier:@"2"];
+    workgroupsItem.label = NSLocalizedString(@"Workgroups", @"Workspaces settings section");
+    iTermWorkgroupTabView *workgroupTabView = [[iTermWorkgroupTabView alloc] initWithFrame:NSMakeRect(10, 33, 938, 401)];
+    iTermWorkgroupWrapperView *workgroupWrapper = [[iTermWorkgroupWrapperView alloc] initWithFrame:workgroupTabView.bounds];
+    workgroupWrapper.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    [workgroupTabView addSubview:workgroupWrapper];
+    workgroupsItem.view = workgroupTabView;
+    [tabs addTabViewItem:workgroupsItem];
+
+    [root addSubview:tabs];
+
+    defaultColumn_ = defaultCol;
+    titleColumn_ = titleCol;
+    tableView_ = tableView;
+    previewView_ = previewView;
+    defaultButton_ = defaultButton;
+    deleteButton_ = deleteButton;
+    _workgroupsContainer = workgroupWrapper;
+    _workgroupsViewController = [[iTermWorkgroupsEditingViewController alloc] initWithNibName:nil bundle:nil];
+    self.view = root;
+    [self configureArrangementsView];
+}
+
 - (void)awakeFromNib {
+    [self configureArrangementsView];
+}
+
+- (void)configureArrangementsView {
+    if (_configured) {
+        return;
+    }
+    _configured = YES;
     [self updateActionsEnabled];
     NSView *container = tableView_.enclosingScrollView.superview;
-    NSView *previewBox = previewView_.superview.superview;
-    [previewView_ removeFromSuperview];
-    [previewBox removeFromSuperview];
-    [container addSubview:previewView_];
+    if (previewView_.superview != container) {
+        NSView *previewBox = previewView_.superview.superview;
+        [previewView_ removeFromSuperview];
+        [previewBox removeFromSuperview];
+        [container addSubview:previewView_];
+    }
     deleteButton_.title = NSLocalizedString(@"Remove", @"Remove a saved layout");
     deleteButton_.imagePosition = NSNoImage;
     [[iTermSettingsArrangementsView castFrom:container]

@@ -10,6 +10,7 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermHotKeyController.h"
 #import "iTermApplicationDelegate.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermWarning.h"
 #import "PreferencePanel.h"
 
@@ -115,9 +116,119 @@ NSString *const iTermProcessTypeDidChangeNotification = @"iTermProcessTypeDidCha
 
     IBOutlet NSButton *_hideMenuItemIcons;
     iTermAppIconPreferencesView *_appIconView;
+    BOOL _configured;
+}
+
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 623, 384)];
+    iTermSettingsTabView *tabs = [iTermSettingsControlFactory sectionTabViewWithFrame:NSMakeRect(0, 10, 610, 380)
+                                                                                items:@[
+        @[ @"General", @"General" ],
+        @[ @"Windows", @"Windows" ],
+        @[ @"Tabs", @"Tabs" ],
+        @[ @"Panes", @"Panes" ],
+        @[ @"Dimming", @"Dimming" ]
+    ]];
+    tabs.delegate = self;
+
+    SEL changed = @selector(settingChanged:);
+    _tabStyleLabel = [iTermSettingsControlFactory label:@"Theme:"];
+    _tabStyle = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:191 target:self action:changed items:@[
+        @[ @"Regular", @4 ],
+        @[ @"Minimal", @5 ],
+        @[ @"Compact", @6 ],
+        @[ @"---" ],
+        @[ @"Light", @0 ],
+        @[ @"Dark", @1 ],
+        @[ @"---" ],
+        @[ @"Light (High Contrast)", @2 ],
+        @[ @"Dark (High Contrast)", @3 ]
+    ]];
+    _tabPositionLabel = [iTermSettingsControlFactory label:@"Tab bar location:"];
+    _tabPosition = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:191 target:self action:changed items:@[
+        @[ @"Top", @0 ],
+        @[ @"Bottom", @1 ],
+        @[ @"Left", @2 ],
+        @[ @"Right", @3 ]
+    ]];
+    _statusBarPositionLabel = [iTermSettingsControlFactory label:@"Status bar location:"];
+    _statusBarPosition = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:191 target:self action:changed items:@[
+        @[ @"Top", @0 ],
+        @[ @"Bottom", @1 ]
+    ]];
+    _hideMenuBarInFullscreen = [iTermSettingsControlFactory checkbox:@"Auto-hide menu bar in non-native fullscreen" target:self action:changed toolTip:nil];
+    _uiElement = [iTermSettingsControlFactory checkbox:@"Exclude from Dock and ⌘-Tab Application Switcher" target:self action:changed toolTip:nil];
+    _uiElementRequiresHotkeyWindows = [iTermSettingsControlFactory checkbox:@"…but only if all windows are hotkey windows" target:self action:changed toolTip:nil];
+    _hideMenuItemIcons = [iTermSettingsControlFactory checkbox:@"Hide menu item icons" target:self action:changed toolTip:nil];
+
+    _windowNumber = [iTermSettingsControlFactory checkbox:@"Show window number in title bar" target:self action:changed toolTip:nil];
+    _enableDivisionView = [iTermSettingsControlFactory checkbox:@"Show line under title bar when the tab bar is not visible"
+                                                         target:self
+                                                         action:changed
+                                                        toolTip:@"If this is on then transparency can be toggled window-by-window under View>Use Transparency"];
+    _enableProxyIcon = [iTermSettingsControlFactory checkbox:@"Show proxy icon in window title bar"
+                                                      target:self
+                                                      action:changed
+                                                     toolTip:@"Enables an icon in the window title bar that represents the current working directory."];
+    _showWindowBorder = [iTermSettingsControlFactory checkbox:@"Heavy border around windows in light mode" target:self action:changed toolTip:nil];
+    _hideScrollbar = [iTermSettingsControlFactory checkbox:@"Hide scrollbars" target:self action:changed toolTip:nil];
+    _disableFullscreenTransparency = [iTermSettingsControlFactory checkbox:@"Disable transparency for non-native fullscreen windows by default" target:self action:changed toolTip:nil];
+
+    _newTabsOpenAtEndOfTabBar = [iTermSettingsControlFactory checkbox:@"New tabs open at end of tab bar" target:self action:changed toolTip:nil];
+    _hideTab = [iTermSettingsControlFactory checkbox:@"Show tab bar even when there is only one tab" target:self action:changed toolTip:nil];
+    _flashTabBarInFullscreenWhenSwitchingTabs = [iTermSettingsControlFactory checkbox:@"Flash tab bar when switching tabs in fullscreen" target:self action:changed toolTip:nil];
+    _showTabBarInFullscreen = [iTermSettingsControlFactory checkbox:@"Show tab bar in fullscreen" target:self action:changed toolTip:nil];
+    _preserveWindowSizeWhenTabBarVisibilityChanges = [iTermSettingsControlFactory checkbox:@"Preserve window size when tab bar shows or hides" target:self action:changed toolTip:nil];
+    _preserveWindowSizeToKeepOnScreenWhenTabBarVisibilityChanges = [iTermSettingsControlFactory checkbox:@"…but only if it would cause the window to go off-screen" target:self action:changed toolTip:nil];
+    _hideTabNumber = [iTermSettingsControlFactory checkbox:@"Show tab numbers" target:self action:changed toolTip:nil];
+    _tabsHaveCloseButtons = [iTermSettingsControlFactory checkbox:@"Tabs have close buttons" target:self action:changed toolTip:nil];
+    _hideActivityIndicator = [iTermSettingsControlFactory checkbox:@"Show activity indicator" target:self action:changed toolTip:nil];
+    _showNewOutputIndicator = [iTermSettingsControlFactory checkbox:@"Show new-output indicator" target:self action:changed toolTip:nil];
+    _stretchTabsToFillBar = [iTermSettingsControlFactory checkbox:@"Stretch tabs to fill bar" target:self action:changed toolTip:nil];
+    _htmlTabTitles = [iTermSettingsControlFactory checkbox:@"Support basic HTML tags in tab titles"
+                                                    target:self
+                                                    action:changed
+                                                   toolTip:@"The following tags are recognized: <u>, <i>, and <b>. You can also use &lt; and &amp;."];
+
+    _showPaneTitles = [iTermSettingsControlFactory checkbox:@"Show per-pane title bars" target:self action:changed toolTip:nil];
+    _showPaneTitlesEvenIfOnlyOnePane = [iTermSettingsControlFactory checkbox:@"…even if there is only one pane" target:self action:changed toolTip:nil];
+    _perPaneStatusBars = [iTermSettingsControlFactory checkbox:@"Separate status bars per pane" target:self action:changed toolTip:nil];
+    _separateBackgroundImages = [iTermSettingsControlFactory checkbox:@"Separate background images per pane" target:self action:changed toolTip:nil];
+    _sideMarginsLabel = [iTermSettingsControlFactory label:@"Side margins:"];
+    _sideMargins = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:44 target:self action:changed delegate:self];
+    _sideMarginsStepper = [iTermSettingsControlFactory stepperWithMinValue:0 maxValue:100 increment:1 target:self action:changed];
+    _topBottomMarginsLabel = [iTermSettingsControlFactory label:@"Top & bottom margins:"];
+    _topBottomMargins = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:44 target:self action:changed delegate:self];
+    _topBottomMarginsStepper = [iTermSettingsControlFactory stepperWithMinValue:0 maxValue:100 increment:1 target:self action:changed];
+
+    _dimmingAmountLabel = [iTermSettingsControlFactory label:@"Dimming amount:"];
+    _dimmingAmount = [iTermSettingsControlFactory sliderWithMinValue:0.01
+                                                            maxValue:0.6
+                                                         doubleValue:0.6
+                                                               width:215
+                                                              target:self
+                                                              action:changed
+                                                             toolTip:@"Inactive sessions get dimmed to help find the active session."
+                                              wrappedInSteppedSlider:YES];
+    _dimInactiveSplitPanes = [iTermSettingsControlFactory checkbox:@"Dim inactive split panes" target:self action:changed toolTip:nil];
+    _dimBackgroundWindows = [iTermSettingsControlFactory checkbox:@"Dim background windows" target:self action:changed toolTip:nil];
+    _dimOnlyText = [iTermSettingsControlFactory checkbox:@"Dimming affects only text, not background." target:self action:changed toolTip:nil];
+
+    [root addSubview:tabs];
+    _tabView = tabs;
+    self.view = root;
+    [self configureAppearanceSettings];
 }
 
 - (void)awakeFromNib {
+    [self configureAppearanceSettings];
+}
+
+- (void)configureAppearanceSettings {
+    if (_configured) {
+        return;
+    }
+    _configured = YES;
     PreferenceInfo *info;
 
     __weak __typeof(self) weakSelf = self;
@@ -410,6 +521,51 @@ NSString *const iTermProcessTypeDidChangeNotification = @"iTermProcessTypeDidCha
     }
 
     [self installAppIconSection];
+    [iTermAppearanceFormLayout installIn:_tabView controls:@{
+        @"tabStyle": _tabStyle,
+        @"tabStyleLabel": _tabStyleLabel,
+        @"tabPosition": _tabPosition,
+        @"tabPositionLabel": _tabPositionLabel,
+        @"statusBarPosition": _statusBarPosition,
+        @"statusBarPositionLabel": _statusBarPositionLabel,
+        @"hideMenuBarInFullscreen": _hideMenuBarInFullscreen,
+        @"uiElement": _uiElement,
+        @"uiElementRequiresHotkeyWindows": _uiElementRequiresHotkeyWindows,
+        @"hideMenuItemIcons": _hideMenuItemIcons,
+        @"windowNumber": _windowNumber,
+        @"enableDivisionView": _enableDivisionView,
+        @"enableProxyIcon": _enableProxyIcon,
+        @"showWindowBorder": _showWindowBorder,
+        @"hideScrollbar": _hideScrollbar,
+        @"disableFullscreenTransparency": _disableFullscreenTransparency,
+        @"newTabsOpenAtEndOfTabBar": _newTabsOpenAtEndOfTabBar,
+        @"hideTab": _hideTab,
+        @"flashTabBarInFullscreenWhenSwitchingTabs": _flashTabBarInFullscreenWhenSwitchingTabs,
+        @"showTabBarInFullscreen": _showTabBarInFullscreen,
+        @"preserveWindowSizeWhenTabBarVisibilityChanges": _preserveWindowSizeWhenTabBarVisibilityChanges,
+        @"preserveWindowSizeToKeepOnScreenWhenTabBarVisibilityChanges": _preserveWindowSizeToKeepOnScreenWhenTabBarVisibilityChanges,
+        @"hideTabNumber": _hideTabNumber,
+        @"tabsHaveCloseButtons": _tabsHaveCloseButtons,
+        @"hideActivityIndicator": _hideActivityIndicator,
+        @"showNewOutputIndicator": _showNewOutputIndicator,
+        @"stretchTabsToFillBar": _stretchTabsToFillBar,
+        @"htmlTabTitles": _htmlTabTitles,
+        @"showPaneTitles": _showPaneTitles,
+        @"showPaneTitlesEvenIfOnlyOnePane": _showPaneTitlesEvenIfOnlyOnePane,
+        @"perPaneStatusBars": _perPaneStatusBars,
+        @"separateBackgroundImages": _separateBackgroundImages,
+        @"sideMarginsLabel": _sideMarginsLabel,
+        @"sideMargins": _sideMargins,
+        @"sideMarginsStepper": _sideMarginsStepper,
+        @"topBottomMarginsLabel": _topBottomMarginsLabel,
+        @"topBottomMargins": _topBottomMargins,
+        @"topBottomMarginsStepper": _topBottomMarginsStepper,
+        @"dimmingAmountLabel": _dimmingAmountLabel,
+        @"dimmingAmount": _dimmingAmount,
+        @"dimInactiveSplitPanes": _dimInactiveSplitPanes,
+        @"dimBackgroundWindows": _dimBackgroundWindows,
+        @"dimOnlyText": _dimOnlyText
+    }];
 }
 
 - (void)installAppIconSection {

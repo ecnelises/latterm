@@ -91,5 +91,6 @@ extern NSString *kForceTouchSingleClick;
 - (IBAction)clicksChanged:(id)sender;
 - (IBAction)loadDefaults:(id)sender;
 - (void)layoutBindingsContainer;
+- (NSView *)createBindingsView;
 
 @end

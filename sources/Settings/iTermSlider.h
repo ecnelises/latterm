@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface iTermSlider : NSView
 @property (nonatomic, readonly) NSSlider *slider;
+- (instancetype)initWithFrame:(NSRect)frameRect slider:(NSSlider *)slider;
 @end
 
 NS_ASSUME_NONNULL_END

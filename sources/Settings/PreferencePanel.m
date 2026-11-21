@@ -520,6 +520,14 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     ITAssertWithMessage(self.isWindowLoaded, @"window not loaded in %@", NSStringFromSelector(_cmd));
     [self.window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
 
+    _generalPreferencesViewController = [[GeneralPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _appearancePreferencesViewController = [[AppearancePreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _keysViewController = [[KeysPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    arrangements_ = [[WindowArrangements alloc] initWithNibName:nil bundle:nil];
+    _pointerViewController = [[PointerPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _shortcutsViewController = [[iTermShortcutsViewController alloc] initWithNibName:nil bundle:nil];
+    _advancedViewController = [[iTermAdvancedSettingsViewController alloc] initWithNibName:nil bundle:nil];
+
     _globalTabViewItem.view = _generalPreferencesViewController.view;
     _appearanceTabViewItem.view = _appearancePreferencesViewController.view;
     _keyboardTabViewItem.view = _keysViewController.view;
@@ -615,17 +623,19 @@ static iTermPreferencesSearchEngine *gSearchEngine;
     const CGFloat width = self.preferencePanelNavigationWidth;
     NSRect frame = self.window.contentView.bounds;
     frame.origin.x += width;
-    frame.size.width -= width;
+    frame.size.width = MAX(0, frame.size.width - width);
     if (!_editCurrentSessionMode) {
         const CGFloat headerHeight = iTermSettingsPageHeaderView.preferredHeight;
         _settingsHeader = [[iTermSettingsPageHeaderView alloc] initWithFrame:
             NSMakeRect(NSMinX(frame), NSMaxY(frame) - headerHeight, NSWidth(frame), headerHeight)];
         [self.window.contentView addSubview:_settingsHeader];
-        frame.size.height -= headerHeight;
+        frame.size.height = MAX(0, frame.size.height - headerHeight);
         self.window.backgroundColor = NSColor.windowBackgroundColor;
     }
     _settingsContent.frame = frame;
     [_settingsContent setFitsViewport:(_editCurrentSessionMode ||
+                                       _tabView.selectedTabViewItem == _globalTabViewItem ||
+                                       _tabView.selectedTabViewItem == _appearanceTabViewItem ||
                                        _tabView.selectedTabViewItem == _profilesTabViewItem ||
                                        _tabView.selectedTabViewItem == _keyboardTabViewItem ||
                                        _tabView.selectedTabViewItem == _mouseTabViewItem)];
@@ -821,6 +831,9 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (WindowArrangements *)arrangements {
+    if (!arrangements_) {
+        (void)[self window];
+    }
     return arrangements_;
 }
 
@@ -1076,6 +1089,8 @@ andEditComponentWithIdentifier:(NSString *)identifier
     [self synchronizeNavigationForTabViewItem:tabViewItem];
     [_settingsContent scrollToTop];
     [_settingsContent setFitsViewport:(_editCurrentSessionMode ||
+                                       tabViewItem == _globalTabViewItem ||
+                                       tabViewItem == _appearanceTabViewItem ||
                                        tabViewItem == _profilesTabViewItem ||
                                        tabViewItem == _keyboardTabViewItem ||
                                        tabViewItem == _mouseTabViewItem)];
@@ -1358,7 +1373,10 @@ andEditComponentWithIdentifier:(NSString *)identifier
 }
 
 - (void)preferencePanelSetContentSize:(NSSize)size {
-    if (_editCurrentSessionMode || _tabView.selectedTabViewItem == _profilesTabViewItem ||
+    if (_editCurrentSessionMode ||
+        _tabView.selectedTabViewItem == _globalTabViewItem ||
+        _tabView.selectedTabViewItem == _appearanceTabViewItem ||
+        _tabView.selectedTabViewItem == _profilesTabViewItem ||
         _tabView.selectedTabViewItem == _keyboardTabViewItem ||
         _tabView.selectedTabViewItem == _mouseTabViewItem) {
         [_settingsContent setFitsViewport:YES];

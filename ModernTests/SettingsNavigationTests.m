@@ -564,12 +564,13 @@
             }
         }
         XCTAssertEqual(headings, tabs.numberOfTabViewItems);
-        NSScrollView *scroll = (NSScrollView *)tabs.tabViewItems.firstObject.view;
-        NSView *form = scroll.documentView.subviews.firstObject;
-        NSView *card = form.subviews.firstObject;
-        XCTAssertNotNil(card);
-        XCTAssertLessThanOrEqual(NSWidth(card.frame), 720);
-        XCTAssertGreaterThan(NSWidth(form.frame) - NSMaxX(card.frame), 100);
+        for (NSTabViewItem *section in tabs.tabViewItems) {
+            NSView *page = section.view;
+            XCTAssertNotNil([self descendantWithIdentifier:@"ProfileSwiftUIForm" inView:page], @"%@", section.label);
+            [self checkControlsInSettingsView:page document:page];
+        }
+        NSScrollView *viewport = [panel valueForKey:@"_settingsContent"];
+        XCTAssertEqualWithAccuracy(NSWidth(viewport.documentView.bounds), NSWidth(viewport.contentView.bounds), 1);
     } @finally {
         [window setFrame:originalFrame display:NO];
         [panel close];
@@ -734,7 +735,8 @@
         NSRect widened = [theme convertRect:theme.bounds toView:tabs.tabViewItems.firstObject.view];
         XCTAssertEqualWithAccuracy(NSMinX(initial), NSMinX(widened), 1);
         XCTAssertEqualWithAccuracy(NSWidth(initial), NSWidth(widened), 1);
-        XCTAssertLessThan(NSHeight(tabs.tabViewItems.firstObject.view.frame), 300);
+        XCTAssertNotNil([self descendantWithIdentifier:@"ProfileSwiftUIForm" inView:tabs.tabViewItems.firstObject.view]);
+        XCTAssertLessThan(NSHeight(tabs.tabViewItems.firstObject.view.frame), 360);
     } @finally {
         [window setFrame:originalFrame display:NO];
         [panel close];
@@ -2204,45 +2206,28 @@
         }
         XCTAssertEqual(verifiedSpacingIcons, 2);
 
-        // App Behavior & Appearance sections unify their form control columns.
+        // App Behavior & Appearance sections use responsive SwiftUI cards without horizontal overflow.
         [panel showGlobalTabView:nil];
         [window.contentView layoutSubtreeIfNeeded];
         NSTabView *genTabs = [[panel valueForKey:@"_generalPreferencesViewController"] tabView];
-        CGFloat expectedGenControlX = -1;
-        for (NSInteger i = 1; i < genTabs.numberOfTabViewItems; i++) {
-            NSView *body = genTabs.tabViewItems[i].view.subviews.firstObject;
-            CGFloat minControlX = CGFLOAT_MAX;
-            for (NSView *child in body.subviews) {
-                if ([child isKindOfClass:NSTextField.class] && ![(NSTextField *)child isEditable] && NSMinX(child.frame) <= 2) {
-                    continue;
-                }
-                if ([child isKindOfClass:NSButton.class] && [(NSButton *)child bezelStyle] == NSBezelStyleRounded) {
-                    continue;
-                }
-                minControlX = MIN(minControlX, NSMinX(child.frame));
-            }
-            if (expectedGenControlX < 0) { expectedGenControlX = minControlX; }
-            XCTAssertEqualWithAccuracy(minControlX, expectedGenControlX, 2.0, @"App Behavior section %ld misaligned", (long)i);
+        NSScrollView *genScroll = (NSScrollView *)[self descendantWithIdentifier:@"SettingsSections"
+                                                                          inView:[[panel valueForKey:@"_generalPreferencesViewController"] view]];
+        XCTAssertLessThanOrEqual(NSWidth(genScroll.documentView.bounds), NSWidth(genScroll.contentView.bounds) + 1);
+        for (NSTabViewItem *item in genTabs.tabViewItems) {
+            XCTAssertNotNil([self descendantWithIdentifier:@"ProfileSwiftUIForm" inView:item.view], @"%@", item.label);
         }
 
         [panel showAppearanceTabView:nil];
         [window.contentView layoutSubtreeIfNeeded];
         NSTabView *appTabs = [[panel valueForKey:@"_appearancePreferencesViewController"] tabView];
-        CGFloat expectedAppControlX = -1;
-        for (NSInteger i = 0; i < appTabs.numberOfTabViewItems; i++) {
-            NSView *body = appTabs.tabViewItems[i].view.subviews.firstObject;
-            if (![NSStringFromClass(body.class) isEqualToString:@"iTermPreferencesInnerTabContainerView"]) {
+        NSScrollView *appScroll = (NSScrollView *)[self descendantWithIdentifier:@"SettingsSections"
+                                                                          inView:[[panel valueForKey:@"_appearancePreferencesViewController"] view]];
+        XCTAssertLessThanOrEqual(NSWidth(appScroll.documentView.bounds), NSWidth(appScroll.contentView.bounds) + 1);
+        for (NSTabViewItem *item in appTabs.tabViewItems) {
+            if ([item.identifier isEqual:@"AppIcon"]) {
                 continue;
             }
-            CGFloat minControlX = CGFLOAT_MAX;
-            for (NSView *child in body.subviews) {
-                if ([child isKindOfClass:NSTextField.class] && ![(NSTextField *)child isEditable] && NSMinX(child.frame) <= 2) {
-                    continue;
-                }
-                minControlX = MIN(minControlX, NSMinX(child.frame));
-            }
-            if (expectedAppControlX < 0) { expectedAppControlX = minControlX; }
-            XCTAssertEqualWithAccuracy(minControlX, expectedAppControlX, 2.0, @"Appearance section %ld misaligned", (long)i);
+            XCTAssertNotNil([self descendantWithIdentifier:@"ProfileSwiftUIForm" inView:item.view], @"%@", item.label);
         }
 
         // Mouse & Trackpad sections use SwiftUI cards, fit within viewport, and align action buttons cleanly.

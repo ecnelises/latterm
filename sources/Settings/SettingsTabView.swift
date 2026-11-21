@@ -22,6 +22,16 @@ final class SettingsTabView: NSTabView {
     private var sections: [Section] = []
     @objc private(set) var presentsSections = false
 
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        tabViewType = .noTabsNoBorder
+        drawsBackground = false
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
     override func awakeFromNib() {
         super.awakeFromNib()
         tabViewType = .noTabsNoBorder

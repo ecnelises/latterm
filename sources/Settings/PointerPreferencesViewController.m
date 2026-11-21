@@ -9,6 +9,7 @@
 #import "PointerPreferencesViewController.h"
 #import "PointerPrefsController.h"
 #import "PreferencePanel.h"
+#import "iTermSizeRememberingView.h"
 #import "iTerm2SharedARC-Swift.h"
 
 NSString *const kPointerPrefsChangedNotification = @"kPointerPrefsChangedNotification";
@@ -16,6 +17,8 @@ NSString *const kPointerPrefsSemanticHistoryEnabledChangedNotification = @"kPoin
 
 @implementation PointerPreferencesViewController {
     IBOutlet NSTabView *_tabView;
+    PointerPrefsController *_pointerPrefsController;
+    BOOL _configured;
 
     // Cmd-click to launch url.
     IBOutlet NSButton *_cmdSelection;
@@ -40,7 +43,44 @@ NSString *const kPointerPrefsSemanticHistoryEnabledChangedNotification = @"kPoin
     IBOutlet NSButton *_reportHorizontalScrollEvents;
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 892, 421)];
+    iTermSettingsTabView *tabs = [iTermSettingsControlFactory sectionTabViewWithFrame:NSMakeRect(0, 10, 879, 417)
+                                                                                items:@[
+        @[ @"2", @"Behavior" ],
+        @[ @"1", @"Pointer Bindings" ]
+    ]];
+
+    SEL changed = @selector(settingChanged:);
+    _cmdSelection = [iTermSettingsControlFactory checkbox:@"⌘-Click opens filename/URL (semantic history)" target:self action:changed toolTip:nil];
+    _optionClickMovesCursor = [iTermSettingsControlFactory checkbox:@"⌥-Click moves cursor" target:self action:changed toolTip:nil];
+    _threeFingerEmulatesMiddle = [iTermSettingsControlFactory checkbox:@"Three-finger tap emulates middle click" target:self action:changed toolTip:nil];
+    _focusFollowsMouse = [iTermSettingsControlFactory checkbox:@"Focus follows mouse" target:self action:changed toolTip:nil];
+    _focusFollowsMouseIncludingSubviews = [iTermSettingsControlFactory checkbox:@"Include embedded fields such as Find" target:self action:changed toolTip:nil];
+    _focusOnRightOrMiddleClick = [iTermSettingsControlFactory checkbox:@"Focus window after right or middle click" target:self action:changed toolTip:nil];
+    _reportHorizontalScrollEvents = [iTermSettingsControlFactory checkbox:@"Mouse reporting supports horizontal scrolling" target:self action:changed toolTip:nil];
+    _controlLeftClickActsLikeRightClick = [iTermSettingsControlFactory checkbox:@"^-Click reported to apps, does not open menu" target:self action:changed toolTip:nil];
+    _rightClickActsLikeRightClick = [iTermSettingsControlFactory checkbox:@"Right click reported to apps, does not open menu" target:self action:changed toolTip:nil];
+
+    _pointerPrefsController = [[PointerPrefsController alloc] init];
+    NSView *bindingsView = [_pointerPrefsController createBindingsView];
+    [tabs.tabViewItems[1].view addSubview:bindingsView];
+
+    [root addSubview:tabs];
+    _tabView = tabs;
+    self.view = root;
+    [self configurePointerSettings];
+}
+
 - (void)awakeFromNib {
+    [self configurePointerSettings];
+}
+
+- (void)configurePointerSettings {
+    if (_configured) {
+        return;
+    }
+    _configured = YES;
     PreferenceInfo *info;
 
     __weak __typeof(self) weakSelf = self;
