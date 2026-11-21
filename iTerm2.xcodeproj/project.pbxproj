@@ -537,6 +537,8 @@
 		5ECE005F1454E59B004861E9 /* PseudoTerminalRestorer.h in Headers */ = {isa = PBXBuildFile; fileRef = 5ECE005D1454E59B004861E9 /* PseudoTerminalRestorer.h */; };
 		5EEA7C6C9BEA8194F891E3F1 /* CCGitBaseSelectorItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551CEFF56A53034E3FC7598A /* CCGitBaseSelectorItem.swift */; };
 		5FDDDC1E767D8D0DFC5DD1E5 /* SettingsTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1545F60D64197B76FE39C0F1 /* SettingsTabView.swift */; };
+		A72200012EC2000100000001 /* SettingsControlFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72200022EC2000100000001 /* SettingsControlFactory.swift */; };
+		A72200032EC2000100000001 /* AppSettingsLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72200042EC2000100000001 /* AppSettingsLayout.swift */; };
 		615631B0C6A14BCF9A56941D /* SearchableComboListView in Frameworks */ = {isa = PBXBuildFile; productRef = E1150A0F0CBD42F9BCEFB0DA /* SearchableComboListView */; };
 		616ABD699141533212F458CF /* ToolStatusCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10914CB04BC4D2847EC8EB23 /* ToolStatusCellView.swift */; };
 		639530D5AD779882EF35DAE4 /* iTermLargeContentObject.h in Sources */ = {isa = PBXBuildFile; fileRef = 13C5AE44EEA24B945DE0A064 /* iTermLargeContentObject.h */; };
@@ -3297,6 +3299,8 @@
 		13C5AE44EEA24B945DE0A064 /* iTermLargeContentObject.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = iTermLargeContentObject.h; sourceTree = "<group>"; };
 		148411BF36E0AD043E6CA1CD /* decdwl_decdhl_normalized.txt */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = decdwl_decdhl_normalized.txt; sourceTree = "<group>"; };
 		1545F60D64197B76FE39C0F1 /* SettingsTabView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsTabView.swift; sourceTree = "<group>"; };
+		A72200022EC2000100000001 /* SettingsControlFactory.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsControlFactory.swift; sourceTree = "<group>"; };
+		A72200042EC2000100000001 /* AppSettingsLayout.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppSettingsLayout.swift; sourceTree = "<group>"; };
 		167F170AF620D7443F74609C /* CodeReviewPromptView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CodeReviewPromptView.swift; sourceTree = "<group>"; };
 		17306A9E43DF81BD3B73C4B3 /* iTermLargeContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermLargeContent.swift; sourceTree = "<group>"; };
 		1889B7BCB3C9FBBE656FC590 /* iTermRightGutterController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = iTermRightGutterController.swift; sourceTree = "<group>"; };
@@ -9655,6 +9659,8 @@
 				79847A3D13949FEE4A886701 /* ProfileFormView.swift */,
 				79847A3D13949FEE4A886703 /* ProfilePagesLayout.swift */,
 				1545F60D64197B76FE39C0F1 /* SettingsTabView.swift */,
+				A72200022EC2000100000001 /* SettingsControlFactory.swift */,
+				A72200042EC2000100000001 /* AppSettingsLayout.swift */,
 				2A38927FC949FA545C4526F8 /* SettingsFormView.swift */,
 				A7D100052EC0000100000001 /* AppIconPreferencesView.swift */,
 				7D3DFD4BA35B189A51AF37C6 /* SettingDefinition.swift */,
@@ -14709,6 +14715,8 @@
 				79847A3D13949FEE4A886702 /* ProfileFormView.swift in Sources */,
 				79847A3D13949FEE4A886704 /* ProfilePagesLayout.swift in Sources */,
 				5FDDDC1E767D8D0DFC5DD1E5 /* SettingsTabView.swift in Sources */,
+				A72200012EC2000100000001 /* SettingsControlFactory.swift in Sources */,
+				A72200032EC2000100000001 /* AppSettingsLayout.swift in Sources */,
 				B03E0EE9ADB1F15C86EB8140 /* SettingsFormView.swift in Sources */,
 				81ECA18CD6E4C588A25C91B2 /* iTermProfileSearchToken.swift in Sources */,
 				6576B80F85FC545019BF4ACE /* CrashReporter.swift in Sources */,

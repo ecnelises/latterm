@@ -14,4 +14,6 @@
 
 @interface EventMonitorView : NSView
 
+- (instancetype)initWithFrame:(NSRect)frameRect pointerPrefs:(PointerPrefsController *)pointerPrefs;
+
 @end

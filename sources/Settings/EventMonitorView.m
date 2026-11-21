@@ -15,7 +15,7 @@
 #import "ThreeFingerTapGestureRecognizer.h"
 
 @implementation EventMonitorView {
-    IBOutlet PointerPrefsController *pointerPrefs_;
+    __weak IBOutlet PointerPrefsController *pointerPrefs_;
     IBOutlet NSTextField *label_;
     int numTouches_;
 
@@ -23,12 +23,30 @@
     NSInteger _maximumStage;
 }
 
+- (instancetype)initWithFrame:(NSRect)frameRect pointerPrefs:(PointerPrefsController *)pointerPrefs {
+    self = [super initWithFrame:frameRect];
+    if (self) {
+        pointerPrefs_ = pointerPrefs;
+        NSTextField *label = [NSTextField labelWithString:@""];
+        label_ = label;
+        [self addSubview:label];
+        [self configureEventMonitor];
+    }
+    return self;
+}
+
 - (void)awakeFromNib {
+    [self configureEventMonitor];
+}
+
+- (void)configureEventMonitor {
     self.allowedTouchTypes = NSTouchTypeMaskIndirect;
     [self setWantsRestingTouches:YES];
-    _threeFingerTapGestureRecognizer =
-        [[ThreeFingerTapGestureRecognizer alloc] initWithTarget:self
-                                                       selector:@selector(threeFingerTap:)];
+    if (!_threeFingerTapGestureRecognizer) {
+        _threeFingerTapGestureRecognizer =
+            [[ThreeFingerTapGestureRecognizer alloc] initWithTarget:self
+                                                           selector:@selector(threeFingerTap:)];
+    }
     label_.alignment = NSTextAlignmentCenter;
     label_.textColor = [NSColor secondaryLabelColor];
     label_.font = [NSFont systemFontOfSize:12 weight:NSFontWeightRegular];

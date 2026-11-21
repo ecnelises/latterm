@@ -15,6 +15,7 @@
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"
 #import "iTermAdvancedSettingsModel.h"
+#import "iTermSizeRememberingView.h"
 #import "iTermUserDefaults.h"
 #import "iTerm2SharedARC-Swift.h"
 #import <objc/runtime.h>
@@ -126,7 +127,7 @@
 
 static NSDictionary *gIntrospection;
 
-@interface iTermAdvancedSettingsViewController()<NSTextFieldDelegate>
+@interface iTermAdvancedSettingsViewController()<NSSearchFieldDelegate>
 @end
 
 @interface iTermAdvancedSettingsTableView: NSTableView
@@ -165,6 +166,7 @@ static NSDictionary *gIntrospection;
     NSView *_pageDocument;
     NSArray *_filteredAdvancedSettings;
     NSArray<iTermPreferencesSearchDocument *> *_docs;
+    BOOL _configured;
 }
 
 + (NSDictionary *)settingsDictionary {
@@ -231,7 +233,62 @@ static NSDictionary *gIntrospection;
     _tableView.dataSource = nil;
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 992, 416)];
+    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(20, 20, 952, 364)];
+    iTermAdvancedSettingsTableView *tableView = [[iTermAdvancedSettingsTableView alloc] initWithFrame:NSMakeRect(0, 0, 950, 362)];
+    tableView.headerView = nil;
+    tableView.allowsColumnReordering = NO;
+    tableView.allowsColumnResizing = NO;
+    tableView.allowsMultipleSelection = NO;
+    tableView.allowsTypeSelect = NO;
+    tableView.usesAutomaticRowHeights = YES;
+    tableView.allowsExpansionToolTips = YES;
+
+    NSTableColumn *settingCol = [[NSTableColumn alloc] initWithIdentifier:@"setting"];
+    settingCol.width = 557.5;
+    settingCol.editable = NO;
+    settingCol.headerCell.title = NSLocalizedString(@"Setting", @"Expert settings column");
+    [tableView addTableColumn:settingCol];
+
+    NSTableColumn *valueCol = [[NSTableColumn alloc] initWithIdentifier:@"value"];
+    valueCol.width = 349;
+    valueCol.headerCell.title = NSLocalizedString(@"Value", @"Expert settings column");
+    [tableView addTableColumn:valueCol];
+
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    scrollView.documentView = tableView;
+    [root addSubview:scrollView];
+
+    NSSearchField *searchField = [[NSSearchField alloc] initWithFrame:NSMakeRect(20, 392, 378, 22)];
+    searchField.delegate = self;
+    [root addSubview:searchField];
+
+    NSButton *excludeDefaults = [iTermSettingsControlFactory checkbox:@"Show only non-default values"
+                                                               target:self
+                                                               action:@selector(toggleExcludeDefaults:)
+                                                              toolTip:@"When checked, removes items from the list whose value equals the default value."];
+    [root addSubview:excludeDefaults];
+
+    _settingColumn = settingCol;
+    _valueColumn = valueCol;
+    _tableView = tableView;
+    _searchField = searchField;
+    _excludeDefaults = excludeDefaults;
+    self.view = root;
+    [self configureAdvancedSettingsPage];
+}
+
 - (void)awakeFromNib {
+    [self configureAdvancedSettingsPage];
+}
+
+- (void)configureAdvancedSettingsPage {
+    if (_configured) {
+        return;
+    }
+    _configured = YES;
     _resetColumn = [[NSTableColumn alloc] initWithIdentifier:@"reset"];
     [_tableView addTableColumn:_resetColumn];
     _tableView.style = NSTableViewStylePlain;

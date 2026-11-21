@@ -10,6 +10,7 @@
 #import "ITAddressBookMgr.h"
 #import "NSPopUpButton+iTerm.h"
 #import "NSTextField+iTerm.h"
+#import "EventMonitorView.h"
 #import "PointerController.h"
 #import "PointerPrefsController.h"
 #import "PreferencePanel.h"
@@ -134,6 +135,9 @@ typedef enum {
 + (BOOL)keyIsThreeFingerTap:(NSString *)key;
 @end
 
+@interface PointerPrefsController () <NSTableViewDataSource, NSTableViewDelegate>
+@end
+
 @implementation PointerPrefsController {
     IBOutlet NSTableView *tableView_;
     IBOutlet NSTableColumn *buttonColumn_;
@@ -173,6 +177,7 @@ typedef enum {
 
     NSString *origKey_;
     int version_;
+    BOOL _configured;
 }
 
 - (void)dealloc {
@@ -620,8 +625,203 @@ typedef enum {
     return keys;
 }
 
+- (NSView *)createBindingsView {
+    NSView *container = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 891, 334)];
+    container.identifier = @"PointerBindingsCustomView";
+
+    iTermSettingsEmbeddedScrollView *scrollView = [[iTermSettingsEmbeddedScrollView alloc] initWithFrame:NSMakeRect(20, 49, 851, 285)];
+    scrollView.borderType = NSBezelBorder;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.hasHorizontalScroller = NO;
+    scrollView.autohidesScrollers = YES;
+    scrollView.drawsBackground = YES;
+
+    NSTableView *tableView = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 849, 283)];
+    tableView.headerView = nil;
+    tableView.allowsColumnReordering = NO;
+    tableView.allowsMultipleSelection = NO;
+    tableView.allowsExpansionToolTips = YES;
+
+    NSTableColumn *actionCol = [[NSTableColumn alloc] initWithIdentifier:@"action"];
+    actionCol.width = 525.5;
+    actionCol.editable = NO;
+    actionCol.headerCell.title = NSLocalizedString(@"Action", @"Pointer bindings column");
+    [tableView addTableColumn:actionCol];
+
+    NSTableColumn *buttonCol = [[NSTableColumn alloc] initWithIdentifier:@"button"];
+    buttonCol.width = 279.5;
+    buttonCol.editable = NO;
+    buttonCol.headerCell.title = NSLocalizedString(@"Mouse Button/Trackpad Gesture", @"Pointer bindings column");
+    [tableView addTableColumn:buttonCol];
+
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    scrollView.documentView = tableView;
+    [container addSubview:scrollView];
+
+    NSButton *addButton = [iTermSettingsControlFactory pushButton:@"Add" target:self action:@selector(add:)];
+    addButton.imagePosition = NSNoImage;
+    [container addSubview:addButton];
+
+    NSButton *removeButton = [iTermSettingsControlFactory pushButton:@"Remove" target:self action:@selector(remove:)];
+    removeButton.imagePosition = NSNoImage;
+    [container addSubview:removeButton];
+
+    NSButton *loadDefaultsButton = [iTermSettingsControlFactory pushButton:@"Load Defaults" target:self action:@selector(loadDefaults:)];
+    loadDefaultsButton.imagePosition = NSNoImage;
+    [container addSubview:loadDefaultsButton];
+
+    tableView_ = tableView;
+    actionColumn_ = actionCol;
+    buttonColumn_ = buttonCol;
+    _addButton = addButton;
+    remove_ = removeButton;
+    _loadDefaultsButton = loadDefaultsButton;
+
+    // Build Edit Pointer Setting sheet panel programmatically.
+    NSPanel *panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(196, 132, 451, 246)
+                                                styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:YES];
+    panel.releasedWhenClosed = NO;
+    NSView *panelContent = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 451, 246)];
+    panel.contentView = panelContent;
+
+    editButtonLabel_ = [iTermSettingsControlFactory label:@"Button/Gesture:"];
+    editButtonLabel_.frame = NSMakeRect(17, 209, 100, 16);
+    [panelContent addSubview:editButtonLabel_];
+
+    editButton_ = [iTermSettingsControlFactory popupButtonWithPullsDown:NO
+                                                                  width:306
+                                                                 target:self
+                                                                 action:@selector(buttonOrGestureChanged:)
+                                                                  items:@[
+        @[ @"Right Button", @1 ],
+        @[ @"Middle Button", @2 ],
+        @[ @"Button #4", @3 ],
+        @[ @"Button #5", @4 ],
+        @[ @"Button #6", @5 ],
+        @[ @"Button #7", @6 ],
+        @[ @"---" ],
+        @[ @"Three-finger Tap", @10 ],
+        @[ @"Three-finger Swipe Right", @11 ],
+        @[ @"Three-finger Swipe Left", @12 ],
+        @[ @"Three-finger Swipe Up", @13 ],
+        @[ @"Three-finger Swipe Down", @14 ],
+        @[ @"---" ],
+        @[ @"Force Touch", @15 ]
+    ]];
+    editButton_.frame = NSMakeRect(127, 202, 306, 26);
+    [panelContent addSubview:editButton_];
+
+    editClickTypeLabel_ = [iTermSettingsControlFactory label:@"Click Type:"];
+    editClickTypeLabel_.frame = NSMakeRect(49, 181, 71, 16);
+    [panelContent addSubview:editClickTypeLabel_];
+
+    editClickType_ = [iTermSettingsControlFactory popupButtonWithPullsDown:NO
+                                                                     width:306
+                                                                    target:self
+                                                                    action:@selector(clicksChanged:)
+                                                                     items:@[
+        @[ @"Single Click", @1 ],
+        @[ @"Double Click", @2 ],
+        @[ @"Triple Click", @3 ],
+        @[ @"Quad Click", @4 ]
+    ]];
+    editClickType_.frame = NSMakeRect(127, 174, 306, 26);
+    [panelContent addSubview:editClickType_];
+
+    editModifiersLabel_ = [iTermSettingsControlFactory label:@"Modifiers:"];
+    editModifiersLabel_.frame = NSMakeRect(56, 156, 65, 16);
+    [panelContent addSubview:editModifiersLabel_];
+
+    editModifiersCommand_ = [iTermSettingsControlFactory checkbox:@"⌘" target:nil action:nil toolTip:nil];
+    editModifiersCommand_.frame = NSMakeRect(128, 153, 42, 18);
+    [panelContent addSubview:editModifiersCommand_];
+
+    editModifiersOption_ = [iTermSettingsControlFactory checkbox:@"⌥" target:nil action:nil toolTip:nil];
+    editModifiersOption_.frame = NSMakeRect(174, 153, 42, 18);
+    [panelContent addSubview:editModifiersOption_];
+
+    editModifiersShift_ = [iTermSettingsControlFactory checkbox:@"⇧" target:nil action:nil toolTip:nil];
+    editModifiersShift_.frame = NSMakeRect(223, 153, 42, 18);
+    [panelContent addSubview:editModifiersShift_];
+
+    editModifiersControl_ = [iTermSettingsControlFactory checkbox:@"^" target:nil action:nil toolTip:nil];
+    editModifiersControl_.frame = NSMakeRect(268, 153, 42, 18);
+    [panelContent addSubview:editModifiersControl_];
+
+    EventMonitorView *eventMonitor = [[EventMonitorView alloc] initWithFrame:NSMakeRect(130, 118, 300, 29)
+                                                                pointerPrefs:self];
+    [panelContent addSubview:eventMonitor];
+
+    editActionLabel_ = [iTermSettingsControlFactory label:@"Action:"];
+    editActionLabel_.frame = NSMakeRect(74, 93, 47, 16);
+    [panelContent addSubview:editActionLabel_];
+
+    editAction_ = [iTermSettingsControlFactory popupButtonWithPullsDown:NO
+                                                                  width:308
+                                                                 target:self
+                                                                 action:@selector(actionChanged:)
+                                                                  items:@[]];
+    editAction_.frame = NSMakeRect(125, 86, 308, 26);
+    [panelContent addSubview:editAction_];
+
+    editArgumentLabel_ = [iTermSettingsControlFactory label:@"Argument:"];
+    editArgumentLabel_.frame = NSMakeRect(55, 63, 68, 16);
+    [panelContent addSubview:editArgumentLabel_];
+
+    editArgumentButton_ = [iTermSettingsControlFactory popupButtonWithPullsDown:NO
+                                                                          width:308
+                                                                         target:nil
+                                                                         action:nil
+                                                                          items:@[]];
+    editArgumentButton_.frame = NSMakeRect(126, 57, 308, 26);
+    editArgumentButton_.hidden = YES;
+    [panelContent addSubview:editArgumentButton_];
+
+    editArgumentField_ = [iTermSettingsControlFactory textFieldWithPlaceholder:nil
+                                                                         width:302
+                                                                        target:nil
+                                                                        action:nil
+                                                                      delegate:nil];
+    editArgumentField_.frame = NSMakeRect(128, 60, 302, 22);
+    [panelContent addSubview:editArgumentField_];
+
+    _pasteSpecialViewContainer = [[NSView alloc] initWithFrame:NSMakeRect(130, 60, 300, 21)];
+    _pasteSpecialViewContainer.hidden = YES;
+    [panelContent addSubview:_pasteSpecialViewContainer];
+
+    _menuItemPopupView = [[iTermMenuItemPopupView alloc] initWithFrame:NSMakeRect(125, 60, 308, 23)];
+    _menuItemPopupView.hidden = YES;
+    [panelContent addSubview:_menuItemPopupView];
+
+    NSButton *cancelButton = [iTermSettingsControlFactory pushButton:@"Cancel" target:self action:@selector(cancel:)];
+    cancelButton.keyEquivalent = @"\033";
+    cancelButton.frame = NSMakeRect(272, 12, 82, 32);
+    [panelContent addSubview:cancelButton];
+
+    ok_ = [iTermSettingsControlFactory pushButton:@"OK" target:self action:@selector(ok:)];
+    ok_.keyEquivalent = @"\r";
+    ok_.frame = NSMakeRect(354, 12, 82, 32);
+    [panelContent addSubview:ok_];
+
+    panel_ = panel;
+    [self configurePointerBindings];
+    return container;
+}
+
 - (void)awakeFromNib
 {
+    [self configurePointerBindings];
+}
+
+- (void)configurePointerBindings
+{
+    if (_configured) {
+        return;
+    }
+    _configured = YES;
     [tableView_ setDoubleAction:@selector(tableViewRowDoubleClicked:)];
     [tableView_ setTarget:self];
     tableView_.columnAutoresizingStyle = NSTableViewUniformColumnAutoresizingStyle;
