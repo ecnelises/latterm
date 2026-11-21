@@ -66,9 +66,14 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
     IBOutlet NSTextField *_parameter;
     IBOutlet NSTextField *_parameterLabel;
     IBOutlet NSView *_detailContainer;
+    NSButton *_removeButton;
 
     NSMutableArray *_model;
     NSUndoManager *_undoManager;
+}
+
+- (instancetype)init {
+    return [self initWithWindow:nil];
 }
 
 - (instancetype)initWithWindow:(NSWindow *)window {
@@ -77,6 +82,136 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
         _model = [[NSMutableArray alloc] init];
     }
     return self;
+}
+
+- (NSNibName)windowNibName {
+    return @"ContextMenuActions";
+}
+
+- (void)dealloc {
+    _tableView.dataSource = nil;
+    _tableView.delegate = nil;
+}
+
+- (void)loadWindow {
+    NSPanel *panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(162, 229, 808, 518)
+                                                styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:YES];
+    panel.releasedWhenClosed = NO;
+    panel.hidesOnDeactivate = NO;
+    panel.delegate = self;
+    panel.title = NSLocalizedStringFromTableInBundle(@"Smart Selection Actions",
+                                                     @"Localizable",
+                                                     [NSBundle bundleForClass:self.class],
+                                                     @"Smart Selection Actions panel title");
+    NSView *content = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 808, 518)];
+    panel.contentView = content;
+
+    NSTextField *heading = [iTermSettingsControlFactory labelWithTitle:@"Smart Selection Actions"];
+    heading.font = [NSFont boldSystemFontOfSize:[NSFont systemFontSize]];
+    [heading sizeToFit];
+    heading.frame = NSMakeRect(17, 482, NSWidth(heading.frame), 18);
+    [content addSubview:heading];
+
+    NSTextField *subtitle = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Items are added to the context menu when you right click on text matching this smart selection."
+                                                                        wrapping:YES];
+    subtitle.frame = NSMakeRect(17, 456, 760, 18);
+    [content addSubview:subtitle];
+
+    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(20, 53, 345, 377)];
+    scrollView.borderType = NSBezelBorder;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.hasHorizontalScroller = NO;
+    scrollView.autohidesScrollers = YES;
+
+    _tableView = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 343, 375)];
+    _tableView.headerView = nil;
+    _tableView.usesAlternatingRowBackgroundColors = YES;
+    _tableView.allowsMultipleSelection = YES;
+    _tableView.allowsColumnReordering = NO;
+    _tableView.allowsColumnResizing = NO;
+    _tableView.columnAutoresizingStyle = NSTableViewLastColumnOnlyAutoresizingStyle;
+    NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:@"title"];
+    col.width = 325;
+    col.minWidth = 40;
+    col.maxWidth = 1000;
+    [_tableView addTableColumn:col];
+    _tableView.dataSource = self;
+    _tableView.delegate = self;
+    scrollView.documentView = _tableView;
+    [content addSubview:scrollView];
+
+    NSButton *addButton = [iTermSettingsControlFactory addButtonWithTarget:self action:@selector(add:)];
+    addButton.frame = NSMakeRect(20, 21, 24, 24);
+    [content addSubview:addButton];
+
+    _removeButton = [iTermSettingsControlFactory removeButtonWithTarget:self action:@selector(remove:)];
+    _removeButton.frame = NSMakeRect(44, 21, 24, 24);
+    _removeButton.enabled = NO;
+    [content addSubview:_removeButton];
+
+    _useInterpolatedStringsButton = [iTermSettingsControlFactory checkboxWithTitle:@"Use interpolated strings for parameters (affects all actions)"
+                                                                            target:self
+                                                                            action:@selector(didToggleUseInterpolatedStrings:)];
+    [_useInterpolatedStringsButton sizeToFit];
+    _useInterpolatedStringsButton.frame = NSMakeRect(76, 23, NSWidth(_useInterpolatedStringsButton.frame), 18);
+    [content addSubview:_useInterpolatedStringsButton];
+
+    NSButton *helpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(help:)];
+    helpButton.frame = NSMakeRect(CGRectGetMaxX(_useInterpolatedStringsButton.frame) + 8, 19, 25, 25);
+    [content addSubview:helpButton];
+
+    NSButton *okButton = [iTermSettingsControlFactory pushButtonWithTitle:@"OK" target:self action:@selector(ok:)];
+    okButton.keyEquivalent = @"\r";
+    okButton.frame = NSMakeRect(698, 13, 96, 32);
+    [content addSubview:okButton];
+
+    _detailContainer = [[NSView alloc] initWithFrame:NSMakeRect(373, 46, 415, 384)];
+    _detailContainer.hidden = YES;
+
+    NSTextField *titleLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Title:"];
+    titleLabel.frame = NSMakeRect(0, 348, 88, 16);
+    [_detailContainer addSubview:titleLabel];
+
+    _title = [iTermSettingsControlFactory textFieldWithWidth:300 placeholder:nil target:nil action:nil delegate:self];
+    _title.identifier = @"title";
+    _title.frame = NSMakeRect(95, 345, 300, 21);
+    [_detailContainer addSubview:_title];
+
+    NSTextField *actionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Action:"];
+    actionLabel.frame = NSMakeRect(0, 319, 88, 16);
+    [_detailContainer addSubview:actionLabel];
+
+    _action = [iTermSettingsControlFactory popUpButtonWithTitles:@[]
+                                                            tags:@[]
+                                                          target:self
+                                                          action:@selector(actionDidChange:)];
+    _action.identifier = @"action";
+    _action.frame = NSMakeRect(92, 313, 307, 25);
+    [_detailContainer addSubview:_action];
+
+    _parameterLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Parameter:"];
+    _parameterLabel.frame = NSMakeRect(0, 291, 88, 16);
+    [_detailContainer addSubview:_parameterLabel];
+
+    _parameter = [iTermSettingsControlFactory textFieldWithWidth:300 placeholder:nil target:nil action:nil delegate:self];
+    _parameter.identifier = @"parameter";
+    _parameter.frame = NSMakeRect(95, 288, 300, 21);
+    [_detailContainer addSubview:_parameter];
+
+    _parameterInfoTextField = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Use \\0 for match, \\1…\\9 for match groups, \\d for directory, \\u for user, \\h for host."
+                                                                          wrapping:YES];
+    _parameterInfoTextField.frame = NSMakeRect(95, 0, 304, 280);
+    [_detailContainer addSubview:_parameterInfoTextField];
+
+    [content addSubview:_detailContainer];
+    self.window = panel;
+}
+
+- (void)windowDidLoad {
+    [super windowDidLoad];
+    _undoManager = [[NSUndoManager alloc] init];
 }
 
 + (ContextMenuActions)actionForActionDict:(NSDictionary *)dict {
@@ -315,6 +450,7 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
 }
 
 - (void)setUseInterpolatedStrings:(BOOL)useInterpolatedStrings {
+    (void)self.window;
     _useInterpolatedStringsButton.state = useInterpolatedStrings ? NSControlStateValueOn : NSControlStateValueOff;
     [self updateHelpText];
 }
@@ -364,6 +500,7 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
 }
 
 - (void)setActions:(NSArray *)newActions {
+    (void)self.window;
     if (!newActions) {
         newActions = [NSMutableArray array];
     }
@@ -487,6 +624,7 @@ static ContextMenuActionDeclaration ContextMenuActionDeclarationForTag(ContextMe
 - (void)updateDetailView {
     // The remove button is bound to this
     self.hasSelection = [_tableView numberOfSelectedRows] > 0;
+    _removeButton.enabled = self.hasSelection;
     _detailContainer.hidden = ([_tableView numberOfSelectedRows] != 1);
     if (!self.hasSelection) {
         return;

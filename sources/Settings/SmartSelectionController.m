@@ -79,8 +79,210 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     tableView_.delegate = nil;
     tableView_.dataSource = nil;
+}
+
+- (instancetype)init {
+    return [self initWithWindow:nil];
+}
+
+- (instancetype)initWithWindow:(NSWindow *)window {
+    self = [super initWithWindow:window];
+    if (self) {
+        contextMenuPrefsController_ = [[ContextMenuActionPrefsController alloc] init];
+    }
+    return self;
+}
+
+- (NSNibName)windowNibName {
+    return @"SmartSelection";
+}
+
+- (void)loadWindow {
+    NSPanel *panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(162, 156, 805, 448)
+                                                styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskClosable)
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:YES];
+    panel.releasedWhenClosed = NO;
+    panel.hidesOnDeactivate = NO;
+    panel.title = NSLocalizedStringFromTableInBundle(@"Smart Selection Rules",
+                                                     @"Localizable",
+                                                     [NSBundle bundleForClass:self.class],
+                                                     @"Smart Selection Rules panel title");
+    NSView *content = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 805, 448)];
+    panel.contentView = content;
+
+    NSTextField *heading = [iTermSettingsControlFactory labelWithTitle:@"Smart Selection Rules"];
+    heading.font = [NSFont boldSystemFontOfSize:[NSFont systemFontSize]];
+    [heading sizeToFit];
+    heading.frame = NSMakeRect(17, 418, NSWidth(heading.frame), 18);
+    [content addSubview:heading];
+
+    NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(20, 54, 375, 355)];
+    scrollView.borderType = NSBezelBorder;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.hasHorizontalScroller = NO;
+    scrollView.autohidesScrollers = YES;
+
+    tableView_ = [[NSTableView alloc] initWithFrame:NSMakeRect(0, 0, 373, 353)];
+    tableView_.headerView = nil;
+    tableView_.usesAlternatingRowBackgroundColors = YES;
+    tableView_.allowsMultipleSelection = YES;
+    tableView_.allowsColumnReordering = NO;
+    tableView_.allowsColumnResizing = NO;
+    tableView_.columnAutoresizingStyle = NSTableViewLastColumnOnlyAutoresizingStyle;
+    NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:@"notes"];
+    col.width = 355;
+    col.minWidth = 10;
+    col.maxWidth = 10000;
+    [tableView_ addTableColumn:col];
+    tableView_.dataSource = self;
+    tableView_.delegate = self;
+    scrollView.documentView = tableView_;
+    [content addSubview:scrollView];
+
+    NSButton *addButton = [iTermSettingsControlFactory addButtonWithTarget:self action:@selector(addRule:)];
+    addButton.frame = NSMakeRect(20, 18, 24, 25);
+    [content addSubview:addButton];
+
+    _removeButton = [iTermSettingsControlFactory removeButtonWithTarget:self action:@selector(removeRule:)];
+    _removeButton.frame = NSMakeRect(44, 18, 24, 25);
+    _removeButton.enabled = NO;
+    [content addSubview:_removeButton];
+
+    NSButton *defaultsButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Load Defaults"
+                                                                         target:self
+                                                                         action:@selector(loadDefaults:)];
+    defaultsButton.frame = NSMakeRect(70, 18, MAX(106, NSWidth(defaultsButton.frame)), 25);
+    [content addSubview:defaultsButton];
+
+    logDebugInfo_ = [iTermSettingsControlFactory checkboxWithTitle:@"Log debug info to Console.app"
+                                                            target:self
+                                                            action:@selector(logDebugInfoChanged:)];
+    [logDebugInfo_ sizeToFit];
+    logDebugInfo_.frame = NSMakeRect(CGRectGetMaxX(defaultsButton.frame) + 12, 21, NSWidth(logDebugInfo_.frame), 18);
+    [content addSubview:logDebugInfo_];
+
+    NSButton *helpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(help:)];
+    helpButton.frame = NSMakeRect(667, 16, 25, 25);
+    [content addSubview:helpButton];
+
+    NSButton *closeButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Close"
+                                                                      target:self
+                                                                      action:@selector(closeSheet:)];
+    closeButton.keyEquivalent = @"\r";
+    closeButton.frame = NSMakeRect(695, 12, 96, 32);
+    [content addSubview:closeButton];
+
+    _noRuleSelected = [iTermSettingsControlFactory secondaryLabelWithTitle:@"No rule selected" wrapping:NO];
+    _noRuleSelected.alignment = NSTextAlignmentCenter;
+    _noRuleSelected.frame = NSMakeRect(403, 302, 382, 18);
+    [content addSubview:_noRuleSelected];
+
+    _detailView = [[NSView alloc] initWithFrame:NSMakeRect(403, 178, 382, 243)];
+
+    NSTextField *nameLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Name"];
+    nameLabel.frame = NSMakeRect(0, 225, 118, 16);
+    [_detailView addSubview:nameLabel];
+
+    _nameTextField = [iTermSettingsControlFactory textFieldWithWidth:258 placeholder:nil target:nil action:nil delegate:self];
+    _nameTextField.frame = NSMakeRect(124, 222, 258, 21);
+    [_detailView addSubview:_nameTextField];
+
+    NSTextField *regexLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Regular expression"];
+    regexLabel.frame = NSMakeRect(0, 201, 118, 16);
+    [_detailView addSubview:regexLabel];
+
+    iTermLinkButton *syntaxHelp = [[iTermLinkButton alloc] initWithFrame:NSMakeRect(0, 181, 118, 19)];
+    syntaxHelp.title = NSLocalizedStringFromTableInBundle(@"Syntax Help",
+                                                          @"Localizable",
+                                                          [NSBundle bundleForClass:self.class],
+                                                          @"Regex syntax help link");
+    syntaxHelp.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+    syntaxHelp.alignment = NSTextAlignmentRight;
+    syntaxHelp.target = self;
+    syntaxHelp.action = @selector(syntaxHelp:);
+    [syntaxHelp configureLinkAppearance];
+    _syntaxHelpButton = syntaxHelp;
+    [_detailView addSubview:_syntaxHelpButton];
+
+    NSScrollView *regexScroll = [[NSScrollView alloc] initWithFrame:NSMakeRect(124, 79, 258, 135)];
+    regexScroll.borderType = NSBezelBorder;
+    regexScroll.hasVerticalScroller = YES;
+    regexScroll.hasHorizontalScroller = NO;
+    regexScroll.autohidesScrollers = YES;
+    _regexTextView = [[NSTextView alloc] initWithFrame:NSMakeRect(0, 0, 256, 133)];
+    _regexTextView.minSize = NSMakeSize(0, 133);
+    _regexTextView.maxSize = NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX);
+    _regexTextView.verticallyResizable = YES;
+    _regexTextView.horizontallyResizable = NO;
+    _regexTextView.autoresizingMask = NSViewWidthSizable;
+    _regexTextView.textContainer.containerSize = NSMakeSize(256, CGFLOAT_MAX);
+    _regexTextView.textContainer.widthTracksTextView = YES;
+    regexScroll.documentView = _regexTextView;
+    [_detailView addSubview:regexScroll];
+
+    NSTextField *precisionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Precision"];
+    precisionLabel.frame = NSMakeRect(0, 33, 118, 16);
+    [_detailView addSubview:precisionLabel];
+
+    _precisionButton = [iTermSettingsControlFactory popUpButtonWithTitles:@[
+        @"Very Low",
+        @"Low",
+        @"Normal",
+        @"High",
+        @"Very High"
+    ]
+                                                                     tags:@[ @0, @1, @2, @3, @4 ]
+                                                                   target:self
+                                                                   action:@selector(changePrecision:)];
+    _precisionButton.frame = NSMakeRect(121, 26, 265, 25);
+    [_detailView addSubview:_precisionButton];
+
+    _actionsButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Actions…" target:self action:@selector(editActions:)];
+    _actionsButton.frame = NSMakeRect(267, -7, 115, 32);
+    [_detailView addSubview:_actionsButton];
+
+    [content addSubview:_detailView];
+
+    NSBox *divider = [[NSBox alloc] initWithFrame:NSMakeRect(403, 167, 381, 5)];
+    divider.boxType = NSBoxSeparator;
+    [content addSubview:divider];
+
+    NSScrollView *playgroundScroll = [[NSScrollView alloc] initWithFrame:NSMakeRect(403, 76, 381, 85)];
+    playgroundScroll.borderType = NSBezelBorder;
+    playgroundScroll.hasVerticalScroller = YES;
+    playgroundScroll.hasHorizontalScroller = NO;
+    playgroundScroll.autohidesScrollers = YES;
+    _playgroundTextView = [[iTermPlaygroundTextView alloc] initWithFrame:NSMakeRect(0, 0, 379, 83)];
+    _playgroundTextView.minSize = NSMakeSize(0, 83);
+    _playgroundTextView.maxSize = NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX);
+    _playgroundTextView.verticallyResizable = YES;
+    _playgroundTextView.horizontallyResizable = NO;
+    _playgroundTextView.autoresizingMask = NSViewWidthSizable;
+    _playgroundTextView.textContainer.containerSize = NSMakeSize(379, CGFLOAT_MAX);
+    _playgroundTextView.textContainer.widthTracksTextView = YES;
+    playgroundScroll.documentView = _playgroundTextView;
+    [content addSubview:playgroundScroll];
+
+    _playgroundResultLabel = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Click on text in playground to test rules"
+                                                                         wrapping:NO];
+    _playgroundResultLabel.frame = NSMakeRect(403, 52, 382, 16);
+    [content addSubview:_playgroundResultLabel];
+
+    self.window = panel;
+}
+
+- (void)windowDidLoad {
+    [super windowDidLoad];
+    [self configureSmartSelectionControls];
+    [self reloadData];
+}
+
+- (IBAction)closeSheet:(id)sender {
+    [self.window.sheetParent endSheet:self.window];
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
@@ -95,6 +297,10 @@ const double SmartSelectionVeryHighPrecision = 1000000.0;
 }
 
 - (void)awakeFromNib {
+    [self configureSmartSelectionControls];
+}
+
+- (void)configureSmartSelectionControls {
     _undoManager = [[NSUndoManager alloc] init];
 
     _regexTextView.font = [NSFont userFixedPitchFontOfSize:[NSFont systemFontSize]];

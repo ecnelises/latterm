@@ -73,6 +73,7 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     NSInteger _posting;
 
     IBOutlet NSButton *_repairKeyMappingsButton;
+    BOOL _controlsInitialized;
 }
 
 - (NSTextField *)optionKeySendsLabel { return _optionKeySendsLabel; }
@@ -107,7 +108,85 @@ static NSString *const kDeleteKeyString = @"0x7f-0x0";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)loadView {
+    iTermSizeRememberingView *root = [[iTermSizeRememberingView alloc] initWithFrame:NSMakeRect(0, 0, 842, 489)];
+
+    self.keyReportingLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Key reporting:"];
+    _applicationKeypadAllowed = [iTermSettingsControlFactory checkboxWithTitle:@"Allow application keypad mode" target:self action:@selector(settingChanged:)];
+    _useLibTickit = [iTermSettingsControlFactory checkboxWithTitle:@"Report keys using CSI u" target:self action:@selector(settingChanged:)];
+    self.csiuHelpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(csiuHelp:)];
+    _allowModifyOtherKeys = [iTermSettingsControlFactory checkboxWithTitle:@"Apps can change how keys are reported" target:self action:@selector(settingChanged:)];
+
+    self.keyBehaviorLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Key behavior:"];
+    _movementKeysScrollOutsideInteractiveApps = [iTermSettingsControlFactory checkboxWithTitle:@"Page up, page down, home, and end scroll outside interactive apps"
+                                                                                        target:self
+                                                                                        action:@selector(settingChanged:)];
+    _treatOptionAsAlt = [iTermSettingsControlFactory checkboxWithTitle:@"Treat ⌥ as Alt for special keys like arrows"
+                                                                target:self
+                                                                action:@selector(settingChanged:)];
+    self.optionAsMetaHelpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(optionAsMetaHelp:)];
+
+    NSArray<NSString *> *optionTitles = @[ @"Normal", @"-", @"Set high bit (not recommended)", @"Esc+" ];
+    NSArray<NSNumber *> *optionTags = @[ @0, @(-1), @1, @2 ];
+    NSArray<NSNumber *> *optionSeps = @[ @1 ];
+    _optionKeySendsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Left option (⌥) key:"];
+    _leftOptionKeyButton = [iTermSettingsControlFactory popUpButtonWithTitles:optionTitles
+                                                                         tags:optionTags
+                                                                   separators:optionSeps
+                                                                       target:self
+                                                                       action:@selector(settingChanged:)];
+    _leftOptionKeyChangeable = [iTermSettingsControlFactory checkboxWithTitle:@"Apps can change this" target:self action:@selector(settingChanged:)];
+
+    _rightOptionKeySendsLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Right Option (⌥) key:"];
+    _rightOptionKeyButton = [iTermSettingsControlFactory popUpButtonWithTitles:optionTitles
+                                                                          tags:optionTags
+                                                                    separators:optionSeps
+                                                                        target:self
+                                                                        action:@selector(settingChanged:)];
+    _rightOptionKeyChangeable = [iTermSettingsControlFactory checkboxWithTitle:@"Apps can change this" target:self action:@selector(settingChanged:)];
+
+    NSArray<NSString *> *extTitles = @[ @"Normal", @"-", @"Hyper", @"Meta", @"Super" ];
+    NSArray<NSNumber *> *extTags = @[ @0, @(-1), @1, @2, @3 ];
+    NSArray<NSNumber *> *extSeps = @[ @1 ];
+    _leftControlLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Left control (⌃) key:"];
+    _leftControlButton = [iTermSettingsControlFactory popUpButtonWithTitles:extTitles tags:extTags separators:extSeps target:self action:@selector(settingChanged:)];
+    self.controlRemapHelpButton = [iTermSettingsControlFactory popoverHelpButtonWithHelpText:@"Some key reporting modes support additional modifiers of Hyper, Meta, and Super.\n\nA key mapped to one Hyper, Meta, or Super will work normally when the current key reporting mode does not support extended modifiers.\n\nRefer to the manuals for individual applications to see if they support these modifiers and how to configure them."];
+
+    _rightControlLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Right control (⌃) key:"];
+    _rightControlButton = [iTermSettingsControlFactory popUpButtonWithTitles:extTitles tags:extTags separators:extSeps target:self action:@selector(settingChanged:)];
+
+    _leftCommandLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Left command (⌘) key:"];
+    _leftCommandButton = [iTermSettingsControlFactory popUpButtonWithTitles:extTitles tags:extTags separators:extSeps target:self action:@selector(settingChanged:)];
+
+    _rightCommandLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Right command (⌘) key:"];
+    _rightCommandButton = [iTermSettingsControlFactory popUpButtonWithTitles:extTitles tags:extTags separators:extSeps target:self action:@selector(settingChanged:)];
+
+    _functionLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"fn key:"];
+    _functionButton = [iTermSettingsControlFactory popUpButtonWithTitles:extTitles tags:extTags separators:extSeps target:self action:@selector(settingChanged:)];
+
+    self.hotkeyWindowLabel = [iTermSettingsControlFactory rightAlignedLabelWithTitle:@"Hotkey window:"];
+    _hotKeyContainerView = [[iTermSharedProfileEnclosure alloc] initWithFrame:NSZeroRect];
+    _hasHotkey = [iTermSettingsControlFactory checkboxWithTitle:@"A hotkey opens a dedicated window with this profile" target:self action:@selector(settingChanged:)];
+    _configureHotKey = [iTermSettingsControlFactory pushButtonWithTitle:@"Configure Hotkey Window" target:self action:@selector(openHotKeyPanel:)];
+
+    NSView *placeholder = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 820, 376)];
+    placeholder.identifier = @"ExternalView";
+    _keyMappingViewController = [[iTermKeyMappingViewController alloc] init];
+    _keyMappingViewController.delegate = self;
+    _keyMappingViewController.placeholderView = placeholder;
+
+    _deleteSendsCtrlHButton = [iTermSettingsControlFactory checkboxWithTitle:@"Delete key sends ^H" target:self action:@selector(deleteSendsCtrlHDidChange:)];
+    _repairKeyMappingsButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Repair Broken Bindings" target:self action:@selector(repairKeyMappings:)];
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_controlsInitialized) {
+        return;
+    }
+    _controlsInitialized = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyBindingDidChange)
                                                  name:kKeyBindingsChangedNotification

@@ -230,7 +230,135 @@ NSString *const kProfileSessionHotkeyDidChange = @"kProfileSessionHotkeyDidChang
     return filtered;
 }
 
+- (void)loadView {
+    iTermSettingsProfilesView *root = [[iTermSettingsProfilesView alloc] initWithFrame:NSMakeRect(0, 0, 944, 454)];
+    NSBundle *bundle = [NSBundle bundleForClass:self.class];
+    NSString *(^loc)(NSString *) = ^NSString *(NSString *key) {
+        return NSLocalizedStringFromTableInBundle(key, @"Localizable", bundle, @"Profiles settings");
+    };
+
+    _profilesListView = [[ProfileListView alloc] initWithFrame:NSMakeRect(16, 56, 224, 382)];
+    _profilesListView.delegate = self;
+
+    _toggleTagsButton = [iTermSettingsControlFactory pushButtonWithTitle:@"Tags >" target:self action:@selector(toggleTags:)];
+    _toggleTagsButton.frame = NSMakeRect(16, 20, 53, 25);
+    _addProfileButton = [iTermSettingsControlFactory addButtonWithTarget:self action:@selector(addProfile:)];
+    _addProfileButton.frame = NSMakeRect(82, 20, 24, 25);
+    _removeProfileButton = [iTermSettingsControlFactory removeButtonWithTarget:self action:@selector(removeProfile:)];
+    _removeProfileButton.frame = NSMakeRect(106, 20, 24, 25);
+
+    _otherActionsPopup = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(130, 20, 110, 25) pullsDown:YES];
+    NSMenuItem *moreItem = [[NSMenuItem alloc] initWithTitle:loc(@"More…") action:nil keyEquivalent:@""];
+    moreItem.image = [NSImage imageNamed:NSImageNameActionTemplate];
+    moreItem.hidden = YES;
+    [_otherActionsPopup.menu addItem:moreItem];
+
+    NSMenuItem *setDefaultItem = [[NSMenuItem alloc] initWithTitle:loc(@"Set as Default") action:@selector(setAsDefault:) keyEquivalent:@""];
+    setDefaultItem.target = self;
+    [_otherActionsPopup.menu addItem:setDefaultItem];
+    [_otherActionsPopup.menu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *duplicateItem = [[NSMenuItem alloc] initWithTitle:loc(@"Duplicate Profile") action:@selector(duplicateProfile:) keyEquivalent:@"="];
+    duplicateItem.target = self;
+    [_otherActionsPopup.menu addItem:duplicateItem];
+
+    NSMenuItem *bulkCopyItem = [[NSMenuItem alloc] initWithTitle:loc(@"Bulk Copy from Selected Profile…") action:@selector(openCopyBookmarks:) keyEquivalent:@""];
+    bulkCopyItem.target = self;
+    [_otherActionsPopup.menu addItem:bulkCopyItem];
+    [_otherActionsPopup.menu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *saveProfileItem = [[NSMenuItem alloc] initWithTitle:loc(@"Save Profile as JSON…") action:@selector(saveProfileAsJSON:) keyEquivalent:@""];
+    saveProfileItem.target = self;
+    [_otherActionsPopup.menu addItem:saveProfileItem];
+
+    NSMenuItem *saveAllItem = [[NSMenuItem alloc] initWithTitle:loc(@"Save All Profiles as JSON…") action:@selector(saveAllProfilesAsJSON:) keyEquivalent:@""];
+    saveAllItem.target = self;
+    [_otherActionsPopup.menu addItem:saveAllItem];
+    [_otherActionsPopup.menu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *importItem = [[NSMenuItem alloc] initWithTitle:loc(@"Import JSON Profiles…") action:@selector(importJSONProfiles:) keyEquivalent:@""];
+    importItem.target = self;
+    [_otherActionsPopup.menu addItem:importItem];
+
+    _tabView = [[iTermSettingsTabView alloc] initWithFrame:NSMakeRect(0, 0, 679, 438)];
+
+    _generalTab = [[NSTabViewItem alloc] initWithIdentifier:@"1"];
+    _generalTab.label = loc(@"Basics");
+    _colorsTab = [[NSTabViewItem alloc] initWithIdentifier:@"2"];
+    _colorsTab.label = loc(@"Colors");
+    _textTab = [[NSTabViewItem alloc] initWithIdentifier:@"Text"];
+    _textTab.label = loc(@"Fonts & Text");
+    _windowTab = [[NSTabViewItem alloc] initWithIdentifier:@"Window"];
+    _windowTab.label = loc(@"Window");
+    _terminalTab = [[NSTabViewItem alloc] initWithIdentifier:@"Item 2"];
+    _terminalTab.label = loc(@"Terminal");
+    _sessionTab = [[NSTabViewItem alloc] initWithIdentifier:@"Item 6"];
+    _sessionTab.label = loc(@"Session");
+    _keysTab = [[NSTabViewItem alloc] initWithIdentifier:@"Item 3"];
+    _keysTab.label = loc(@"Keys");
+    _advancedTab = [[NSTabViewItem alloc] initWithIdentifier:@"Item 7"];
+    _advancedTab.label = loc(@"Advanced");
+
+    for (NSTabViewItem *item in @[ _generalTab, _colorsTab, _textTab, _windowTab, _terminalTab, _sessionTab, _keysTab, _advancedTab ]) {
+        [_tabView addTabViewItem:item];
+    }
+
+    _tabViewWrapperView = [[iTermProfilePreferencesTabViewWrapperView alloc] initWithFrame:NSMakeRect(256, 8, 679, 438)
+                                                                                   tabView:_tabView];
+    _noProfileSelectedView = [[NSView alloc] initWithFrame:NSMakeRect(2, 202, 596, 36)];
+    _noProfileSelectedView.hidden = YES;
+    NSTextField *noProf1 = [iTermSettingsControlFactory secondaryLabelWithTitle:@"No profile selected." wrapping:NO];
+    noProf1.alignment = NSTextAlignmentCenter;
+    noProf1.frame = NSMakeRect(0, 18, 596, 16);
+    [_noProfileSelectedView addSubview:noProf1];
+    NSTextField *noProf2 = [iTermSettingsControlFactory secondaryLabelWithTitle:@"Select a profile to access its settings." wrapping:NO];
+    noProf2.alignment = NSTextAlignmentCenter;
+    noProf2.frame = NSMakeRect(0, 0, 596, 16);
+    [_noProfileSelectedView addSubview:noProf2];
+
+    [_tabViewWrapperView addSubview:_noProfileSelectedView];
+    [_tabViewWrapperView addSubview:_tabView];
+
+    [root addSubview:_tabViewWrapperView];
+    [root addSubview:_addProfileButton];
+    [root addSubview:_toggleTagsButton];
+    [root addSubview:_removeProfileButton];
+    [root addSubview:_otherActionsPopup];
+    [root addSubview:_profilesListView];
+
+    _generalViewController = [[ProfilesGeneralPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _generalViewController.delegate = self;
+    _generalViewController.profileDelegate = self;
+
+    _colorsViewController = [[ProfilesColorsPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _colorsViewController.delegate = self;
+
+    _textViewController = [[ProfilesTextPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _textViewController.delegate = self;
+
+    _windowViewController = [[ProfilesWindowPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _windowViewController.delegate = self;
+
+    _terminalViewController = [[ProfilesTerminalPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _terminalViewController.delegate = self;
+
+    _sessionViewController = [[ProfilesSessionPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _sessionViewController.delegate = self;
+
+    _keysViewController = [[ProfilesKeysPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _keysViewController.delegate = self;
+
+    _advancedViewController = [[ProfilesAdvancedPreferencesViewController alloc] initWithNibName:nil bundle:nil];
+    _advancedViewController.delegate = self;
+
+    self.view = root;
+    [self awakeFromNib];
+}
+
 - (void)awakeFromNib {
+    if (_initialized) {
+        return;
+    }
     [_generalViewController organizeSettingsForm];
     [_profilesListView setUnderlyingDatasource:[_delegate profilePreferencesModel]];
     [_profilesListView useSettingsAppearance];
@@ -608,8 +736,9 @@ andEditComponentWithIdentifier:(NSString *)identifier
     // Measure the existing hierarchy so sidebar, profile list, session editing,
     // and AppKit tab insets all contribute their actual widths. The wrapper
     // owns the tab frame and can be narrower than the tab's minimum size.
+    const NSSize baseSize = [theView isKindOfClass:[iTermSizeRememberingView class]] ? theView.originalSize : theView.bounds.size;
     const CGFloat tabInsets = NSWidth(_tabView.bounds) - NSWidth(_tabView.contentRect);
-    CGFloat preferredWidth = theView.originalSize.width + tabInsets;
+    CGFloat preferredWidth = baseSize.width + tabInsets;
     if ([NSScroller preferredScrollerStyle] == NSScrollerStyleLegacy) {
         preferredWidth += [NSScroller scrollerWidthForControlSize:NSControlSizeRegular
                                                    scrollerStyle:NSScrollerStyleLegacy];
@@ -628,7 +757,7 @@ andEditComponentWithIdentifier:(NSString *)identifier
     }
 
     // Compute the size of the content within the window.
-    NSSize contentSize = NSMakeSize(contentWidth, spaceAbove + theView.originalSize.height + spaceBelow);
+    NSSize contentSize = NSMakeSize(contentWidth, spaceAbove + baseSize.height + spaceBelow);
 
     if (self.preferencePanel) {
         [self.preferencePanel preferencePanelSetContentSize:contentSize];
