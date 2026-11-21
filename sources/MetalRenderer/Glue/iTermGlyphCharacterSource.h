@@ -13,6 +13,7 @@
 - (instancetype)initWithFontID:(unsigned int)fontID
                       fakeBold:(BOOL)fakeBold
                     fakeItalic:(BOOL)fakeItalic
+                   antialiased:(BOOL)antialiased
                    glyphNumber:(unsigned short)glyphNumber
                       position:(NSPoint)position
                     descriptor:(iTermCharacterSourceDescriptor *)descriptor

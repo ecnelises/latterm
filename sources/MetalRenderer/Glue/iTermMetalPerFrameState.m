@@ -7,6 +7,7 @@
 
 #import "iTermMetalPerFrameState.h"
 
+#import <os/lock.h>
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
@@ -976,11 +977,65 @@ NS_INLINE int iTermGlyphKeyEmitDecomposedFromCheap(iTermCachedGlyphKeysBuffer *b
                                                    int logicalIndex,
                                                    iTermCheapAttributedString *cheapString,
                                                    BOOL thinStrokes,
-                                                   const int *bidiLUT,
+                                                   const int * _Nullable bidiLUT,
                                                    int bidiLUTLength,
-                                                   iTermLineAttribute lineAttribute) {
-    CGGlyph glyphs[cheapString.length];
+                                                   iTermLineAttribute lineAttribute,
+                                                   iTermFontTable * _Nullable fontTable) {
     NSFont *font = cheapString.attributes[NSFontAttributeName];
+    const BOOL fakeBold = [cheapString.attributes[iTermFakeBoldAttribute] boolValue];
+    const BOOL fakeItalic = [cheapString.attributes[iTermFakeItalicAttribute] boolValue];
+    const BOOL antiAlias = [cheapString.attributes[iTermAntiAliasAttribute] boolValue];
+    const CGFloat customBaselineOffset = [cheapString.attributes[iTermCustomBaselineOffsetAttribute] doubleValue];
+    NSData *sourceCellData = [NSData castFrom:cheapString.attributes[iTermSourceCellIndexAttribute]];
+    const int *characterIndexToSourceCell = (const int *)sourceCellData.bytes;
+
+    // Preserve the pre-baked ASCII texture fast path for non-ligated ASCII runs using the primary ASCII font.
+    if (!bidiLUT &&
+        !iTermLineAttributeIsDoubleWidth(lineAttribute) &&
+        fabs(customBaselineOffset) < 0.001 &&
+        fontTable.asciiFont != nil) {
+        PTYFontInfo *asciiFontInfo = fontTable.asciiFont;
+        const BOOL isPrimaryASCIIFont = (font == asciiFontInfo.font ||
+                                         font == asciiFontInfo.boldVersion.font ||
+                                         font == asciiFontInfo.italicVersion.font ||
+                                         font == asciiFontInfo.boldItalicVersion.font);
+        if (isPrimaryASCIIFont) {
+            const unichar *chars = cheapString.characters;
+            const NSUInteger length = cheapString.length;
+            BOOL allPrintableASCII = YES;
+            for (NSUInteger i = 0; i < length; i++) {
+                if (chars[i] < iTermASCIITextureMinimumCharacter || chars[i] > iTermASCIITextureMaximumCharacter) {
+                    allPrintableASCII = NO;
+                    break;
+                }
+            }
+            if (allPrintableASCII) {
+                iTermCachedGlyphKeysBufferEnsureSize(buf, gk + (int)length);
+                iTermMetalGlyphKey *glyphKeys = buf->buffer;
+                const int boldBit = bold ? (1 << 0) : 0;
+                const int italicBit = italic ? (1 << 1) : 0;
+                const iTermMetalGlyphKeyTypeface typeface = (boldBit | italicBit);
+                for (NSUInteger i = 0; i < length; i++) {
+                    const int sourceCell = characterIndexToSourceCell ? characterIndexToSourceCell[i] : (logicalIndex + (int)i);
+                    const int idx = gk + (int)i;
+                    glyphKeys[idx].type = iTermMetalGlyphTypeRegular;
+                    glyphKeys[idx].payload.regular.code = chars[i];
+                    glyphKeys[idx].payload.regular.isComplex = NO;
+                    glyphKeys[idx].payload.regular.boxDrawing = NO;
+                    glyphKeys[idx].payload.regular.drawable = YES;
+                    glyphKeys[idx].payload.regular.combiningSuccessor = 0;
+                    glyphKeys[idx].typeface = typeface;
+                    glyphKeys[idx].thinStrokes = thinStrokes;
+                    glyphKeys[idx].logicalIndex = sourceCell;
+                    glyphKeys[idx].visualColumn = sourceCell;
+                    glyphKeys[idx].lineAttribute = lineAttribute;
+                }
+                return gk + (int)length;
+            }
+        }
+    }
+
+    CGGlyph glyphs[cheapString.length];
     BOOL ok = CTFontGetGlyphsForCharacters((CTFontRef)font,
                                            cheapString.characters,
                                            glyphs,
@@ -988,18 +1043,14 @@ NS_INLINE int iTermGlyphKeyEmitDecomposedFromCheap(iTermCachedGlyphKeysBuffer *b
     if (!ok) {
         return -1;
     }
-    CGPoint positions[cheapString.length];
-    memset(positions, 0, sizeof(positions));
 
-    const BOOL fakeBold = [cheapString.attributes[iTermFakeBoldAttribute] boolValue];
-    const BOOL fakeItalic = [cheapString.attributes[iTermFakeItalicAttribute] boolValue];
-    NSData *sourceCellData = [NSData castFrom:cheapString.attributes[iTermSourceCellIndexAttribute]];
-    const int *characterIndexToSourceCell = (const int *)sourceCellData.bytes;
     return iTermGlyphKeyEmitDecomposedFromGlyphs(buf,
                                                  bold,
                                                  italic,
                                                  fakeBold,
                                                  fakeItalic,
+                                                 antiAlias,
+                                                 customBaselineOffset,
                                                  gk,
                                                  logicalIndex,
                                                  iTermMetalFontIDFromAttributes(cheapString.attributes),
@@ -1017,16 +1068,19 @@ NS_INLINE int iTermGlyphKeyEmitDecomposedFromGlyphs(iTermCachedGlyphKeysBuffer *
                                                     BOOL italic,
                                                     BOOL fakeBold,
                                                     BOOL fakeItalic,
+                                                    BOOL antiAlias,
+                                                    CGFloat customBaselineOffset,
                                                     int gk,
                                                     int logicalIndex,
                                                     int fontID,
                                                     CGGlyph *glyphs,
                                                     NSUInteger length,
                                                     BOOL thinStrokes,
-                                                    const int *bidiLUT,
+                                                    const int * _Nullable bidiLUT,
                                                     int bidiLUTLength,
-                                                    const int *characterIndexToSourceCell,
+                                                    const int * _Nullable characterIndexToSourceCell,
                                                     iTermLineAttribute lineAttribute) {
+    const NSPoint glyphOffset = NSMakePoint(0, customBaselineOffset);
     for (NSUInteger i = 0; i < length; i++) {
         const int sourceCell = characterIndexToSourceCell ? characterIndexToSourceCell[i] : (logicalIndex + (int)i);
         iTermGlyphKeyEmitDecomposedForSingleGlyph(buf,
@@ -1034,17 +1088,18 @@ NS_INLINE int iTermGlyphKeyEmitDecomposedFromGlyphs(iTermCachedGlyphKeysBuffer *
                                                   italic,
                                                   fakeBold,
                                                   fakeItalic,
+                                                  antiAlias,
                                                   fontID,
                                                   glyphs[i],
-                                                  CGPointZero,
-                                                  gk + i,
+                                                  glyphOffset,
+                                                  gk + (int)i,
                                                   sourceCell,
                                                   thinStrokes,
                                                   bidiLUT,
                                                   bidiLUTLength,
                                                   lineAttribute);
     }
-    return gk + length;
+    return gk + (int)length;
 }
 
 NS_INLINE void iTermGlyphKeyEmitDecomposedForSingleGlyph(iTermCachedGlyphKeysBuffer *buf,
@@ -1052,13 +1107,14 @@ NS_INLINE void iTermGlyphKeyEmitDecomposedForSingleGlyph(iTermCachedGlyphKeysBuf
                                                          BOOL italic,
                                                          BOOL fakeBold,
                                                          BOOL fakeItalic,
+                                                         BOOL antiAlias,
                                                          int fontID,
                                                          CGGlyph glyph,
                                                          NSPoint glyphPositionRelativeToCellOrigin,
                                                          int gk,
                                                          CFIndex logicalIndex,
                                                          BOOL thinStrokes,
-                                                         const int *bidiLUT,
+                                                         const int * _Nullable bidiLUT,
                                                          int bidiLUTLength,
                                                          iTermLineAttribute lineAttribute) {
     iTermCachedGlyphKeysBufferEnsureSize(buf, gk);
@@ -1068,15 +1124,16 @@ NS_INLINE void iTermGlyphKeyEmitDecomposedForSingleGlyph(iTermCachedGlyphKeysBuf
     glyphKeys[gk].payload.decomposed.glyphNumber = glyph;
     glyphKeys[gk].payload.decomposed.fakeBold = fakeBold;
     glyphKeys[gk].payload.decomposed.fakeItalic = fakeItalic;
+    glyphKeys[gk].payload.decomposed.antiAlias = antiAlias;
     glyphKeys[gk].payload.decomposed.position = glyphPositionRelativeToCellOrigin;
-    glyphKeys[gk].logicalIndex = logicalIndex;
+    glyphKeys[gk].logicalIndex = (int)logicalIndex;
     glyphKeys[gk].thinStrokes = thinStrokes;
     glyphKeys[gk].lineAttribute = lineAttribute;
     const int boldBit = bold ? (1 << 0) : 0;
     const int italicBit = italic ? (1 << 1) : 0;
     glyphKeys[gk].typeface = (boldBit | italicBit);
 
-    iTermGlyphKeySetVisualPosition(buf, gk, logicalIndex, bidiLUT, bidiLUTLength);
+    iTermGlyphKeySetVisualPosition(buf, gk, (int)logicalIndex, bidiLUT, bidiLUTLength);
 }
 
 NS_INLINE int iTermGlyphKeyEmitDecomposedFromNSAttributedString(iTermCachedGlyphKeysBuffer *buf,
@@ -1084,71 +1141,85 @@ NS_INLINE int iTermGlyphKeyEmitDecomposedFromNSAttributedString(iTermCachedGlyph
                                                                 BOOL italic,
                                                                 BOOL fakeBold,
                                                                 BOOL fakeItalic,
+                                                                BOOL antiAlias,
+                                                                CGFloat customBaselineOffset,
                                                                 int gk,
                                                                 int logicalIndex,
                                                                 NSAttributedString *attributedString,
                                                                 BOOL thinStrokes,
-                                                                const CTVector(CGFloat) *positions,
-                                                                const int *bidiLUT,
+                                                                const int * _Nullable bidiLUT,
                                                                 int bidiLUTLength,
-                                                                const int *characterIndexToSourceCell,
+                                                                const int * _Nullable characterIndexToSourceCell,
                                                                 iTermLineAttribute lineAttribute) {
     NSDictionary *attributes = [attributedString attributesAtIndex:0 effectiveRange:nil];
     if (attributes[iTermImageCodeAttribute] ||
+        attributes[iTermKittyImageIDAttribute] ||
         [attributes[iTermIsBoxDrawingAttribute] boolValue]) {
-        ITAssertWithMessage(NO,
-                            @"Unexpected attribute in decomposed string path: imageCode=%@, boxDrawing=%@, attributes=%@",
-                            attributes[iTermImageCodeAttribute],
-                            attributes[iTermIsBoxDrawingAttribute],
-                            attributes);
         return gk;
     }
     NSFont *attributedFont = attributes[NSFontAttributeName];
     const int attributedFontID = iTermMetalFontIDFromAttributes(attributes);
 
     static iTermLRUDictionary<iTermAttributedStringProxy *, id> *cache;
+    static os_unfair_lock cacheLock = OS_UNFAIR_LOCK_INIT;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         cache = [[iTermLRUDictionary alloc] initWithMaximumSize:10000];
     });
     iTermAttributedStringProxy *proxy = [iTermAttributedStringProxy withAttributedString:attributedString];
+    os_unfair_lock_lock(&cacheLock);
     CTLineRef lineRef = (__bridge CTLineRef)cache[proxy];
-    if (lineRef == nil) {
+    if (lineRef != nil) {
+        CFRetain(lineRef);
+        os_unfair_lock_unlock(&cacheLock);
+    } else {
+        os_unfair_lock_unlock(&cacheLock);
         lineRef = CTLineCreateWithAttributedString((CFAttributedStringRef)attributedString);
+        os_unfair_lock_lock(&cacheLock);
         [cache addObjectWithKey:proxy
                           value:(__bridge id)lineRef
                            cost:1];
-        CFRelease(lineRef);
+        os_unfair_lock_unlock(&cacheLock);
     }
 
     iTermCoreTextLineRenderingHelper *helper = [[iTermCoreTextLineRenderingHelper alloc] initWithLine:lineRef
                                                                                                string:attributedString.string
                                                                                       drawInCellIndex:attributes[iTermDrawInCellIndexAttribute]];
+    CFRelease(lineRef);
     __block int o = gk;
-    [helper enumerateGridAlignedRunsWithColumnPositions:CTVectorElementsFromIndex(positions, logicalIndex)
+    [helper enumerateGridAlignedRunsWithColumnPositions:NULL
                                             alignToZero:YES
                                                 closure:^(CTRunRef run,
                                                           CTFontRef font,
                                                           const CGGlyph *glyphs,
-                                                          const NSPoint *positions,
+                                                          const NSPoint *runPositions,
                                                           const CFIndex *glyphIndexToCharacterIndex,
                                                           size_t length,
                                                           BOOL *stop) {
-        iTermCachedGlyphKeysBufferEnsureSize(buf, o + length);
+        iTermCachedGlyphKeysBufferEnsureSize(buf, o + (int)length);
+        NSDictionary *runAttrs = (__bridge NSDictionary *)CTRunGetAttributes(run);
+        const BOOL runAntiAlias = runAttrs[iTermAntiAliasAttribute] ? [runAttrs[iTermAntiAliasAttribute] boolValue] : antiAlias;
+        const BOOL runFakeBold = runAttrs[iTermFakeBoldAttribute] ? [runAttrs[iTermFakeBoldAttribute] boolValue] : fakeBold;
+        const BOOL runFakeItalic = runAttrs[iTermFakeItalicAttribute] ? [runAttrs[iTermFakeItalicAttribute] boolValue] : fakeItalic;
+        const CGFloat runBaselineOffset = runAttrs[iTermCustomBaselineOffsetAttribute]
+            ? [runAttrs[iTermCustomBaselineOffsetAttribute] doubleValue]
+            : customBaselineOffset;
         // A run's font is the string's own font unless CoreText substituted a fallback font
         // (e.g., for emoji or CJK), which needs a real lookup.
         const int fontID = ((__bridge NSFont *)font == attributedFont) ? attributedFontID : [(__bridge NSFont *)font it_metalFontID];
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < (int)length; i++) {
             const CFIndex characterIndex = glyphIndexToCharacterIndex[i];
-            const int sourceCell = characterIndexToSourceCell ? characterIndexToSourceCell[characterIndex] : (logicalIndex + characterIndex);
+            const int sourceCell = characterIndexToSourceCell ? characterIndexToSourceCell[characterIndex] : (logicalIndex + (int)characterIndex);
+            const NSPoint glyphPos = NSMakePoint(runPositions[i].x, runPositions[i].y + runBaselineOffset);
             iTermGlyphKeyEmitDecomposedForSingleGlyph(buf,
                                                       bold,
                                                       italic,
-                                                      fakeBold,
-                                                      fakeItalic,
+                                                      runFakeBold,
+                                                      runFakeItalic,
+                                                      runAntiAlias,
                                                       fontID,
                                                       glyphs[i],
-                                                      positions[i],
+                                                      glyphPos,
                                                       o + i,
                                                       sourceCell,
                                                       thinStrokes,
@@ -1156,7 +1227,7 @@ NS_INLINE int iTermGlyphKeyEmitDecomposedFromNSAttributedString(iTermCachedGlyph
                                                       bidiLUTLength,
                                                       lineAttribute);
         }
-        o += length;
+        o += (int)length;
     }];
     return o;
 }
@@ -1168,10 +1239,10 @@ NS_INLINE int iTermGlyphKeyEmitDecomposed(iTermCachedGlyphKeysBuffer *buf,
                                           int logicalIndex,
                                           id<iTermAttributedString> attributedString,
                                           BOOL thinStrokes,
-                                          const CTVector(CGFloat) *positions,
-                                          const int *bidiLUT,
+                                          const int * _Nullable bidiLUT,
                                           int bidiLUTLength,
-                                          iTermLineAttribute lineAttribute) {
+                                          iTermLineAttribute lineAttribute,
+                                          iTermFontTable * _Nullable fontTable) {
     iTermCheapAttributedString *cheapString = [iTermCheapAttributedString castFrom:attributedString];
     NSAttributedString *nsAttributedString = nil;
     if (cheapString) {
@@ -1184,7 +1255,8 @@ NS_INLINE int iTermGlyphKeyEmitDecomposed(iTermCachedGlyphKeysBuffer *buf,
                                                           thinStrokes,
                                                           bidiLUT,
                                                           bidiLUTLength,
-                                                          lineAttribute);
+                                                          lineAttribute,
+                                                          fontTable);
         if (result >= 0) {
             return result;
         }
@@ -1196,24 +1268,27 @@ NS_INLINE int iTermGlyphKeyEmitDecomposed(iTermCachedGlyphKeysBuffer *buf,
     if (!nsAttributedString) {
         nsAttributedString = [NSAttributedString castFrom:attributedString];
     }
-    if (!nsAttributedString) {
-        assert(false);
+    if (!nsAttributedString || nsAttributedString.length == 0) {
         return gk;
     }
-    const BOOL fakeBold = [[nsAttributedString attribute:iTermFakeBoldAttribute atIndex:0 effectiveRange:nil] boolValue];
-    const BOOL fakeItalic = [[nsAttributedString attribute:iTermFakeItalicAttribute atIndex:0 effectiveRange:nil] boolValue];
-    NSData *data = [NSData castFrom:[nsAttributedString attribute:iTermSourceCellIndexAttribute atIndex:0 effectiveRange:nil]];
+    NSDictionary *attrs = [nsAttributedString attributesAtIndex:0 effectiveRange:nil];
+    const BOOL fakeBold = [attrs[iTermFakeBoldAttribute] boolValue];
+    const BOOL fakeItalic = [attrs[iTermFakeItalicAttribute] boolValue];
+    const BOOL antiAlias = [attrs[iTermAntiAliasAttribute] boolValue];
+    const CGFloat customBaselineOffset = [attrs[iTermCustomBaselineOffsetAttribute] doubleValue];
+    NSData *data = [NSData castFrom:attrs[iTermSourceCellIndexAttribute]];
     const int *characterIndexToSourceCell = (const int *)data.bytes;
     return iTermGlyphKeyEmitDecomposedFromNSAttributedString(buf,
                                                              bold,
                                                              italic,
                                                              fakeBold,
                                                              fakeItalic,
+                                                             antiAlias,
+                                                             customBaselineOffset,
                                                              gk,
                                                              logicalIndex,
                                                              nsAttributedString,
                                                              thinStrokes,
-                                                             positions,
                                                              bidiLUT,
                                                              bidiLUTLength,
                                                              characterIndexToSourceCell,
@@ -1516,9 +1591,8 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                            const screen_char_t *const line,
                                            int row,
                                            int width,
-                                           NSArray<id<iTermAttributedString>> *attributedStrings,
-                                           CTVector(CGFloat) positions,
-                                           iTermBidiDisplayInfo *bidiInfo,
+                                           NSArray<id<iTermAttributedString>> * _Nullable attributedStrings,
+                                           iTermBidiDisplayInfo * _Nullable bidiInfo,
                                            NSIndexSet *selectedIndexes,
                                            NSIndexSet *annotatedIndexes,
                                            NSData *findMatches,
@@ -1647,12 +1721,12 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                                                                    NO /* preferSpeedToFullLigatureSupport */,
                                                                                    url != nil,
                                                                                    useNativePowerlineGlyphs);
-        const BOOL isBoxDrawingCharacter = (characterIsDrawable &&
-                                            ((!line[logicalIndex].complexChar &&
-                                              line[logicalIndex].code > 127 &&
-                                              [boxCharacterSet characterIsMember:line[logicalIndex].code]) ||
-                                             (line[logicalIndex].complexChar &&
-                                              [boxCharacterSet longCharacterIsMember:[complexString firstCharacter]])));
+        const BOOL hasBoxDrawingGlyph = ((!line[logicalIndex].complexChar &&
+                                          line[logicalIndex].code > 127 &&
+                                          [boxCharacterSet characterIsMember:line[logicalIndex].code]) ||
+                                         (line[logicalIndex].complexChar &&
+                                          [boxCharacterSet longCharacterIsMember:[complexString firstCharacter]]));
+        const BOOL isBoxDrawingCharacter = characterIsDrawable && hasBoxDrawingGlyph;
         const BOOL isBlockCharacter = (characterIsDrawable &&
                                        !line[logicalIndex].complexChar &&
                                        line[logicalIndex].code > 127 &&
@@ -1714,25 +1788,28 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                    &previousImageCoord,
                                    imageRuns);
             gk = iTermGlyphKeyEmitPlaceholder(buf, gk, logicalIndex, bidiLUT, bidiLUTLength);
-        } else if (attributedString && !isBoxDrawingCharacter && !ScreenCharIsDWL_SPACER(line[logicalIndex]) && !ScreenCharIsDWC_RIGHT(line[logicalIndex])) {
+        } else if (attributedString && !hasBoxDrawingGlyph && !ScreenCharIsDWL_SPACER(line[logicalIndex]) && !ScreenCharIsDWC_RIGHT(line[logicalIndex])) {
             if (!haveEmittedAttributedString) {
-                gk = iTermGlyphKeyEmitDecomposed(buf,
-                                                 !!line[logicalIndex].bold,
-                                                 !!line[logicalIndex].italic,
-                                                 gk,
-                                                 logicalIndex,
-                                                 attributedString,
-                                                 [self useThinStrokesWithAttributes:&attributes[visualX]],
-                                                 &positions,
-                                                 bidiLUT,
-                                                 bidiLUTLength,
-                                                 lineAttribute);
+                const NSInteger nextGk = iTermGlyphKeyEmitDecomposed(buf,
+                                                                     !!line[logicalIndex].bold,
+                                                                     !!line[logicalIndex].italic,
+                                                                     (int)gk,
+                                                                     logicalIndex,
+                                                                     attributedString,
+                                                                     [self useThinStrokesWithAttributes:&attributes[visualX]],
+                                                                     bidiLUT,
+                                                                     bidiLUTLength,
+                                                                     lineAttribute,
+                                                                     _configuration->_fontTable);
+                if (nextGk > gk) {
+                    lastDrawableGlyph = (int)nextGk - 1;
+                }
+                gk = nextGk;
                 haveEmittedAttributedString = YES;
             }
         } else if (attributes[visualX].underlineStyle != iTermMetalGlyphAttributesUnderlineNone || characterIsDrawable) {
-            lastDrawableGlyph = logicalIndex;
             gk = iTermGlyphKeyEmitRegular(buf,
-                                          gk,
+                                          (int)gk,
                                           logicalIndex,
                                           width,
                                           characterIsDrawable,
@@ -1744,6 +1821,7 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                           bidiInfo,
                                           lineAttribute,
                                           useNativePowerlineGlyphs);
+            lastDrawableGlyph = (int)gk - 1;
         } else {
             iTermGlyphKeyEmitPlaceholder(buf, gk, logicalIndex, bidiLUT, bidiLUTLength);
         }
@@ -1768,9 +1846,9 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
       lineStyleMarkRightInset:(out nonnull int *)lineStyleMarkRightInsetPtr
                           row:(int)row
                         width:(int)width
-                     bidiInfo:(iTermBidiDisplayInfo *)bidiInfo
+                     bidiInfo:(nullable iTermBidiDisplayInfo *)bidiInfo
                drawableGlyphs:(int *)drawableGlyphsPtr
-                         date:(out NSDate **)datePtr
+                         date:(out NSDate * _Nullable * _Nonnull)datePtr
                belongsToBlock:(out BOOL *)belongsToBlockPtr
   hasUnderlineOrStrikethrough:(out BOOL *)hasUnderlineOrStrikethroughPtr {
     iTermCachedGlyphKeysBuffer buf = { 0 };
@@ -1811,10 +1889,19 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
     // The "no underline" sentinel is a zero LENGTH, not a NSNotFound location:
     // underlinedRangeOnLine: returns NSMakeRange(0, 0) for an un-underlined row,
     // and the build decides to underline via NSLocationInRange (length-based).
+    const BOOL splitLigatureForBoxCursor = (_configuration->_renderInputs.ligaturesEnabled &&
+                                            !bidiInfo &&
+                                            row == _cursorInfo.coord.y &&
+                                            _cursorInfo.cursorVisible &&
+                                            _cursorInfo.type == CURSOR_BOX &&
+                                            !_cursorInfo.frameOnly &&
+                                            _cursorInfo.coord.x >= 0 &&
+                                            _cursorInfo.coord.x < width);
     const BOOL hasOverlay = (selectedIndexes.count > 0 ||
                              findMatches != nil ||
                              underlinedRange.length > 0 ||
-                             annotatedIndexes.count > 0);
+                             annotatedIndexes.count > 0 ||
+                             splitLigatureForBoxCursor);
     const BOOL cacheable = (_rowOutputCache != nil &&
                             !suppressed &&
                             !hasOverlay &&
@@ -1887,35 +1974,56 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                                         green:bgrle->color.y
                                                          blue:bgrle->color.z
                                                         alpha:bgrle->color.w];
-            iTermBackgroundColorRun run = {
-                .modelRange = bidiInfo ? NSMakeRange(0, width) : NSMakeRange(bgrle->logicalOrigin, bgrle->count),
-                .visualRange = bidiInfo ? NSMakeRange(0, width) : NSMakeRange(bgrle->origin, bgrle->count),
-                .bgColor = line[bgrle->origin].backgroundColor,
-                .bgGreen = line[bgrle->origin].bgGreen,
-                .bgBlue = line[bgrle->origin].bgBlue,
-                .bgColorMode = line[bgrle->origin].backgroundColorMode,
-                // selectedIndexes and findMatches are both logical; bgrle->origin
-                // is a visual column, so test bgrle->logicalOrigin for each.
-                .selected = [selectedIndexes containsIndex:bgrle->logicalOrigin],
-                .isMatch = (findMatches &&
-                            !run.selected &&
-                            CheckFindMatchAtIndex(findMatches, bgrle->logicalOrigin)),
-                .beneathFaintText = line[bgrle->origin].faint
-            };
-            NSArray<id<iTermAttributedString>> *attributedStrings =
-                [_attributedStringBuilder attributedStringsForLine:line
-                                                          bidiInfo:bidiInfo
-                                                externalAttributes:eaIndex
-                                                             range:run.modelRange
-                                                   hasSelectedText:selectedIndexes.count > 0
-                                                   backgroundColor:bgColor
-                                                    forceTextColor:nil
-                                                          colorRun:&run
-                                                       findMatches:findMatches
-                                                   underlinedRange:underlinedRange
-                                                         positions:&positions];
+            const NSRange fullModelRange = bidiInfo ? NSMakeRange(0, width) : NSMakeRange(bgrle->logicalOrigin, bgrle->count);
+            NSRange subranges[3];
+            int subrangeCount = 0;
+            if (splitLigatureForBoxCursor && NSLocationInRange(_cursorInfo.coord.x, fullModelRange)) {
+                const NSUInteger cursorX = (NSUInteger)_cursorInfo.coord.x;
+                const NSUInteger start = fullModelRange.location;
+                const NSUInteger end = NSMaxRange(fullModelRange);
+                if (cursorX > start) {
+                    subranges[subrangeCount++] = NSMakeRange(start, cursorX - start);
+                }
+                subranges[subrangeCount++] = NSMakeRange(cursorX, 1);
+                if (cursorX + 1 < end) {
+                    subranges[subrangeCount++] = NSMakeRange(cursorX + 1, end - (cursorX + 1));
+                }
+            } else {
+                subranges[subrangeCount++] = fullModelRange;
+            }
 
-            [allAttributedStrings addObjectsFromArray:attributedStrings];
+            for (int sr = 0; sr < subrangeCount; sr++) {
+                const NSRange subrange = subranges[sr];
+                iTermBackgroundColorRun run = {
+                    .modelRange = subrange,
+                    .visualRange = bidiInfo ? NSMakeRange(0, width) : subrange,
+                    .bgColor = line[bgrle->origin].backgroundColor,
+                    .bgGreen = line[bgrle->origin].bgGreen,
+                    .bgBlue = line[bgrle->origin].bgBlue,
+                    .bgColorMode = line[bgrle->origin].backgroundColorMode,
+                    // selectedIndexes and findMatches are both logical; bgrle->origin
+                    // is a visual column, so test bgrle->logicalOrigin for each.
+                    .selected = [selectedIndexes containsIndex:bgrle->logicalOrigin],
+                    .isMatch = (findMatches &&
+                                !run.selected &&
+                                CheckFindMatchAtIndex(findMatches, bgrle->logicalOrigin)),
+                    .beneathFaintText = line[bgrle->origin].faint
+                };
+                NSArray<id<iTermAttributedString>> *attributedStrings =
+                    [_attributedStringBuilder attributedStringsForLine:line
+                                                              bidiInfo:bidiInfo
+                                                    externalAttributes:eaIndex
+                                                                 range:run.modelRange
+                                                       hasSelectedText:selectedIndexes.count > 0
+                                                       backgroundColor:bgColor
+                                                        forceTextColor:nil
+                                                              colorRun:&run
+                                                           findMatches:findMatches
+                                                       underlinedRange:underlinedRange
+                                                             positions:&positions];
+
+                [allAttributedStrings addObjectsFromArray:attributedStrings];
+            }
         }
     }
 
@@ -1926,7 +2034,6 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
                                                         row,
                                                         width,
                                                         allAttributedStrings,
-                                                        positions,
                                                         bidiInfo,
                                                         selectedIndexes,
                                                         annotatedIndexes,
@@ -2260,6 +2367,7 @@ static int iTermEmitGlyphsAndSetAttributes(iTermMetalPerFrameState *self,
     [[iTermCharacterSource alloc] initWithFontID:glyphKey->payload.decomposed.fontID
                                         fakeBold:glyphKey->payload.decomposed.fakeBold
                                       fakeItalic:glyphKey->payload.decomposed.fakeItalic
+                                     antialiased:glyphKey->payload.decomposed.antiAlias
                                      glyphNumber:glyphKey->payload.decomposed.glyphNumber
                                         position:glyphKey->payload.decomposed.position
                                       descriptor:descriptor

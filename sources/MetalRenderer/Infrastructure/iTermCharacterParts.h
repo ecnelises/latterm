@@ -14,17 +14,21 @@ extern "C" {
 extern const int iTermTextureMapMaxCharacterParts;
 extern const int iTermTextureMapMiddleCharacterPart;
 
+enum {
+    iTermCharacterPartEncodingRadius = 15,
+    iTermCharacterPartEncodingStride = iTermCharacterPartEncodingRadius * 2 + 1,
+};
+
 NS_INLINE int iTermImagePartDX(int part) {
-    return (part % iTermTextureMapMaxCharacterParts) - (iTermTextureMapMaxCharacterParts / 2);
+    return (part % iTermCharacterPartEncodingStride) - iTermCharacterPartEncodingRadius;
 }
 
 NS_INLINE int iTermImagePartDY(int part) {
-    return (part / iTermTextureMapMaxCharacterParts) - (iTermTextureMapMaxCharacterParts / 2);
+    return (part / iTermCharacterPartEncodingStride) - iTermCharacterPartEncodingRadius;
 }
 
 NS_INLINE int iTermImagePartFromDeltas(int dx, int dy) {
-    const int radius = iTermTextureMapMaxCharacterParts / 2;
-    return (dx + radius) + (dy + radius) * iTermTextureMapMaxCharacterParts;
+    return (dx + iTermCharacterPartEncodingRadius) + (dy + iTermCharacterPartEncodingRadius) * iTermCharacterPartEncodingStride;
 }
 
 #if __cplusplus

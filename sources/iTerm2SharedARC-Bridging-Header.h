@@ -255,6 +255,7 @@
 #import "SSKeychain.h"
 #import "ColorsMenuItemView.h"
 #import "iTermStreamingPNGWriter.h"
+#import "iTermCharacterBitmap.h"
 #import "iTermCharacterSource.h"
 #import "FontSizeEstimator.h"
 #import "PTYFontInfo.h"

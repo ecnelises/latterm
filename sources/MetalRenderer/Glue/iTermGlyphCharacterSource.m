@@ -34,6 +34,7 @@
 - (instancetype)initWithFontID:(unsigned int)fontID
                       fakeBold:(BOOL)fakeBold
                     fakeItalic:(BOOL)fakeItalic
+                   antialiased:(BOOL)antialiased
                    glyphNumber:(unsigned short)glyphNumber
                       position:(NSPoint)position
                     descriptor:(iTermCharacterSourceDescriptor *)descriptor
@@ -48,7 +49,7 @@
     self = [super initWithFont:font
                       fakeBold:fakeBold
                     fakeItalic:fakeItalic
-                   antialiased:descriptor.nonAsciiAntiAliased
+                   antialiased:antialiased
                     descriptor:descriptor
                     attributes:attributes
                         radius:radius
@@ -151,6 +152,14 @@
                                                           &glyph,
                                                           NULL,
                                                           1);
+    if (bounds.size.width <= 0 && bounds.size.height <= 0) {
+        NSString *familyName = _font.familyName;
+        const BOOL isEmojiFont = ([familyName isEqualToString:@"AppleColorEmoji"] ||
+                                  [familyName isEqualToString:@"Apple Color Emoji"]);
+        if (!isEmojiFont) {
+            return CGRectNull;
+        }
+    }
     const CGRect adjustedBounds = CGRectOffset(bounds, _position.x, _position.y);
     CGRect result = [self frameForBoundingRect:adjustedBounds flipped:flipped];
     if (iTermLineAttributeIsDoubleWidth(_lineAttribute)) {

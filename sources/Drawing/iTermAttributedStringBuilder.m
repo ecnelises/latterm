@@ -70,6 +70,7 @@ typedef struct {
     RTLStatus rtlStatus;
     VT100TerminalColorValue underlineColor;
     NSString *languageCode;
+    CGFloat customBaselineOffset;
 } iTermCharacterAttributes;
 
 NSString *const iTermAntiAliasAttribute = @"iTermAntiAliasAttribute";
@@ -77,6 +78,7 @@ NSString *const iTermBoldAttribute = @"iTermBoldAttribute";
 NSString *const iTermFaintAttribute = @"iTermFaintAttribute";
 NSString *const iTermFakeBoldAttribute = @"iTermFakeBoldAttribute";
 NSString *const iTermFakeItalicAttribute = @"iTermFakeItalicAttribute";
+NSString *const iTermCustomBaselineOffsetAttribute = @"iTermCustomBaselineOffsetAttribute";
 NSString *const iTermMetalFontIDAttribute = @"iTermMetalFontIDAttribute";
 NSString *const iTermImageCodeAttribute = @"iTermImageCodeAttribute";
 NSString *const iTermImageColumnAttribute = @"iTermImageColumnAttribute";
@@ -107,6 +109,7 @@ NSString *const iTermKittyImagePlacementIDAttribute = @"iTermKittyImagePlacement
     NSColor *_fg;
     NSFont *_font;
     NSString *_languageCode;
+    CGFloat _customBaselineOffset;
     NSUInteger _hash;
 }
 - (NSUInteger)hash {
@@ -122,6 +125,7 @@ NSString *const iTermKittyImagePlacementIDAttribute = @"iTermKittyImagePlacement
     iTermCharAttrsDictKey *other = object;
     return (_scalars == other->_scalars &&
             _font == other->_font &&
+            fabs(_customBaselineOffset - other->_customBaselineOffset) < 0.001 &&
             (_languageCode == other->_languageCode || [_languageCode isEqualToString:other->_languageCode]) &&
             (_fg == other->_fg || [_fg isEqual:other->_fg]));
 }
@@ -133,6 +137,7 @@ NSString *const iTermKittyImagePlacementIDAttribute = @"iTermKittyImagePlacement
     copy->_fg = _fg;
     copy->_font = _font;
     copy->_languageCode = [_languageCode copy];
+    copy->_customBaselineOffset = _customBaselineOffset;
     copy->_hash = _hash;
     return copy;
 }
@@ -788,6 +793,7 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
     attributes->metalFontID = fontInfo.metalFontID;
     attributes->ligatureLevel = fontInfo.ligatureLevel;
     attributes->languageCode = fontInfo.languageCode;
+    attributes->customBaselineOffset = fontInfo.customBaselineOffset;
     if (_preferSpeedToFullLigatureSupport) {
         if (!c->complexChar &&
             iTermCharacterSupportsFastPath(c->code, _asciiLigaturesAvailable)) {
@@ -877,6 +883,7 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
                                           newAttributes->metalFontID != previousAttributes->metalFontID ||
                                           (newAttributes->languageCode != previousAttributes->languageCode &&
                                            ![newAttributes->languageCode isEqualToString:previousAttributes->languageCode]) ||
+                                          fabs(newAttributes->customBaselineOffset - previousAttributes->customBaselineOffset) >= 0.001 ||
                                           newAttributes->ligatureLevel != previousAttributes->ligatureLevel ||
                                           newAttributes->bold != previousAttributes->bold ||
                                           newAttributes->faint != previousAttributes->faint ||
@@ -905,6 +912,7 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
                                                newAttributes->metalFontID == previousAttributes->metalFontID &&
                                                (newAttributes->languageCode == previousAttributes->languageCode ||
                                                 [newAttributes->languageCode isEqualToString:previousAttributes->languageCode]) &&
+                                               fabs(newAttributes->customBaselineOffset - previousAttributes->customBaselineOffset) < 0.001 &&
                                                newAttributes->ligatureLevel == previousAttributes->ligatureLevel &&
                                                newAttributes->bold == previousAttributes->bold &&
                                                newAttributes->faint == previousAttributes->faint &&
@@ -968,6 +976,7 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
         key->_fg = attributes->foregroundColor;
         key->_font = attributes->font;
         key->_languageCode = attributes->languageCode;
+        key->_customBaselineOffset = attributes->customBaselineOffset;
         // Cheap multiplicative mix of the packed scalars, the (value-based) color
         // hash, and the font pointer. Avoids the byte-loop hashing and the
         // per-lookup -[NSFont hash] message send.
@@ -976,6 +985,9 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
         h = h * 1099511628211ULL + (NSUInteger)(__bridge void *)key->_font;
         if (key->_languageCode) {
             h = h * 1099511628211ULL + key->_languageCode.hash;
+        }
+        if (fabs(key->_customBaselineOffset) >= 0.001) {
+            h = h * 1099511628211ULL + (NSUInteger)llround(key->_customBaselineOffset * 1000.0);
         }
         key->_hash = h;
         _dictCacheLookups++;
@@ -1068,6 +1080,9 @@ preferSpeedToFullLigatureSupport:(BOOL)preferSpeedToFullLigatureSupport
     } mutableCopy];
     if (attributes->languageCode.length > 0) {
         mutableResult[(NSString *)kCTLanguageAttributeName] = attributes->languageCode;
+    }
+    if (fabs(attributes->customBaselineOffset) >= 0.001) {
+        mutableResult[iTermCustomBaselineOffsetAttribute] = @(attributes->customBaselineOffset);
     }
     NSDictionary *result = [mutableResult copy];
 

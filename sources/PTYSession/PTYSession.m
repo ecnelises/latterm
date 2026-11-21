@@ -8567,12 +8567,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         }
         return NO;
     }
-    if (![iTermPreferences bidiEnabled] && [self ligaturesEnabledInEitherFont]) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonLigatures;
-        }
-        return NO;
-    }
     if (_metalDeviceChanging) {
         if (reason) {
             *reason = iTermMetalUnavailableReasonInitializing;
@@ -8655,19 +8649,6 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
             !_view.verticalScroller.userScroll &&
             !self.overrideGlobalDisableMetalWhenIdleSetting &&
             !_view.driver.captureDebugInfoForNextFrame);
-}
-
-- (BOOL)ligaturesEnabledInEitherFont {
-    iTermTextDrawingHelper *helper = _textview.drawingHelper;
-    [helper updateCachedMetrics];
-    if (helper.asciiLigatures && helper.asciiLigaturesAvailable) {
-        return YES;
-    }
-    if ([iTermProfilePreferences boolForKey:KEY_USE_NONASCII_FONT inProfile:self.profile] &&
-        [iTermProfilePreferences boolForKey:KEY_NON_ASCII_LIGATURES inProfile:self.profile]) {
-        return YES;
-    }
-    return NO;
 }
 
 - (BOOL)willEnableMetal {

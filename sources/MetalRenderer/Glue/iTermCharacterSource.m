@@ -225,6 +225,7 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
 - (instancetype)initWithFontID:(unsigned int)fontID
                       fakeBold:(BOOL)fakeBold
                     fakeItalic:(BOOL)fakeItalic
+                   antialiased:(BOOL)antialiased
                    glyphNumber:(unsigned short)glyphNumber
                       position:(NSPoint)position
                     descriptor:(iTermCharacterSourceDescriptor *)descriptor
@@ -235,6 +236,7 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
     return [[iTermGlyphCharacterSource alloc] initWithFontID:fontID
                                                     fakeBold:fakeBold
                                                   fakeItalic:fakeItalic
+                                                 antialiased:antialiased
                                                  glyphNumber:glyphNumber
                                                     position:position
                                                   descriptor:descriptor
@@ -835,6 +837,9 @@ static const CGFloat iTermCharacterSourceAliasedFakeBoldShiftPoints = 1;
 
 - (NSArray<NSNumber *> *)newParts {
     CGRect boundingBox = self.frame;
+    if (CGRectIsEmpty(boundingBox)) {
+        return @[];
+    }
 
     const iTermLineAttribute attr = [self lineAttribute];
     const int radius = _radius;

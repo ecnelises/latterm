@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#include <functional>
 #import "iTermMetalGlyphKey.h"
 #import "NSFont+iTerm.h"
 
@@ -51,6 +52,7 @@ namespace iTerm2 {
                     return (_repr.payload.decomposed.fontID == other._repr.payload.decomposed.fontID &&
                             _repr.payload.decomposed.fakeBold == other._repr.payload.decomposed.fakeBold &&
                             _repr.payload.decomposed.fakeItalic == other._repr.payload.decomposed.fakeItalic &&
+                            _repr.payload.decomposed.antiAlias == other._repr.payload.decomposed.antiAlias &&
                             _repr.payload.decomposed.glyphNumber == other._repr.payload.decomposed.glyphNumber &&
                             NSEqualPoints(_repr.payload.decomposed.position,
                                           other._repr.payload.decomposed.position));
@@ -105,6 +107,7 @@ namespace iTerm2 {
                     hash_combine(seed, _repr.payload.decomposed.glyphNumber);
                     hash_combine(seed, _repr.payload.decomposed.fakeBold);
                     hash_combine(seed, _repr.payload.decomposed.fakeItalic);
+                    hash_combine(seed, _repr.payload.decomposed.antiAlias);
                     hash_combine(seed, _repr.payload.decomposed.position.x);
                     hash_combine(seed, _repr.payload.decomposed.position.y);
                     break;
