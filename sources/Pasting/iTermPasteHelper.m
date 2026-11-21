@@ -13,7 +13,7 @@
 #import "PasteEvent.h"
 #import "PasteViewController.h"
 #import "PasteboardHistory.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplicationDelegate.h"
 #import "iTermNumberOfSpacesAccessoryViewController.h"

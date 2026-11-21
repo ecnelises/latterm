@@ -9,7 +9,7 @@
 
 #import "DebugLogging.h"
 #import "NSArray+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermRateLimitedUpdate.h"

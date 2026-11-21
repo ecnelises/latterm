@@ -12,7 +12,7 @@
 #import "NSArray+CommonAdditions.h"
 #import "NSFileManager+CommonAdditions.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 static dispatch_queue_t iTermPathFinderQueue(void) {
     static dispatch_queue_t queue;
@@ -210,21 +210,31 @@ static dispatch_queue_t iTermPathFinderQueue(void) {
 #pragma mark String Manipulation
 
 - (NSArray<NSString *> *)splitString:(NSString *)string {
+    if (!string) {
+        return @[];
+    }
     NSMutableArray<NSString *> *parts = [NSMutableArray array];
     __block NSRange lastRange = NSMakeRange(0, 0);
-    [string enumerateStringsMatchedByRegex:@"([^\t ():\",]*)([\t ():\",])"
-                                   options:0
-                                   inRange:NSMakeRange(0, string.length)
-                                     error:nil
-                        enumerationOptions:0
-                                usingBlock:^(NSInteger captureCount,
-                                             NSString *const __unsafe_unretained *capturedStrings,
-                                             const NSRange *capturedRanges,
-                                             volatile BOOL *const stop) {
-                                    [parts addObject:capturedStrings[1]];
-                                    [parts addObject:capturedStrings[2]];
-                                    lastRange = capturedRanges[2];
-                                }];
+    static NSRegularExpression *splitRegex;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        splitRegex = [NSRegularExpression regularExpressionWithPattern:@"([^\t ():\",]*)([\t ():\",])"
+                                                               options:0
+                                                                 error:nil];
+    });
+    [splitRegex enumerateMatchesInString:string
+                                 options:0
+                                   range:NSMakeRange(0, string.length)
+                              usingBlock:^(NSTextCheckingResult * _Nullable match, NSMatchingFlags flags, BOOL * _Nonnull stop) {
+        if (!match || match.numberOfRanges < 3) {
+            return;
+        }
+        const NSRange r1 = [match rangeAtIndex:1];
+        const NSRange r2 = [match rangeAtIndex:2];
+        [parts addObject:(r1.location == NSNotFound || r1.length == 0) ? @"" : [string substringWithRange:r1]];
+        [parts addObject:(r2.location == NSNotFound || r2.length == 0) ? @"" : [string substringWithRange:r2]];
+        lastRange = r2;
+    }];
     const NSInteger suffixStartIndex = NSMaxRange(lastRange);
     if (suffixStartIndex < string.length) {
         [parts addObject:[string substringFromIndex:suffixStartIndex]];

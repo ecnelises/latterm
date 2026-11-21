@@ -13,7 +13,7 @@
 #import "NSArray+iTerm.h"
 #import "NSNumber+iTerm.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "ScreenChar.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "iTerm2SharedARC-Swift.h"
@@ -324,28 +324,7 @@ NSString * const kTriggerVariableValueRegexKey = @"variableValueRegex";
     // becomes U+0000 in the string. Treat as spaces for trigger matching.
     NSString *s = [stringLine.stringValue stringByReplacingOccurrencesOfString:@"\0" withString:@" "];
     DLog(@"Search for regex %@ in string %@", regex_, s);
-    if (![iTermAdvancedSettingsModel fastTriggerRegexes]) {
-        DLog(@"Use RegexKitLite");
-        [s enumerateStringsMatchedByRegex:regex_
-                               usingBlock:^(NSInteger captureCount,
-                                            NSString *const __unsafe_unretained *capturedStrings,
-                                            const NSRange *capturedRanges,
-                                            volatile BOOL *const stopEnumerating) {
-            self->_lastLineNumber = lineNumber;
-            DLog(@"Trigger %@ matched string %@", self, s);
-            NSArray<NSString *> *stringArray = [[NSArray alloc] initWithObjects:capturedStrings
-                                                                          count:captureCount];
-            if (![self performActionWithCapturedStrings:stringArray
-                                         capturedRanges:capturedRanges
-                                              inSession:aSession
-                                               onString:stringLine
-                                   atAbsoluteLineNumber:lineNumber
-                                       useInterpolation:useInterpolation
-                                                   stop:&stopFutureTriggersFromRunningOnThisLine]) {
-                *stopEnumerating = YES;
-            }
-        }];
-    } else if (s != nil) {
+    if (s != nil) {
         DLog(@"Use NSRegularExpression");
         [self enumerateMatchesInString:s block:^(NSArray<NSString *> *stringArray,
                                                  const NSRange *capturedRanges,

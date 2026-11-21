@@ -24,7 +24,7 @@ extern "C" {
 #import "LineBufferHelpers.h"
 #import "NSArray+iTerm.h"
 #import "NSObject+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "iTermAdvancedSettingsModel.h"
 }
 

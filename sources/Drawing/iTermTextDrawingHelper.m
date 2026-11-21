@@ -44,7 +44,7 @@
 #import "NSStringITerm.h"
 #import "NSView+iTerm.h"
 #import "PTYFontInfo.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "ScreenCharArray.h"
 #import "VT100ScreenMark.h"
 #import "VT100Terminal.h"  // TODO: Remove this dependency

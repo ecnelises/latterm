@@ -16,7 +16,7 @@
 #import "NSArray+iTerm.h"
 #import "NSNumber+iTerm.h"
 #import "PSMTabBarControl.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "WindowArrangements.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"

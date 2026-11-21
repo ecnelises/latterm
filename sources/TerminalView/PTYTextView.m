@@ -38,7 +38,7 @@
 #import "PointerController.h"
 #import "PointerPrefsController.h"
 #import "PreferencePanel.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "SCPPath.h"
 #import "SearchResult.h"
 #import "SmartMatch.h"

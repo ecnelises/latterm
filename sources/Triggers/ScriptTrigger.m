@@ -10,7 +10,7 @@
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermCommandRunnerPool.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "NSStringITerm.h"
 #include <sys/types.h>
 #include <pwd.h>

@@ -48,7 +48,7 @@
 #import "NSCharacterSet+iTerm.h"
 #import "NSJSONSerialization+iTerm.h"
 #import "NSObject+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "ScreenChar.h"
 #import "ScreenCharArray.h"
 #import <apr-1/apr_base64.h>
@@ -1713,19 +1713,33 @@ static TECObjectRef CreateTECConverterForUTF8Variants(TextEncodingVariant varian
 }
 
 - (NSString *)stringByReplacingControlCharactersWithCaretLetter {
-    return [self stringByReplacingOccurrencesOfRegex:@"[\x00-\x1f\x7f]" usingBlock:^NSString *(NSInteger captureCount, NSString *const __unsafe_unretained *capturedStrings, const NSRange *capturedRanges, volatile BOOL *const stop) {
-        NSMutableString *replacement = [NSMutableString string];
-        const NSInteger index = capturedRanges[0].location;
-        for (NSInteger i = 0; i < capturedRanges[0].length; i++) {
-            unichar c = [[self substringWithRange:NSMakeRange(index + i, 1)] characterAtIndex:0];
+    const NSUInteger length = self.length;
+    NSMutableString *replacement = nil;
+    NSUInteger copiedUpTo = 0;
+    for (NSUInteger i = 0; i < length; i++) {
+        const unichar c = [self characterAtIndex:i];
+        if (c <= 0x1f || c == 0x7f) {
+            if (!replacement) {
+                replacement = [NSMutableString stringWithCapacity:length + 8];
+            }
+            if (i > copiedUpTo) {
+                [replacement appendString:[self substringWithRange:NSMakeRange(copiedUpTo, i - copiedUpTo)]];
+            }
             if (c == 0x7f) {
                 [replacement appendString:@"^?"];
             } else {
                 [replacement appendFormat:@"^%c", c + '@'];
             }
+            copiedUpTo = i + 1;
         }
-        return replacement;
-    }];
+    }
+    if (!replacement) {
+        return self;
+    }
+    if (copiedUpTo < length) {
+        [replacement appendString:[self substringFromIndex:copiedUpTo]];
+    }
+    return replacement;
 }
 
 - (NSSet *)doubleDollarVariables {

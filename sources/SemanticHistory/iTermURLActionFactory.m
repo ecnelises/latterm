@@ -22,7 +22,7 @@
 #import "NSCharacterSet+iTerm.h"
 #import "NSStringITerm.h"
 #import "NSURL+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "SCPPath.h"
 #import "SmartSelectionController.h"
 #import "URLAction.h"

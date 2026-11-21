@@ -10,7 +10,7 @@
 
 #import "NSArray+iTerm.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 @implementation NSTextField (iTerm)
 

@@ -46,7 +46,7 @@
 #import "NSStringITerm.h"
 #import "NSURL+iTerm.h"
 #import "NSWorkspace+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #include <sys/utsname.h>
 
 NSString *const kSemanticHistoryPathSubstitutionKey = @"semanticHistory.path";

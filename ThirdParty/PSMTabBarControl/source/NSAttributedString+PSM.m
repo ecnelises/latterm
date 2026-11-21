@@ -7,7 +7,6 @@
 
 #import <AppKit/AppKit.h>
 #import "NSAttributedString+PSM.h"
-#import "RegexKitLite.h"
 
 @implementation NSAttributedString (PSM)
 
@@ -115,16 +114,16 @@
     };
 
     NSString *regex = [[openTags arrayByAddingObjectsFromArray:closeTags] componentsJoinedByString:@"|"];
-    [html enumerateStringsMatchedByRegex:regex
-                                 options:RKLCaseless
-                                 inRange:NSMakeRange(0, html.length)
-                                   error:nil
-                      enumerationOptions:RKLRegexEnumerationNoOptions
-                              usingBlock:^(NSInteger captureCount,
-                                           NSString *const __unsafe_unretained *capturedStrings,
-                                           const NSRange *capturedRanges,
-                                           volatile BOOL *const stop) {
-        appendWithTagRange(capturedRanges[0]);
+    NSRegularExpression *tagRegex = [NSRegularExpression regularExpressionWithPattern:regex
+                                                                              options:NSRegularExpressionCaseInsensitive
+                                                                                error:nil];
+    [tagRegex enumerateMatchesInString:html
+                               options:0
+                                 range:NSMakeRange(0, html.length)
+                            usingBlock:^(NSTextCheckingResult * _Nullable match, NSMatchingFlags flags, BOOL * _Nonnull stop) {
+        if (match) {
+            appendWithTagRange(match.range);
+        }
     }];
 
     if (cursor < html.length) {

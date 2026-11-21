@@ -35,7 +35,7 @@
 #import "PTYSession.h"
 #import "PTYTab.h"
 #import "PTYTextView.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
 #import "TmuxGateway.h"

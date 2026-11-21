@@ -19,7 +19,7 @@
 #import "iTermWordExtractor.h"
 #import "NSStringITerm.h"
 #import "NSMutableAttributedString+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "PreferencePanel.h"
 #import "SmartMatch.h"
 #import "SmartSelectionController.h"

@@ -28,7 +28,7 @@
 #import "NSObject+iTerm.h"
 #import "NSImage+iTerm.h"
 #import "PTYTextView.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "SearchResult.h"
 #import "TmuxStateParser.h"
 #import "VT100LineInfo.h"

@@ -200,7 +200,6 @@ extern NSString *const iTermAdvancedSettingsDidChange;
 + (NSString *)fakeBootSessionUUID;
 + (NSString *)fallbackLCCType;
 + (BOOL)fastForegroundJobUpdates;
-+ (BOOL)fastTriggerRegexes;
 + (BOOL)fastTrackpad;
 + (NSString *)fileDropCoprocess;
 + (NSString *)filenameCharacterSet;

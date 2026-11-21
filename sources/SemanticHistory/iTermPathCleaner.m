@@ -11,7 +11,6 @@
 #import "NSArray+CommonAdditions.h"
 #import "NSFileManager+CommonAdditions.h"
 #import "NSString+CommonAdditions.h"
-#import "RegexKitLite.h"
 
 static dispatch_queue_t iTermPathCleanerQueue(void) {
     static dispatch_queue_t queue;

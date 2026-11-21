@@ -9,7 +9,7 @@
 #import "DebugLogging.h"
 #import "iTermCache.h"
 #import "NSArray+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "ScreenChar.h"
 
 #ifdef DEBUG_SEARCH

@@ -12,7 +12,7 @@
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSImage+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 static NSString *const iTermStatusBarActionKey = @"action";
 
@@ -22,20 +22,33 @@ static NSString *const iTermStatusBarActionKey = @"action";
 }
 
 - (nullable NSArray<NSString *> *)stringVariants {
+    if (!_value) {
+        return @[];
+    }
     NSMutableArray<NSString *> *result = [NSMutableArray array];
-    [_value enumerateStringsSeparatedByRegex:@"\\h+"
-                                     options:RKLNoOptions
-                                     inRange:NSMakeRange(0, _value.length)
-                                       error:nil
-                          enumerationOptions:RKLRegexEnumerationNoOptions
-                                  usingBlock:
-     ^(NSInteger captureCount,
-       NSString *const __unsafe_unretained *capturedStrings,
-       const NSRange *capturedRanges,
-       volatile BOOL *const stop) {
-
-        [result addObject:[self->_value substringToIndex:NSMaxRange(capturedRanges[0])]];
+    static NSRegularExpression *horizontalWhitespaceRegex;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        horizontalWhitespaceRegex = [NSRegularExpression regularExpressionWithPattern:@"\\h+"
+                                                                              options:0
+                                                                                error:nil];
+    });
+    __block NSUInteger lastLocation = 0;
+    const NSUInteger totalLength = _value.length;
+    [horizontalWhitespaceRegex enumerateMatchesInString:_value
+                                                options:0
+                                                  range:NSMakeRange(0, totalLength)
+                                             usingBlock:^(NSTextCheckingResult * _Nullable match, NSMatchingFlags flags, BOOL * _Nonnull stop) {
+        if (!match) {
+            return;
+        }
+        const NSRange tokenRange = NSMakeRange(lastLocation, match.range.location - lastLocation);
+        [result addObject:[self->_value substringToIndex:NSMaxRange(tokenRange)]];
+        lastLocation = NSMaxRange(match.range);
     }];
+    if (lastLocation < totalLength) {
+        [result addObject:[_value substringToIndex:totalLength]];
+    }
     return result;
 }
 

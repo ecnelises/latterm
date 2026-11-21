@@ -31,7 +31,7 @@
 #import "NSColor+iTerm.h"
 #import "NSJSONSerialization+iTerm.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "URLAction.h"
 #import "PTYWindow.h"
 #import "WindowControllerInterface.h"

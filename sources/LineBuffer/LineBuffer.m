@@ -42,7 +42,7 @@
 #import "NSArray+iTerm.h"
 #import "NSData+iTerm.h"
 #import "NSSet+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import <stdatomic.h>
 
 static NSString *const kLineBufferVersionKey = @"Version";

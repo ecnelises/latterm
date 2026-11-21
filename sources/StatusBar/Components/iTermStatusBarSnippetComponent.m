@@ -12,7 +12,7 @@
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
 #import "NSImage+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 @implementation iTermStatusBarSnippetMenuComponent
 

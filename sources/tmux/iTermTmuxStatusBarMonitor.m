@@ -13,7 +13,7 @@
 #import "NSTimer+iTerm.h"
 #import "TmuxGateway.h"
 #import "iTermTmuxOptionMonitor.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "iTermVariableReference.h"
 #import "iTermVariableScope+Session.h"
 #import "iTermVariableScope+Tab.h"

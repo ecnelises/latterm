@@ -13,7 +13,7 @@
 #import "TmuxController.h"
 #import "NSArray+iTerm.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "VT100Token.h"
 
 NSString * const kTmuxGatewayErrorDomain = @"kTmuxGatewayErrorDomain";;

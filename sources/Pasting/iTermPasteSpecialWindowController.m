@@ -18,7 +18,7 @@
 #import "NSStringITerm.h"
 #import "NSTextField+iTerm.h"
 #import "PasteboardHistory.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @interface iTermFileReference : NSObject

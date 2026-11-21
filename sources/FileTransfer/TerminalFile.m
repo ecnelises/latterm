@@ -12,7 +12,7 @@
 #import "FileTransferManager.h"
 #import "FutureMethods.h"
 #import "NSSavePanel+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "iTermWarning.h"
 
 #import <apr-1/apr_base64.h>

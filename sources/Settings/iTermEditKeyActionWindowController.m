@@ -22,7 +22,7 @@
 #import "NSScreen+iTerm.h"
 #import "NSTextField+iTerm.h"
 #import "NSView+iTerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 @import SearchableComboListView;
 

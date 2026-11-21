@@ -16,7 +16,7 @@
 #import "TmuxLayoutParser.h"
 
 #import "DebugLogging.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 NSString *kLayoutDictChildrenKey = @"children";
 NSString *kLayoutDictWidthKey = @"width";

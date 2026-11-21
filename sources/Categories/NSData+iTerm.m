@@ -11,7 +11,7 @@
 #import "DebugLogging.h"
 #import "NSArray+iTerm.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "zlib.h"
 
 #import <apr-1/apr_base64.h>

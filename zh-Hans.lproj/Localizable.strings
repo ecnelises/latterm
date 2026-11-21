@@ -1452,8 +1452,6 @@
 "Trackpad scrolls fast?" = "启用快速触控板滚动。";
 "Support DECSET 1036?\nThis allows apps in the terminal to control whether the option key sends esc+ or acts like a regular option key." = "支持 DECSET 1036。\n允许终端程序控制 Option 键发送 Esc 前缀或保留常规 Option 行为。";
 "Support DECSET 1036?" = "支持 DECSET 1036。";
-"Fast regular expression evaluation for triggers.\nThis is experimental because it could potentially change how regular expressions are interpreted." = "快速计算触发器正则表达式。\n实验功能，可能改变正则表达式的解释方式。";
-"Fast regular expression evaluation for triggers." = "快速计算触发器正则表达式。";
 "Post fake flags-changed events when remapping modifiers with an event tap.\nThis is an attempt to work around incompatibilities with AltTab in issue 10220." = "重映射修饰键时发送模拟的修饰键变化事件。\n用于尝试解决与 AltTab 的兼容问题（10220）。";
 "Post fake flags-changed events when remapping modifiers with an event tap." = "重映射修饰键时发送模拟的修饰键变化事件。";
 "Lone regional indicators render full-width.\nA complete flag is always two columns, which is the width wcwidth reports for the pair." = "单个区域指示符使用全宽。\n完整的旗帜始终占两列，与 wcwidth 对该字符对报告的宽度一致。";

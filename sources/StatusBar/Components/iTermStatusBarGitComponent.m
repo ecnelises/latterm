@@ -32,7 +32,7 @@
 #import "NSTimer+iTerm.h"
 #import "PTYSession.h"
 #import "PseudoTerminal.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 @interface NSObject(BogusSelector)
 - (void)bogusSelector;

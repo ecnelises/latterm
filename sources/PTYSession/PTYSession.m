@@ -49,7 +49,7 @@
 #import "ProfilePreferencesViewController.h"
 #import "ProfilesColorsPreferencesViewController.h"
 #import "ProfilesGeneralPreferencesViewController.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "SCPFile.h"
 #import "SCPPath.h"
 #import "SFSymbolEnum.h"

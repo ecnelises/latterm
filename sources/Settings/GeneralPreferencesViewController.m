@@ -12,7 +12,7 @@
 #import "NSTextField+iTerm.h"
 #import "NSWorkspace+iTerm.h"
 #import "PasteboardHistory.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "WindowArrangements.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedGPUSettingsViewController.h"

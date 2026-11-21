@@ -7,7 +7,7 @@
 
 #import "iTermContextMenuUtilities.h"
 #import "NSStringITerm.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #import "iTerm2SharedARC-Swift.h"
 
 @implementation NSString(ContextMenu)

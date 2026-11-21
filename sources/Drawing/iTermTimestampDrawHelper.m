@@ -16,7 +16,7 @@
 #import "NSColor+iTerm.h"
 #import "NSFont+iTerm.h"
 #import "PTYFontInfo.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 
 const CGFloat iTermTimestampGradientWidth = 20;
 

@@ -33,7 +33,7 @@
 #import "iTermSlowOperationGateway.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
-#import "RegexKitLite.h"
+#import "NSString+CommonAdditions.h"
 #include <sys/param.h>
 #include <sys/mount.h>
 
