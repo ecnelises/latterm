@@ -15,6 +15,15 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Replace RegexKitLite and CoreParse.framework
+  with cached NSRegularExpression helpers and a
+  native Swift recursive-descent expression
+  parser.
+- Unify legacy XCTest suites into ModernTests
+  under ARC, merge iTerm2Shared and SSKeychain
+  into iTerm2SharedARC, remove the empty
+  iTermSwiftPackages framework, and switch the
+  main Xcode scheme and target to Latterm.
 - Add declarative TOML configuration support at
   ~/.config/latterm/config.toml with live hot
   reloading, bidirectional export, and Settings

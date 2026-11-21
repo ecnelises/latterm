@@ -20,11 +20,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [index_ release];
-    [classes_ release];
-    [super dealloc];
-}
 
 - (NSSet<NSObject<NSCopying> *> *)valuesEqualTo:(NSObject<NSCopying> *)target {
     NSNumber *ec = index_[target];
@@ -67,7 +62,7 @@
             if ([n1Class intValue] != [n2Class intValue]) {
                 // Merge the equivalence classes. Move every value in n2's class
                 // (including n2, of course) into n1's.
-                for (NSNumber *n in [[classes_[n2Class] copy] autorelease]) {
+                for (NSNumber *n in [classes_[n2Class] copy]) {
                     [self addValue:n toClass:n1Class];
                 }
             }

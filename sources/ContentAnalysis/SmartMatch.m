@@ -10,11 +10,6 @@
 
 @implementation SmartMatch
 
-- (void)dealloc {
-    [_rule release];
-    [_components release];
-    [super dealloc];
-}
 
 - (NSComparisonResult)compare:(SmartMatch *)other
 {

@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "874206460564169600CFC3F1"
                BuildableName = "Latterm.app"
-               BlueprintName = "iTerm2"
+               BlueprintName = "Latterm"
                ReferencedContainer = "container:iTerm2.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -60,7 +60,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "874206460564169600CFC3F1"
             BuildableName = "Latterm.app"
-            BlueprintName = "iTerm2"
+            BlueprintName = "Latterm"
             ReferencedContainer = "container:iTerm2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -117,7 +117,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "874206460564169600CFC3F1"
             BuildableName = "Latterm.app"
-            BlueprintName = "iTerm2"
+            BlueprintName = "Latterm"
             ReferencedContainer = "container:iTerm2.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

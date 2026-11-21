@@ -13,10 +13,6 @@ static NSString *const kBlackAndWhiteKey = @"Print In Black And White";
 
 @implementation iTermPrintAccessoryViewController
 
-- (void)dealloc {
-    [_userDidChangeSetting release];
-    [super dealloc];
-}
 
 - (NSArray<NSDictionary<NSString *,NSString *> *> *)localizedSummaryItems {
   return @[ @{ NSPrintPanelAccessorySummaryItemNameKey: @"blackAndWhite",

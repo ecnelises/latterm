@@ -42,10 +42,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [_buckets release];
-    [super dealloc];
-}
 
 - (NSInteger)estimatedThroughput {
     @synchronized(self) {

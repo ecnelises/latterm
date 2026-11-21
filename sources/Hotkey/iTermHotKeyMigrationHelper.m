@@ -201,7 +201,7 @@
         }
 
     }
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = @"Changes to Make";
     alert.informativeText = [NSString stringWithFormat:@"Add these settings to the profile named “%@” in “%@”:\n%@",
                              profile[KEY_NAME],
@@ -225,9 +225,9 @@
         return [obj[KEY_GUID] isEqualToString:profile[KEY_GUID]];
     }];
     if (index != NSNotFound) {
-        Profile *modifiedProfile = [[profiles[index] mutableCopy] autorelease];
+        Profile *modifiedProfile = [profiles[index] mutableCopy];
         [modifiedProfile setValuesForKeysWithDictionary:[self hotkeyDictionary]];
-        NSMutableArray<Profile *> *modifiedProfilesArray = [[profiles mutableCopy] autorelease];
+        NSMutableArray<Profile *> *modifiedProfilesArray = [profiles mutableCopy];
         modifiedProfilesArray[index] = modifiedProfile;
 
         NSDictionary *dict = [[iTermDynamicProfileManager sharedInstance] dictionaryForProfiles:modifiedProfilesArray];

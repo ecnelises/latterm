@@ -28,11 +28,6 @@
     return self;
 }
 
-- (void)dealloc {
-
-    [_appHotKey release];
-    [super dealloc];
-}
 
 - (void)invalidate {
     if (self.appHotKey) {
@@ -46,14 +41,14 @@
         unichar character = [iTermPreferences intForKey:kPreferenceKeyHotkeyCharacter];
         NSString *characters = [NSString stringWithFormat:@"%C", character];
 
-        iTermShortcut *shortcut = [[[iTermShortcut alloc] initWithKeyCode:code
+        iTermShortcut *shortcut = [[iTermShortcut alloc] initWithKeyCode:code
                                                                hasKeyCode:YES
                                                                 modifiers:modifiers
                                                                characters:characters
-                                              charactersIgnoringModifiers:characters] autorelease];
-        self.appHotKey = [[[iTermAppHotKey alloc] initWithShortcuts:@[ shortcut ]
+                                              charactersIgnoringModifiers:characters];
+        self.appHotKey = [[iTermAppHotKey alloc] initWithShortcuts:@[ shortcut ]
                                               hasModifierActivation:NO
-                                                 modifierActivation:0] autorelease];
+                                                 modifierActivation:0];
 
         [[iTermHotKeyController sharedInstance] addHotKey:self.appHotKey];
     } else {

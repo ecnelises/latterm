@@ -22,7 +22,7 @@
 
 + (NSString *)showPanelWithParent:(NSWindowController *)parent isVertical:(BOOL)vertical
 {
-    SplitPanel *splitPanel = [[[SplitPanel alloc] initWithWindowNibName:@"SplitPanel"] autorelease];
+    SplitPanel *splitPanel = [[SplitPanel alloc] initWithWindowNibName:@"SplitPanel"];
     if (splitPanel) {
         splitPanel.parent = parent;
         splitPanel.isVertical = vertical;
@@ -61,11 +61,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [guid_ release];
-    [parent_ release];
-    [super dealloc];
-}
 
 - (void)_close
 {

@@ -39,9 +39,6 @@
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
-    [_previousApp release];
-    [_previousState release];
-    [super dealloc];
 }
 
 - (NSArray<iTermBaseHotKey *> *)hotKeyPressedWithSiblings:(NSArray<iTermBaseHotKey *> *)siblings {
@@ -82,15 +79,13 @@
 }
 
 - (void)workspaceDidDeactivateApplication:(NSNotification *)notification {
-    [_previousApp autorelease];
-    _previousApp = [notification.userInfo[NSWorkspaceApplicationKey] retain];
+    _previousApp = notification.userInfo[NSWorkspaceApplicationKey];
     DLog(@"workspace did deactivate. Set previous app to %@", notification.userInfo);
 
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     DLog(@"erase previous state");
-    [_previousState autorelease];
     _previousState = nil;
     if (_previousApp) {
         _previousState = [[iTermPreviousState alloc] initWithRunningApp:_previousApp];

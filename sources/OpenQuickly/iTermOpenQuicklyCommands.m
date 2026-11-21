@@ -12,10 +12,6 @@
 
 @synthesize text = _text;
 
-- (void)dealloc {
-    [_text release];
-    [super dealloc];
-}
 + (NSString *)tipTitle {
 
     return [NSString stringWithFormat:@"Tip: Start your query with “/%@”", [self command]];

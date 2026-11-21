@@ -13,7 +13,7 @@
 @implementation NSMutableData (iTerm)
 
 + (instancetype)uninitializedDataWithLength:(NSUInteger)length {
-    return [[[self alloc] initWithUninitializedLength:length] autorelease];
+    return [[self alloc] initWithUninitializedLength:length];
 }
 
 - (instancetype)initWithUninitializedLength:(NSUInteger)length {

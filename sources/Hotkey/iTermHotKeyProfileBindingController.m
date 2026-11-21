@@ -90,10 +90,10 @@
     }
 
     iTermProfileHotKey *hotKey =
-        [[[iTermProfileHotKey alloc] initWithShortcuts:shortcuts
+        [[iTermProfileHotKey alloc] initWithShortcuts:shortcuts
                                  hasModifierActivation:hasModifierActivation
                                     modifierActivation:modifierActivation
-                                               profile:profile] autorelease];
+                                               profile:profile];
     RLog(@"Registered %@", hotKey);
     _guidToHotKeyMap[guid] = hotKey;
     [[iTermHotKeyController sharedInstance] addHotKey:hotKey];

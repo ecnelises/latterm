@@ -36,7 +36,6 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
 }
 
 - (void)setOrdinal:(int)ordinal {
@@ -75,13 +74,13 @@
     if (!deemphasized) {
         _label.stringValue = string;
     } else {
-        NSMutableParagraphStyle *paragraphStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
         paragraphStyle.alignment = NSTextAlignmentRight;
         NSDictionary *attributes = @{ NSFontAttributeName: _label.font,
                                       NSForegroundColorAttributeName: [NSColor lightGrayColor],
                                       NSParagraphStyleAttributeName: paragraphStyle };
-        _label.attributedStringValue = [[[NSAttributedString alloc] initWithString:string
-                                                                        attributes:attributes] autorelease];
+        _label.attributedStringValue = [[NSAttributedString alloc] initWithString:string
+                                                                        attributes:attributes];
     }
 }
 

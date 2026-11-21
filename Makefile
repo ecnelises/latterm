@@ -12,7 +12,7 @@ VERSION = $(shell cat version.txt)
 NAME=$(shell echo $(VERSION) | sed -e "s/\\./_/g")
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
 DEPLOYMENT_TARGET=15.0
-XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme iTerm2
+XCODEBUILD_ITERM = xcodebuild -project iTerm2.xcodeproj -scheme Latterm
 
 # Build products live in a repo-local directory by default so make does not
 # depend on Xcode's derived settings or user cache directories.

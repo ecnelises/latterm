@@ -56,7 +56,7 @@
         profile = [profile dictionaryBySettingObject:@"Yes" forKey:KEY_CUSTOM_DIRECTORY];
         profile = [profile dictionaryBySettingObject:path forKey:KEY_WORKING_DIRECTORY];
         if (allowTabs && !windowController) {
-            pseudoTerminal = [[term retain] autorelease];
+            pseudoTerminal = term;
         }
         [term asyncCreateTabWithProfile:profile
                             withCommand:nil

@@ -13,10 +13,10 @@
     if (anIndex != NSNotFound) {
         containerRef = [NSApp objectSpecifier];
         classDescription = [NSClassDescription classDescriptionForClass:[NSApp class]];
-        return [[[NSUniqueIDSpecifier alloc] initWithContainerClassDescription:classDescription
-                                                            containerSpecifier:containerRef
-                                                                           key:@"orderedScriptingWindows"
-                                                                      uniqueID:@([self windowNumber])] autorelease];
+        return [[NSUniqueIDSpecifier alloc] initWithContainerClassDescription:classDescription
+                                                           containerSpecifier:containerRef
+                                                                          key:@"orderedScriptingWindows"
+                                                                     uniqueID:@([self windowNumber])];
     } else {
         return nil;
     }

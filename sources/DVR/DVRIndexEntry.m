@@ -31,7 +31,7 @@
 @implementation DVRIndexEntry
 
 + (instancetype)entryFromDictionaryValue:(NSDictionary *)dict {
-    DVRIndexEntry *entry = [[[self alloc] init] autorelease];
+    DVRIndexEntry *entry = [[self alloc] init];
     entry->position = [dict[@"position"] longLongValue];
     entry->frameLength = [dict[@"frameLength"] intValue];
 

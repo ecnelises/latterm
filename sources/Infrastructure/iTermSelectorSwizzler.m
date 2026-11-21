@@ -84,8 +84,6 @@ static NSString *const iTermSelectorSwizzlerContexts = @"iTermSelectorSwizzlerCo
 
 - (void)dealloc {
   assert(_drained);
-  [_swizzledSelectors release];
-  [super dealloc];
 }
 
 - (void)drain {
@@ -132,7 +130,7 @@ static NSString *const iTermSelectorSwizzlerContexts = @"iTermSelectorSwizzlerCo
 - (IMP)swizzleInstanceMethodSelector:(SEL)selector withBlock:(id)fakeBlock {
   iTermSelectorSwizzlerContext *context = [iTermSelectorSwizzlerContext currentContext];
   assert(context);
-  iTermSwizzledSelector *swizzledSelector = [[[iTermSwizzledSelector alloc] init] autorelease];
+  iTermSwizzledSelector *swizzledSelector = [[iTermSwizzledSelector alloc] init];
   swizzledSelector.originalMethod = class_getInstanceMethod([self class], selector);
   swizzledSelector.originalMethodImplementation = method_getImplementation(swizzledSelector.originalMethod);
   if (fakeBlock && context) {

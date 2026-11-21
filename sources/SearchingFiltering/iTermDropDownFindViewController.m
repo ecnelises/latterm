@@ -77,7 +77,6 @@ static const CGFloat kFilterHeight = 30;
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
 }
 
 - (void)viewDidLoad {
@@ -86,7 +85,7 @@ static const CGFloat kFilterHeight = 30;
         return;
     }
 
-    NSShadow *shadow = [[[NSShadow alloc] init] autorelease];
+    NSShadow *shadow = [[NSShadow alloc] init];
     shadow.shadowOffset = NSMakeSize(2, -2);
     shadow.shadowColor = [NSColor colorWithWhite:0 alpha:0.3];
     shadow.shadowBlurRadius = 2;

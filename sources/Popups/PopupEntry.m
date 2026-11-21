@@ -21,12 +21,6 @@
     return self;
 }
 
-- (void)dealloc
-{
-    [_mainValue release];
-    [_prefix release];
-    [super dealloc];
-}
 
 - (NSString *)description
 {
@@ -44,7 +38,7 @@
 
 + (PopupEntry*)entryWithString:(NSString*)s score:(double)score
 {
-    PopupEntry* e = [[[PopupEntry alloc] init] autorelease];
+    PopupEntry* e = [[PopupEntry alloc] init];
     [e _setDefaultValues];
     [e setMainValue:s];
     [e setScore:score];

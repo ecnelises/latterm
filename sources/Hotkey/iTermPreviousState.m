@@ -39,12 +39,6 @@
                                 processID:runningApp.processIdentifier];
 }
 
-- (void)dealloc {
-    [_owner release];
-    [_previouslyActiveAppPID release];
-    [_previouslyActiveAppBundleID release];
-    [super dealloc];
-}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"<%@: %p itermWasActive=%@ other app pid=%@, bundleID=%@>", self.class, self, @(_itermWasActiveWhenHotkeyOpened), self.previouslyActiveAppPID, self.previouslyActiveAppBundleID];

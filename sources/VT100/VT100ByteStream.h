@@ -161,9 +161,15 @@ NS_INLINE void VT100ByteStreamCursorWrite(VT100ByteStreamCursor *self, unsigned 
 NS_INLINE NSString *VT100ByteStreamCursorMakeString(const VT100ByteStreamCursor *self,
                                                     int length,
                                                     NSStringEncoding encoding) {
+#if __has_feature(objc_arc)
+    return [[NSString alloc] initWithBytes:self->datap
+                                    length:length
+                                  encoding:encoding];
+#else
     return [[[NSString alloc] initWithBytes:self->datap
                                      length:length
                                    encoding:encoding] autorelease];
+#endif
 }
 
 NS_INLINE NSString *VT100ByteStreamCursorDescription(const VT100ByteStreamCursor *self) {

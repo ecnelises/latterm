@@ -201,7 +201,7 @@ NSString *iTermPreciseTimerLogString(NSString *identifier,
         NSString *numeric = [NSString stringWithFormat:@"%0.1fms", ms];
         return [[@" " stringRepeatedTimes:millisWidth - numeric.length] stringByAppendingString:numeric];
     };
-    NSMutableString *log = [[[NSString stringWithFormat:@"-- Precise Timers for %@ --\n", identifier] mutableCopy] autorelease];
+    NSMutableString *log = [[NSString stringWithFormat:@"-- Precise Timers for %@ --\n", identifier] mutableCopy];
     int maxlevel = 0;
     for (size_t i = 0; i < count; i++) {
         maxlevel = MAX(maxlevel, stats[i].level);
@@ -285,7 +285,7 @@ void iTermPreciseTimerLogOneEvent(NSString *identifier,
                                   size_t count,
                                   BOOL logToConsole,
                                   NSArray *histograms) {
-    NSMutableString *log = [[@"-- Precise Timers (One Event) --\n" mutableCopy] autorelease];
+    NSMutableString *log = [@"-- Precise Timers (One Event) --\n" mutableCopy];
     for (size_t i = 0; i < count; i++) {
         const NSInteger n = iTermPreciseTimerStatsGetCount(&stats[i]);
         if (n == 0) {
@@ -300,7 +300,7 @@ void iTermPreciseTimerLogOneEvent(NSString *identifier,
         }
         NSTimeInterval ms = n * iTermPreciseTimerStatsGetMean(&stats[i]) * 1000.0;
         NSString *emoji = iTermEmojiForDuration(ms);
-        [name appendString:[[[NSString alloc] initWithBytes:cname length:length encoding:NSUTF8StringEncoding] autorelease]];
+        [name appendString:[[NSString alloc] initWithBytes:cname length:length encoding:NSUTF8StringEncoding]];
         NSString *other = @"";
         if (n > 1) {
             double mean = iTermPreciseTimerStatsGetMean(&stats[i]);

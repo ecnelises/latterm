@@ -12,7 +12,7 @@
 
 + (instancetype)scriptingWindowWithWindow:(NSWindow *)window {
     if (window) {
-        return [[[self alloc] initWithObject:window] autorelease];
+        return [[self alloc] initWithObject:window];
     } else {
         return nil;
     }
@@ -21,15 +21,11 @@
 - (instancetype)initWithObject:(NSWindow *)window {
     self = [super init];
     if (self) {
-        _underlyingWindow = [window retain];
+        _underlyingWindow = window;
     }
     return self;
 }
 
-- (void)dealloc {
-    [_underlyingWindow release];
-    [super dealloc];
-}
 
 #pragma mark - NSProxy
 

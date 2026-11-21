@@ -72,7 +72,7 @@
 - (NSArray *)it_arrayByRemovingObjectsAtIndexes:(NSIndexSet *)indexes {
     NSMutableArray *result = [self mutableCopy];
     [result removeObjectsAtIndexes:indexes];
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)objectsOfClasses:(NSArray *)classes {
@@ -89,7 +89,7 @@
 }
 
 - (NSAttributedString *)attributedComponentsJoinedByAttributedString:(NSAttributedString *)joiner {
-    NSMutableAttributedString *result = [[[NSMutableAttributedString alloc] init] autorelease];
+    NSMutableAttributedString *result = [[NSMutableAttributedString alloc] init];
     for (NSAttributedString *element in self) {
         [result appendAttributedString:element];
         if (element != self.lastObject && joiner != nil) {
@@ -327,13 +327,13 @@
 }
 
 - (BOOL)isEqualIgnoringOrder:(NSArray *)other {
-    NSSet *mySet = [[[NSCountedSet alloc] initWithArray:self] autorelease];
-    NSSet *otherSet = [[[NSCountedSet alloc] initWithArray:other] autorelease];
+    NSSet *mySet = [[NSCountedSet alloc] initWithArray:self];
+    NSSet *otherSet = [[NSCountedSet alloc] initWithArray:other];
     return [mySet isEqual:otherSet];
 }
 
 - (NSArray *)arrayByRemovingDuplicates {
-    return [[[[NSSet alloc] initWithArray:self] autorelease] allObjects];
+    return [[[NSSet alloc] initWithArray:self] allObjects];
 }
 
 - (NSArray *)arrayByRemovingDuplicatesStably {

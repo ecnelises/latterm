@@ -54,7 +54,7 @@ static NSString *iTermPasteViewControllerNibName(BOOL mini) {
                 [view setFrame:frame];
             }
         }
-        pasteContext_ = [pasteContext retain];
+        pasteContext_ = pasteContext;
         totalLength_ = remainingLength_ = length;
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(themeDidChange:)
@@ -66,8 +66,6 @@ static NSString *iTermPasteViewControllerNibName(BOOL mini) {
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [pasteContext_ release];
-    [super dealloc];
 }
 
 - (void)awakeFromNib {
@@ -86,7 +84,7 @@ static NSString *iTermPasteViewControllerNibName(BOOL mini) {
         return;
     }
 
-    NSShadow *shadow = [[[NSShadow alloc] init] autorelease];
+    NSShadow *shadow = [[NSShadow alloc] init];
     shadow.shadowOffset = NSMakeSize(2, -2);
     shadow.shadowColor = [NSColor colorWithWhite:0 alpha:0.3];
     shadow.shadowBlurRadius = 2;

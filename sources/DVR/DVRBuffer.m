@@ -81,10 +81,8 @@
 
 - (void)dealloc
 {
-    [index_ release];
     index_ = nil;
     free(store_);
-    [super dealloc];
 }
 
 - (NSDictionary *)exportedIndex {
@@ -173,7 +171,6 @@
 
     long long key = nextKey_++;
     [index_ setObject:entry forKey:[NSNumber numberWithLongLong:key]];
-    [entry release];
 
     return key;
 }

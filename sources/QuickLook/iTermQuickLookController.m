@@ -27,10 +27,6 @@
   }
 }
 
-- (void)dealloc {
-    [_files release];
-    [super dealloc];
-}
 
 - (void)addURL:(NSURL *)url {
     if (!_files) {

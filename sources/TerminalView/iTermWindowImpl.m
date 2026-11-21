@@ -84,12 +84,6 @@ ITERM_WEAKLY_REFERENCEABLE
     dispatch_async(dispatch_get_main_queue(), ^{
         [[iTermWindowOcclusionChangeMonitor sharedInstance] invalidateCachedOcclusion];
     });
-    [restoreState_ release];
-#if BETA
-    [_lastAlphaChangeStack release];
-#endif
-    [super dealloc];
-
 }
 
 - (void)preventTitlebarDivider {
@@ -235,8 +229,7 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 - (void)setRestoreState:(NSObject *)restoreState {
-    [restoreState_ autorelease];
-    restoreState_ = [restoreState retain];
+    restoreState_ = restoreState;
 }
 
 - (void)enableBlur:(double)radius {
@@ -430,7 +423,6 @@ ITERM_WEAKLY_REFERENCEABLE
     if (alphaValue < 0.01 && !_lastAlphaChangeStack) {
         _lastAlphaChangeStack = [[[NSThread callStackSymbols] componentsJoinedByString:@"\n"] copy];
     } else if (alphaValue > 0.01) {
-        [_lastAlphaChangeStack release];
         _lastAlphaChangeStack = nil;
     }
 #endif
@@ -682,7 +674,7 @@ ITERM_WEAKLY_REFERENCEABLE
 - (void)it_setNeedsInvalidateShadow {
     _needsInvalidateShadow = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
-        _needsInvalidateShadow = NO;
+        self->_needsInvalidateShadow = NO;
         [self invalidateShadow];
     });
 }

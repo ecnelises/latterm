@@ -109,7 +109,7 @@ iTermTmuxPaneBorderStatus iTermTmuxPaneBorderStatusFromString(NSString *value) {
         if ([[tree objectForKey:kLayoutDictNodeType] intValue] == kLeafLayoutNode) {
             // Add a do-nothing root splitter so that the root is always a splitter.
             NSMutableDictionary *oldRoot = tree;
-            tree = [[oldRoot mutableCopy] autorelease];
+            tree = [oldRoot mutableCopy];
             tree[kLayoutDictNodeType] = @(kVSplitLayoutNode);
             tree[kLayoutDictChildrenKey] = @[ oldRoot ];
             [tree removeObjectForKey:kLayoutDictWindowPaneKey];
@@ -185,7 +185,10 @@ iTermTmuxPaneBorderStatus iTermTmuxPaneBorderStatusFromString(NSString *value) {
                      withObject:(id)obj
 {
     if ([[parseTree objectForKey:kLayoutDictNodeType] intValue] == kLeafLayoutNode) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         return [target performSelector:selector withObject:parseTree withObject:obj];
+#pragma clang diagnostic pop
     } else {
         for (NSMutableDictionary *child in [parseTree objectForKey:kLayoutDictChildrenKey]) {
             id ret = [self depthFirstSearchParseTree:child
@@ -323,7 +326,7 @@ iTermTmuxPaneBorderStatus iTermTmuxPaneBorderStatusFromString(NSString *value) {
     NSString *suffix = [components objectAtIndex:2];
     if ([suffix length] == 0) {
         // only item in array
-        NSString *result = [[layouts copy] autorelease];
+        NSString *result = [layouts copy];
         [rest setString:@""];
         return result;
     } else {

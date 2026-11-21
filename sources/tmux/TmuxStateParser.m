@@ -165,7 +165,10 @@ NSString *kStateDictPaneKeyMode = @"pane_key_mode";  // tmux 3.5+; reports per-p
             id objectToStore = value;
             if (converter) {
                 SEL sel = NSSelectorFromString(converter);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
                 objectToStore = [value performSelector:sel];
+#pragma clang diagnostic pop
             }
             // tmux is an external process (and, with `tmux -CC` to a remote host,
             // potentially a different version than we expect), so never trust it

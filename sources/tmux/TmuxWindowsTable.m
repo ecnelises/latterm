@@ -41,12 +41,6 @@ NSString *kWindowPasteboardType = @"com.googlecode.iterm2.kWindowPasteboardType"
     [tableView_ setDoubleAction:@selector(didDoubleClickTableView:)];
 }
 
-- (void)dealloc
-{
-    [model_ release];
-    [filteredModel_ release];
-    [super dealloc];
-}
 
 - (void)setDelegate:(id<TmuxWindowsTableProtocol>)delegate {
     delegate_ = delegate;
@@ -305,7 +299,6 @@ NSString *kWindowPasteboardType = @"com.googlecode.iterm2.kWindowPasteboardType"
 
 - (void)resetFilteredModel
 {
-    [filteredModel_ release];
     filteredModel_ = nil;
 }
 

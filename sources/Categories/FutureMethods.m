@@ -127,7 +127,7 @@ MTActuatorIsOpenFunction *iTermGetMTActuatorIsOpenFunction(void) {
                                      "CTFontShouldAntiAlias");
     });
     if (function) {
-        return function((CTFontRef)self);
+        return function((__bridge CTFontRef)self);
     }
     return NO;
 }

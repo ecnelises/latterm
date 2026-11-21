@@ -75,7 +75,10 @@
         !_moved &&
         [NSDate timeIntervalSinceReferenceDate] - firstTouchTime_ < maxTimeForSimulatedThreeFingerTap) {
         DLog(@"Fake a three finger click");
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
         [target_ performSelector:selector_ withObject:ev];
+#pragma clang diagnostic pop
         DLog(@"fired->YES");
         fired_ = YES;
     }

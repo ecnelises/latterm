@@ -77,8 +77,6 @@
     if (decodedBytes_) {
         free(decodedBytes_);
     }
-    [metadataOffsets_ release];
-    [super dealloc];
 }
 
 - (BOOL)seek:(long long)timestamp
@@ -237,7 +235,6 @@
 #ifdef DVRDEBUG
     NSLog(@"DVRDecoder: load frame %@", @(key));
 #endif
-    [metadataOffsets_ release];
     metadataOffsets_ = [[NSMutableArray alloc] init];
     DVRIndexEntry* entry = [buffer_ entryForKey:key];
     if (frameLength_ != entry->frameLength && decodedBytes_) {

@@ -44,10 +44,6 @@ extern NSString *kWindowPasteboardType;
     [tableView_ setDraggingDestinationFeedbackStyle:NSTableViewDraggingDestinationFeedbackStyleRegular];
 }
 
-- (void)dealloc {
-    [_model release];
-    [super dealloc];
-}
 
 - (void)setDelegate:(id<TmuxSessionsTableProtocol>)delegate {
     delegate_ = delegate;

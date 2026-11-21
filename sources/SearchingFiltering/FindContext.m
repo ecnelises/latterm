@@ -48,12 +48,6 @@ static const NSTimeInterval kDefaultMaxTime = 0.1;
     return self;
 }
 
-- (void)dealloc {
-    [results_ release];
-    [substring_ release];
-    [multiLineSearchState_ release];
-    [super dealloc];
-}
 
 - (NSString *)briefDescription {
     return [NSString stringWithFormat:@"<%@: %p absBlockNum=%@ substring=%@ options=%@ dir=%@ offset=%@ stopAt=%@ status=%@ matchLength=%@ results.count=%@ hasWrapped=%@ maxTime=%@ searched=%@>",
@@ -93,7 +87,6 @@ static const NSTimeInterval kDefaultMaxTime = 0.1;
 }
 
 - (void)setSubstring:(NSString *)substring {
-    [substring_ autorelease];
     substring_ = [substring copy];
 }
 

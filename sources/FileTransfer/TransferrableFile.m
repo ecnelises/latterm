@@ -150,8 +150,7 @@ static NSMutableSet<NSString *> *iTermTransferrableFileLockedFileNames(void) {
 
 - (void)setSuccessor:(TransferrableFile *)successor {
     @synchronized(self) {
-        [_successor autorelease];
-        _successor = [successor retain];
+        _successor = successor;
         successor.hasPredecessor = YES;
     }
 }
@@ -244,7 +243,7 @@ static NSMutableSet<NSString *> *iTermTransferrableFileLockedFileNames(void) {
             XLog(@"Quarantine of wrong class: %@", NSStringFromClass([temp class]));
             return NO;
         }
-        properties = [[temp ?: @{} mutableCopy] autorelease];
+        properties = [temp ?: @{} mutableCopy];
     }
 
     NSBundle *bundle = [NSBundle mainBundle];

@@ -47,8 +47,8 @@
 + (NSLayoutManager *)layoutManagerForFont:(NSFont *)aFont textContainer:(NSTextContainer *)textContainer {
     NSString *myString = @"W";
 
-    NSTextStorage *textStorage = [[[NSTextStorage alloc] initWithString:myString] autorelease];
-    NSLayoutManager *layoutManager = [[[NSLayoutManager alloc] init] autorelease];
+    NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:myString];
+    NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
     [layoutManager addTextContainer:textContainer];
     [textStorage addLayoutManager:layoutManager];
     [textStorage addAttribute:NSFontAttributeName
@@ -60,7 +60,7 @@
 }
 
 + (NSTextContainer *)textContainer {
-    return [[[NSTextContainer alloc] initWithContainerSize:NSMakeSize(FLT_MAX, FLT_MAX)] autorelease];
+    return [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 }
 
 + (BOOL)useGenerousRoundingForFont:(NSFont *)aFont {
@@ -75,7 +75,7 @@
 + (id)fontSizeEstimatorForFont:(NSFont *)aFont
 {
     assert(aFont != nil);
-    FontSizeEstimator* fse = [[[FontSizeEstimator alloc] init] autorelease];
+    FontSizeEstimator* fse = [[FontSizeEstimator alloc] init];
     if (fse) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:aFont forKey:NSFontAttributeName];
@@ -85,7 +85,7 @@
         int advances[1];
         UniChar characters[1];
         characters[0] = 'W';
-        CTFontRef ctfont = (CTFontRef)aFont;  // Toll-free bridged
+        CTFontRef ctfont = (__bridge CTFontRef)aFont;  // Toll-free bridged
         CGFontRef cgfont = CTFontCopyGraphicsFont(ctfont, NULL);
         CTFontGetGlyphsForCharacters(ctfont, characters, glyphs, 1);
         if (CGFontGetGlyphAdvances(cgfont,

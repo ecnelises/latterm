@@ -28,11 +28,6 @@
     return self;
 }
 
-- (void)dealloc
-{
-    [_owningWindow release];
-    [super dealloc];
-}
 
 - (BOOL)canBecomeKeyWindow {
     return YES;
@@ -56,8 +51,7 @@
 }
 
 - (void)setOwningWindow:(NSWindow *)owningWindow {
-    [_owningWindow autorelease];
-    _owningWindow = [owningWindow retain];
+    _owningWindow = owningWindow;
 }
 
 - (void)closeWithoutAdjustingWindowOrder {
