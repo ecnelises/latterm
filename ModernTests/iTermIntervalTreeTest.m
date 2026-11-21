@@ -19,7 +19,7 @@
 @end
 
 static Interval *MakeInterval(long long location, long long length) {
-    return [[[Interval alloc] initWithLocation:location length:length] autorelease];
+    return [[Interval alloc] initWithLocation:location length:length];
 }
 
 @interface IntervalTreeTest : XCTestCase
@@ -39,18 +39,18 @@ static Interval *MakeInterval(long long location, long long length) {
 
 - (void)setUp {
     tree_ = nil;
-    obj1_ = [[[ITObject alloc] init] autorelease];
-    obj2_ = [[[ITObject alloc] init] autorelease];
-    obj3_ = [[[ITObject alloc] init] autorelease];
-    obj4_ = [[[ITObject alloc] init] autorelease];
-    obj5_ = [[[ITObject alloc] init] autorelease];
-    obj6_ = [[[ITObject alloc] init] autorelease];
-    obj7_ = [[[ITObject alloc] init] autorelease];
+    obj1_ = [[ITObject alloc] init];
+    obj2_ = [[ITObject alloc] init];
+    obj3_ = [[ITObject alloc] init];
+    obj4_ = [[ITObject alloc] init];
+    obj5_ = [[ITObject alloc] init];
+    obj6_ = [[ITObject alloc] init];
+    obj7_ = [[ITObject alloc] init];
     seed_ = 0;
 }
 
 - (void)testEmptyTree {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     NSArray *entries = [tree_ objectsInInterval:MakeInterval(0, 256)];
     XCTAssert(entries.count == 0);
 }
@@ -71,7 +71,7 @@ static Interval *MakeInterval(long long location, long long length) {
 }
 
 - (void)testOneEntry {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(100, 50)];
 
     [self assertEntriesInInterval:MakeInterval(0, 100)
@@ -87,7 +87,7 @@ static Interval *MakeInterval(long long location, long long length) {
 }
 
 - (void)testDisjointEntries {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 2)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(20, 2)];
     [self assertEntriesInInterval:MakeInterval(0, 10) equal:@[]];
@@ -106,7 +106,7 @@ static Interval *MakeInterval(long long location, long long length) {
 }
 
 - (void)testTwoEntriesWithSameInterval {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 2)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(10, 2)];
     [self assertEntriesInInterval:MakeInterval(0, 10) equal:@[]];
@@ -119,7 +119,7 @@ static Interval *MakeInterval(long long location, long long length) {
 //  11111
 // 2222
 - (void)testAddOverlap1 {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(5, 10)];
 
@@ -134,7 +134,7 @@ static Interval *MakeInterval(long long location, long long length) {
 //  11111
 //  222
 - (void)testAddOverlap2 {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(10, 5)];
 
@@ -148,7 +148,7 @@ static Interval *MakeInterval(long long location, long long length) {
 //  11111
 //   222
 - (void)testAddOverlap3 {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(12, 5)];
 
@@ -165,7 +165,7 @@ static Interval *MakeInterval(long long location, long long length) {
 //  11111
 //    222
 - (void)testAddOverlap4 {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(15, 5)];
 
@@ -180,7 +180,7 @@ static Interval *MakeInterval(long long location, long long length) {
 //  11111
 //     222
 - (void)testAddOverlap5 {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(15, 10)];
 
@@ -196,7 +196,7 @@ static Interval *MakeInterval(long long location, long long length) {
 //  11111
 // 2222222
 - (void)testAddOverlap6 {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];  // [10, 20)
     [tree_ addObject:obj2_ withInterval:MakeInterval(5, 20)];   // [5, 25)
 
@@ -213,7 +213,7 @@ static Interval *MakeInterval(long long location, long long length) {
 }
 
 - (void)testWithSplit {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(8, 10)];
     [tree_ addObject:obj3_ withInterval:MakeInterval(9, 10)];
@@ -221,7 +221,7 @@ static Interval *MakeInterval(long long location, long long length) {
 }
 
 - (void)testWithSkew {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(10, 10)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(12, 10)];
     [tree_ addObject:obj3_ withInterval:MakeInterval(11, 10)];
@@ -238,7 +238,7 @@ static Interval *MakeInterval(long long location, long long length) {
 }
 
 - (void)testMultipleObjectsWithSmallestLimit {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(1, 2)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(2, 1)];
     [tree_ addObject:obj3_ withInterval:MakeInterval(9, 10)];
@@ -254,14 +254,14 @@ static Interval *MakeInterval(long long location, long long length) {
     for (int j = 0; j < ITERATIONS; j++) {
         const int N = 2 + j / 20;  // Number of entries
         NSMutableArray *entries = [NSMutableArray array];
-        tree_ = [[[IntervalTree alloc] init] autorelease];
+        tree_ = [[IntervalTree alloc] init];
         id<IntervalTreeObject> objectWithLargestLimit = nil;
         id<IntervalTreeObject> objectWithSmallestLimit = nil;
         NSMutableArray *limits = [NSMutableArray array];
         for (int i = 0; i < N; i++) {
-            IntervalTreeEntry *entry = [[[IntervalTreeEntry alloc] init] autorelease];
+            IntervalTreeEntry *entry = [[IntervalTreeEntry alloc] init];
             entry.interval = [self randomInterval];
-            entry.object = [[[ITObject alloc] init] autorelease];
+            entry.object = [[ITObject alloc] init];
             [limits addObject:@(entry.interval.limit)];
             if (!objectWithLargestLimit || entry.interval.limit > objectWithLargestLimit.entry.interval.limit) {
                 objectWithLargestLimit = entry.object;
@@ -351,7 +351,7 @@ static Interval *MakeInterval(long long location, long long length) {
 #endif
 
 - (void)testRemoveObjectRegression {
-    tree_ = [[[IntervalTree alloc] init] autorelease];
+    tree_ = [[IntervalTree alloc] init];
     [tree_ addObject:obj1_ withInterval:MakeInterval(102, 7)];
     [tree_ addObject:obj2_ withInterval:MakeInterval(62, 3)];
     [tree_ addObject:obj3_ withInterval:MakeInterval(239, 2)];

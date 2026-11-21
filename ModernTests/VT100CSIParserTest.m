@@ -28,11 +28,11 @@
 - (VT100Token *)tokenForDataWithFormat:(NSString *)formatString, ... {
     va_list args;
     va_start(args, formatString);
-    NSString *string = [[[NSString alloc] initWithFormat:formatString arguments:args] autorelease];
+    NSString *string = [[NSString alloc] initWithFormat:formatString arguments:args];
     va_end(args);
 
     NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
-    VT100Token *token = [[[VT100Token alloc] init] autorelease];
+    VT100Token *token = [[VT100Token alloc] init];
     _context = iTermParserContextMake((unsigned char *)data.bytes, data.length);
     [VT100CSIParser decodeFromContext:&_context
          support8BitControlCharacters:NO

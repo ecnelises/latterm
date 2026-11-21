@@ -161,22 +161,22 @@ do { \
 
 // Returns a 2x2 grid.
 - (VT100Grid *)smallGrid {
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(2, 2)
-                                              delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(2, 2)
+                                              delegate:self];
     return grid;
 }
 
 // Returns a 4x4 grid.
 - (VT100Grid *)mediumGrid {
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(4, 4)
-                                              delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(4, 4)
+                                              delegate:self];
     return grid;
 }
 
 // Returns a 8x8 grid.
 - (VT100Grid *)largeGrid {
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(8, 8)
-                                              delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(8, 8)
+                                              delegate:self];
     return grid;
 }
 
@@ -250,7 +250,7 @@ do { \
                                              delegate:self];
     int i = 0;
     for (NSString *line in lines) {
-        screen_char_t *s = [grid mutableScreenCharsAtLineNumber:i++];
+        screen_char_t *s = [grid screenCharsAtLineNumber:i++];
         for (int j = 0; j < [line length]; j++) {
             unichar c = [line characterAtIndex:j];
             if (c == '.') c = 0;
@@ -314,22 +314,22 @@ do { \
 
 - (void)testAppendLineToLineBuffer {
     VT100Grid *grid = [self gridFromCompactLines:@"abcd\nefgh\n....\n...."];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendLines:2 toLineBuffer:lineBuffer];
     XCTAssert([[lineBuffer debugString] isEqualToString:@"abcd!\nefgh!"]);
 
     grid = [self gridFromCompactLinesWithContinuationMarks:@"abcd!\nefgh+\n....!\n....!"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendLines:2 toLineBuffer:lineBuffer];
     XCTAssert([[lineBuffer debugString] isEqualToString:@"abcd!\nefgh+"]);
 
     grid = [self gridFromCompactLinesWithContinuationMarks:@"abcd+\nefgh!\n....!\n....!"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendLines:2 toLineBuffer:lineBuffer];
     XCTAssert([[lineBuffer debugString] isEqualToString:@"abcdefgh!"]);
 
     grid = [self gridFromCompactLines:@"abcd\nefgh\n....\n...."];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.cursorX = 2;
     grid.cursorY = 1;
     [grid appendLines:2 toLineBuffer:lineBuffer];
@@ -340,7 +340,7 @@ do { \
     // Test that the cursor gets hoisted from the start of a blank line following a soft-eol to the
     // end of the preceding line.
     grid = [self gridFromCompactLinesWithContinuationMarks:@"abcd+\nefgh+\n....!\n....!"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.cursorX = 0;
     grid.cursorY = 2;
     [grid appendLines:2 toLineBuffer:lineBuffer];
@@ -358,7 +358,7 @@ do { \
 - (void)testMoveCursorDownOneLineNoScroll {
     // Test cursor in default scroll region
     VT100Grid *grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.cursorX = 0;
     grid.cursorY = 0;
     [grid moveCursorDownOneLineScrollingIntoLineBuffer:lineBuffer
@@ -375,7 +375,7 @@ do { \
 
     // Test cursor below scrollBottom but above last line.
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.scrollRegionRows = VT100GridRangeMake(0, 1);
     grid.cursorX = 0;
     grid.cursorY = 1;
@@ -390,7 +390,7 @@ do { \
 
     // Test whole screen scrolling
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.cursorX = 0;
     grid.cursorY = 3;
     __block BOOL scrolled = NO;
@@ -409,7 +409,7 @@ do { \
 
     // Test whole screen scrolling, verify soft eol's are respected
     grid = [self gridFromCompactLinesWithContinuationMarks:@"abcd+\nefgh!\nijkl!\nmnop!"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.cursorX = 0;
     grid.cursorY = 3;
     [grid moveCursorDownOneLineScrollingIntoLineBuffer:lineBuffer
@@ -424,7 +424,7 @@ do { \
 
     // Test scrolling when there's a full-width region touching the top of the screen
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.scrollRegionRows = VT100GridRangeMake(0, 2);
     grid.cursorX = 0;
     grid.cursorY = 1;
@@ -440,7 +440,7 @@ do { \
 
     // Same, but with useScrollbackWithRegion = NO
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.scrollRegionRows = VT100GridRangeMake(0, 2);
     grid.cursorX = 0;
     grid.cursorY = 1;
@@ -456,7 +456,7 @@ do { \
 
     // Test that the dropped line count is correct.
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     grid.cursorX = 0;
     grid.cursorY = 3;
@@ -476,7 +476,7 @@ do { \
 
     // Test with both vertical and horizontal scroll region
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.scrollRegionRows = VT100GridRangeMake(1, 2);
     grid.scrollRegionCols = VT100GridRangeMake(1, 2);
     grid.useScrollRegionCols = YES;
@@ -523,7 +523,7 @@ do { \
 
     NSString *string = @"abcdef";
     screen_char_t *line = [self screenCharLineForString:string];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendCharsAtCursor:line
                        length:[string length]
       scrollingIntoLineBuffer:lineBuffer
@@ -532,7 +532,9 @@ do { \
                    wraparound:YES
                          ansi:NO
                        insert:NO
-       externalAttributeIndex:nil];
+       externalAttributeIndex:nil
+                     rtlFound:NO
+                      dwcFree:NO];
     XCTAssert([[grid compactLineDump] isEqualToString:
             @"abcd\n"
             @"ef..\n"
@@ -548,12 +550,12 @@ do { \
 
 // Make sure that moveCursorLeft wraps around soft EOLs
 - (void)testMoveCursorLeftWrappingAroundDoubleWideCharEOL {
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(3, 3)
-                                              delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(3, 3)
+                                              delegate:self];
 
     NSString *string = @"abc-";  // c is double-width
     screen_char_t *line = [self screenCharLineForString:string];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendCharsAtCursor:line
                        length:[string length]
       scrollingIntoLineBuffer:lineBuffer
@@ -562,7 +564,9 @@ do { \
                    wraparound:YES
                          ansi:NO
                        insert:NO
-       externalAttributeIndex:nil];
+       externalAttributeIndex:nil
+                     rtlFound:NO
+                      dwcFree:NO];
     XCTAssert([[grid compactLineDump] isEqualToString:
             @"ab>\n"
             @"c-.\n"
@@ -581,7 +585,7 @@ do { \
 
     NSString *string = @"abc";
     screen_char_t *line = [self screenCharLineForString:string];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendCharsAtCursor:line
                        length:[string length]
       scrollingIntoLineBuffer:lineBuffer
@@ -590,7 +594,9 @@ do { \
                    wraparound:YES
                          ansi:NO
                        insert:NO
-       externalAttributeIndex:nil];
+       externalAttributeIndex:nil
+                     rtlFound:NO
+                      dwcFree:NO];
     [grid moveCursorDownOneLineScrollingIntoLineBuffer:lineBuffer
                                    unlimitedScrollback:YES
                                useScrollbackWithRegion:NO
@@ -608,7 +614,9 @@ do { \
                    wraparound:YES
                          ansi:NO
                        insert:NO
-       externalAttributeIndex:nil];
+       externalAttributeIndex:nil
+                     rtlFound:NO
+                      dwcFree:NO];
 
     XCTAssert([[grid compactLineDump] isEqualToString:
             @"abc.\n"
@@ -699,40 +707,44 @@ do { \
 
 - (void)testScrollUpIntoLineBuffer {
     VT100Grid *grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid scrollUpIntoLineBuffer:lineBuffer
              unlimitedScrollback:NO
          useScrollbackWithRegion:YES
-                       softBreak:NO];
+                       softBreak:NO
+                sentToLineBuffer:NULL];
     XCTAssert([[grid compactLineDump] isEqualToString:@"efgh\nijkl\nmnop\n...."]);
     XCTAssert([[lineBuffer debugString] isEqualToString:@"abcd!"]);
 
     // Check that dropped lines is accurate
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     int dropped = [grid scrollUpIntoLineBuffer:lineBuffer
                            unlimitedScrollback:NO
                        useScrollbackWithRegion:YES
-                                     softBreak:NO];
+                                     softBreak:NO
+                              sentToLineBuffer:NULL];
     XCTAssert(dropped == 0);
     dropped = [grid scrollUpIntoLineBuffer:lineBuffer
                        unlimitedScrollback:NO
                    useScrollbackWithRegion:YES
-                                 softBreak:NO];
+                                 softBreak:NO
+                          sentToLineBuffer:NULL];
     XCTAssert(dropped == 1);
     XCTAssert([[grid compactLineDump] isEqualToString:@"ijkl\nmnop\n....\n...."]);
     XCTAssert([[lineBuffer debugString] isEqualToString:@"efgh!"]);
 
     // Scroll a horizontal region. Shouldn't append to linebuffer.
     grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     grid.scrollRegionCols = VT100GridRangeMake(1, 2);
     grid.useScrollRegionCols = YES;
     dropped = [grid scrollUpIntoLineBuffer:lineBuffer
                        unlimitedScrollback:NO
                    useScrollbackWithRegion:YES
-                                 softBreak:NO];
+                                 softBreak:NO
+                          sentToLineBuffer:NULL];
     XCTAssert(dropped == 0);
     XCTAssert([[grid compactLineDump] isEqualToString:@"afgd\nejkh\ninol\nm..p"]);
     XCTAssert([[lineBuffer debugString] isEqualToString:@""]);
@@ -749,7 +761,7 @@ do { \
 - (void)testScrollWholeScreenUpIntoLineBuffer {
     VT100Grid *grid = [self gridFromCompactLines:@"abcd\nefgh\nijkl\nmnop"];
     [grid markCharDirty:YES at:VT100GridCoordMake(2, 2) updateTimestamp:YES];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     XCTAssert([grid scrollWholeScreenUpIntoLineBuffer:lineBuffer unlimitedScrollback:NO] == 0);
     XCTAssert([[grid compactLineDump] isEqualToString:@"efgh\nijkl\nmnop\n...."]);
@@ -757,547 +769,6 @@ do { \
     XCTAssert([grid scrollWholeScreenUpIntoLineBuffer:lineBuffer unlimitedScrollback:NO] == 1);
     XCTAssert([[grid compactLineDump] isEqualToString:@"ijkl\nmnop\nqrst\n...."]);
     XCTAssert([[lineBuffer debugString] isEqualToString:@"efgh!"]);
-}
-
-// No test for scrollDown because it's just a wafer thin wrapper around scrollRect:downBy:.
-
-// Scrolls a 2x2 region in at (1,1)
-- (NSString *)compactLineDumpForRectScrolledDownBy:(int)downBy
-                                        scrollRect:(VT100GridRect)scrollRect
-                                      initialValue:(NSString *)initialValue {
-    VT100Grid *grid = [self gridFromCompactLines:initialValue];
-    [grid scrollRect:scrollRect downBy:downBy softBreak:NO];
-    return [NSString stringWithFormat:@"%@\n\n%@", [grid compactLineDump], [grid compactDirtyDump]];
-}
-
-- (void)testScrollRectDownBy {
-    NSString *s;
-    NSString *basicValue =
-        @"abcd\n"
-        @"efgh\n"
-        @"ijkl\n"
-        @"mnop";
-    NSString *largerValue =
-        @"abcde\n"
-        @"fghij\n"
-        @"klmno\n"
-        @"pqrst\n"
-        @"uvwxy";
-
-    // Test that downBy=0 does nothing
-    s = [self compactLineDumpForRectScrolledDownBy:0
-                                        scrollRect:VT100GridRectMake(1, 1, 2, 2)
-                                      initialValue:basicValue];
-    XCTAssert([s isEqualToString:@"abcd\nefgh\nijkl\nmnop\n\ncccc\ncccc\ncccc\ncccc"]);
-
-
-    // Test that downBy:1 works
-    s = [self compactLineDumpForRectScrolledDownBy:1
-                                        scrollRect:VT100GridRectMake(1, 1, 2, 2)
-                                      initialValue:basicValue];
-    XCTAssert([s isEqualToString:
-            @"abcd\n"
-            @"e..h\n"
-            @"ifgl\n"
-            @"mnop\n"
-            @"\n"
-            @"cccc\n"
-            @"dddd\n"
-            @"dddd\n"
-            @"cccc"]);
-
-    // Test that downBy:-1 works
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(1, 1, 2, 2)
-                                      initialValue:basicValue];
-    XCTAssert([s isEqualToString:
-            @"abcd\n"
-            @"ejkh\n"
-            @"i..l\n"
-            @"mnop\n"
-            @"\n"
-            @"cccc\n"
-            @"dddd\n"
-            @"dddd\n"
-            @"cccc"]);
-
-    // Test that downBy:2 works
-    s = [self compactLineDumpForRectScrolledDownBy:2
-                                        scrollRect:VT100GridRectMake(1, 1, 3, 3)
-                                      initialValue:largerValue];
-    XCTAssert([s isEqualToString:
-            @"abcde\n"
-            @"f...j\n"
-            @"k...o\n"
-            @"pghit\n"
-            @"uvwxy\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-    // Test that downBy:-2 works
-    s = [self compactLineDumpForRectScrolledDownBy:-2
-                                        scrollRect:VT100GridRectMake(1, 1, 3, 3)
-                                      initialValue:largerValue];
-    XCTAssert([s isEqualToString:
-            @"abcde\n"
-            @"fqrsj\n"
-            @"k...o\n"
-            @"p...t\n"
-            @"uvwxy\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-    // Test that direction = height works
-    s = [self compactLineDumpForRectScrolledDownBy:3
-                                        scrollRect:VT100GridRectMake(1, 1, 3, 3)
-                                      initialValue:largerValue];
-    XCTAssert([s isEqualToString:
-            @"abcde\n"
-            @"f...j\n"
-            @"k...o\n"
-            @"p...t\n"
-            @"uvwxy\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-    // Test that direction = -height works
-    s = [self compactLineDumpForRectScrolledDownBy:-3
-                                        scrollRect:VT100GridRectMake(1, 1, 3, 3)
-                                      initialValue:largerValue];
-    XCTAssert([s isEqualToString:
-            @"abcde\n"
-            @"f...j\n"
-            @"k...o\n"
-            @"p...t\n"
-            @"uvwxy\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-    // Test that direction = height + 1 works
-    s = [self compactLineDumpForRectScrolledDownBy:4
-                                        scrollRect:VT100GridRectMake(1, 1, 3, 3)
-                                      initialValue:largerValue];
-    XCTAssert([s isEqualToString:
-            @"abcde\n"
-            @"f...j\n"
-            @"k...o\n"
-            @"p...t\n"
-            @"uvwxy\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-    // Test that direction = -height - 1 works
-    s = [self compactLineDumpForRectScrolledDownBy:-4
-                                        scrollRect:VT100GridRectMake(1, 1, 3, 3)
-                                      initialValue:largerValue];
-    XCTAssert([s isEqualToString:
-            @"abcde\n"
-            @"f...j\n"
-            @"k...o\n"
-            @"p...t\n"
-            @"uvwxy\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-
-    // Test that split-dwc's are cleaned up when broken
-    NSString *multiSplitDwcValue =
-        @"ab>\n"
-        @"c-d\n"
-        @"ef>\n"
-        @"gh-";
-    // Test that a split-dwc at bottom when separated from its dwc is handled correctly.
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(0, 1, 3, 2)
-                                      initialValue:multiSplitDwcValue];
-    XCTAssert([s isEqualToString:
-            @"ab.\n"
-            @"ef.\n"
-            @"...\n"
-            @"gh-\n"
-            @"\n"
-            @"ccc\n"
-            @"ddd\n"
-            @"ddd\n"
-            @"ccc"]);
-
-    // Test that a split-dwc at top when separated from its dwc is handled correctly.
-    NSString *singleSplitDwcOnTopValue =
-        @"ab>\n"
-        @"c-d\n"
-        @"efg";
-    s = [self compactLineDumpForRectScrolledDownBy:1
-                                        scrollRect:VT100GridRectMake(0, 1, 3, 2)
-                                      initialValue:singleSplitDwcOnTopValue];
-    XCTAssert([s isEqualToString:
-            @"ab.\n"
-            @"...\n"
-            @"c-d\n"
-            @"\n"
-            @"ccc\n"
-            @"ddd\n"
-            @"ddd"]);
-
-    // Test that a split-dwc is scrolled correctly.
-    NSString *singleSplitDwcOnBottomValue =
-        @"abc\n"
-        @"de>\n"
-        @"f-g";
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(0, 0, 3, 3)
-                                      initialValue:singleSplitDwcOnBottomValue];
-    XCTAssert([s isEqualToString:
-            @"de>\n"
-            @"f-g\n"
-            @"...\n"
-            @"\n"
-            @"ddd\n"
-            @"ddd\n"
-            @"ddd"]);
-
-    // Test that orphaned DWCs are cleaned up when scrolling a subset of columns
-    NSString *orphansValue =
-        @"abcde\n"
-        @"f-gh-\n"  // f- and h- should be erased because they're split up
-        @"ij-k>\n"  // j- can move up, but the split-dwc is broken since l- doesn't move as a whole
-        @"l-mno\n"  // l- gets erased
-        @"p-qr-\n"  // p- and r- get erased
-        @"stuvw";
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(1, 0, 3, 6)
-                                      initialValue:orphansValue];
-    XCTAssert([s isEqualToString:
-            @"a.g.e\n"
-            @".j-k.\n"
-            @"i.mn.\n"
-            @"..q.o\n"
-            @".tuv.\n"
-            @"s...w\n"
-            @"\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd"]);
-
-    // Test edge cases of split-dwc cleanup.
-    NSString *edgeCaseyOrphans =
-        @"abcd>\n"
-        @"e-fgh\n"
-        @"ijklm\n"
-        @"nopq>\n"
-        @"r-stu";
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(0, 1, 5, 3)
-                                      initialValue:edgeCaseyOrphans];
-    XCTAssert([s isEqualToString:
-            @"abcd.\n"
-            @"ijklm\n"
-            @"nopq.\n"
-            @".....\n"
-            @"r-stu\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-
-    // Same, but scroll by so much it just clears the area out.
-    s = [self compactLineDumpForRectScrolledDownBy:-10
-                                        scrollRect:VT100GridRectMake(0, 1, 5, 3)
-                                      initialValue:edgeCaseyOrphans];
-    XCTAssert([s isEqualToString:
-            @"abcd.\n"
-            @".....\n"
-            @".....\n"
-            @".....\n"
-            @"r-stu\n"
-            @"\n"
-            @"ccccc\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ccccc"]);
-
-    // Test scrolling a region where scrollRight=right margin, scrollLeft=1, and there's a split-dwc
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(1, 0, 4, 5)
-                                      initialValue:edgeCaseyOrphans];
-    XCTAssert([s isEqualToString:
-            @"a.fgh\n"
-            @".jklm\n"
-            @"iopq.\n"
-            @"n.stu\n"
-            @".....\n"
-            @"\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd"]);
-
-    // Test scrolling a region where scrollRight=right margin-1, scrollLeft=0, and there's a split-dwc
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(0, 0, 4, 5)
-                                      initialValue:edgeCaseyOrphans];
-    XCTAssert([s isEqualToString:
-            @"e-fg.\n"
-            @"ijklh\n"
-            @"nopqm\n"
-            @"r-st.\n"
-            @"....u\n"
-            @"\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd\n"
-            @"ddddd"]);
-
-    // empty rect is harmless
-    s = [self compactLineDumpForRectScrolledDownBy:1
-                                        scrollRect:VT100GridRectMake(1, 1, 0, 0)
-                                      initialValue:basicValue];
-    XCTAssert([s isEqualToString:
-            @"abcd\n"
-            @"efgh\n"
-            @"ijkl\n"
-            @"mnop\n"
-            @"\n"
-            @"cccc\n"
-            @"cccc\n"
-            @"cccc\n"
-            @"cccc"]);
-
-    // Move one dwc to replace one that had been split
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(0, 1, 3, 2)
-                                      initialValue:@"ab>\nc-d\ne-f"];
-    XCTAssert([s isEqualToString:
-            @"ab.\n"
-            @"e-f\n"
-            @"...\n"
-            @"\n"
-            @"ccc\n"
-            @"ddd\n"
-            @"ddd"]);
-
-    // Test moving continuation mark to edge of rect
-    NSString *lotsOfDwcsValue =
-        @"ab>\n"
-        @"c->\n"
-        @"d->\n"
-        @"e-f";
-    s = [self compactLineDumpForRectScrolledDownBy:1
-                                        scrollRect:VT100GridRectMake(0, 1, 3, 3)
-                                      initialValue:lotsOfDwcsValue];
-    XCTAssert([s isEqualToString:
-            @"ab.\n"
-            @"...\n"
-            @"c->\n"
-            @"d-.\n"
-            @"\n"
-            @"ccc\n"
-            @"ddd\n"
-            @"ddd\n"
-            @"ddd"]);
-
-    // Same, but other direction
-    s = [self compactLineDumpForRectScrolledDownBy:-1
-                                        scrollRect:VT100GridRectMake(0, 1, 3, 2)
-                                      initialValue:lotsOfDwcsValue];
-    XCTAssert([s isEqualToString:
-            @"ab.\n"
-            @"d-.\n"
-            @"...\n"
-            @"e-f\n"
-            @"\n"
-            @"ccc\n"
-            @"ddd\n"
-            @"ddd\n"
-            @"ccc"]);
-
-    // Test that continuation marks are cleaned up before the scrolled region with
-    // full width and scrolling down
-    VT100Grid *grid = [self gridFromCompactLinesWithContinuationMarks:
-                       @"abcd+\n"
-                       @"efgh+\n"
-                       @"ijkl+\n"
-                       @"mnop+\n"
-                       @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(0, 1, 4, 3) downBy:1 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd!\n"
-            @"....!\n"
-            @"efgh+\n"
-            @"ijkl!\n"
-            @"qrst!"]);
-
-    // Test that continuation marks are cleaned up before the scrolled region with
-    // full width and scrolling down by 2
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(0, 1, 4, 3) downBy:2 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd!\n"
-            @"....!\n"
-            @"....!\n"
-            @"efgh!\n"
-            @"qrst!"]);
-
-    // Test that continuation marks are cleaned up before the scrolled region with
-    // full width and scrolling up
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(0, 1, 4, 3) downBy:-1 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd!\n"
-            @"ijkl+\n"
-            @"mnop!\n"
-            @"....!\n"
-            @"qrst!"]);
-
-    // Same but scroll by 2
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(0, 1, 4, 3) downBy:-2 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd!\n"
-            @"mnop!\n"
-            @"....!\n"
-            @"....!\n"
-            @"qrst!"]);
-
-    // Test that continuation marks are cleaned up before the scrolled region with
-    // no first column and scrolling down
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(1, 1, 3, 3) downBy:1 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd+\n"
-            @"e...!\n"
-            @"ifgh+\n"
-            @"mjkl!\n"
-            @"qrst!"]);
-
-    // Same but scroll by 2
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(1, 1, 3, 3) downBy:2 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd+\n"
-            @"e...!\n"
-            @"i...!\n"
-            @"mfgh!\n"
-            @"qrst!"]);
-
-    // With DWC_SKIP
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijk>>\n"
-            @"M-op+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(1, 1, 3, 3) downBy:1 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd+\n"
-            @"e...!\n"
-            @"ifgh+\n"
-            @".jk.!\n"
-            @"qrst!"]);
-
-    // Test that continuation marks are cleaned up before the scrolled region with
-    // no first column and scrolling up
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(1, 1, 3, 3) downBy:-1 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd+\n"
-            @"ejkl+\n"
-            @"inop!\n"
-            @"m...!\n"
-            @"qrst!"]);
-
-    // With DWC_SKIP
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abc>>\n"
-            @"E-gh+\n"
-            @"ijkl+\n"
-            @"mno>>\n"
-            @"Q-st!"];
-    [grid scrollRect:VT100GridRectMake(1, 1, 3, 3) downBy:-1 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abc.!\n"
-            @".jkl+\n"
-            @"ino.!\n"
-            @"m...!\n"
-            @"Q-st!"]);
-
-    // Same but scroll by 2
-    grid = [self gridFromCompactLinesWithContinuationMarks:
-            @"abcd+\n"
-            @"efgh+\n"
-            @"ijkl+\n"
-            @"mnop+\n"
-            @"qrst!"];
-    [grid scrollRect:VT100GridRectMake(1, 1, 3, 3) downBy:-2 softBreak:NO];
-    XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
-            @"abcd+\n"
-            @"enop!\n"
-            @"i...!\n"
-            @"m...!\n"
-            @"qrst!"]);
-
 }
 
 - (void)testSetContentsFromDVRFrame {
@@ -1313,8 +784,8 @@ do { \
     }
 
     // Test basic functionality -- save and restore 4x4 into 4x4.
-    VT100Grid *testGrid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(4, 4)
-                                                  delegate:self] autorelease];
+    VT100Grid *testGrid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(4, 4)
+                                                  delegate:self];
     DVRFrameInfo info = {
         .width = 4,
         .height = 4,
@@ -1330,8 +801,8 @@ do { \
     XCTAssert(testGrid.cursorY == 2);
 
     // Put it into a smaller grid.
-    testGrid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(3, 3)
-                                       delegate:self] autorelease];
+    testGrid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(3, 3)
+                                       delegate:self];
     [testGrid setContentsFromDVRFrame:frame metadataArray:md info:info];
     NSString *truncatedCompactLines =
         @"efg\n"
@@ -1342,8 +813,8 @@ do { \
     XCTAssert(testGrid.cursorY == 1);
 
     // Put it into a bigger grid
-    testGrid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(5, 5)
-                                       delegate:self] autorelease];
+    testGrid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(5, 5)
+                                       delegate:self];
     [testGrid setContentsFromDVRFrame:frame metadataArray:md info:info];
     NSString *paddedCompactLines =
         @"abcd.\n"
@@ -1358,9 +829,13 @@ do { \
 
 - (void)doTestDefaultLine {
     VT100Grid *grid = [self smallGrid];
+    screen_char_t dc = grid.defaultChar;
+    CopyForegroundColor(&dc, foregroundColor_);
+    CopyBackgroundColor(&dc, backgroundColor_);
+    grid.defaultChar = dc;
     const int w = 80;
-    NSMutableData *data = [grid defaultLineOfWidth:80];
-    screen_char_t *line = [data mutableBytes];
+    NSData *data = [grid defaultLineOfWidth:80];
+    const screen_char_t *line = [data bytes];
     XCTAssert(data.length == sizeof(screen_char_t) * (w + 1));  // w+1 because it adds one for continuation marker
     for (int i = 0; i < w; i++) {
         XCTAssert(ForegroundAttributesEqual(line[i], foregroundColor_));
@@ -1450,7 +925,7 @@ do { \
 
 // Returns a grid the same size as 'grid' with 'x's where runs are present.
 - (VT100Grid *)coverageForRuns:(NSArray *)runs inGrid:(VT100Grid *)grid {
-    VT100Grid *coverage = [[[VT100Grid alloc] initWithSize:grid.size delegate:self] autorelease];
+    VT100Grid *coverage = [[VT100Grid alloc] initWithSize:grid.size delegate:self];
     for (NSValue *value in runs) {
         VT100GridRun run = [value gridRunValue];
         [coverage setCharsInRun:run toChar:'x' externalAttributes:nil];
@@ -1487,9 +962,9 @@ do { \
         [strings addObject:arg];
     }
 
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     int i = 0;
-    for (NSString *string in strings) {
+    for (__strong NSString *string in strings) {
         NSRange range = [string rangeOfString:@"*"];  // gives cursor position
         if (range.location != NSNotFound) {
             string = [string stringByReplacingOccurrencesOfString:@"*" withString:@""];
@@ -1645,33 +1120,6 @@ do { \
     XCTAssert(rect.size.height == 2);
 }
 
-- (void)testEraseDwc {
-    // Erase a DWC
-    VT100Grid *grid = [self gridFromCompactLinesWithContinuationMarks:@"ab-!"];
-    screen_char_t dc = [grid defaultChar];
-    XCTAssert([grid erasePossibleDoubleWidthCharInLineNumber:0
-                                         startingAtOffset:1
-                                                 withChar:dc]);
-    XCTAssert([[grid compactLineDump] isEqualToString:@"a.."]);
-    XCTAssert([[grid compactDirtyDump] isEqualToString:@"ddd"]);
-
-    // Do nothing
-    grid = [self gridFromCompactLinesWithContinuationMarks:@"ab-!"];
-    XCTAssert(![grid erasePossibleDoubleWidthCharInLineNumber:0
-                                          startingAtOffset:0
-                                                  withChar:dc]);
-    XCTAssert([[grid compactLineDump] isEqualToString:@"ab-"]);
-    XCTAssert([[grid compactDirtyDump] isEqualToString:@"ccc"]);
-
-    // Erase DWC-skip on prior line
-    grid = [self gridFromCompactLinesWithContinuationMarks:@"ab>>\nc-.!"];
-    XCTAssert([grid erasePossibleDoubleWidthCharInLineNumber:1
-                                         startingAtOffset:0
-                                                 withChar:dc]);
-    XCTAssert([[grid compactLineDump] isEqualToString:@"ab.\n..."]);
-    XCTAssert([[grid compactDirtyDump] isEqualToString:@"ccc\nddd"]);  // Don't need to set DWC_SKIP->NULL char to dirty
-}
-
 - (void)testMoveCursorToLeftMargin {
     VT100Grid *grid = [self mediumGrid];
 
@@ -1704,7 +1152,7 @@ do { \
     grid.cursorX = 2;
     grid.cursorY = 3;
 
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     int dropped = [grid resetWithLineBuffer:lineBuffer
                         unlimitedScrollback:NO
@@ -1726,7 +1174,7 @@ do { \
 
     // Test unlimited scrollback --------------------------------------------------------------------
     grid = [self gridFromCompactLines:@"0123\nabcd\nefgh\n...."];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     dropped = [grid resetWithLineBuffer:lineBuffer
                     unlimitedScrollback:YES
@@ -1742,7 +1190,7 @@ do { \
 
     // Test on empty screen ------------------------------------------------------------------------
     grid = [self smallGrid];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     dropped = [grid resetWithLineBuffer:lineBuffer
                     unlimitedScrollback:YES
@@ -1763,7 +1211,7 @@ do { \
     grid.cursorX = 2;
     grid.cursorY = 3;
 
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     int dropped = [grid resetWithLineBuffer:lineBuffer
                         unlimitedScrollback:NO
@@ -1790,7 +1238,7 @@ do { \
     grid.cursorX = 2;
     grid.cursorY = 2;
 
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     dropped = [grid resetWithLineBuffer:lineBuffer
                     unlimitedScrollback:NO
@@ -1817,7 +1265,7 @@ do { \
     grid.cursorX = 2;
     grid.cursorY = 1;
 
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     dropped = [grid resetWithLineBuffer:lineBuffer
                     unlimitedScrollback:NO
@@ -1840,7 +1288,7 @@ do { \
     // Test unlimited scrollback --------------------------------------------------------------------
     grid = [self gridFromCompactLines:@"0123\nabcd\nefgh\n...."];
     grid.cursor = VT100GridCoordMake(0, 3);
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     dropped = [grid resetWithLineBuffer:lineBuffer
                     unlimitedScrollback:YES
@@ -1856,7 +1304,7 @@ do { \
 
     // Test on empty screen ------------------------------------------------------------------------
     grid = [self smallGrid];
-    lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [lineBuffer setMaxLines:1];
     dropped = [grid resetWithLineBuffer:lineBuffer
                     unlimitedScrollback:YES
@@ -1943,7 +1391,7 @@ do { \
                                   expectLineBuffer:(NSString *)expectedLineBuffer
                                      expectDropped:(int)expectedNumLinesDropped {
     VT100Grid *grid = [self gridFromCompactLinesWithContinuationMarks:initialBuffer];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     if (scrollRect.size.width >= 0) {
         grid.scrollRegionCols = VT100GridRangeMake(scrollRect.origin.x, scrollRect.size.width);
         grid.useScrollRegionCols = YES;
@@ -1961,7 +1409,9 @@ do { \
                                          wraparound:wraparoundMode_
                                                ansi:isAnsi_
                                              insert:insertMode_
-                             externalAttributeIndex:nil];
+                             externalAttributeIndex:nil
+                     rtlFound:NO
+                      dwcFree:NO];
     XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:expectedLines]);
     XCTAssert([[lineBuffer debugString] isEqualToString:expectedLineBuffer]);
     XCTAssert(numLinesDropped == expectedNumLinesDropped);
@@ -2765,7 +2215,8 @@ do { \
                          ansi:NO
                        insert:NO
        externalAttributeIndex:nil
-                     rtlFound:NO];
+                     rtlFound:NO
+                      dwcFree:NO];
     XCTAssert([[grid compactLineDumpWithContinuationMarks] isEqualToString:
                @"89abcdef+\n"
                @"ghijklmn+\n"
@@ -2779,7 +2230,7 @@ do { \
 
 - (void)testGridRunFromRange_basic {
     NSRange range = NSMakeRange(0, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:0];
     VT100GridRun expected = VT100GridRunMake(0, 0, 5);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2788,7 +2239,7 @@ do { \
 
 - (void)testGridRunFromRange_spanLines {
     NSRange range = NSMakeRange(8, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:0];
     VT100GridRun expected = VT100GridRunMake(8, 0, 5);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2797,7 +2248,7 @@ do { \
 
 - (void)testGridRunFromRange_startOnSubsequentLine {
     NSRange range = NSMakeRange(18, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:0];
     VT100GridRun expected = VT100GridRunMake(8, 1, 5);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2806,7 +2257,7 @@ do { \
 
 - (void)testGridRunFromRange_positiveRow {
     NSRange range = NSMakeRange(18, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:5];
     VT100GridRun expected = VT100GridRunMake(8, 6, 5);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2815,7 +2266,7 @@ do { \
 
 - (void)testGridRunFromRange_negativeRowNoTruncation {
     NSRange range = NSMakeRange(18, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:-1];
     VT100GridRun expected = VT100GridRunMake(8, 0, 5);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2824,7 +2275,7 @@ do { \
 
 - (void)testGridRunFromRange_negativeRowTruncatedStart {
     NSRange range = NSMakeRange(18, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:-2];
     VT100GridRun expected = VT100GridRunMake(0, 0, 3);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2833,7 +2284,7 @@ do { \
 
 - (void)testGridRunFromRange_negativeRowCompletelyTruncated {
     NSRange range = NSMakeRange(18, 5);
-    VT100Grid *grid = [[[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self] autorelease];
+    VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(10, 10) delegate:self];
     VT100GridRun actual = [grid gridRunFromRange:range relativeToRow:-3];
     VT100GridRun expected = VT100GridRunMake(0, 0, 0);
     XCTAssertTrue(VT100GridRunEquals(actual, expected),
@@ -2842,7 +2293,7 @@ do { \
 
 - (void)testSingleColumnLineBuffer {
     VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(1, 24) delegate:self];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
     [grid appendLines:5 toLineBuffer:lineBuffer];
     screen_char_t c;
     ScreenCharArray *sca = [lineBuffer wrappedLineAtIndex:0 width:1 continuation:&c];
@@ -2852,7 +2303,7 @@ do { \
 
 - (void)testRemoveLastLine_Regular {
     VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(80, 24) delegate:self];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
 
     for (NSString *stringToAppend in @[ @"hello", @"world" ]) {
         screen_char_t *line = [self screenCharLineForString:stringToAppend];
@@ -2865,7 +2316,8 @@ do { \
                              ansi:NO
                            insert:NO
            externalAttributeIndex:nil
-                         rtlFound:NO];
+                         rtlFound:NO
+                       dwcFree:NO];
         [grid moveCursorToLeftMargin];
         [grid moveCursorDown:1];
         [grid scrollWholeScreenUpIntoLineBuffer:lineBuffer unlimitedScrollback:YES];
@@ -2889,7 +2341,8 @@ do { \
                              ansi:NO
                            insert:NO
            externalAttributeIndex:nil
-                         rtlFound:NO];
+                         rtlFound:NO
+                       dwcFree:NO];
         [grid moveCursorToLeftMargin];
         [grid moveCursorDown:1];
         while ([grid lengthOfLineNumber:0] > 0 || grid.cursor.x > 0 || grid.cursor.y > 0) {
@@ -2901,7 +2354,7 @@ do { \
 
 - (void)testRemoveLastRawLine_Wrapped {
     VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(80, 24) delegate:self];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
 
     NSString *spam = @"now is the time for all good men, women, and children to come to the aid of his, her, or their party or parties as applicable in his, her, or their local jurisdiction";
     [self appendStrings:@[ @"hello", spam ] toGrid:grid lineBuffer:lineBuffer];
@@ -2913,7 +2366,7 @@ do { \
 
 - (void)testRemoveLastRawLine_Empty {
     VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(80, 24) delegate:self];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:1000] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:1000];
 
     NSString *empty = @"";
     [self appendStrings:@[ @"hello", empty ] toGrid:grid lineBuffer:lineBuffer];
@@ -2925,7 +2378,7 @@ do { \
 
 - (void)testRemoveLastRawLine_LargerThanBlockSize {
     VT100Grid *grid = [[VT100Grid alloc] initWithSize:VT100GridSizeMake(80, 24) delegate:self];
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:85] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:85];
 
     NSString *spam = @"now is the time for all good men, women, and children to come to the aid of his, her, or their party or parties as applicable in his, her, or their local jurisdiction";
     [self appendStrings:@[ @"hello", spam ] toGrid:grid lineBuffer:lineBuffer];
@@ -2936,7 +2389,7 @@ do { \
 }
 
 - (void)testRemoveLastRawLine_EmptyBuffer {
-    LineBuffer *lineBuffer = [[[LineBuffer alloc] initWithBlockSize:85] autorelease];
+    LineBuffer *lineBuffer = [[LineBuffer alloc] initWithBlockSize:85];
     XCTAssert([[lineBuffer debugString] isEqualToString:@""]);
     [lineBuffer removeLastRawLine];
     XCTAssert([[lineBuffer debugString] isEqualToString:@""]);

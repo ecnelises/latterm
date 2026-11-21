@@ -28,8 +28,6 @@
 }
 
 - (void)tearDown {
-    [_parser release];
-    [_savedState release];
 }
 
 - (void)reset {
@@ -40,11 +38,11 @@
 - (VT100Token *)tokenForDataWithFormat:(NSString *)formatString, ... {
     va_list args;
     va_start(args, formatString);
-    NSString *string = [[[NSString alloc] initWithFormat:formatString arguments:args] autorelease];
+    NSString *string = [[NSString alloc] initWithFormat:formatString arguments:args];
     va_end(args);
 
     NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
-    VT100Token *token = [[[VT100Token alloc] init] autorelease];
+    VT100Token *token = [[VT100Token alloc] init];
     _context = iTermParserContextMake((unsigned char *)data.bytes, data.length);
     [_parser decodeFromContext:&_context
                          token:token
@@ -353,7 +351,7 @@
 }
 
 - (void)testParserWithDSCTmuxWrap {
-    VT100Parser *parser = [[[VT100Parser alloc] init] autorelease];
+    VT100Parser *parser = [[VT100Parser alloc] init];
     parser.encoding = NSUTF8StringEncoding;
     char *s = "\ePtmux;\e\e[1m\e\\";
     [parser putStreamData:s length:strlen(s)];
@@ -372,7 +370,7 @@
 }
 
 - (void)testIssue9070 {
-    VT100Parser *parser = [[[VT100Parser alloc] init] autorelease];
+    VT100Parser *parser = [[VT100Parser alloc] init];
     parser.encoding = NSUTF8StringEncoding;
     unsigned char preambleBytes[8] = {
         0x1B, 0x50, 0x30, 0x3B, 0x30, 0x3B, 0x38, 0x71

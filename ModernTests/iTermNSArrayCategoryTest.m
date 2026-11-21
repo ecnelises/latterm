@@ -16,7 +16,7 @@
 @implementation iTermNSArrayCategoryTest
 
 - (void)testObjectsOfClasses {
-    NSArray *objects = @[ [NSNull null], @0, [[[NSObject alloc] init] autorelease], @1 ];
+    NSArray *objects = @[ [NSNull null], @0, [[NSObject alloc] init], @1 ];
 
     NSArray *numbers = [objects objectsOfClasses:@[ [NSNumber class] ]];
     XCTAssertEqual(numbers.count, 2);
@@ -35,13 +35,13 @@
     NSDictionary *attributes2 = @{ NSForegroundColorAttributeName: [NSColor blackColor] };
     NSDictionary *joinAttributes = @{ NSForegroundColorAttributeName: [NSColor redColor] };
 
-    NSAttributedString *string1 = [[[NSAttributedString alloc] initWithString:@"one" attributes:attributes1] autorelease];
-    NSAttributedString *string2 = [[[NSAttributedString alloc] initWithString:@"two" attributes:attributes2] autorelease];
-    NSAttributedString *joiner = [[[NSAttributedString alloc] initWithString:@"," attributes:joinAttributes] autorelease];
+    NSAttributedString *string1 = [[NSAttributedString alloc] initWithString:@"one" attributes:attributes1];
+    NSAttributedString *string2 = [[NSAttributedString alloc] initWithString:@"two" attributes:attributes2];
+    NSAttributedString *joiner = [[NSAttributedString alloc] initWithString:@"," attributes:joinAttributes];
 
     NSArray *array = @[ string1, string2 ];
     NSAttributedString *joined = [array attributedComponentsJoinedByAttributedString:joiner];
-    NSMutableAttributedString *expected = [[[NSMutableAttributedString alloc] init] autorelease];
+    NSMutableAttributedString *expected = [[NSMutableAttributedString alloc] init];
     [expected appendAttributedString:string1];
     [expected appendAttributedString:joiner];
     [expected appendAttributedString:string2];

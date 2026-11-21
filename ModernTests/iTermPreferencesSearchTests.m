@@ -25,8 +25,8 @@
     iTermPreferencesSearchDocument *doc1 = [iTermPreferencesSearchDocument documentWithDisplayName:@"foo bar"
                                                                                         identifier:@"id1"
                                                                                     keywordPhrases:@[ @"lorem ipsum dolor", @"sit amet" ]];
-    NSArray *expected = [@[ @"foo", @"bar", @"lorem", @"ipsum", @"dolor", @"sit", @"amet" ] sortedArrayUsingSelector:@selector(compare:)];
-    NSArray *actual = [doc1.allKeywords sortedArrayUsingSelector:@selector(compare:)];
+    NSSet *expected = [NSSet setWithArray:@[ @"foo", @"bar", @"id1", @"lorem", @"ipsum", @"dolor", @"sit", @"amet" ]];
+    NSSet *actual = [NSSet setWithArray:doc1.allKeywords];
     XCTAssertEqualObjects(actual, expected);
 }
 

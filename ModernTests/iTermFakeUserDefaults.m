@@ -12,11 +12,6 @@
     NSMutableDictionary *_fakeObjects;
 }
 
-- (void)dealloc {
-    [_fakeObjects release];
-    [super dealloc];
-}
-
 - (NSMutableDictionary *)fakeObjects {
     if (!_fakeObjects) {
         _fakeObjects = [[NSMutableDictionary alloc] init];

@@ -69,7 +69,14 @@
 @end
 
 // Use this macro inside a weakly referenceable object's @implementation.
+#if __has_feature(objc_arc)
+#define ITERM_WEAKLY_REFERENCEABLE \
+- (_Nullable id)weakSelf { \
+    return [[iTermWeakReference alloc] initWithObject:self]; \
+}
+#else
 #define ITERM_WEAKLY_REFERENCEABLE \
 - (_Nullable id)weakSelf { \
     return [[[iTermWeakReference alloc] initWithObject:self] autorelease]; \
 }
+#endif

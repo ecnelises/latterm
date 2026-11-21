@@ -8,11 +8,11 @@
 #import <XCTest/XCTest.h>
 #import "iTermCache.h"
 
-@interface iTermCacheTests : XCTestCase
+@interface iTermCacheBasicTests : XCTestCase
 
 @end
 
-@implementation iTermCacheTests
+@implementation iTermCacheBasicTests
 
 - (void)testInsertion {
     iTermCache<NSString *, NSNumber *> *cache = [[iTermCache alloc] initWithCapacity:3];

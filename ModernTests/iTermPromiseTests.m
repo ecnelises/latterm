@@ -23,7 +23,6 @@
 }
 
 - (void)tearDown {
-    [_standardError release];
 }
 
 - (void)testFulfillFollowedByThen {
@@ -53,7 +52,7 @@
 - (void)testThenFollowedByFulfill {
     __block id<iTermPromiseSeal> savedSeal = nil;
     iTermPromise<NSNumber *> *promise = [iTermPromise promise:^(id<iTermPromiseSeal> seal) {
-        savedSeal = [[seal retain] autorelease];
+        savedSeal = seal;
     }];
 
     __block BOOL ranThen = NO;
@@ -71,7 +70,7 @@
 - (void)testThenFollowedByCatchError {
     __block id<iTermPromiseSeal> savedSeal = nil;
     iTermPromise<NSNumber *> *promise = [iTermPromise promise:^(id<iTermPromiseSeal> seal) {
-        savedSeal = [[seal retain] autorelease];
+        savedSeal = seal;
     }];
 
     __block BOOL ranThen = NO;
@@ -112,7 +111,7 @@
 - (void)testChainFollowedByFulfill {
     __block id<iTermPromiseSeal> savedSeal = nil;
     iTermPromise<NSNumber *> *promise1 = [iTermPromise promise:^(id<iTermPromiseSeal> seal) {
-        savedSeal = [[seal retain] autorelease];
+        savedSeal = seal;
     }];
     __block int count = 0;
     iTermPromise<NSNumber *> *promise2 = [promise1 then:^(NSNumber * _Nonnull value) {
@@ -161,7 +160,7 @@
 - (void)testChainFollowedByReject {
     __block id<iTermPromiseSeal> savedSeal = nil;
     iTermPromise<NSNumber *> *promise1 = [iTermPromise promise:^(id<iTermPromiseSeal> seal) {
-        savedSeal = [[seal retain] autorelease];
+        savedSeal = seal;
     }];
     __block int count = 0;
     iTermPromise<NSNumber *> *promise2 = [promise1 then:^(NSNumber * _Nonnull value) {

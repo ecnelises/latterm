@@ -9,9 +9,6 @@ if {$argc < 1} {
 set scheme ModernTests
 set only_testing_flags {}
 foreach test_name $argv {
-    if {[string match "iTerm2XCTests*" $test_name]} {
-        set scheme iTerm2Tests
-    }
     lappend only_testing_flags -only-testing:$test_name
 }
 set timeout -1

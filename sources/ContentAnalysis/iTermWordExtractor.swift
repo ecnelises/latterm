@@ -596,7 +596,7 @@ class WordExtractor: NSObject {
         var atomIndexes: [Int] = []  // For each atom, the string index where it starts
 
         for i in startAtomIndex..<endAtomIndex {
-            atomIndexes.append(combinedString.count)
+            atomIndexes.append(combinedString.utf16.count)
             combinedString += atoms[i].string
         }
 

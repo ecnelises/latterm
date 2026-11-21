@@ -16,13 +16,13 @@
 @implementation iTermDirectedGraphTest
 
 - (void)testContainsCycleEmptyGraph {
-    iTermDirectedGraph<NSString *> *graph = [[[iTermDirectedGraph alloc] init] autorelease];
+    iTermDirectedGraph<NSString *> *graph = [[iTermDirectedGraph alloc] init];
     BOOL containsCycle = [[[iTermDirectedGraphCycleDetector alloc] initWithDirectedGraph:graph] containsCycle];
     XCTAssertFalse(containsCycle);
 }
 
 - (void)testContainsCycleLinkedList {
-    iTermDirectedGraph<NSString *> *graph = [[[iTermDirectedGraph alloc] init] autorelease];
+    iTermDirectedGraph<NSString *> *graph = [[iTermDirectedGraph alloc] init];
     [graph addEdgeFrom:@"a" to:@"b"];
     [graph addEdgeFrom:@"b" to:@"c"];
     [graph addEdgeFrom:@"c" to:@"d"];
@@ -31,7 +31,7 @@
 }
 
 - (void)testContainsCycleForestOfLinkedLists {
-    iTermDirectedGraph<NSString *> *graph = [[[iTermDirectedGraph alloc] init] autorelease];
+    iTermDirectedGraph<NSString *> *graph = [[iTermDirectedGraph alloc] init];
     [graph addEdgeFrom:@"a" to:@"b"];
     [graph addEdgeFrom:@"b" to:@"c"];
     [graph addEdgeFrom:@"c" to:@"d"];
@@ -44,7 +44,7 @@
 }
 
 - (void)testContainsCycleRing {
-    iTermDirectedGraph<NSString *> *graph = [[[iTermDirectedGraph alloc] init] autorelease];
+    iTermDirectedGraph<NSString *> *graph = [[iTermDirectedGraph alloc] init];
     [graph addEdgeFrom:@"a" to:@"b"];
     [graph addEdgeFrom:@"b" to:@"c"];
     [graph addEdgeFrom:@"c" to:@"d"];
@@ -54,7 +54,7 @@
 }
 
 - (void)testContainsCycleBig {
-    iTermDirectedGraph<NSNumber *> *graph = [[[iTermDirectedGraph alloc] init] autorelease];
+    iTermDirectedGraph<NSNumber *> *graph = [[iTermDirectedGraph alloc] init];
     for (NSInteger i = 0; i < 1000; i++) {
         [graph addEdgeFrom:@(i) to:@(i + 1)];
     }

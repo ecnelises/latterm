@@ -70,10 +70,10 @@ static const double kFloatingPointTolerance = 0.00001;
 }
 
 - (void)setUp {
-    _writeBuffer = [[[NSMutableString alloc] init] autorelease];
+    _writeBuffer = [[NSMutableString alloc] init];
     _shouldBracket = NO;
     _isAtShellPrompt = NO;
-    _helper = [[[iTermInstrumentedPasteHelper alloc] init] autorelease];
+    _helper = [[iTermInstrumentedPasteHelper alloc] init];
     _helper.delegate = self;
     [iTermWarning setWarningHandler:self];
     [[PasteboardHistory sharedInstance] clear];
@@ -88,7 +88,6 @@ static const double kFloatingPointTolerance = 0.00001;
 
 - (void)tearDown {
     [iTermWarning setWarningHandler:nil];
-    [_warningBlock release];
 }
 
 - (void)runTimer {
@@ -127,7 +126,8 @@ static const double kFloatingPointTolerance = 0.00001;
                                             tabTransform:tabTransform
                                             spacesPerTab:spacesPerTab
                                                    regex:regex
-                                            substitution:substitution];
+                                            substitution:substitution
+                      shouldPasteNewlinesOutsideBrackets:NO];
     [iTermPasteHelper sanitizePasteEvent:event encoding:NSUTF8StringEncoding];
     XCTAssertEqualObjects(expected, event.string);
 }
@@ -341,7 +341,6 @@ static const double kFloatingPointTolerance = 0.00001;
 
 - (void)testSingleLinePasteGivesNoWarning {
     __block BOOL warned = NO;
-    [_warningBlock release];
     _warningBlock = [^NSModalResponse(NSAlert *alert, NSString *identifier) {
         XCTAssert([identifier isEqualToString:[iTermAdvancedSettingsModel noSyncDoNotWarnBeforeMultilinePasteUserDefaultsKey]]);
         warned = YES;
@@ -363,7 +362,6 @@ static const double kFloatingPointTolerance = 0.00001;
 
 - (void)doMultilineWarningTestWithOverride:(BOOL)override {
     __block BOOL warned = NO;
-    [_warningBlock release];
     _warningBlock = [^NSModalResponse(NSAlert *alert, NSString *identifier) {
         XCTAssert([identifier isEqualToString:[iTermAdvancedSettingsModel noSyncDoNotWarnBeforeMultilinePasteUserDefaultsKey]]);
         warned = YES;

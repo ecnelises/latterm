@@ -59,7 +59,6 @@ help:
 	@echo "  make run          Build and launch Development build"
 	@echo "  make watch        Build and launch with interactive r=reload q=quit loop"
 	@echo "  make test         Run ModernTests unit tests"
-	@echo "  make test-legacy  Run iTerm2XCTests unit tests"
 	@echo "  make install      Build Deployment and install to /Applications"
 	@echo ""
 	@echo "Dependencies:"
@@ -329,8 +328,5 @@ cleandeps: force
 
 test: force
 	tools/run_tests.expect ModernTests
-
-test-legacy: force
-	tools/run_tests.expect iTerm2XCTests
 
 force:

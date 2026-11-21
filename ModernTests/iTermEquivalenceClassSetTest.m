@@ -19,7 +19,7 @@
 	NSNumber *n1 = [NSNumber numberWithInt:10];
 	NSNumber *n2 = [NSNumber numberWithInt:11];
 	NSNumber *n3 = [NSNumber numberWithInt:12];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	NSSet *ec = [e valuesEqualTo:n1];
 	XCTAssert(ec.count == 2);
@@ -38,7 +38,7 @@
 - (void)testAddDouble {
 	NSNumber *n1 = [NSNumber numberWithInt:10];
 	NSNumber *n2 = [NSNumber numberWithInt:11];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	[e setValue:n1 equalToValue:n2];
 	NSSet *ec = [e valuesEqualTo:n1];
@@ -52,7 +52,7 @@
 	NSNumber *n2 = [NSNumber numberWithInt:11];
 	NSNumber *n3 = [NSNumber numberWithInt:12];
 	NSNumber *n4 = [NSNumber numberWithInt:13];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	[e setValue:n3 equalToValue:n4];
 
@@ -79,7 +79,7 @@
 	NSNumber *n1 = [NSNumber numberWithInt:10];
 	NSNumber *n2 = [NSNumber numberWithInt:11];
 	NSNumber *n3 = [NSNumber numberWithInt:12];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	[e setValue:n1 equalToValue:n3];
 	NSSet *ec = [e valuesEqualTo:n1];
@@ -93,7 +93,7 @@
 	NSNumber *n1 = [NSNumber numberWithInt:10];
 	NSNumber *n2 = [NSNumber numberWithInt:11];
 	NSNumber *n3 = [NSNumber numberWithInt:12];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	[e setValue:n3 equalToValue:n1];
 	NSSet *ec = [e valuesEqualTo:n1];
@@ -107,7 +107,7 @@
 	NSNumber *n1 = [NSNumber numberWithInt:10];
 	NSNumber *n2 = [NSNumber numberWithInt:11];
 	NSNumber *n3 = [NSNumber numberWithInt:12];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	[e setValue:n3 equalToValue:n1];
 	[e removeValue:n2];
@@ -120,7 +120,7 @@
 - (void)testRemoveValueErasingSet {
 	NSNumber *n1 = [NSNumber numberWithInt:10];
 	NSNumber *n2 = [NSNumber numberWithInt:11];
-	EquivalenceClassSet *e = [[[EquivalenceClassSet alloc] init] autorelease];
+	EquivalenceClassSet *e = [[EquivalenceClassSet alloc] init];
 	[e setValue:n1 equalToValue:n2];
 	[e removeValue:n2];
 	NSSet *ec = [e valuesEqualTo:n1];

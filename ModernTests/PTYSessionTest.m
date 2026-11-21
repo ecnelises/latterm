@@ -41,11 +41,6 @@ static NSDictionary *PTYSessionTestEncodedColor(CGFloat red, CGFloat green, CGFl
     self.spacesPerTab = spacesPerTab;
 }
 
-- (void)dealloc {
-    [_string release];
-    [super dealloc];
-}
-
 @end
 
 @interface PTYSessionTest : XCTestCase <iTermWarningHandler>
@@ -64,15 +59,13 @@ static NSDictionary *PTYSessionTestEncodedColor(CGFloat red, CGFloat green, CGFl
 
 - (void)setUp {
     _session = [[PTYSession alloc] initSynthetic:NO];
-    _fakePasteHelper = [[[FakePasteHelper alloc] init] autorelease];
+    _fakePasteHelper = [[FakePasteHelper alloc] init];
     [_session setPasteHelper:_fakePasteHelper];
     _warningIdentifiers = [[NSMutableSet alloc] init];
     [iTermWarning setWarningHandler:self];
 }
 
 - (void)tearDown {
-    [_session release];
-    [_warningIdentifiers release];
 }
 
 - (void)testPasteEmptyString {
@@ -117,23 +110,31 @@ static NSDictionary *PTYSessionTestEncodedColor(CGFloat red, CGFloat green, CGFl
            _fakePasteHelper.escapeShellChars);
 }
 
+- (NSTextField *)editableTextFieldInView:(NSView *)root {
+    if ([root isKindOfClass:[NSTextField class]] && [(NSTextField *)root isEditable]) {
+        return (NSTextField *)root;
+    }
+    for (NSView *subview in root.subviews) {
+        NSTextField *found = [self editableTextFieldInView:subview];
+        if (found) {
+            return found;
+        }
+    }
+    return nil;
+}
+
 - (void)testEmbeddedTabsConvertToSpaces {
     NSString *theString = @"a\tb";
+    __weak __typeof(self) weakSelf = self;
     _warningBlock = ^NSModalResponse(NSAlert *alert, NSString *identifier) {
         XCTAssert([identifier isEqualToString:@"AboutToPasteTabsWithCancel"]);
-        BOOL found = NO;
-        for (NSView *subview in alert.accessoryView.subviews) {
-            if ([subview isKindOfClass:[NSTextField class]] &&
-                [(NSTextField *)subview isEditable]) {
-                found = YES;
-                NSTextField *textField = (NSTextField *)subview;
-                textField.intValue = 8;
-                [(id)textField.delegate controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification
-                                                                                           object:nil]];
-                break;
-            }
+        NSTextField *textField = [weakSelf editableTextFieldInView:alert.accessoryView];
+        XCTAssertNotNil(textField);
+        if (textField) {
+            textField.intValue = 8;
+            [(id)textField.delegate controlTextDidChange:[NSNotification notificationWithName:NSControlTextDidChangeNotification
+                                                                                       object:nil]];
         }
-        XCTAssert(found);
         return NSAlertThirdButtonReturn;
     };
     [_session pasteString:theString flags:0];

@@ -9,11 +9,11 @@
 
 #import "iTermTmuxLayoutBuilder.h"
 
-@interface iTermTmuxLayoutBuilderTest : XCTestCase
+@interface iTermTmuxLayoutBuilderBasicTests : XCTestCase
 
 @end
 
-@implementation iTermTmuxLayoutBuilderTest
+@implementation iTermTmuxLayoutBuilderBasicTests
 
 - (void)testSinglePane {
     iTermTmuxLayoutBuilderLeafNode *root = [[iTermTmuxLayoutBuilderLeafNode alloc] initWithSessionOfSize:VT100GridSizeMake(80, 25)

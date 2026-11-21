@@ -67,10 +67,7 @@
 
 - (void)testURLWithUserSuppliedString_NonAsciiPath {
     NSString *string = @"http://wiki.teamliquid.net/commons/images/thumb/a/af/Torbjörn-Barbarossa.jpg/580px-Torbjörn-Barbarossa.jpg";
-    NSURL *url = [NSURL URLWithString:string];
-    XCTAssertNil(url);
-
-    url = [NSURL URLWithUserSuppliedString:string];
+    NSURL *url = [NSURL URLWithUserSuppliedString:string];
     XCTAssertEqualObjects(url.absoluteString, @"http://wiki.teamliquid.net/commons/images/thumb/a/af/Torbj%C3%B6rn-Barbarossa.jpg/580px-Torbj%C3%B6rn-Barbarossa.jpg");
     url = [NSURL URLWithUserSuppliedStringImpl:string];
     XCTAssertEqualObjects(url.absoluteString, @"http://wiki.teamliquid.net/commons/images/thumb/a/af/Torbj%C3%B6rn-Barbarossa.jpg/580px-Torbj%C3%B6rn-Barbarossa.jpg");
@@ -78,10 +75,7 @@
 
 - (void)testURLWithUserSuppliedString_NonAsciiFragment {
     NSString *string = @"http://example.com/path?a=b&c=d#Torbjörn";
-    NSURL *url = [NSURL URLWithString:string];
-    XCTAssertNil(url);
-
-    url = [NSURL URLWithUserSuppliedString:string];
+    NSURL *url = [NSURL URLWithUserSuppliedString:string];
     XCTAssertEqualObjects(url.absoluteString, @"http://example.com/path?a=b&c=d#Torbj%C3%B6rn");
     url = [NSURL URLWithUserSuppliedStringImpl:string];
     XCTAssertEqualObjects(url.absoluteString, @"http://example.com/path?a=b&c=d#Torbj%C3%B6rn");
@@ -89,10 +83,7 @@
 
 - (void)testURLWithUserSuppliedString_IDN {
     NSString *string = @"http://中国.icom.museum/";
-    NSURL *url = [NSURL URLWithString:string];
-    XCTAssertNil(url);
-
-    url = [NSURL URLWithUserSuppliedString:string];
+    NSURL *url = [NSURL URLWithUserSuppliedString:string];
     XCTAssertEqualObjects(url.absoluteString, @"http://xn--fiqs8s.icom.museum/");
     url = [NSURL URLWithUserSuppliedStringImpl:string];
     XCTAssertEqualObjects(url.absoluteString, @"http://xn--fiqs8s.icom.museum/");

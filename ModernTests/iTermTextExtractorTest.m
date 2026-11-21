@@ -15,6 +15,7 @@
 #import "iTermPreferences.h"
 #import "iTermSelectorSwizzler.h"
 #import "iTermTextExtractor.h"
+#import "iTermUserDefaults.h"
 #import "NSStringITerm.h"
 #import "ScreenChar.h"
 #import "SmartSelectionController.h"
@@ -110,7 +111,7 @@ static const NSInteger kUnicodeVersion = 9;
     NSArray *words = @[ @"𦍌",
                         @"𦍌",  // DWC_RIGHT
                         @"次",
-                        @"次"];  // DWC_RIGHT
+                        @"次" ];  // DWC_RIGHT
     [self performTestForWordSelectionUsingLine:line
                           wordForEachCharacter:words
                            extraWordCharacters:@"-"];
@@ -119,13 +120,13 @@ static const NSInteger kUnicodeVersion = 9;
 - (void)performTestForWordSelectionUsingLine:(NSString *)line
                         wordForEachCharacter:(NSArray<NSString *> *)expected
                          extraWordCharacters:(NSString *)extraWordCharacters {
-    iTermFakeUserDefaults *fakeDefaults = [[[iTermFakeUserDefaults alloc] init] autorelease];
+    iTermFakeUserDefaults *fakeDefaults = [[iTermFakeUserDefaults alloc] init];
     [fakeDefaults setFakeObject:extraWordCharacters forKey:kPreferenceKeyCharactersConsideredPartOfAWordForSelection];
     _lines = @[ line ];
     iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:self];
 
-    [iTermSelectorSwizzler swizzleSelector:@selector(standardUserDefaults)
-                                 fromClass:[NSUserDefaults class]
+    [iTermSelectorSwizzler swizzleSelector:@selector(userDefaults)
+                                 fromClass:[iTermUserDefaults class]
                                  withBlock:^ id { return fakeDefaults; }
                                   forBlock:^{
                                       [iTermAdvancedSettingsModel loadAdvancedSettingsFromUserDefaults];
