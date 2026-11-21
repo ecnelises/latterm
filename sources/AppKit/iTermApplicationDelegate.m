@@ -61,17 +61,13 @@
 #import "ToastWindowController.h"
 #import "VT100Terminal.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermAPIConnectionIdentifierController.h"
 #import "iTermGraphDatabase.h"
-#import "iTermAPIHelper.h"
-#import "iTermAdvancedSettingsModel.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermAppHotKeyProvider.h"
 #import "iTermBuiltInFunctions.h"
 #import "iTermBuriedSessions.h"
 #import "iTermColorPresets.h"
 #import "iTermController.h"
-#import "iTermDependencyEditorWindowController.h"
 #import "iTermFileDescriptorSocketPath.h"
 #import "iTermFontPanel.h"
 #import "iTermFullScreenWindowManager.h"
@@ -98,18 +94,12 @@
 #import "iTermProfilesMenuController.h"
 #import "iTermProfilesWindowController.h"
 #import "iTermPromptOnCloseReason.h"
-#import "iTermPythonRuntimeDownloader.h"
 #import "iTermQuickLookController.h"
 #import "iTermRecordingCodec.h"
 #import "iTermRemotePreferences.h"
-#import "iTermRemotePreferences.h"
 #import "iTermRestorableSession.h"
 #import "iTermRestorableStateController.h"
-#import "iTermScriptConsole.h"
 #import "iTermScriptFunctionCall.h"
-#import "iTermScriptHistory.h"
-#import "iTermScriptImporter.h"
-#import "iTermScriptsMenuController.h"
 #import "iTermSecureKeyboardEntryController.h"
 #import "SFSymbolEnum/SFSymbolEnum.h"
 #import "iTermServiceProvider.h"
@@ -119,7 +109,6 @@
 #import "iTermURLStore.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
-#import "iTermWebSocketCookieJar.h"
 #import <Quartz/Quartz.h>
 #import <objc/runtime.h>
 
@@ -237,10 +226,8 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
     IBOutlet NSMenuItem *irPrev;
     IBOutlet NSMenuItem *windowArrangements_;
     IBOutlet NSMenuItem *windowArrangementsAsTabs_;
-    IBOutlet NSMenuItem *_installPythonRuntime;
     IBOutlet NSMenu *_buriedSessions;
     NSMenu *_statusIconBuriedSessions;  // unsafe unretained
-    IBOutlet NSMenu *_scriptsMenu;
     IBOutlet NSMenuItem *_composerMenuItem;
     IBOutlet NSMenuItem *_removeRecentProfilesFromDockMenuItem;
     IBOutlet NSMenuItem *showFullScreenTabs;
@@ -281,7 +268,6 @@ static NSAttributedString *iTermStandardAboutPanelCredits(void) {
 
     NSArray<NSDictionary *> *_buriedSessionsState;
 
-    iTermScriptsMenuController *_scriptsMenuController;
     BOOL _disableTermination;
 
     iTermFocusFollowsMouseController *_focusFollowsMouseController;
@@ -786,26 +772,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
  */
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
     RLog(@"application:%@ openFile:%@", theApplication, filename);
-    if ([[filename pathExtension] isEqualToString:@"its"]) {
-        if (![[NSFileManager defaultManager] homeDirectoryDotDir]) {
-            return NO;
-        }
-        [iTermScriptImporter importScriptFromURL:[NSURL fileURLWithPath:filename]
-                                   userInitiated:NO
-                                 offerAutoLaunch:NO
-                                   callbackQueue:dispatch_get_main_queue()
-                                         avoidUI:NO
-                                      completion:^(NSString * _Nullable errorMessage, BOOL quiet, NSURL *location) {
-            DLog(@"%@", errorMessage);
-            if (quiet) {
-                return;
-            }
-            [self->_scriptsMenuController importDidFinishWithErrorMessage:errorMessage
-                                                                 location:location
-                                                              originalURL:[NSURL fileURLWithPath:filename]];
-        }];
-        return YES;
-    }
     if ([[filename pathExtension] isEqualToString:@"itermtab"]) {
         [ProfileDocument openWithFilename:filename];
         return YES;
@@ -1066,15 +1032,6 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         RLog(@"Option held on user-initiated quit; force discarding saved state.");
         iTermRestorableStateController.forceDiscardState = YES;
     }
-
-    // Closing sessions below hangs up their jobs, and hooks those jobs run on the way out (such as
-    // Claude Code's SessionEnd hook running it2) try to reach the API. A client that gets in now
-    // goes on to request a cookie over AppleScript, and if that Apple event arrives after this
-    // process has exited it relaunches iTerm2 mid-quit. During a logout or restart, that
-    // short-lived instance is then quit by loginwindow and its empty window list replaces the saved
-    // state, so nothing is restored at the next login. Refusing new connections makes those
-    // clients fail fast instead. Existing connections are unaffected.
-    [iTermAPIHelper stopAcceptingConnections];
 
     // Ensure [iTermController dealloc] is called before prefs are saved
     [[iTermModifierRemapper sharedInstance] setRemapModifiers:NO];
@@ -1353,8 +1310,6 @@ void TurnOnDebugLoggingAutomatically(void) {
 
     DLog(@"migrateApplicationSupportDirectoryIfNeeded");
     [iTermMigrationHelper migrateApplicationSupportDirectoryIfNeeded];
-    DLog(@"buildScriptMenu");
-    [self buildScriptMenu:nil];
 
     // Fix up various user defaults settings.
     DLog(@"initializeUserDefaults");
@@ -1583,9 +1538,6 @@ void TurnOnDebugLoggingAutomatically(void) {
     } else {
         [self restoreBuriedSessionsState];
         [[WorkgroupRestorationCoordinator sharedInstance] reconstructReadyAnchors];
-    }
-    if ([iTermAPIHelper isEnabled]) {
-        [iTermAPIHelper sharedInstance];  // starts the server. Won't ask the user since it's enabled.
     }
     // This causes it to enable secure keyboard entry if needed.
     [iTermSecureKeyboardEntryController sharedInstance];
@@ -2094,13 +2046,7 @@ static iTermKeyEventReplayer *gReplayer;
     }
     [[iTermController sharedInstance] setStartingUp:YES];
 
-    // Check if we have an autolaunch script to execute. Do it only once, i.e. at application launch.
-    BOOL ranAutoLaunchScripts = NO;
-    if (![[NSApplication sharedApplication] isRunningUnitTests]) {
-        DLog(@"Run autolaunch scripts if needed");
-        ranAutoLaunchScripts = [self.scriptsMenuController runAutoLaunchScriptsIfNeeded];
-    }
-    DLog(@"ranAutoLaunchScripts=%@", @(ranAutoLaunchScripts));
+    const BOOL ranAutoLaunchScripts = NO;
 
     if ([WindowArrangements defaultArrangementName] == nil &&
         [WindowArrangements arrangementWithName:LEGACY_DEFAULT_ARRANGEMENT_NAME] != nil) {
@@ -2935,157 +2881,8 @@ static iTermKeyEventReplayer *gReplayer;
     [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://www.iterm2.com/documentation.html"]];
 }
 
-- (iTermScriptsMenuController *)scriptsMenuController {
-    if (!_scriptsMenuController) {
-        _scriptsMenuController = [[iTermScriptsMenuController alloc] initWithMenu:_scriptsMenu];
-        _scriptsMenuController.installRuntimeMenuItem = _installPythonRuntime;
-    }
-    return _scriptsMenuController;
-}
-
-- (IBAction)installPythonRuntime:(id)sender {  // Explicit request from menu item
-    DLog(@"%@", sender);
-    if (![[NSFileManager defaultManager] homeDirectoryDotDir]) {
-        DLog(@"Not homeDirectoryDotDir");
-        return;
-    }
-    [[iTermPythonRuntimeDownloader sharedInstance] downloadOptionalComponentsIfNeededWithConfirmation:NO
-                                                                                        pythonVersion:nil
-                                                                            minimumEnvironmentVersion:0
-                                                                                   requiredToContinue:NO
-                                                                                       withCompletion:
-     ^(iTermPythonRuntimeDownloaderStatus status) {
-         if (status == iTermPythonRuntimeDownloaderStatusNotNeeded) {
-             [iTermWarning showWarningWithTitle:@"You’re up to date!"
-                                        actions:@[ @"OK" ]
-                                      accessory:nil
-                                     identifier:nil
-                                    silenceable:kiTermWarningTypePersistent
-                                        heading:@"Python Runtime"
-                                         window:nil];
-         }
-     }];
-}
-
-- (IBAction)installAlreadyDownloadedPythonRuntime:(id)sender {
-    __weak NSOpenPanel *panel = [[NSOpenPanel alloc] init];
-    panel.canChooseFiles = YES;
-    panel.canChooseDirectories = NO;
-    panel.allowsMultipleSelection = NO;
-    [panel beginWithCompletionHandler:^(NSModalResponse result) {
-        if (panel.URL != nil && result == NSModalResponseOK) {
-            [[iTermPythonRuntimeDownloader sharedInstance] installPythonEnvironmentFromZip:panel.URL.path
-                                                                                completion:^(NSError *error) {
-                if (!error) {
-                    [iTermWarning showWarningWithTitle:@"Installed successfully!"
-                                               actions:@[ @"OK" ]
-                                             accessory:nil
-                                            identifier:nil
-                                           silenceable:kiTermWarningTypePersistent
-                                               heading:@"Python Runtime"
-                                                window:nil];
-                } else {
-                    [iTermWarning showWarningWithTitle:error.localizedDescription ?: @"Unknown error"
-                                               actions:@[ @"OK" ]
-                                             accessory:nil
-                                            identifier:nil
-                                           silenceable:kiTermWarningTypePersistent
-                                               heading:@"Error Installing Python Runtime"
-                                                window:nil];
-                }
-            }];
-        }
-    }];
-}
-
-- (IBAction)buildScriptMenu:(id)sender {
-    [iTermScriptConsole sharedInstance];
-    [self.scriptsMenuController build];
-}
-
-- (IBAction)openREPL:(id)sender {
-    DLog(@"%@", sender);
-    if (![[NSFileManager defaultManager] homeDirectoryDotDir]) {
-        DLog(@"Not homeDirectoryDotDir");
-        return;
-    }
-    [[iTermPythonRuntimeDownloader sharedInstance] downloadOptionalComponentsIfNeededWithConfirmation:YES
-                                                                                        pythonVersion:nil
-                                                                            minimumEnvironmentVersion:0
-                                                                                   requiredToContinue:YES
-                                                                                       withCompletion:
-     ^(iTermPythonRuntimeDownloaderStatus status) {
-        switch (status) {
-            case iTermPythonRuntimeDownloaderStatusRequestedVersionNotFound:
-            case iTermPythonRuntimeDownloaderStatusCanceledByUser:
-            case iTermPythonRuntimeDownloaderStatusUnknown:
-            case iTermPythonRuntimeDownloaderStatusWorking:
-            case iTermPythonRuntimeDownloaderStatusError:
-                return;
-            case iTermPythonRuntimeDownloaderStatusNotNeeded:
-            case iTermPythonRuntimeDownloaderStatusDownloaded:
-                break;
-        }
-        if (![iTermAPIHelper sharedInstanceFromExplicitUserAction]) {
-            return;
-        }
-        NSString *apython = [[[[[iTermPythonRuntimeDownloader sharedInstance] pathToStandardPyenvPythonWithPythonVersion:nil] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"apython"] stringWithBackslashEscapedShellCharactersIncludingNewlines:YES];
-        NSURL *bannerURL = [[NSBundle mainBundle] URLForResource:@"repl_banner" withExtension:@"txt"];
-        NSString *bannerText = [NSString stringWithContentsOfURL:bannerURL encoding:NSUTF8StringEncoding error:nil];
-        NSString *cookie = [[iTermWebSocketCookieJar sharedInstance] randomStringForCookie];
-        NSString *key = [[NSUUID UUID] UUIDString];
-        NSString *identifier = [[iTermAPIConnectionIdentifierController sharedInstance] identifierForKey:key];
-        iTermScriptHistoryEntry *entry = [[[iTermScriptHistoryEntry alloc] initWithName:@"REPL"
-                                                                               fullPath:nil
-                                                                             identifier:identifier
-                                                                              relaunch:nil] autorelease];
-        [[iTermScriptHistory sharedInstance] addHistoryEntry:entry];
-        NSDictionary *environment = @{ @"ITERM2_COOKIE": cookie,
-                                       @"ITERM2_KEY": key };
-
-        [[iTermController sharedInstance] openSingleUseWindowWithCommand:apython
-                                                               arguments:@[ @"--banner=\\\"\\\"" ]
-                                                                  inject:[bannerText dataUsingEncoding:NSUTF8StringEncoding]
-                                                             environment:environment
-                                                                     pwd:nil
-                                                                 options:iTermSingleUseWindowOptionsDoNotEscapeArguments
-                                                          didMakeSession:nil
-                                                              completion:nil];
-    }];
-}
-
 - (IBAction)removeRecentProfilesFromDockMenu:(id)sender {
     [ProfileDocument removeAllRecents];
-}
-
-- (IBAction)openDependencyEditor:(id)sender {
-    [[iTermDependencyEditorWindowController sharedInstance] open];
-}
-
-- (IBAction)openScriptConsole:(id)sender {
-    [[[iTermScriptConsole sharedInstance] window] makeKeyAndOrderFront:nil];
-}
-
-- (IBAction)revealScriptsInFinder:(id)sender {
-    [_scriptsMenuController revealScriptsInFinder];
-}
-
-- (IBAction)exportScript:(id)sender {
-    if (![[NSFileManager defaultManager] homeDirectoryDotDir]) {
-        return;
-    }
-    [_scriptsMenuController chooseAndExportScript];
-}
-
-- (IBAction)importScript:(id)sender {
-    [_scriptsMenuController chooseAndImportScript];
-}
-
-- (IBAction)newPythonScript:(id)sender {
-    if (![[NSFileManager defaultManager] homeDirectoryDotDir]) {
-        return;
-    }
-    [_scriptsMenuController newPythonScript];
 }
 
 - (void)pickArrangement:(void (^)(NSString *path))completion {

@@ -9,11 +9,9 @@
 
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermAPIHelper.h"
 #import "iTermExpressionParser.h"
 #import "iTermGCD.h"
 #import "iTermScriptFunctionCall+Private.h"
-#import "iTermScriptHistory.h"
 #import "iTermVariableScope.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
@@ -154,8 +152,8 @@ static NSMutableArray *iTermExpressionEvaluatorGlobalStore(void) {
             NSLog(@"%@ result=%@, error=%@, missing=%@", descr, result, error, missing);
         }
         if (self.retryUntil.timeIntervalSinceNow > 0 &&
-            [error.domain isEqual:iTermAPIHelperErrorDomain] &&
-            error.code == iTermAPIHelperErrorCodeUnregisteredFunction) {
+            [error.domain isEqual:iTermFunctionCallErrorDomain] &&
+            error.code == iTermFunctionCallErrorCodeUnregisteredFunction) {
             RLog(@"Schedule retry of %@", descr);
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 DLog(@"Retrying");
@@ -453,10 +451,7 @@ static NSMutableArray *iTermExpressionEvaluatorGlobalStore(void) {
 }
 
 - (void)logError:(NSError *)error invocation:(NSString *)invocation {
-    NSString *message =
-    [NSString stringWithFormat:@"Error evaluating expression %@: %@\n",
-     invocation, error.localizedDescription];
-    [[iTermScriptHistoryEntry globalEntry] addOutput:message completion:^{}];
+    DLog(@"Error evaluating expression %@: %@", invocation, error.localizedDescription);
 }
 
 @end

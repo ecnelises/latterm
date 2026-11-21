@@ -7,8 +7,16 @@
 
 #import <Foundation/Foundation.h>
 
+@class NSWindow;
 @class iTermVariableScope;
 @class iTermParsedExpression;
+
+extern NSString *const iTermFunctionCallErrorDomain;
+
+typedef NS_ENUM(NSUInteger, iTermFunctionCallErrorCode) {
+    iTermFunctionCallErrorCodeUnregisteredFunction = 0,
+    iTermFunctionCallErrorCodeInvalidIdentifier = 5,
+};
 
 // foo.bar.baz -> (foo.bar, baz)
 void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **namespacePtr, NSString **relativeNamePtr);
@@ -17,6 +25,11 @@ void iTermFunctionCallSplitFullyQualifiedName(NSString *fqName, NSString **names
 
 @property (nonatomic, readonly) NSString *signature;
 @property (nonatomic, readonly) NSString *name;
+
++ (void)reportFunctionCallError:(NSError *)error
+                  forInvocation:(NSString *)invocation
+                         origin:(NSString *)origin
+                         window:(NSWindow *)window;
 
 // The 'invocation' must be a function call and cannot be any other kind of expression.
 // Hold a reference to the result until you no longer care to receive the completion block, or pass retainSelf: YES

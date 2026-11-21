@@ -68,7 +68,6 @@
 #import "iTermSetCurrentTerminalHelper.h"
 #import "iTermUserDefaults.h"
 #import "iTermWarning.h"
-#import "iTermWebSocketCookieJar.h"
 
 #include <objc/runtime.h>
 

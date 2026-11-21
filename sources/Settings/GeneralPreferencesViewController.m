@@ -15,7 +15,6 @@
 #import "RegexKitLite.h"
 #import "WindowArrangements.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermAPIHelper.h"
 #import "iTermAdvancedGPUSettingsViewController.h"
 #import "iTermApplicationDelegate.h"
 #import "iTermBuriedSessions.h"
@@ -23,7 +22,6 @@
 #import "iTermNotificationCenter.h"
 #import "iTermPreferenceDidChangeNotification.h"
 #import "iTermRemotePreferences.h"
-#import "iTermScriptsMenuController.h"
 #import "iTermSizeRememberingView.h"
 #import "iTermUserDefaults.h"
 #import "iTermUserDefaultsObserver.h"
@@ -73,8 +71,6 @@ enum {
     iTermAdvancedGPUSettingsWindowController *_advancedGPUWindowController;
 
     IBOutlet NSButton *_maximizeThroughput;
-    IBOutlet NSButton *_enableAPI;
-    IBOutlet NSPopUpButton *_apiPermission;
 
     // Enable bonjour
     IBOutlet NSButton *_enableBonjour;
@@ -87,11 +83,6 @@ enum {
     IBOutlet NSButton *_pushToCustomFolder;  // Push button to copy local to remote
     IBOutlet NSPopUpButton *_saveChanges;  // Save settings to folder when
     IBOutlet NSTextField *_saveChangesLabel;
-
-    IBOutlet NSButton *_useCustomScriptsFolder;
-    IBOutlet NSTextField *_customScriptsFolder;
-    IBOutlet NSImageView *_customScriptsFolderWarning;
-    IBOutlet NSButton *_browseCustomScriptsFolder;
 
     // Copy to clipboard on selection
     IBOutlet NSButton *_selectionCopiesText;
@@ -163,11 +154,8 @@ enum {
 
     IBOutlet NSButton *_disableConfirmationOnShutdown;
 
-    BOOL _customScriptsFolderDidChange;
-
     IBOutlet NSButton *_enableRTL;
     IBOutlet NSButton *_sshIntegrationForURLs;
-    NSButton *_pythonAPIAuthHelpButton;
     NSButton *_wordCharsHelpButton;
     NSButton *_exportAllButton;
     NSButton *_importAllButton;
@@ -180,10 +168,6 @@ enum {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(savedArrangementChanged:)
                                                      name:kSavedArrangementDidChangeNotification
-                                                   object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(didRevertPythonAuthenticationMethod:)
-                                                     name:iTermAPIHelperDidDetectChangeOfPythonAuthMethodNotification
                                                    object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(updateAlwaysOpenLegend)
@@ -251,16 +235,6 @@ enum {
     _advancedGPU = [iTermSettingsControlFactory pushButton:@"Advanced GPU Settings…" target:self action:@selector(advancedGPU:)];
     _advancedGPUPrefsButton = _advancedGPU;
     _maximizeThroughput = [iTermSettingsControlFactory checkbox:@"Maximize throughput at the cost of higher latency" target:self action:changed toolTip:nil];
-    _enableAPI = [iTermSettingsControlFactory checkbox:@"Enable Python API" target:self action:changed toolTip:nil];
-    _apiPermission = [iTermSettingsControlFactory popupButtonWithPullsDown:NO width:260 target:self action:changed items:@[
-        @[ @"Require “Automation” permission", @0 ],
-        @[ @"Allow all apps to connect", @1 ]
-    ]];
-    _pythonAPIAuthHelpButton = [iTermSettingsControlFactory helpButtonWithTarget:self action:@selector(pythonAPIAuthHelp:)];
-    _useCustomScriptsFolder = [iTermSettingsControlFactory checkbox:@"Custom Python API Scripts Folder" target:self action:changed toolTip:nil];
-    _customScriptsFolder = [iTermSettingsControlFactory textFieldWithPlaceholder:nil width:233 target:nil action:nil delegate:self];
-    _customScriptsFolderWarning = [iTermSettingsControlFactory statusImageView];
-    _browseCustomScriptsFolder = [iTermSettingsControlFactory pushButton:@"Browse" target:self action:@selector(browseScriptsFolder:)];
     _enableBonjour = [iTermSettingsControlFactory checkbox:@"Add Bonjour hosts to Profiles" target:self action:changed toolTip:nil];
 
     _selectionCopiesText = [iTermSettingsControlFactory checkbox:@"Copy to clipboard on selection" target:self action:changed toolTip:nil];
@@ -482,40 +456,6 @@ enum {
         [weakSelf updateAdvancedGPUEnabled];
     };
 
-    info = [self defineControl:_enableAPI
-                           key:kPreferenceKeyEnableAPIServer
-                   relatedView:nil
-                          type:kPreferenceInfoTypeCheckbox];
-    info.customSettingChangedHandler = ^(id sender) {
-        [weakSelf enableAPISettingDidChange];
-    };
-    [iTermPreferenceDidChangeNotification subscribe:self
-                                              block:^(iTermPreferenceDidChangeNotification * _Nonnull notification) {
-        if ([notification.key isEqualToString:kPreferenceKeyEnableAPIServer]) {
-            __typeof(self) strongSelf = weakSelf;
-            if (strongSelf) {
-                strongSelf->_enableAPI.state = NSControlStateValueOn;
-            }
-        }
-    }];
-
-    info = [self defineControl:_apiPermission
-                           key:kPreferenceKeyAPIAuthentication
-                   displayName:@"Authentication method for Python API"
-                          type:kPreferenceInfoTypePopup];
-    info.syntheticGetter = ^id{
-        return @([iTermAPIHelper requireApplescriptAuth] ? 0 : 1);
-    };
-    info.syntheticSetter = ^(NSNumber *newValue) {
-        const BOOL useApplescript = (newValue.intValue == 0);
-        [iTermAPIHelper setRequireApplescriptAuth:useApplescript
-                                           window:self.view.window];
-        [weakSelf updateAPIEnabledState];
-    };
-    info.shouldBeEnabled = ^BOOL{
-        return [weakSelf boolForKey:kPreferenceKeyEnableAPIServer];
-    };
-
     _advancedGPUWindowController = [[iTermAdvancedGPUSettingsWindowController alloc] initWithWindowNibName:@"iTermAdvancedGPUSettingsWindowController"];
     [_advancedGPUWindowController.window orderOut:nil];
     _advancedGPUWindowController.viewController.disableWhenDisconnected.target = self;
@@ -572,36 +512,6 @@ enum {
                     key:kPreferenceKeyAddBonjourHostsToProfiles
             relatedView:nil
                    type:kPreferenceInfoTypeCheckbox];
-
-    // ---------------------------------------------------------------------------------------------
-    info = [self defineControl:_useCustomScriptsFolder
-                           key:kPreferenceKeyUseCustomScriptsFolder
-                   relatedView:nil
-                          type:kPreferenceInfoTypeCheckbox];
-    info.onChange = ^() {
-        [self useCustomScriptsFolderDidChange];
-        [weakSelf customScriptsFolderDidChange];
-        [weakSelf postCustomScriptsFolderDidChangeNotificationIfNeeded];
-    };
-    info.observer = ^() { [self updateCustomScriptsFolderViews]; };
-
-    info = [self defineControl:_customScriptsFolder
-                           key:kPreferenceKeyCustomScriptsFolder
-                   displayName:@"Custom folder for Python API scripts"
-                          type:kPreferenceInfoTypeStringTextField];
-    info.shouldBeEnabled = ^BOOL() {
-        return [iTermPreferences boolForKey:kPreferenceKeyUseCustomScriptsFolder];
-    };
-    info.onChange = ^() {
-        [self updateCustomScriptsFolderViews];
-        [weakSelf customScriptsFolderDidChange];
-    };
-    info.controlTextDidEndEditing = ^(NSNotification *notif) {
-        // Post here instead of onChange since a patial path, like "/", would kick off a very slow
-        // recursive search for scripts.
-        [weakSelf postCustomScriptsFolderDidChangeNotificationIfNeeded];
-    };
-    [self updateCustomScriptsFolderViews];
 
     // ---------------------------------------------------------------------------------------------
     info = [self defineControl:_loadPrefsFromCustomFolder
@@ -889,13 +799,6 @@ enum {
         @"irMemoryLabel": _irMemoryLabel,
         @"irMemory": _irMemory,
         @"savePasteHistory": _savePasteHistory,
-        @"enableAPI": _enableAPI,
-        @"apiPermission": _apiPermission,
-        @"pythonAPIAuthHelp": _pythonAPIAuthHelpButton ?: [NSButton new],
-        @"useCustomScriptsFolder": _useCustomScriptsFolder,
-        @"customScriptsFolder": _customScriptsFolder,
-        @"customScriptsFolderWarning": _customScriptsFolderWarning,
-        @"browseCustomScriptsFolder": _browseCustomScriptsFolder,
         @"enableBonjour": _enableBonjour,
         @"selectionCopiesText": _selectionCopiesText,
         @"copyLastNewline": _copyLastNewline,
@@ -949,29 +852,7 @@ enum {
     [super resizeWindowForTabViewItem:item animated:animated];
 }
 
-- (void)customScriptsFolderDidChange {
-    _customScriptsFolderDidChange = YES;
-}
-
-- (void)postCustomScriptsFolderDidChangeNotificationIfNeeded {
-    if (_customScriptsFolderDidChange) {
-        _customScriptsFolderDidChange = NO;
-        [[NSNotificationCenter defaultCenter] postNotificationName:iTermScriptsFolderDidChange object:nil];
-    }
-}
-
-- (void)windowWillClose {
-    [self postCustomScriptsFolderDidChangeNotificationIfNeeded];
-}
-
-- (void)willDeselectTab {
-    [self postCustomScriptsFolderDidChangeNotificationIfNeeded];
-}
-
 - (NSString *)alwaysOpenLegend {
-    if ([iTermScriptsMenuController autoLaunchFolderExists]) {
-        return @"The presence of auto-launch scripts disables opening a window at startup.";
-    }
     if ([[[iTermHotKeyController sharedInstance] profileHotKeys] count] > 0) {
         return @"The existence of hotkey windows disables opening a window at startup.";
     }
@@ -996,12 +877,6 @@ enum {
     }
 }
 
-- (void)updateAPIEnabledState {
-    _enableAPI.state = [self boolForKey:kPreferenceKeyEnableAPIServer];
-    [_apiPermission selectItemWithTag:[iTermAPIHelper requireApplescriptAuth] ? 0 : 1];
-    [self updateEnabledState];
-}
-
 - (BOOL)shouldEnableAlwaysOpenWindowAtStartup {
     if ([self boolForKey:kPreferenceKeyOpenArrangementAtStartup]) {
         return NO;
@@ -1014,7 +889,6 @@ enum {
 
 - (void)updateEnabledState {
     [super updateEnabledState];
-    [_apiPermission selectItemWithTag:[iTermAPIHelper requireApplescriptAuth] ? 0 : 1];
     _evenIfThereAreNoWindows.enabled = [self boolForKey:kPreferenceKeyPromptOnQuit];
     const BOOL useSystemWindowRestoration = (![self boolForKey:kPreferenceKeyOpenArrangementAtStartup] &&
                                              ![self boolForKey:kPreferenceKeyOpenNoWindowsAtStartup]);
@@ -1026,32 +900,6 @@ enum {
 
 - (void)updateAdvancedGPUEnabled {
     _advancedGPU.enabled = [self boolForKey:kPreferenceKeyUseMetal];
-}
-
-- (BOOL)enableAPISettingDidChange {
-    const BOOL result = [self reallyEnableAPISettingDidChange];
-    [self updateEnabledState];
-    return result;
-}
-
-- (BOOL)reallyEnableAPISettingDidChange {
-    const BOOL enabled = _enableAPI.state == NSControlStateValueOn;
-    if (enabled) {
-        // Prompt the user. If they agree, or have permanently agreed, set the user default to YES.
-        if ([iTermAPIHelper confirmShouldStartServerAndUpdateUserDefaultsForced:YES]) {
-            [iTermAPIHelper sharedInstance];
-        } else {
-            return NO;
-            
-        }
-    } else {
-        [iTermAPIHelper setEnabled:NO];
-    }
-    if (enabled && ![iTermAPIHelper isEnabled]) {
-        _enableAPI.state = NSControlStateValueOff;
-        return NO;
-    }
-    return YES;
 }
 
 #pragma mark - Actions
@@ -1104,10 +952,6 @@ enum {
     [self choosePrefsCustomFolder];
 }
 
-- (IBAction)browseScriptsFolder:(id)sender {
-    [self chooseCustomScriptsFolder];
-}
-
 - (IBAction)pushToCustomFolder:(id)sender {
     [[iTermRemotePreferences sharedInstance] saveLocalUserDefaultsToRemotePrefs];
 }
@@ -1115,10 +959,6 @@ enum {
 - (IBAction)advancedGPU:(NSView *)sender {
     [self.view.window beginSheet:_advancedGPUWindowController.window completionHandler:^(NSModalResponse returnCode) {
     }];
-}
-
-- (IBAction)pythonAPIAuthHelp:(id)sender {
-    [[NSWorkspace sharedWorkspace] it_openURL:[NSURL URLWithString:@"https://iterm2.com/python-api-auth.html"]];
 }
 
 #pragma mark - Notifications
@@ -1129,11 +969,6 @@ enum {
     [_openDefaultWindowArrangementItem setEnabled:[WindowArrangements count] > 0];
 }
 
-// The API helper just noticed that the file's contents changed.
-- (void)didRevertPythonAuthenticationMethod:(NSNotification *)notification {
-    [self updateAPIEnabledState];
-}
-
 - (void)preferenceDidChangeFromOtherPanel:(NSNotification *)notification {
     [self updateAlwaysOpenLegend];
     [super preferenceDidChangeFromOtherPanel:notification];
@@ -1141,23 +976,6 @@ enum {
 
 
 #pragma mark - Remote Prefs
-
-- (void)updateCustomScriptsFolderViews {
-    BOOL haveCustomFolder = [iTermPreferences boolForKey:kPreferenceKeyUseCustomScriptsFolder];
-    _browseCustomScriptsFolder.enabled = haveCustomFolder;
-    _customScriptsFolder.enabled = haveCustomFolder;
-    if (haveCustomFolder) {
-        _customScriptsFolderWarning.alphaValue = 1;
-    } else {
-        if (_customScriptsFolder.stringValue.length > 0) {
-            _customScriptsFolderWarning.alphaValue = 0.5;
-        } else {
-            _customScriptsFolderWarning.alphaValue = 0;
-        }
-    }
-    const BOOL locationIsValid = [[NSFileManager defaultManager] customScriptsFolderIsValid:_customScriptsFolder.stringValue];
-    _customScriptsFolderWarning.image = locationIsValid ? [NSImage it_imageNamed:@"CheckMark" forClass:self.class] : [NSImage it_imageNamed:@"WarningSign" forClass:self.class];
-}
 
 - (void)updateRemotePrefsViews {
     BOOL shouldLoadRemotePrefs =
@@ -1183,21 +1001,6 @@ enum {
     [_saveChanges setEnabled:isValidFile];
     [_saveChangesLabel setLabelEnabled:isValidFile];
     [_pushToCustomFolder setEnabled:isValidFile];
-}
-
-- (void)useCustomScriptsFolderDidChange {
-    const BOOL newValue = [iTermPreferences boolForKey:kPreferenceKeyUseCustomScriptsFolder];
-    [self updateCustomScriptsFolderViews];
-    if (newValue) {
-        // Just turned it on
-        if ([[_customScriptsFolder stringValue] length] == 0) {
-            // Filed was initially empty so browse for a dir.
-            if ([self chooseCustomScriptsFolder]) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:iTermScriptsFolderDidChange object:nil];
-            }
-        }
-    }
-    [self updateCustomScriptsFolderViews];
 }
 
 - (void)loadPrefsFromCustomFolderDidChangeByUI:(BOOL)byUI {
@@ -1230,21 +1033,6 @@ enum {
         _loadPrefsFromCustomFolder.state = shouldLoadRemotePrefs ? NSControlStateValueOn : NSControlStateValueOff;
     }
     [self updateRemotePrefsViews];
-}
-
-- (BOOL)chooseCustomScriptsFolder {
-    NSOpenPanel* panel = [NSOpenPanel openPanel];
-    [panel setCanChooseFiles:NO];
-    [panel setCanChooseDirectories:YES];
-    [panel setAllowsMultipleSelection:NO];
-
-    if ([panel runModal] == NSModalResponseOK && panel.directoryURL.path) {
-        [_customScriptsFolder setStringValue:panel.directoryURL.path];
-        [self settingChanged:_customScriptsFolder];
-        return YES;
-    }  else {
-        return NO;
-    }
 }
 
 - (BOOL)choosePrefsCustomFolder {

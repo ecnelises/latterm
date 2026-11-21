@@ -3,7 +3,6 @@
 #import "Autocomplete.h"
 #import "FutureMethods.h"
 #import "ITAddressBookMgr.h"
-#import "iTermAPIHelper.h"
 #import "iTermBroadcastInputHelper.h"
 #import "iTermController.h"
 #import "iTermInstantReplayWindowController.h"
@@ -55,7 +54,6 @@ extern NSString *const iTermDidCreateTerminalWindowNotification;
 @interface PseudoTerminal : NSWindowController <
   iTermInstantReplayDelegate,
   iTermPresentationControllerManagedWindowController,
-  iTermSubscribable,
   iTermWeaklyReferenceable,
   iTermWindowController,
   NSWindowDelegate,

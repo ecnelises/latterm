@@ -137,7 +137,6 @@
 "9u2-er-NQu.title" = "窗口样式";
 "Bhs-45-5yR.title" = "显示编写器";
 "Bx1-Fd-J2S.title" = "查找…";
-"CZD-7u-bch.title" = "脚本";
 "DB9-tf-hPg.title" = "触发器";
 "GSK-c3-R0J.title" = "提醒";
 "Heo-Xb-RKN.title" = "复制标签页";
@@ -146,7 +145,6 @@
 "OBk-Hd-j3M.title" = "布局";
 "Va7-Bb-mhX.title" = "窗口样式";
 "ZGW-Bo-6S6.title" = "会话";
-"eAB-5s-fVh.title" = "脚本";
 "noE-Gg-Cgs.title" = "提醒";
 "w4F-uL-QPB.title" = "操作";
 "Rtr-Sv-Log.title" = "保存回溯调试日志";
@@ -175,7 +173,6 @@
 "pbR-BZ-1Bc.title" = "ssh";
 "ycJ-VX-uQI.title" = "断开连接";
 "TeM-om-H0z.title" = "下载文件…";
-"it2-au-th0.title" = "允许远程主机控制 Latterm";
 "n4U-yI-y7D.title" = "连同样式复制";
 "GT8-oj-uFO.title" = "连同控制序列复制";
 "CQc-0U-rfn.title" = "复制模式";
@@ -286,17 +283,6 @@
 "m8k-FC-JBb.title" = "隐藏会话";
 "Weo-nd-iLL.title" = "隐藏的会话";
 "PTu-aD-qbz.title" = "隐藏的会话";
-"Koa-MY-5QA.title" = "管理";
-"PGw-xl-7oF.title" = "管理";
-"ds5-gY-cX0.title" = "新建 Python 脚本";
-"jXH-0I-Wtc.title" = "打开 Python 交互窗口";
-"wHh-8e-oU2.title" = "管理依赖项…";
-"0D0-tt-wlA.title" = "安装 Python 运行时";
-"t3w-Wj-vG8.title" = "安装已下载的 Python 运行时";
-"eeH-ly-45H.title" = "在访达中显示脚本";
-"hZE-iO-QIR.title" = "导入…";
-"dlj-rW-u7D.title" = "导出…";
-"YqT-f8-W2j.title" = "控制台";
 "875.title" = "按住 Option 在新窗口中打开";
 "D5Y-FD-IWK.title" = "将当前窗口保存为布局";
 "wNF-TH-Fz5.title" = "从文件加载布局…";

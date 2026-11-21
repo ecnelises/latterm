@@ -10,12 +10,10 @@
 #import "DebugLogging.h"
 #import "ITAddressBookMgr.h"
 #import "iTermAdvancedSettingsModel.h"
-#import "iTermAPIHelper.h"
 #import "iTermBuiltInFunctions.h"
 #import "iTermExpressionParser.h"
 #import "iTermProfilePreferences.h"
 #import "iTermScriptFunctionCall.h"
-#import "iTermScriptHistory.h"
 #import "iTermVariableReference.h"
 #import "iTermVariableScope.h"
 #import "NSArray+iTerm.h"
@@ -52,18 +50,7 @@ NSString *const iTermSessionNameControllerSystemTitleUniqueIdentifier = @"com.it
 }
 
 - (instancetype)init {
-    self = [super init];
-    if (self) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(didRegisterSessionTitleFunc:)
-                                                     name:iTermAPIDidRegisterSessionTitleFunctionNotification
-                                                   object:nil];
-    }
-    return self;
-}
-
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    return [super init];
 }
 
 - (void)setDelegate:(id<iTermSessionNameControllerDelegate>)delegate {
@@ -89,9 +76,7 @@ NSString *const iTermSessionNameControllerSystemTitleUniqueIdentifier = @"com.it
     if ([uniqueIdentifier isEqualToString:iTermSessionNameControllerSystemTitleUniqueIdentifier]) {
         return @"iterm2.private.session_title(session: session.id)";
     }
-    return [[iTermAPIHelper sessionTitleFunctions] objectPassingTest:^BOOL(iTermSessionTitleProvider *provider, NSUInteger index, BOOL *stop) {
-        return [provider.uniqueIdentifier isEqualToString:uniqueIdentifier];
-    }].invocation;
+    return nil;
 }
 
 - (BOOL)usingBuiltInTitleProvider {
@@ -184,31 +169,15 @@ NSString *const iTermSessionNameControllerSystemTitleUniqueIdentifier = @"com.it
 }
 
 - (BOOL)errorIsUnregisteredFunctionCall:(NSError *)error {
-    return (error.code == iTermAPIHelperErrorCodeUnregisteredFunction &&
-            [error.domain isEqual:iTermAPIHelperErrorDomain]);
+    return (error.code == iTermFunctionCallErrorCodeUnregisteredFunction &&
+            [error.domain isEqual:iTermFunctionCallErrorDomain]);
 }
 
 - (void)logError:(NSError *)error forInvocation:(NSString *)invocation {
-    NSString *message = [NSString stringWithFormat:@"Invoked “%@” to compute name for session. Failed with error:\n%@\n",
-                         invocation,
-                         [error localizedDescription]];
-    NSString *detail = error.localizedFailureReason;
-    if (detail) {
-        message = [message stringByAppendingFormat:@"%@\n", detail];
-    }
-    NSString *connectionKey = error.userInfo[iTermAPIHelperFunctionCallErrorUserInfoKeyConnection];
-    iTermScriptHistoryEntry *entry = [[iTermScriptHistory sharedInstance] entryWithIdentifier:connectionKey];
-    if (!entry) {
-        entry = [iTermScriptHistoryEntry globalEntry];
-    }
-    [entry addOutput:message completion:^{}];
-    if ([self errorIsUnregisteredFunctionCall:error]) {
-        [self logMessage:[NSString stringWithFormat:@"Could not make a function call into a script. Either its unique identifier changed (in which case you should update your settings in Settings > Profiles > General > Title) or the script is not running. The failed invocation was:\n%@", invocation]
-              invocation:invocation];
-    } else {
-        [self logMessage:error.localizedDescription
-              invocation:invocation];
-    }
+    DLog(@"Invoked “%@” to compute name for session. Failed with error: %@ (%@)",
+         invocation,
+         [error localizedDescription],
+         error.localizedFailureReason);
 }
 
 - (NSString *)valueForInvocation:(NSString *)invocation
@@ -224,20 +193,6 @@ NSString *const iTermSessionNameControllerSystemTitleUniqueIdentifier = @"com.it
 
     const BOOL isUnregistered = [self errorIsUnregisteredFunctionCall:error];
     return isUnregistered ? @"…" : @"🐞";
-}
-
-- (void)logMessage:(NSString *)message invocation:(NSString *)invocation {
-    NSError *invocationError = nil;
-    NSString *signature = [iTermExpressionParser signatureForFunctionCallInvocation:invocation error:&invocationError];
-    if (signature) {
-        [[iTermAPIHelper sharedInstance] logToConnectionHostingFunctionWithSignature:signature
-                                                                              string:message];
-    } else {
-        [[iTermAPIHelper sharedInstance] logToConnectionHostingFunctionWithSignature:nil
-                                                                              format:@"Malformed invocation in session name controller. The invocation is:\n%@\nIt doesn't look like a function call! The parser said:\n%@",
-         invocation,
-         invocationError.localizedDescription];
-    }
 }
 
 - (void)didEvaluateInvocationWithResult:(NSString *)result {
@@ -462,13 +417,6 @@ NSString *const iTermSessionNameControllerSystemTitleUniqueIdentifier = @"com.it
             [strongSelf didEvaluateInvocationWithResult:safeName];
         }
     }];
-}
-
-#pragma mark - Notifications
-
-- (void)didRegisterSessionTitleFunc:(NSNotification *)notification {
-    _cachedEvaluation = nil;  // Force references to be recomputed
-    [self setNeedsReevaluation];
 }
 
 @end

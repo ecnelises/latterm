@@ -310,13 +310,6 @@ CoreParse: force
 pwmadapters: force
 	cd pwmplugin/ && ./build.sh
 
-it2cli: force
-	cd it2cli/ && ./build.sh
-	cp it2cli/.build/release/it2 it2cli/bin
-
-paranoid-it2cli: force
-	/usr/bin/sandbox-exec -f deps.sb $(MAKE) it2cli
-
 paranoid-CoreParse: force
 	/usr/bin/sandbox-exec -f deps.sb $(MAKE) BUILD_DIR="$(BUILD_DIR)" CoreParse
 

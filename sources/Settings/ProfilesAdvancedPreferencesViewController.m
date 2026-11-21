@@ -143,7 +143,7 @@
     _removeBoundHost = removeHostButton;
     _boundHostShellIntegrationWarning = [iTermSettingsControlFactory secondaryLabelWithTitle:@"This feature requires terminal-reported host metadata."
                                                                                     wrapping:YES];
-    _enableAPSLogging = [iTermSettingsControlFactory checkboxWithTitle:@"Write Automatic Profile Switching debug logs to Script Console (⌥⌘J)"
+    _enableAPSLogging = [iTermSettingsControlFactory checkboxWithTitle:@"Write Automatic Profile Switching debug logs"
                                                                 target:self
                                                                 action:@selector(didToggleAutomaticProfileSwitchingDebugLogging:)];
 

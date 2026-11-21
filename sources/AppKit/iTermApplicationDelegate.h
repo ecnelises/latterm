@@ -30,8 +30,6 @@
 #import "DebugLogging.h"
 #import "iTermApplication.h"
 
-@class iTermScriptsMenuController;
-@class ITMNotification;
 @class PseudoTerminal;
 @class PTYSession;
 
@@ -61,7 +59,6 @@ void TurnOnDebugLoggingAutomatically(void);
 @property(nonatomic, readonly) BOOL warnBeforeMultiLinePaste;
 @property(nonatomic, readonly) NSMenu *downloadsMenu;
 @property(nonatomic, readonly) NSMenu *uploadsMenu;
-@property(nonatomic, readonly) iTermScriptsMenuController *scriptsMenuController;
 @property(nonatomic, readonly) BOOL toggleFullScreenHasCmdEnterShortcut;
 @property(nonatomic, strong) IBOutlet NSMenuItem *workgroupsMenuItem;
 @property(nonatomic, strong) IBOutlet NSMenuItem *workgroupsSeparator;

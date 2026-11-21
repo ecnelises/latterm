@@ -7,7 +7,6 @@
 
 #import "iTermStatusBarSetupViewController.h"
 
-#import "iTermAPIHelper.h"
 #import "iTermFontPanel.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "iTermStatusBarActionComponent.h"
@@ -24,7 +23,6 @@
 #import "iTermStatusBarLayout.h"
 #import "iTermStatusBarMemoryUtilizationComponent.h"
 #import "iTermStatusBarNetworkUtilizationComponent.h"
-#import "iTermStatusBarRPCProvidedTextComponent.h"
 #import "iTermStatusBarSearchFieldComponent.h"
 #import "iTermStatusBarSnippetComponent.h"
 #import "iTermStatusBarSpringComponent.h"
@@ -94,14 +92,6 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (iTermStatusBarSetupElement *)newElementForProviderRegistrationRequest:(ITMRPCRegistrationRequest *)request {
-    iTermStatusBarRPCComponentFactory *factory =
-        [[iTermStatusBarRPCComponentFactory alloc] initWithRegistrationRequest:request];
-    return [[iTermStatusBarSetupElement alloc] initWithComponentFactory:factory
-                                                        layoutAlgorithm:_layout.advancedConfiguration.layoutAlgorithm
-                                                                  knobs:factory.defaultKnobs];
-}
-
 - (void)loadElements {
     NSArray<Class> *classes = @[
                                  [iTermStatusBarBatteryComponent class],
@@ -146,12 +136,6 @@ NS_ASSUME_NONNULL_BEGIN
     _destinationViewController.sourceCollectionView = _collectionView;
 
     [self loadElements];
-    for (ITMRPCRegistrationRequest *request in iTermAPIHelper.statusBarComponentProviderRegistrationRequests) {
-        iTermStatusBarSetupElement *element = [self newElementForProviderRegistrationRequest:request];
-        if (element) {
-            _elements = [_elements arrayByAddingObject:element];
-        }
-    }
     [_collectionView registerForDraggedTypes: @[iTermStatusBarElementPasteboardType]];
     [_collectionView setDraggingSourceOperationMask:NSDragOperationCopy forLocal:YES];
     _collectionView.selectable = YES;

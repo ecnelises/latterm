@@ -301,10 +301,8 @@ class iTermAutomaticProfileSwitcher: NSObject {
             DLog(evaluated, file: file, line: line, function: function)
         }
         if shouldHistoryLog {
-            iTermScriptHistory.sharedInstance().addAPSLoggingEntryIfNeeded()
             let sessionName = delegate?.automaticProfileSwitcherSessionName() ?? "(null)"
-            let output = "[\(sessionName)] \(evaluated)\n"
-            iTermScriptHistoryEntry.aps().addOutput(output) {}
+            RLog("[APS][\(sessionName)] \(evaluated)")
         }
     }
 

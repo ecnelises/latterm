@@ -9,7 +9,6 @@
 #import "PTYSplitView.h"
 #import "PTYTabDelegate.h"
 #import "WindowControllerInterface.h"
-#import "Api.pbobjc.h"
 
 @class FakeWindow;
 @protocol iTermTabScope;
@@ -338,9 +337,6 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
 - (void)setPerTabSettings:(NSString *)setting;
 
 - (void)updateUseMetal;
-- (ITMSplitTreeNode *)rootSplitTreeNode;
-
-- (void)setSizesFromSplitTreeNode:(ITMSplitTreeNode *)node;
 - (void)arrangeSplitPanesEvenly;
 
 // Recursively distributes available space evenly across siblings of the

@@ -8,10 +8,8 @@
 #import "iTermSwiftyString.h"
 
 #import "DebugLogging.h"
-#import "iTermAPIHelper.h"
 #import "iTermExpressionEvaluator.h"
 #import "iTermScriptFunctionCall.h"
-#import "iTermScriptHistory.h"
 #import "iTermVariableReference.h"
 #import "iTermVariableScope.h"
 #import "NSArray+iTerm.h"

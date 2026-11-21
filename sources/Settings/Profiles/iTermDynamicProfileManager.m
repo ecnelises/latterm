@@ -16,8 +16,6 @@
 #import "iTermMigrationHelper.h"
 #import "iTermProfileModelJournal.h"
 #import "iTermProfilePreferences.h"
-#import "iTermScriptConsole.h"
-#import "iTermScriptHistory.h"
 #import "iTermWarning.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
@@ -164,9 +162,7 @@
 }
 
 - (void)reportError:(NSString *)error file:(NSString *)file {
-    [[iTermScriptHistory sharedInstance] addDynamicProfilesLoggingEntryIfNeeded];
-    [[iTermScriptHistoryEntry dynamicProfilesEntry] addOutput:[error stringByAppendingString:@"\n"]
-                                                   completion:^{}];
+    DLog(@"Dynamic Profiles error (%@): %@", file, error);
 
     _pendingErrors += 1;
     if (_pendingErrors > 1) {
@@ -182,7 +178,7 @@
     [NSString stringWithFormat:@"There was a problem with one of your Dynamic Profiles:\n\n%@", error];
     if (_pendingErrors > 1) {
         const NSInteger count = _pendingErrors - 1;
-        message = [message stringByAppendingFormat:@"\n\n%@ additional error%@ may be seen in the log.",
+        message = [message stringByAppendingFormat:@"\n\n%@ additional error%@ occurred.",
                    @(count), count == 1 ? @"" : @"s"];
     }
     _pendingErrors = 0;
@@ -199,19 +195,14 @@
 
         container = [[iTermAlertAccessoryButtonUnfucker alloc] initWithButton:button];
     }
-    // "View Log" is a one-time navigation action and shouldn't be remembered.
     iTermWarning *warning = [[iTermWarning alloc] init];
     warning.title = message;
-    warning.actionLabels = @[ @"OK", @"View Log" ];
+    warning.actionLabels = @[ @"OK" ];
     warning.accessory = container;
     warning.identifier = @"NoSyncDynamicProfilesWarning";
     warning.warningType = kiTermWarningTypeTemporarilySilenceable;
     warning.heading = @"Dynamic Profiles Error";
-    warning.doNotRememberLabels = @[ @"View Log" ];
-    const iTermWarningSelection selection = [warning runModal];
-    if (selection == 1) {
-        [[iTermScriptConsole sharedInstance] revealTailOfHistoryEntry:[iTermScriptHistoryEntry dynamicProfilesEntry]];
-    }
+    [warning runModal];
 }
 
 - (void)reveal:(id)sender {

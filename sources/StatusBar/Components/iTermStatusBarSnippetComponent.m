@@ -8,7 +8,6 @@
 #import "iTermStatusBarSnippetComponent.h"
 #import "iTermSnippetsMenuController.h"
 #import "iTermSnippetsModel.h"
-#import "iTermScriptHistory.h"
 #import "iTermSwiftyString.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"

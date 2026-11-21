@@ -24,7 +24,6 @@
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermCursor.h"
 #import "iTermPreferences.h"
-#import "iTermScriptHistory.h"
 #import "iTermStatusBarLayout.h"
 
 #define PROFILE_BLOCK(x) [^id(Profile *profile) { return [self x:profile]; } copy]
@@ -453,11 +452,10 @@ typedef struct {
                     if (value) {
                         NSString *keyDescription = [iTermProfilePreferences descriptionForKey:key] ?: key;
                         NSString *valueTypeDescription = [value it_classDescription];
-                        NSString *logMessage = [NSString stringWithFormat:@"❗️ The bound expression for %@ is a color. It expected a string like #ff8844 but got the value “%@” of type “%@” instead.\n",
-                                                keyDescription,
-                                                value,
-                                                valueTypeDescription];
-                        [[iTermScriptHistoryEntry globalEntry] addOutput:logMessage completion:^{}];
+                        DLog(@"The bound expression for %@ is a color. Expected #ff8844 but got “%@” (%@).",
+                             keyDescription,
+                             value,
+                             valueTypeDescription);
                     }
                     return nil;
                 }

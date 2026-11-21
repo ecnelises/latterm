@@ -6,8 +6,8 @@
 //
 
 #import "iTermStatusBarActionComponent.h"
+#import "DebugLogging.h"
 #import "iTermActionsModel.h"
-#import "iTermScriptHistory.h"
 #import "iTermSwiftyString.h"
 #import "NSArray+iTerm.h"
 #import "NSDictionary+iTerm.h"
@@ -74,8 +74,7 @@ static NSString *const iTermStatusBarActionKey = @"action";
                                            sideEffectsAllowed:false
                                                      observer:^(NSString * _Nonnull newValue, NSError *error) {
         if (error != nil) {
-            [[iTermScriptHistoryEntry globalEntry] addOutput:[NSString stringWithFormat:@"Error while evaluating %@ in status bar action button: %@", expression, error]
-                                                  completion:^{}];
+            DLog(@"Error while evaluating %@ in status bar action button: %@", expression, error);
             return [NSString stringWithFormat:@"🐞 %@", error.localizedDescription];
         }
         [weakSelf setStringValue:newValue];

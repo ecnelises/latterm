@@ -12,7 +12,6 @@
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
 #import "ITAddressBookMgr.h"
-#import "iTermAPIHelper.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermBadgeConfigurationWindowController.h"
 #import "iTermFunctionCallTextFieldDelegate.h"
@@ -765,10 +764,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
                                                  name:iTermProfilePreferencesUpdateSessionName
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(didRegisterSessionTitleFunc:)
-                                                 name:iTermAPIDidRegisterSessionTitleFunctionNotification
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(updateSubtitlesAllowed)
                                                  name:kRefreshTerminalNotification
                                                object:nil];
@@ -1002,28 +997,14 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         [titleSettings.menu removeItemAtIndex:idx];
     }];
 
-    NSArray<iTermSessionTitleProvider *> *funcs = [iTermAPIHelper sessionTitleFunctions];
     NSString *uniqueIdentifier = [self titleFunctionUniqueIdentifier];
-    if (funcs.count || uniqueIdentifier) {
+    if (uniqueIdentifier) {
         NSMenuItem *separator = [NSMenuItem separatorItem];
         separator.identifier = @"";
         [titleSettings.menu addItem:separator];
-    }
-    NSString *funcName = [self titleFunctionDisplayName];
-    for (iTermSessionTitleProvider *provider in funcs) {
+
         NSMenuItem *item = [[NSMenuItem alloc] init];
-        item.title = provider.displayName;
-        item.identifier = provider.uniqueIdentifier;
-        if (uniqueIdentifier && [uniqueIdentifier isEqualToString:provider.uniqueIdentifier]) {
-            uniqueIdentifier = nil;
-        }
-        item.tag = -1;
-        [titleSettings.menu addItem:item];
-    }
-    if (uniqueIdentifier) {
-        // Did not find the currently selected func. Maybe the script hasn't started, crashed, etc.
-        NSMenuItem *item = [[NSMenuItem alloc] init];
-        item.title = funcName;
+        item.title = [self titleFunctionDisplayName];
         item.identifier = uniqueIdentifier;
         item.enabled = NO;
         item.tag = -1;
@@ -1775,11 +1756,6 @@ static NSString *const iTermProfilePreferencesUpdateSessionName = @"iTermProfile
         [self settingChanged:_profileNameFieldForEditCurrentSession];
         _profileNameChangePending = NO;
     }
-}
-
-- (void)didRegisterSessionTitleFunc:(NSNotification *)notification {
-    [self updateTitleSettingsMenu];
-    [self updateSelectedTitleComponents];
 }
 
 #pragma mark - iTermImageWellDelegate

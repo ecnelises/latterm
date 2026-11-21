@@ -16,7 +16,6 @@
 #import "iTermOpenQuicklyItem.h"
 #import "iTermProfileHotKey.h"
 #import "iTermScriptFunctionCall.h"
-#import "iTermScriptsMenuController.h"
 #import "iTermSnippetsModel.h"
 #import "iTermVariableScope.h"
 #import "iTermVariableScope+Global.h"
@@ -748,14 +747,6 @@ static const double kProfileNameMultiplierForWindowItem = 0.08;
 
 - (void)addScriptToItems:(NSMutableArray<iTermOpenQuicklyItem *> *)items
              withMatcher:(iTermMinimumSubsequenceMatcher *)matcher {
-    NSArray<NSString *> *allScripts = [[[[iTermApplication sharedApplication] delegate] scriptsMenuController] allScripts];
-    for (NSString *script in allScripts) {
-        iTermOpenQuicklyScriptItem *item;
-        item = [self scriptItemWithName:script matcher:matcher];
-        if (item) {
-            [items addObject:item];
-        }
-    }
 }
 
 #pragma mark - APIs
