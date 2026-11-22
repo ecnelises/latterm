@@ -1,57 +1,30 @@
 # Latterm
 
-Latterm is a terminal-first macOS fork of iTerm2. The goal is to keep the core terminal, window, tab, session, and rendering stack intact while removing product surface that is outside that focus.
+Latterm is a terminal-first macOS fork of iTerm2 targeting **macOS 15.0+ on Apple Silicon (`arm64`)**, focused on fast Metal rendering, clean typography, native SwiftUI settings, and zero external submodule or remote package bloat. The shipped app bundle is `Latterm.app` (`com.ecnelises.latterm`).
 
-This fork currently removes or de-emphasizes AI, embedded browser, and shell-integration-driven upsell flows. The app presents itself as `Latterm`, and the main bundle identifier is `com.ecnelises.latterm`.
+## Highlights
 
-## Status
+- **Unified Metal GPU Rendering**: Interactive terminal sessions stay on the Metal renderer even with ASCII and non-ASCII ligatures (`liga`/`clig`/`calt`/stylistic sets, 4+ cell runs, and opaque box-cursor splitting), annotations, or the find bar active.
+- **Precision Typography**: Physical-pixel (`0.5pt` Retina) character advance quantization plus ordered per-language and symbol font rules with regional CJK `locl` glyph shaping, relative scale, and baseline offsets.
+- **Native SwiftUI Settings & Live TOML Config**: Instant-opening programmatic/SwiftUI Settings (`PreferencePanel.xib` removed) paired with optional Git-friendly declarative configuration at `~/.config/latterm/config.toml` with live hot-reloading and bidirectional export.
+- **Lean Dependency Footprint**: **0 git submodules** and **0 remote Swift Package Manager dependencies** — native Swift SIXEL decoding, OpenSSH-backed SCP/config resolution, native expression parsing, and streamlined AppleScript automation.
+- **Bilingual UI**: English base UI with comprehensive Simplified Chinese (`zh-Hans`) localization across menus, Settings, and dialogs.
 
-Latterm is intended to become a clean, long-lived fork rather than a one-off patch set.
+## What Was Removed
 
-- Base UI language is English and remains the default.
-- Simplified Chinese localization covers menus, Settings, and common dialogs in `zh-Hans.lproj`.
-- Some internal target names and filenames still use `iTerm2` during the transition, but the shipped app bundle and executable are now `Latterm`. Renaming the Xcode project, schemes, targets, product references, helper paths, and packaging scripts is tracked as a dedicated refactor phase so project-file churn stays separate from feature removal.
-
-## What Stays
-
-- Terminal emulation and rendering
-- Windows, tabs, panes, and session management
-- Profiles, themes, and general preferences
-- Existing macOS-native workflow where it still fits the terminal-first direction
-
-## What Is Being Trimmed
-
-- AI-specific onboarding and upsell surfaces
-- Embedded browser-specific handling where it is not required for terminal workflows
-- Shell integration promotion and adjacent setup flows
-
-This is an active cleanup, not a claim that every related code path is already gone.
-
-## Localization
-
-English does not need a separate translation pack because the Base resources already serve as the default UI language.
-
-Current Chinese coverage includes:
-
-- App display name metadata
-- Main menu strings
-- About panel strings
-- Preference panel strings touched by the fork changes
-- Core prompts updated to use localized runtime strings
-
-More strings can be moved into localization tables incrementally without changing the app structure again.
+- AI chat, LLM providers, inline completions, and Claude Code onboarding/hooks
+- Embedded web browser profiles, WebKit previews, and adblock/extension stacks
+- Shell-integration script injection, installers, Captured Output, and persistent Core Data command history (terminal-native `OSC 7` and `OSC 133` marks remain first-class)
+- Companion iOS app (`iTerm2 Buddy`) and the Python WebSocket/Protobuf RPC runtime
 
 ## Building
 
 ### Prerequisites
 
-Official builds require Apple silicon and macOS 15.0 or later.
-
-Use the existing setup flow from the upstream project:
+Official builds require Apple Silicon (`arm64`) and macOS 15.0 or later with Xcode installed:
 
 ```bash
 make setup
-make paranoid-deps
 ```
 
 ### Development Build
@@ -91,7 +64,7 @@ xcrun notarytool store-credentials latterm-notary \
 Build, verify, notarize, staple, and package an exact version with:
 
 ```bash
-tools/release_latterm.sh 26.10.1
+tools/release_latterm.sh 26.11.10
 ```
 
 The final zip and SHA-256 file are written under `Build/Releases/<version>/`.

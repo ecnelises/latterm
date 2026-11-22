@@ -11,7 +11,7 @@
 3. **Never** create dependency cycles - use delegates/closures instead
 4. `git add` new files immediately after creation
 5. Read `REFACTOR.md` before any large feature-removal, modernization, or Swift-migration task. Treat it as the staged roadmap for the terminal-first fork and as a local planning document unless the user explicitly asks for it to be committed.
-6. As features are removed, audit their git submodule dependencies and delete submodules that are no longer needed. The long-term target is zero submodules, but never remove one before all code/project/runtime references are gone.
+6. Zero git submodules and zero remote Swift Package Manager dependencies have been achieved. Never add git submodules or remote SPM dependencies, and retire remaining `ThirdParty/` libraries as their consumers are modernized.
 
 ## Upstream Review Cursor
 
@@ -61,16 +61,15 @@ When reviewing upstream changes:
 
 ```
 Latterm/
-├── sources/               # Main application code
-├── ModernTests/           # Modern Swift/ObjC XCTest suite
-├── iTerm2XCTests/         # Legacy ObjC XCTest suite
-├── proto/api.proto        # Protocol Buffer API
-├── tools/                 # Build scripts
-├── submodules/            # Git submodules
-├── iTerm2.sdef            # AppleScript API
+├── sources/               # Main application code (ObjC + Swift, compiled in iTerm2SharedARC)
+├── ModernTests/           # Unified Swift/ObjC XCTest suite (ARC + ASan)
+├── PerformanceTests/      # Rendering and terminal benchmark XCTest suite
+├── ThirdParty/            # Remaining vendored libraries (e.g., PSMTabBarControl, FMDB)
+├── tools/                 # Build, test, and notarized release scripts
+├── iTerm2.sdef            # AppleScript dictionary
 ├── AGENTS.md              # Agent guide and code best practices
-├── REFACTOR.md            # Terminal-first fork roadmap
-└── iTerm2.xcodeproj/      # Xcode project
+├── REFACTOR.md            # Terminal-first fork roadmap (local planning doc)
+└── iTerm2.xcodeproj/      # Xcode project (main scheme: Latterm)
 ```
 
 ## Common Development Tasks
@@ -80,9 +79,9 @@ Latterm/
 - Look at `ModernTests/VT100ScreenTests.swift` and `ModernTests/VT100GridTests.swift` for examples
 - Test changes thoroughly
 
-### Extending APIs
-- **WebSocket API:** Edit `proto/api.proto`, run `tools/build_proto.sh`
-- **AppleScript:** Edit `iTerm2.sdef`, implement in `*+Scripting.{h,m}` files
+### Extending Configuration & Automation
+- **Declarative Config:** Edit `sources/Settings/DeclarativeConfig.swift` and `sources/Settings/TOMLCodec.swift` (`~/.config/latterm/config.toml`), and add tests in `ModernTests/DeclarativeConfigTests.swift`
+- **AppleScript:** Edit `iTerm2.sdef`, implement in `sources/Applescript/*+Scripting.{h,m}` files
 
 ## Code Patterns
 
@@ -125,10 +124,11 @@ assert(value != nil)
 - The Swift bridging header is `sources/iTerm2SharedARC-Bridging-Header.h` - check here for available Objective-C types and constants in Swift
 
 **Where code lives:**
-- Session logic → `PTYSession.{h,m}`
+- Session logic → `sources/PTYSession/PTYSession.{h,m}`
 - Terminal emulation → `VT100Parser`, `VT100Terminal`, `VT100ScreenMutableState`
-- UI rendering → `PTYTextView.{h,m}`
-- Tests → `ModernTests/` and `iTerm2XCTests/`
+- UI rendering → `sources/TerminalView/PTYTextView.{h,m}` & `sources/MetalRenderer/`
+- Settings & TOML config → `sources/Settings/` (`AppSettingsLayout.swift`, `ProfilePagesLayout.swift`, `DeclarativeConfig.swift`)
+- Tests → `ModernTests/`
 
 ## Code Best Practices
 
