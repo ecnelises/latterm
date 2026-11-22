@@ -344,7 +344,7 @@ NSString *const iTermSessionDidChangeTabNotification = @"iTermSessionDidChangeTa
     _isDragInProgress = YES;
     // Force tab bars to remain visible while a session is dragged so that
     // single-tab destination windows can act as drop targets — same fix as
-    // for tab drags in PSMTabDragAssistant. See iTerm2 issue 12846.
+    // for tab drags in the window controller. See iTerm2 issue 12846.
     [iTermPreferences setHideTabBarSuppressedDuringDrag:YES];
     [theWindow dragImage:[session dragImage]
                       at:rect.origin

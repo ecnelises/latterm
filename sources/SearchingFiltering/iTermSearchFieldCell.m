@@ -14,7 +14,7 @@
 #import "NSColor+iTerm.h"
 #import "NSImage+iTerm.h"
 #import "NSObject+iTerm.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "SFSymbolEnum/SFSymbolEnum.h"
 
 static NSSize kFocusRingInset = { 2, 3 };

@@ -15,7 +15,7 @@
 #import "NSImage+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 static NSString *const iTermComposerComboBoxDidBecomeFirstResponder = @"iTermComposerComboBoxDidBecomeFirstResponder";
 

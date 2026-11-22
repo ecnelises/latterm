@@ -12,7 +12,7 @@
 #import "iTermWeakReference.h"
 #import "PasteboardHistory.h"
 #import "ProfileListView.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "PTYTabView.h"
 #import "PTYWindow.h"
 #import "WindowControllerInterface.h"
@@ -20,7 +20,7 @@
 #include "iTermFileDescriptorClient.h"
 
 @class PTYSession;
-@class PSMTabBarControl;
+@class TerminalTabBarView;
 @class TabColorPickerState;
 @class iTermPromptOnCloseReason;
 @class iTermSessionFactory;

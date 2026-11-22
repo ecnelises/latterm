@@ -7,7 +7,6 @@
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"
 #import "NSView+iTerm.h"
-#import "NSWindow+PSM.h"
 #import "PopupEntry.h"
 #import "PopupModel.h"
 #import "PopupWindow.h"

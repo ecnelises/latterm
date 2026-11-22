@@ -4,7 +4,7 @@
 #import <Cocoa/Cocoa.h>
 #import "FutureMethods.h"
 #import "iTermEncoderAdapter.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "PTYSession.h"
 #import "PTYSplitView.h"
 #import "PTYTabDelegate.h"

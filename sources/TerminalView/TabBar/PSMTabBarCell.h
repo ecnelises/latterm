@@ -1,16 +1,16 @@
 //
 //  PSMTabBarCell.h
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 10/13/05.
 //  Copyright 2005 Positive Spin Media. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "PSMProgressIndicator.h"
 
-@class PSMTabBarControl;
+@class TerminalTabBarView;
 @protocol PSMTabStyle;
 
 @protocol PSMTabBarControlProtocol <NSObject>
@@ -40,8 +40,6 @@
 @property(nonatomic, assign) BOOL hasCloseButton;
 @property(nonatomic, assign) BOOL hasIcon;
 @property(nonatomic, assign) int count;
-@property(nonatomic, assign) BOOL isPlaceholder;
-@property(nonatomic, assign) int currentStep;
 @property(nonatomic, copy) NSString *modifierString;
 @property(nonatomic, retain) NSColor *tabColor;
 @property(nonatomic, readonly) PSMProgressIndicator *indicator;
@@ -61,8 +59,7 @@
 @property(nonatomic, assign) BOOL isPinned;
 
 // creation/destruction
-- (id)initWithControlView:(PSMTabBarControl *)controlView;
-- (id)initPlaceholderWithFrame:(NSRect)frame expanded:(BOOL)value inControlView:(PSMTabBarControl *)controlView;
+- (id)initWithControlView:(TerminalTabBarView *)controlView;
 
 // accessors
 - (void)setStringValue:(NSString *)aString;
@@ -74,10 +71,7 @@
 // drawing
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 - (void)drawPostHocDecorationsOnSelectedCell:(PSMTabBarCell *)cell
-                               tabBarControl:(PSMTabBarControl *)bar;
-
-// drag support
-- (NSImage *)dragImage;
+                               tabBarControl:(TerminalTabBarView *)bar;
 
 // iTerm additions
 - (void)updateForStyle;

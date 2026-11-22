@@ -1,6 +1,6 @@
 //
 //  PSMYosemiteTabStyle.m
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 2/17/06.
 //  Copyright 2006 Positive Spin Media. All rights reserved.
@@ -14,7 +14,7 @@
 #import "PSMOverflowPopUpButton.h"
 #import "PSMRolloverButton.h"
 #import "PSMTabBarCell.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import <objc/runtime.h>
 #import "SFSymbolEnum/SFSymbolEnum.h"
 
@@ -98,9 +98,9 @@
         NSString *addTabImageName = @"YosemiteAddTab";
         addTabImageName = @"BigSurAddTab";
 
-        _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:addTabImageName]];
-        _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:addTabImageName]];
-        _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:addTabImageName]];
+        _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[[TerminalTabBarView bundle] pathForImageResource:addTabImageName]];
+        _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[TerminalTabBarView bundle] pathForImageResource:addTabImageName]];
+        _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[[TerminalTabBarView bundle] pathForImageResource:addTabImageName]];
         _addTabButtonImage.template = YES;
         _addTabButtonPressedImage.template = YES;
         _addTabButtonRolloverImage.template = YES;
@@ -163,24 +163,6 @@
 
 #pragma mark - Cell Specific
 
-- (NSRect)dragRectForTabCell:(PSMTabBarCell *)cell
-                 orientation:(PSMTabBarOrientation)tabOrientation {
-    NSRect dragRect = [cell frame];
-    dragRect.size.width++;
-
-    if ([cell tabState] & PSMTab_SelectedMask) {
-        if (tabOrientation != PSMTabBarHorizontalOrientation) {
-            dragRect.size.height += 1.0;
-            dragRect.origin.y -= 1.0;
-            dragRect.origin.x += 2.0;
-            dragRect.size.width -= 3.0;
-        }
-    } else if (tabOrientation == PSMTabBarVerticalOrientation) {
-        dragRect.origin.x--;
-    }
-
-    return dragRect;
-}
 
 - (NSRect)closeButtonRectForTabCell:(PSMTabBarCell *)cell {
     if (cell.isPinned) {
@@ -802,7 +784,7 @@
 }
 
 - (void)drawPostHocDecorationsOnSelectedCell:(PSMTabBarCell *)cell
-                               tabBarControl:(PSMTabBarControl *)bar {
+                               tabBarControl:(TerminalTabBarView *)bar {
     if (self.anyTabHasColor) {
         const CGFloat brightness = [self tabColorBrightness:cell];
         NSRect rect = NSInsetRect(cell.frame, -0.5, 0.5);
@@ -1234,7 +1216,7 @@ const void *PSMTabStyleDarkColorKey = "dark";
     return NO;
 }
 
-- (void)drawTabBar:(PSMTabBarControl *)bar
+- (void)drawTabBar:(TerminalTabBarView *)bar
             inRect:(NSRect)rect
           clipRect:(NSRect)clipRect
         horizontal:(BOOL)horizontal
@@ -1259,21 +1241,6 @@ const void *PSMTabStyleDarkColorKey = "dark";
 
     // no tab view == not connected
     if (![bar tabView]) {
-        NSRect labelRect = rect;
-        labelRect.size.height -= 4.0;
-        labelRect.origin.y += 4.0;
-        NSString *contents = @"PSMTabBarControl";
-        NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:contents];
-        NSRange range = NSMakeRange(0, [contents length]);
-        [attrStr addAttribute:NSFontAttributeName
-                        value:[NSFont systemFontOfSize:self.fontSize]
-                        range:range];
-        NSMutableParagraphStyle *centeredParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-        [centeredParagraphStyle setAlignment:NSTextAlignmentCenter];
-        [attrStr addAttribute:NSParagraphStyleAttributeName
-                        value:centeredParagraphStyle
-                        range:range];
-        [attrStr drawInRect:labelRect];
         return;
     }
 
@@ -1316,7 +1283,7 @@ const void *PSMTabStyleDarkColorKey = "dark";
     }
 }
 
-- (void)drawDividerBetweenTabBarAndContent:(NSRect)rect bar:(PSMTabBarControl *)bar {
+- (void)drawDividerBetweenTabBarAndContent:(NSRect)rect bar:(TerminalTabBarView *)bar {
     if (_orientation != PSMTabBarHorizontalOrientation) {
         [[self bottomLineColorSelected:NO] set];
         NSRect rightLineRect = rect;

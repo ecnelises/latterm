@@ -12,7 +12,7 @@
 #import "iTermPreferences.h"
 #import "ITAddressBookMgr.h"
 #import "NSStringITerm.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 @interface iTermWindowShortcutLabelTitlebarAccessoryViewController()<iTermTitleBarAccessoryViewController>
 @end

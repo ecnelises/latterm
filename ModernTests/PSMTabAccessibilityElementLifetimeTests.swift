@@ -13,7 +13,7 @@ import XCTest
 
 final class PSMTabAccessibilityElementLifetimeTests: XCTestCase {
     func testElementsOutliveTheirCell() throws {
-        let control = PSMTabBarControl(frame: NSRect(x: 0, y: 0, width: 600, height: 24))
+        let control = TerminalTabBarView(frame: NSRect(x: 0, y: 0, width: 600, height: 24))
         var tabElement: NSAccessibilityElement?
         var closeButtonElement: Any?
         autoreleasepool {

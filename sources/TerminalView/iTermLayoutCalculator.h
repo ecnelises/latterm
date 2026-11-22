@@ -100,7 +100,7 @@ typedef struct {
 
 @end
 
-// Tab position constants (matching PSMTabBarControl)
+// Tab position constants (matching TerminalTabBarView)
 extern const int kLayoutTabPositionTop;
 extern const int kLayoutTabPositionBottom;
 extern const int kLayoutTabPositionLeft;

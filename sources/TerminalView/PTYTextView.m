@@ -24,7 +24,6 @@
 #import "NSSavePanel+iTerm.h"
 #import "NSStringITerm.h"
 #import "NSURL+iTerm.h"
-#import "NSWindow+PSM.h"
 #import "PTYMouseHandler.h"
 #import "PTYNoteView.h"
 #import "PTYNoteViewController.h"
@@ -5451,7 +5450,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
                              (y + [_dataSource numberOfLines] - [_dataSource height] + 1) * _lineHeight,
                              _charWidth * firstLineLength,
                              _lineHeight);
-    rect.origin = [[self window] pointToScreenCoords:[self convertPoint:rect.origin toView:nil]];
+    rect.origin = [[self window] convertPointToScreen:[self convertPoint:rect.origin toView:nil]];
     if (actualRange) {
         *actualRange = theRange;
     }
@@ -5811,13 +5810,13 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     cursorCenter.x += _charWidth / 2;
     cursorCenter.y += _lineHeight / 2;
     NSPoint cursorCenterInWindowCoords = [self convertPoint:cursorCenter toView:nil];
-    return  [[self window] pointToScreenCoords:cursorCenterInWindowCoords];
+    return  [[self window] convertPointToScreen:cursorCenterInWindowCoords];
 }
 
 // Returns the location of the cursor relative to the origin of self.findCursorWindow.
 - (NSPoint)cursorCenterInFindCursorWindowCoords {
     NSPoint centerInScreenCoords = [self cursorCenterInScreenCoords];
-    return [_findCursorWindow pointFromScreenCoords:centerInScreenCoords];
+    return [_findCursorWindow convertPointFromScreen:centerInScreenCoords];
 }
 
 // Returns the proper frame for self.findCursorWindow, including every screen that the

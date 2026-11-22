@@ -206,7 +206,7 @@ static const CGFloat iTermCompactProxyIconRightMargin = 2;
         _tabBarBacking.hidesWhenTabBarHidden = [delegate rootTerminalViewShouldHideTabBarBackingWhenTabBarIsHidden];
         _tabBarBacking.autoresizesSubviews = YES;
 
-        self.tabBarControl = [[iTermTabBarControlView alloc] initWithFrame:tabBarFrame];
+        self.tabBarControl = [[TerminalTabContainerView alloc] initWithFrame:tabBarFrame];
         self.tabBarControl.height = [delegate rootTerminalViewHeightOfTabBar:self];
 
         _tabBarControl.itermTabBarDelegate = self;
@@ -253,7 +253,6 @@ static const CGFloat iTermCompactProxyIconRightMargin = 2;
         _tabBarControl.tabView = _tabView;
         [_tabView setDelegate:_tabBarControl];
         _tabBarControl.delegate = tabBarDelegate;
-        _tabBarControl.hideForSingleTab = NO;
 
         // Create the toolbelt with its current default size.
         _toolbeltWidth = [iTermPreferences floatForKey:kPreferenceKeyDefaultToolbeltWidth];

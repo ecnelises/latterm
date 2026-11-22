@@ -1,12 +1,12 @@
 //
-//  PSMTabBarControl.m
-//  PSMTabBarControl
+//  TerminalTabBarView.m
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 10/13/05.
 //  Copyright 2005 Positive Spin Media. All rights reserved.
 //
 
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 #import "DebugLogging.h"
 #import "iTerm2SharedARC-Swift.h"
@@ -16,24 +16,12 @@
 #import "PSMRolloverButton.h"
 #import "PSMTabStyle.h"
 #import "PSMYosemiteTabStyle.h"
-#import "PSMTabDragAssistant.h"
 #import "PTYTask.h"
 #import "NSColor+PSM.h"
-#import "NSWindow+PSM.h"
 #import <QuartzCore/QuartzCore.h>
-#import <os/signpost.h>
 
-#if PSM_DEBUG_DRAG_PERFORMANCE
-static os_log_t PSMTabBarLog(void) {
-    static os_log_t log;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        log = os_log_create("com.iterm2.tabbar", "drawing");
-    });
-    return log;
-}
-#endif
 
+NSPasteboardType const TerminalTabPasteboardType = @"com.latterm.tab-item";
 NSString *const kPSMModifierChangedNotification = @"kPSMModifierChangedNotification";
 NSString *const kPSMTabModifierKey = @"TabModifier";
 NSString *const PSMTabDragDidEndNotification = @"PSMTabDragDidEndNotification";
@@ -47,15 +35,8 @@ const CGFloat kPSMTabBarCellIconPadding = 4;
 const CGFloat kPSMMinimumTitleWidth = 30;
 const CGFloat kPSMTabBarIndicatorWidth = 16.0;
 const CGFloat kPSMTabBarIconWidth = 16.0;
-const CGFloat kPSMHideAnimationSteps = 2.0;
 const CGSize PSMTabBarGraphicSize = { 16.0, 16.0 };
 const CGFloat PSMTabBarGraphicMargin = 2;
-
-// Value used in _currentStep to indicate that resizing operation is not in progress
-const NSInteger kPSMIsNotBeingResized = -1;
-
-// Value used in _currentStep when a resizing operation has just been started
-const NSInteger kPSMStartResizeAnimation = 0;
 
 PSMTabBarControlOptionKey PSMTabBarControlOptionColoredSelectedTabOutlineStrength = @"PSMTabBarControlOptionColoredSelectedTabOutlineStrength";
 PSMTabBarControlOptionKey PSMTabBarControlOptionMinimalStyleBackgroundColorDifference =
@@ -89,33 +70,27 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 @interface PSMToolTip: NSObject
 @property (nonatomic, readonly) NSRect rect;
 @property (nonatomic, weak, readonly) id owner;
-@property (nonatomic, copy, readonly) NSData *data;
+@property (nonatomic, readonly) void *data;
 @property (nonatomic, strong) NSNumber *tag;
 
-+ (instancetype)toolTipWithRect:(NSRect)rect owner:(id)owner userData:(NSData *)data tag:(NSNumber *)tag;
++ (instancetype)toolTipWithRect:(NSRect)rect owner:(id)owner userData:(void *)data tag:(NSNumber *)tag;
 @end
 
 @implementation PSMToolTip
 
-+ (instancetype)toolTipWithRect:(NSRect)rect owner:(id)owner userData:(NSData *)data tag:(NSNumber *)tag {
-    return [[[self alloc] initWithRect:rect owner:owner userData:data tag:tag] autorelease];
++ (instancetype)toolTipWithRect:(NSRect)rect owner:(id)owner userData:(void *)data tag:(NSNumber *)tag {
+    return [[self alloc] initWithRect:rect owner:owner userData:data tag:tag];
 }
 
-- (instancetype)initWithRect:(NSRect)rect owner:(id)owner userData:(NSData *)data tag:(NSNumber *)tag {
+- (instancetype)initWithRect:(NSRect)rect owner:(id)owner userData:(void *)data tag:(NSNumber *)tag {
     self = [super init];
     if (self) {
         _rect = rect;
         _owner = owner;
-        _data = [data copy];
-        _tag = [tag retain];
+        _data = data;
+        _tag = tag;
     }
     return self;
-}
-
-- (void)dealloc {
-    [_data release];
-    [_tag release];
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -133,7 +108,7 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
     if (self.owner != other.owner && ![self.owner isEqual:other.owner]) {
         return NO;
     }
-    if (self.data != other.data && ![self.data isEqual:other.data]) {
+    if (self.data != other.data) {
         return NO;
     }
     // Don't compare tags because we might not know what they are yet.
@@ -142,11 +117,11 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 
 @end
 
-@interface PSMTabBarControl ()<PSMTabBarControlProtocol, NSMenuItemValidation, NSViewToolTipOwner>
+@interface TerminalTabBarView ()<PSMTabBarControlProtocol, NSMenuItemValidation, NSViewToolTipOwner>
 - (void)removeTabProgressBarForCell:(PSMTabBarCell *)cell;
 @end
 
-@implementation PSMTabBarControl {
+@implementation TerminalTabBarView {
     // control basics
     NSMutableArray<PSMTabBarCell *> *_cells; // the cells that draw the tabs
     NSButton *_overflowPopUpButton; // for too many tabs
@@ -155,20 +130,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
     // (NO) matches the default answer (YES).
     BOOL _activityIndicatorsHidden;
 
-    // drawing style
-    NSTimer *_animationTimer;
-    float _animationDelta;
-
-    // vertical tab resizing
-    BOOL _resizing;
-
-    // animation for hide/show
-    int _currentStep;
-    BOOL _isHidden;
-    BOOL _hideIndicators;
-    NSView *partnerView; // gets resized when hide/show
-    BOOL _awakenedFromNib;
-    int _tabBarWidth;
 
     // drag and drop
     NSEvent *_lastMouseDownEvent; // keep this for dragging reference
@@ -194,12 +155,12 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 
 + (NSBundle *)bundle {
     static NSBundle *bundle = nil;
-    if (!bundle) bundle = [NSBundle bundleForClass:[PSMTabBarControl class]];
+    if (!bundle) bundle = [NSBundle bundleForClass:[TerminalTabBarView class]];
     return bundle;
 }
 
 + (BOOL)isAnyDragInProgress {
-    return [[PSMTabDragAssistant sharedDragAssistant] isDragging];
+    return TerminalTabDrag.shared.isDragging;
 }
 
 - (float)availableCellWidthWithOverflow:(BOOL)withOverflow {
@@ -232,16 +193,12 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
     if (self) {
         // Initialization
         _cells = [[NSMutableArray alloc] initWithCapacity:10];
-        _animationTimer = nil;
         const CGFloat defaultHeight = 24;
         _height = defaultHeight;
 
         // default config
-        _currentStep = kPSMIsNotBeingResized;
         _orientation = PSMTabBarHorizontalOrientation;
-        _useOverflowMenu = YES;
         _allowsBackgroundTabClosing = YES;
-        _allowsResizing = YES;
         _cellMinWidth = 100;
         _cellMaxWidth = 280;
         _cellOptimumWidth = 130;
@@ -259,12 +216,12 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
             _style = [[PSMYosemiteTabStyle alloc] init];
         }
         _preDragSelectedTabIndex = NSNotFound;
-        _tabProgressBars = [[NSMapTable strongToStrongObjectsMapTable] retain];
+        _tabProgressBars = [NSMapTable strongToStrongObjectsMapTable];
 
         // the overflow button/menu
         [self setupButtons];
 
-        [self registerForDraggedTypes:[NSArray arrayWithObjects:@"com.iterm2.psm.controlitem", nil]];
+        [self registerForDraggedTypes:[NSArray arrayWithObjects:TerminalTabPasteboardType, nil]];
 
         // resize
         [self setPostsFrameChangedNotifications:YES];
@@ -292,9 +249,8 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
             NSRect overflowButtonRect = [_style frameForOverflowButtonWithAddTabButton:self.showAddTabButton
                                                                          enclosureSize:self.frame.size
                                                                         standardHeight:self.height];
-            [_overflowPopUpButton autorelease];
             [_overflowPopUpButton removeFromSuperview];
-            _overflowPopUpButton = [[self.style makeOverflowButtonWithFrame:overflowButtonRect] retain];
+            _overflowPopUpButton = [self.style makeOverflowButtonWithFrame:overflowButtonRect];
             if (_overflowPopUpButton) {
                 // configure
                 [_overflowPopUpButton setAutoresizingMask:NSViewNotSizable|NSViewMinXMargin];
@@ -307,9 +263,8 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
                                                  3,
                                                  23,
                                                  22);
-            [_addTabButton autorelease];
             [_addTabButton removeFromSuperview];
-            _addTabButton = [[_style makeAddTabButtonWithFrame:addTabButtonRect] retain];
+            _addTabButton = [_style makeAddTabButtonWithFrame:addTabButtonRect];
             if (_showAddTabButton) {
                 [_addTabButton setHidden:NO];
             } else {
@@ -327,7 +282,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
                                            [_style rightMarginForTabBarControlWithOverflow:YES
                                                                               addTabButton:self.showAddTabButton] - 1,
                                            [self frame].size.height);
-    [_overflowPopUpButton autorelease];
     [_overflowPopUpButton removeFromSuperview];
     _overflowPopUpButton = [[PSMOverflowPopUpButton alloc] initWithFrame:overflowButtonRect pullsDown:YES];
     if (_overflowPopUpButton) {
@@ -342,7 +296,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
                                          23,
                                          22);
     [_addTabButton removeFromSuperview];
-    [_addTabButton autorelease];
     _addTabButton = [[PSMRolloverButton alloc] initWithFrame:addTabButtonRect];
     if (_addTabButton) {
         NSImage *newButtonImage = [_style addTabButtonImage];
@@ -377,47 +330,21 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     // Remove bindings.
-    NSArray *temp = [[_cells copy] autorelease];
+    NSArray *temp = [_cells copy];
     for (PSMTabBarCell *cell in temp) {
-        [cell retain];
         [self removeTabForCell:cell];
         cell.controlView = nil;
-        [cell release];
     }
 
     for (NSView *progressBar in _tabProgressBars.objectEnumerator) {
         [progressBar removeFromSuperview];
     }
-    [_tabProgressBars release];
-    [_overflowPopUpButton release];
-    [_cells release];
-    [_tabView release];
-    [_addTabButton release];
-    [partnerView release];
-    [_lastMouseDownEvent release];
-    [_lastMiddleMouseDownEvent release];
-    [_style release];
-    [_tooltips release];
-    _tooltips = nil;
 
     [self unregisterDraggedTypes];
-
-    [super dealloc];
 }
 
 - (void)setHeight:(CGFloat)height {
     _height = height;
-}
-
-- (void)awakeFromNib
-{
-    // build cells from existing tab view items
-    NSArray *existingItems = [_tabView tabViewItems];
-    for (NSTabViewItem *item in existingItems) {
-        if (![[self representedTabViewItems] containsObject:item]) {
-            [self addTabViewItem:item];
-        }
-    }
 }
 
 - (void)sanityCheckFailedWithCallsite:(NSString *)callsite reason:(NSString *)reason {
@@ -434,7 +361,7 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 }
 
 - (void)sanityCheck:(NSString *)callsite force:(BOOL)force {
-    if (!force && [[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
+    if (!force && TerminalTabDrag.shared.isDragging) {
         ILog(@"Skip sanity check during drag from callsite %@", callsite);
         return;
     }
@@ -467,8 +394,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 
 - (void)setLastMouseDownEvent:(NSEvent *)event
 {
-    [event retain];
-    [_lastMouseDownEvent release];
     _lastMouseDownEvent = event;
 }
 
@@ -479,15 +404,13 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 
 - (void)setLastMiddleMouseDownEvent:(NSEvent *)event
 {
-    [event retain];
-    [_lastMiddleMouseDownEvent release];
     _lastMiddleMouseDownEvent = event;
 }
 
 - (void)setDelegate:(id<PSMTabBarControlDelegate>)object {
     _delegate = object;
 
-    NSMutableArray *types = [NSMutableArray arrayWithObject:@"com.iterm2.psm.controlitem"];
+    NSMutableArray *types = [NSMutableArray arrayWithObject:TerminalTabPasteboardType];
 
     //Update the allowed drag types
     if ([[self delegate] respondsToSelector:@selector(allowedDraggedTypesForTabView:)]) {
@@ -503,8 +426,7 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 }
 
 - (void)setStyle:(id <PSMTabStyle>)newStyle {
-    [_style autorelease];
-    _style = [newStyle retain];
+    _style = newStyle;
     _style.tabBar = self;
     
     // restyle add tab button
@@ -520,10 +442,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
     PSMTabBarOrientation lastOrientation = _orientation;
     _orientation = value;
 
-    if (_tabBarWidth < 10) {
-        _tabBarWidth = 120;
-    }
-
     if (lastOrientation != _orientation) {
         [self update];
     }
@@ -532,11 +450,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 - (void)setDisableTabClose:(BOOL)value {
     _disableTabClose = value;
     [self setNeedsUpdate:YES animate:YES];
-}
-
-- (void)setHideForSingleTab:(BOOL)value {
-    _hideForSingleTab = value;
-    [self update];
 }
 
 - (void)setShowAddTabButton:(BOOL)value {
@@ -567,11 +480,6 @@ PSMTabBarControlOptionKey PSMTabBarControlOptionPUAFontProvider = @"PSMTabBarCon
 - (void)setStretchCellsToFit:(BOOL)value {
     _stretchCellsToFit = value;
     [self setNeedsUpdate:YES animate:YES];
-}
-
-- (void)setUseOverflowMenu:(BOOL)value {
-    _useOverflowMenu = value;
-    [self update];
 }
 
 - (PSMRolloverButton *)addTabButton {
@@ -673,8 +581,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
         [decoration formUnionWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         [decoration formUnionWithCharacterSet:[NSCharacterSet symbolCharacterSet]];
         [decoration formUnionWithCharacterSet:[NSCharacterSet punctuationCharacterSet]];
-        content = [[decoration invertedSet] retain];
-        [decoration release];
+        content = [decoration invertedSet];
     });
     __block NSUInteger start = 0;
     [title enumerateSubstringsInRange:NSMakeRange(0, title.length)
@@ -699,9 +606,9 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
     if (_cells.count <= 1 || !self.smartTruncation) {
         return NSLineBreakByTruncatingTail;
     }
-    NSCountedSet *prefixCounts = [[[NSCountedSet alloc] init] autorelease];
-    NSCountedSet *suffixCounts = [[[NSCountedSet alloc] init] autorelease];
-    NSCountedSet *suffixIgnoringParenthesizedPartCounts = [[[NSCountedSet alloc] init] autorelease];
+    NSCountedSet *prefixCounts = [[NSCountedSet alloc] init];
+    NSCountedSet *suffixCounts = [[NSCountedSet alloc] init];
+    NSCountedSet *suffixIgnoringParenthesizedPartCounts = [[NSCountedSet alloc] init];
     NSMutableSet *uniqueTitles = [NSMutableSet set];
     static NSInteger const kPrefixOrSuffixLength = 5;
     for (PSMTabBarCell *cell in _cells) {
@@ -750,7 +657,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
     // bind it up
     [self initializeStateForCell:cell];
     [self bindPropertiesForCell:cell andTabViewItem:item];
-    [cell release];
 }
 
 - (void)addTabViewItem:(NSTabViewItem *)item {
@@ -841,7 +747,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
                 mask.fillRule = kCAFillRuleEvenOdd;
                 progressBar.wantsLayer = YES;
                 progressBar.layer.mask = mask;
-                [transform release];
             } else {
                 progressBar.layer.mask = nil;
             }
@@ -899,234 +804,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 #pragma mark -
 #pragma mark Hide/Show
 
-- (void)hideTabBar:(BOOL)hide animate:(BOOL)animate {
-    if (!_awakenedFromNib || (_isHidden && hide) || (!_isHidden && !hide) || (_currentStep != kPSMIsNotBeingResized)) {
-        return;
-    }
-
-    [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    _hideIndicators = YES;
-
-    _isHidden = hide;
-    _currentStep = 0;
-    if (!animate)
-        _currentStep = (int)kPSMHideAnimationSteps;
-
-    float partnerOriginalSize, partnerOriginalOrigin, myOriginalSize, myOriginalOrigin, partnerTargetSize, partnerTargetOrigin, myTargetSize, myTargetOrigin;
-
-    // target values for partner
-    if ([self orientation] == PSMTabBarHorizontalOrientation) {
-        // current (original) values
-        myOriginalSize = [self frame].size.height;
-        myOriginalOrigin = [self frame].origin.y;
-        if (partnerView) {
-            partnerOriginalSize = [partnerView frame].size.height;
-            partnerOriginalOrigin = [partnerView frame].origin.y;
-        } else {
-            partnerOriginalSize = [[self window] frame].size.height;
-            partnerOriginalOrigin = [[self window] frame].origin.y;
-        }
-
-        if (partnerView) {
-            // above or below me?
-            if ((myOriginalOrigin - 22) > partnerOriginalOrigin) {
-                // partner is below me
-                if (_isHidden) {
-                    // I'm shrinking
-                    myTargetOrigin = myOriginalOrigin + 21;
-                    myTargetSize = myOriginalSize - 21;
-                    partnerTargetOrigin = partnerOriginalOrigin;
-                    partnerTargetSize = partnerOriginalSize + 21;
-                } else {
-                    // I'm growing
-                    myTargetOrigin = myOriginalOrigin - 21;
-                    myTargetSize = myOriginalSize + 21;
-                    partnerTargetOrigin = partnerOriginalOrigin;
-                    partnerTargetSize = partnerOriginalSize - 21;
-                }
-            } else {
-                // partner is above me
-                if (_isHidden) {
-                    // I'm shrinking
-                    myTargetOrigin = myOriginalOrigin;
-                    myTargetSize = myOriginalSize - 21;
-                    partnerTargetOrigin = partnerOriginalOrigin - 21;
-                    partnerTargetSize = partnerOriginalSize + 21;
-                } else {
-                    // I'm growing
-                    myTargetOrigin = myOriginalOrigin;
-                    myTargetSize = myOriginalSize + 21;
-                    partnerTargetOrigin = partnerOriginalOrigin + 21;
-                    partnerTargetSize = partnerOriginalSize - 21;
-                }
-            }
-        } else {
-            // for window movement
-            if (_isHidden) {
-                // I'm shrinking
-                myTargetOrigin = myOriginalOrigin;
-                myTargetSize = myOriginalSize - 21;
-                partnerTargetOrigin = partnerOriginalOrigin + 21;
-                partnerTargetSize = partnerOriginalSize - 21;
-            } else {
-                // I'm growing
-                myTargetOrigin = myOriginalOrigin;
-                myTargetSize = myOriginalSize + 21;
-                partnerTargetOrigin = partnerOriginalOrigin - 21;
-                partnerTargetSize = partnerOriginalSize + 21;
-            }
-        }
-    } else {
-        // current (original) values
-        myOriginalSize = [self frame].size.width;
-        myOriginalOrigin = [self frame].origin.x;
-        if (partnerView) {
-            partnerOriginalSize = [partnerView frame].size.width;
-            partnerOriginalOrigin = [partnerView frame].origin.x;
-        } else {
-            partnerOriginalSize = [[self window] frame].size.width;
-            partnerOriginalOrigin = [[self window] frame].origin.x;
-        }
-
-        if (partnerView) {
-            //to the left or right?
-            if (myOriginalOrigin < partnerOriginalOrigin + partnerOriginalSize) {
-                // partner is to the left
-                if (_isHidden) {
-                    // I'm shrinking
-                    myTargetOrigin = myOriginalOrigin;
-                    myTargetSize = 1;
-                    partnerTargetOrigin = partnerOriginalOrigin - myOriginalSize + 1;
-                    partnerTargetSize = partnerOriginalSize + myOriginalSize - 1;
-                    _tabBarWidth = myOriginalSize;
-                } else {
-                    // I'm growing
-                    myTargetOrigin = myOriginalOrigin;
-                    myTargetSize = myOriginalSize + _tabBarWidth;
-                    partnerTargetOrigin = partnerOriginalOrigin + _tabBarWidth;
-                    partnerTargetSize = partnerOriginalSize - _tabBarWidth;
-                }
-            } else {
-                // partner is to the right
-                if (_isHidden) {
-                    // I'm shrinking
-                    myTargetOrigin = myOriginalOrigin + myOriginalSize;
-                    myTargetSize = 1;
-                    partnerTargetOrigin = partnerOriginalOrigin;
-                    partnerTargetSize = partnerOriginalSize + myOriginalSize;
-                    _tabBarWidth = myOriginalSize;
-                } else {
-                    // I'm growing
-                    myTargetOrigin = myOriginalOrigin - _tabBarWidth;
-                    myTargetSize = myOriginalSize + _tabBarWidth;
-                    partnerTargetOrigin = partnerOriginalOrigin;
-                    partnerTargetSize = partnerOriginalSize - _tabBarWidth;
-                }
-            }
-        } else {
-            // for window movement
-            if (_isHidden) {
-                // I'm shrinking
-                myTargetOrigin = myOriginalOrigin;
-                myTargetSize = 1;
-                partnerTargetOrigin = partnerOriginalOrigin + myOriginalSize - 1;
-                partnerTargetSize = partnerOriginalSize - myOriginalSize + 1;
-                _tabBarWidth = myOriginalSize;
-            } else {
-                // I'm growing
-                myTargetOrigin = myOriginalOrigin;
-                myTargetSize = _tabBarWidth;
-                partnerTargetOrigin = partnerOriginalOrigin - _tabBarWidth + 1;
-                partnerTargetSize = partnerOriginalSize + _tabBarWidth - 1;
-            }
-        }
-    }
-
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithFloat:myOriginalOrigin], @"myOriginalOrigin", [NSNumber numberWithFloat:partnerOriginalOrigin], @"partnerOriginalOrigin", [NSNumber numberWithFloat:myOriginalSize], @"myOriginalSize", [NSNumber numberWithFloat:partnerOriginalSize], @"partnerOriginalSize", [NSNumber numberWithFloat:myTargetOrigin], @"myTargetOrigin", [NSNumber numberWithFloat:partnerTargetOrigin], @"partnerTargetOrigin", [NSNumber numberWithFloat:myTargetSize], @"myTargetSize", [NSNumber numberWithFloat:partnerTargetSize], @"partnerTargetSize", nil];
-    [NSTimer scheduledTimerWithTimeInterval:(1.0/20.0) target:self selector:@selector(animateShowHide:) userInfo:userInfo repeats:YES];
-}
-
-- (void)animateShowHide:(NSTimer *)timer
-{
-    // moves the frame of the tab bar and window (or partner view) linearly to hide or show the tab bar
-    NSRect myFrame = [self frame];
-    NSDictionary *userInfo = [timer userInfo];
-    float myCurrentOrigin = ([[userInfo objectForKey:@"myOriginalOrigin"] floatValue] + (([[userInfo objectForKey:@"myTargetOrigin"] floatValue] - [[userInfo objectForKey:@"myOriginalOrigin"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
-    float myCurrentSize = ([[userInfo objectForKey:@"myOriginalSize"] floatValue] + (([[userInfo objectForKey:@"myTargetSize"] floatValue] - [[userInfo objectForKey:@"myOriginalSize"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
-    float partnerCurrentOrigin = ([[userInfo objectForKey:@"partnerOriginalOrigin"] floatValue] + (([[userInfo objectForKey:@"partnerTargetOrigin"] floatValue] - [[userInfo objectForKey:@"partnerOriginalOrigin"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
-    float partnerCurrentSize = ([[userInfo objectForKey:@"partnerOriginalSize"] floatValue] + (([[userInfo objectForKey:@"partnerTargetSize"] floatValue] - [[userInfo objectForKey:@"partnerOriginalSize"] floatValue]) * (_currentStep/kPSMHideAnimationSteps)));
-
-    NSRect myNewFrame;
-    if ([self orientation] == PSMTabBarHorizontalOrientation) {
-        myNewFrame = NSMakeRect(myFrame.origin.x, myCurrentOrigin, myFrame.size.width, myCurrentSize);
-    } else {
-        myNewFrame = NSMakeRect(myCurrentOrigin, myFrame.origin.y, myCurrentSize, myFrame.size.height);
-    }
-
-    if (partnerView) {
-        // resize self and view
-        NSRect resizeRect;
-        if ([self orientation] == PSMTabBarHorizontalOrientation) {
-            resizeRect = NSMakeRect([partnerView frame].origin.x, partnerCurrentOrigin, [partnerView frame].size.width, partnerCurrentSize);
-        } else {
-            resizeRect = NSMakeRect(partnerCurrentOrigin, [partnerView frame].origin.y, partnerCurrentSize, [partnerView frame].size.height);
-        }
-        [partnerView setFrame:resizeRect];
-        [partnerView setNeedsDisplay:YES];
-        [self setFrame:myNewFrame];
-    } else {
-        // resize self and window
-        NSRect resizeRect;
-        if ([self orientation] == PSMTabBarHorizontalOrientation) {
-            resizeRect = NSMakeRect([[self window] frame].origin.x, partnerCurrentOrigin, [[self window] frame].size.width, partnerCurrentSize);
-        } else {
-            resizeRect = NSMakeRect(partnerCurrentOrigin, [[self window] frame].origin.y, partnerCurrentSize, [[self window] frame].size.height);
-        }
-        [[self window] setFrame:resizeRect display:YES];
-        [self setFrame:myNewFrame];
-    }
-
-    // next
-    _currentStep++;
-    if (_currentStep == kPSMHideAnimationSteps + 1) {
-        _currentStep = kPSMIsNotBeingResized;
-        [self viewDidEndLiveResize];
-        _hideIndicators = NO;
-        [self update];
-
-        // send the delegate messages
-        if (_isHidden) {
-            if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidHide:)]) {
-                [[self delegate] tabView:[self tabView] tabBarDidHide:self];
-            }
-        } else {
-            if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidUnhide:)]) {
-                [[self delegate] tabView:[self tabView] tabBarDidUnhide:self];
-            }
-        }
-
-        [timer invalidate];
-    }
-    [[self window] display];
-}
-
-- (BOOL)isTabBarHidden
-{
-    return _isHidden;
-}
-
-- (id)partnerView
-{
-    return partnerView;
-}
-
-- (void)setPartnerView:(id)view
-{
-    [partnerView release];
-    [view retain];
-    partnerView = view;
-}
-
 - (void)backgroundColorWillChange {
     _overflowPopUpButton.appearance = _style.accessoryAppearance;
     _addTabButton.appearance = _style.accessoryAppearance;
@@ -1142,13 +819,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 
 // In sonoma, rect can be larger than the bounds and filling can cause other views to be drawn over. WTF
 - (void)drawRect:(NSRect)insaneRect {
-#if PSM_DEBUG_DRAG_PERFORMANCE
-    static int drawCount = 0;
-    static CFAbsoluteTime lastDrawTime = 0;
-
-    os_signpost_interval_begin(PSMTabBarLog(), OS_SIGNPOST_ID_EXCLUSIVE, "drawRect", "");
-    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
-#endif
 
     const NSRect rect = NSIntersectionRect(self.bounds, insaneRect);
     for (PSMTabBarCell *cell in [self cells]) {
@@ -1161,51 +831,11 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
             horizontal:(_orientation == PSMTabBarHorizontalOrientation)
           withOverflow:_lainOutWithOverflow];
 
-#if PSM_DEBUG_DRAG_PERFORMANCE
-    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-    drawCount++;
-
-    // Log every 10th draw during drag, or if it takes > 1ms
-    BOOL isDragging = [[PSMTabDragAssistant sharedDragAssistant] isDragging];
-    if (isDragging) {
-        double elapsed = (end - start) * 1000;
-        double sinceLast = lastDrawTime > 0 ? (start - lastDrawTime) * 1000 : 0;
-        if (drawCount % 10 == 0 || elapsed > 1.0) {
-            NSLog(@"[PSMTabBar] drawRect #%d took %.2fms (%.1fms since last draw, %d cells)",
-                  drawCount, elapsed, sinceLast, (int)[[self cells] count]);
-        }
-    }
-    lastDrawTime = start;
-
-    os_signpost_interval_end(PSMTabBarLog(), OS_SIGNPOST_ID_EXCLUSIVE, "drawRect", "");
-#endif
 }
 
 - (void)moveTabAtIndex:(NSInteger)sourceIndex toIndex:(NSInteger)destIndex
 {
-    NSTabViewItem *theItem = [_tabView tabViewItemAtIndex:sourceIndex];
-    BOOL reselect = ([_tabView selectedTabViewItem] == theItem);
-
-    id<NSTabViewDelegate> tempDelegate = [_tabView delegate];
-    [_tabView setDelegate:nil];
-    [theItem retain];
-    [_tabView removeTabViewItem:theItem];
-    [_tabView insertTabViewItem:theItem atIndex:destIndex];
-    [theItem release];
-
-    id cell = [_cells objectAtIndex:sourceIndex];
-    [cell retain];
-    [_cells removeObjectAtIndex:sourceIndex];
-    [_cells insertObject:cell atIndex:destIndex];
-    [cell release];
-
-    [_tabView setDelegate:tempDelegate];
-
-    if (reselect) {
-        [_tabView selectTabViewItem:theItem];
-    }
-
-    [self update:YES];
+    [TerminalTabOrdering moveIn:self from:sourceIndex to:destIndex];
 }
 
 - (void)update {
@@ -1218,20 +848,9 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 }
 
 - (void)update:(BOOL)animate {
-    // This method handles all of the cell layout, and is called when something changes to require
-    // the refresh.  This method is not called during drag and drop. See the PSMTabDragAssistant's
-    // calculateDragAnimationForTabBar: method, which does layout in that case.
-
     // Make sure all of our tabs are accounted for before updating.
     if ([_tabView numberOfTabViewItems] != [_cells count]) {
         return;
-    }
-
-    // Hide or show? These do nothing if already in the desired state.
-    if ((_hideForSingleTab) && ([_cells count] <= 1)) {
-        [self hideTabBar:YES animate:YES];
-    } else {
-        [self hideTabBar:NO animate:YES];
     }
 
     [self coalesceToolTipUpdates:^{
@@ -1240,7 +859,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 }
 
 - (void)coalesceToolTipUpdates:(void (^)(void))block {
-    NSArray<PSMToolTip *> *before = [[_tooltips copy] autorelease];
+    NSArray<PSMToolTip *> *before = [_tooltips copy];
     _toolTipCoalescing += 1;
     block();
     _toolTipCoalescing -= 1;
@@ -1308,246 +927,23 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
         [cell updateIndicators];
     }
 
-    // Calculate number of cells to fit in the control and cell widths.
-    const NSInteger cellCount = [_cells count];
-    if ([self orientation] == PSMTabBarHorizontalOrientation) {
-        if ((animate || _animationTimer != nil) && cellCount > 0) {
-            // Animate only on horizontal tab bars.
-            if (_animationTimer) {
-                [_animationTimer invalidate];
-            }
-            
-            _animationDelta = 0.0f;
-            _animationTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 / 30.0
-                                                               target:self
-                                                             selector:@selector(_animateCells:)
-                                                             userInfo:[self cellWidthsForHorizontalArrangementWithOverflow:_lainOutWithOverflow]
-                                                              repeats:YES];
-            return;
-        } else {
-            [self finishUpdateWithRegularWidths:[self cellWidthsForHorizontalArrangementWithOverflow:NO]
-                             widthsWithOverflow:[self cellWidthsForHorizontalArrangementWithOverflow:YES]];
-        }
-    } else {
-        // Vertical orientation
-        CGFloat currentOrigin = [[self style] topMarginForTabBarControl];
-        NSRect cellRect = [self genericCellRectWithOverflow:(NO || _showAddTabButton)];
-        NSMutableArray *newOrigins = [NSMutableArray arrayWithCapacity:cellCount];
-
-        for (int i = 0; i < cellCount; ++i) {
-            if (currentOrigin + cellRect.size.height <= [self frame].size.height) {
-                [newOrigins addObject:[NSNumber numberWithFloat:currentOrigin]];
-                currentOrigin += cellRect.size.height;
-            } else {
-                // Out of room, the remaining unpinned tabs go into overflow.
-                if ([newOrigins count] > 0 && [self frame].size.height - currentOrigin < cellRect.size.height) {
-                    [newOrigins removeLastObject];
-                }
-                break;
-            }
-        }
-        [self finishUpdateWithRegularWidths:newOrigins widthsWithOverflow:newOrigins];
-    }
-
+    NSArray *regular = [self layoutValuesWithOverflow:NO];
+    NSArray *overflow = regular.count == _cells.count ? regular : [self layoutValuesWithOverflow:YES];
+    [self finishUpdateWithRegularWidths:regular widthsWithOverflow:overflow];
     [self syncTabProgressBars];
     [self setNeedsDisplay:YES];
 }
 
-// Tab widths may vary. Calculate the widths and see if this will work. Only allow sizes to
-// vary if all tabs fit in the allotted space.
-
-- (NSUInteger)numberOfPinnedCells {
-    NSUInteger count = 0;
-    for (PSMTabBarCell *cell in _cells) {
-        if (cell.isPinned) {
-            count++;
-        }
+- (NSArray<NSNumber *> *)layoutValuesWithOverflow:(BOOL)overflow {
+    if (_orientation == PSMTabBarHorizontalOrientation) {
+        return [TerminalTabLayout widthsForBar:self cells:_cells available:[self availableCellWidthWithOverflow:overflow]];
     }
-    return count;
+    return [self verticalOriginsForCells:_cells];
 }
 
-- (CGFloat)totalPinnedSpaceForPinnedCount:(NSUInteger)pinnedCount unpinnedCount:(NSUInteger)unpinnedCount {
-    if (pinnedCount == 0) {
-        return 0;
-    }
-    const CGFloat spacing = _style.intercellSpacing;
-    // Width of pinned tabs themselves
-    const CGFloat pinnedWidth = pinnedCount * _pinnedTabWidth;
-    // Spacing between pinned tabs
-    CGFloat pinnedSpacing = (pinnedCount - 1) * spacing;
-    // Spacing between pinned and unpinned groups
-    if (unpinnedCount > 0) {
-        pinnedSpacing += spacing;
-    }
-    return pinnedWidth + pinnedSpacing;
-}
-
-- (NSArray<NSNumber *> *)variableCellWidthsWithOverflow:(BOOL)withOverflow {
-    const CGFloat availableWidth = [self availableCellWidthWithOverflow:withOverflow];
-    CGFloat totalDesiredWidth = 0.0;
-    NSMutableArray *desiredWidths = [NSMutableArray array];
-    for (PSMTabBarCell *cell in _cells) {
-        CGFloat width;
-        if (cell.isPinned) {
-            width = _pinnedTabWidth;
-        } else {
-            width = MAX(_cellMinWidth, MIN([cell desiredWidthOfCell], _cellMaxWidth));
-        }
-        [desiredWidths addObject:@(width)];
-        totalDesiredWidth += width;
-        if (totalDesiredWidth > availableWidth) {
-            // Stop this expensive calculation as soon as it fails.
-            break;
-        }
-    }
-
-    // If all cells get their "desired" width, do they fit?
-    if (totalDesiredWidth <= availableWidth) {
-        return desiredWidths;
-    } else {
-        return nil;
-    }
-}
-
-- (BOOL)shouldUseOptimalWidthWithOverflow:(BOOL)withOverflow {
-    const CGFloat availableWidth = [self availableCellWidthWithOverflow:withOverflow];
-    const NSUInteger pinnedCount = [self numberOfPinnedCells];
-    const NSUInteger unpinnedCount = _cells.count - pinnedCount;
-    const CGFloat pinnedSpace = [self totalPinnedSpaceForPinnedCount:pinnedCount unpinnedCount:unpinnedCount];
-    const CGFloat unpinnedAvailable = availableWidth - pinnedSpace;
-    BOOL canFitAllCellsOptimally = (self.cellOptimumWidth * unpinnedCount <= unpinnedAvailable);
-    return !self.stretchCellsToFit && canFitAllCellsOptimally;
-}
-
-- (NSArray<NSNumber *> *)cellWidthsForHorizontalArrangementWithOverflow:(BOOL)withOverflow {
-    const NSUInteger cellCount = _cells.count;
-    const CGFloat availableWidth = [self availableCellWidthWithOverflow:withOverflow];
-    const CGFloat intercellSpacing = _style.intercellSpacing;
-    const NSUInteger pinnedCount = [self numberOfPinnedCells];
-    const NSUInteger unpinnedCount = cellCount - pinnedCount;
-
-    if (self.sizeCellsToFit) {
-        NSArray<NSNumber *> *widths = [self variableCellWidthsWithOverflow:withOverflow];
-        if (widths) {
-            return widths;
-        }
-    }
-
-    if (pinnedCount == 0) {
-        // No pinned cells
-        NSMutableArray<NSNumber *> *newWidths = [NSMutableArray array];
-        if ([self shouldUseOptimalWidthWithOverflow:withOverflow]) {
-            for (int i = 0; i < cellCount; i++) {
-                [newWidths addObject:@(_cellOptimumWidth)];
-            }
-        } else {
-            const BOOL canFitAllCellsMinimally = (self.cellMinWidth * cellCount + intercellSpacing * MAX(0, (cellCount - 1)) <= availableWidth);
-            NSInteger numberOfVisibleCells;
-            if (canFitAllCellsMinimally) {
-                numberOfVisibleCells = cellCount;
-            } else {
-                numberOfVisibleCells = availableWidth / _cellMinWidth;
-                while (numberOfVisibleCells >= 0 && numberOfVisibleCells * _cellMinWidth + intercellSpacing > availableWidth) {
-                    numberOfVisibleCells -= 1;
-                }
-            }
-            [self computeCellFramesInContainerOfWidth:availableWidth
-                                 numberOfVisibleCells:numberOfVisibleCells
-                                     intercellSpacing:intercellSpacing
-                                                scale:2.0
-                                               frames:newWidths];
-        }
-        return newWidths;
-    }
-
-    // There are pinned cells. Give them fixed width and distribute remaining space to unpinned.
-    const CGFloat pinnedSpaceWithSpacing = [self totalPinnedSpaceForPinnedCount:pinnedCount unpinnedCount:unpinnedCount];
-    const CGFloat unpinnedContainerWidth = MAX(0, availableWidth - pinnedSpaceWithSpacing);
-
-    NSMutableArray<NSNumber *> *unpinnedWidths = [NSMutableArray array];
-    NSInteger numberOfVisibleUnpinned = 0;
-
-    if (unpinnedCount > 0 && unpinnedContainerWidth > 0) {
-        if ([self shouldUseOptimalWidthWithOverflow:withOverflow]) {
-            numberOfVisibleUnpinned = unpinnedCount;
-            for (NSUInteger i = 0; i < unpinnedCount; i++) {
-                [unpinnedWidths addObject:@(_cellOptimumWidth)];
-            }
-        } else {
-            const BOOL canFitAllUnpinned = (self.cellMinWidth * unpinnedCount +
-                intercellSpacing * MAX(0, (NSInteger)(unpinnedCount - 1)) <= unpinnedContainerWidth);
-            if (canFitAllUnpinned) {
-                numberOfVisibleUnpinned = unpinnedCount;
-            } else {
-                numberOfVisibleUnpinned = unpinnedContainerWidth / _cellMinWidth;
-                while (numberOfVisibleUnpinned >= 0 &&
-                       numberOfVisibleUnpinned * _cellMinWidth + intercellSpacing > unpinnedContainerWidth) {
-                    numberOfVisibleUnpinned -= 1;
-                }
-                numberOfVisibleUnpinned = MAX(0, numberOfVisibleUnpinned);
-            }
-            if (numberOfVisibleUnpinned > 0) {
-                [self computeCellFramesInContainerOfWidth:unpinnedContainerWidth
-                                     numberOfVisibleCells:numberOfVisibleUnpinned
-                                         intercellSpacing:intercellSpacing
-                                                    scale:2.0
-                                                   frames:unpinnedWidths];
-            }
-        }
-    }
-
-    // Build the result array.  _setupCells: maps result[i] to _cells[i], so the
-    // array must be a contiguous prefix of _cells.  Once any cell doesn't fit we
-    // must stop; everything after that goes to the overflow menu.
-    NSMutableArray<NSNumber *> *result = [NSMutableArray array];
-    NSUInteger unpinnedIndex = 0;
-    CGFloat usedWidth = 0;
-    for (PSMTabBarCell *cell in _cells) {
-        if (cell.isPinned) {
-            CGFloat needed = _pinnedTabWidth + (result.count > 0 ? intercellSpacing : 0);
-            if (usedWidth + needed > availableWidth) {
-                break;  // No room for this pinned tab; stop here.
-            }
-            [result addObject:@((CGFloat)_pinnedTabWidth)];
-            usedWidth += needed;
-        } else {
-            if (unpinnedIndex >= (NSUInteger)numberOfVisibleUnpinned || unpinnedIndex >= unpinnedWidths.count) {
-                break;  // No room for more unpinned tabs.
-            }
-            [result addObject:unpinnedWidths[unpinnedIndex]];
-            unpinnedIndex++;
-        }
-    }
-    return result;
-}
-
-- (void)computeCellFramesInContainerOfWidth:(CGFloat)containerWidth
-                       numberOfVisibleCells:(NSInteger)n
-                           intercellSpacing:(CGFloat)intercellSpacing
-                                      scale:(CGFloat)scale
-                                     frames:(NSMutableArray<NSNumber *> *)outWidths {
-    if (n <= 0) {
-        return;
-    }
-
-    // Work in whole device pixels.
-    const NSInteger totalPx = llround(containerWidth * scale);
-    const NSInteger gapPx = llround(intercellSpacing * scale);
-
-    const NSInteger totalGapsPx = (n - 1) * gapPx;
-    const NSInteger contentPx = MAX(0, totalPx - totalGapsPx);
-
-    // Base width for each button and leftover pixels to distribute.
-    NSInteger basePx = contentPx / n;
-    NSInteger remPx = contentPx % n;
-
-    for (NSInteger i = 0; i < n; i++) {
-        NSInteger wPx = basePx + (i < remPx ? 1 : 0);
-
-        CGFloat w = ((CGFloat)wPx) / scale;
-
-        [outWidths addObject:@(w)];
-    }
+- (NSArray<NSNumber *> *)verticalOriginsForCells:(NSArray<PSMTabBarCell *> *)cells {
+    return [TerminalTabLayout originsForCount:cells.count top:self.style.topMarginForTabBarControl
+                                       height:self.height bottom:NSHeight(self.bounds) showsAddButton:self.showAddTabButton];
 }
 
 - (void)removeCell:(PSMTabBarCell *)cell {
@@ -1570,59 +966,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 
     //remove all tooltip rects
     [self removeAllToolTips];
-}
-
-- (void)_animateCells:(NSTimer *)timer {
-    NSArray *targetWidths = [timer userInfo];
-    int i, numberOfVisibleCells = [targetWidths count];
-    float totalChange = 0.0f;
-    BOOL updated = NO;
-
-    if ([_cells count] > 0) {
-        //compare our target widths with the current widths and move towards the target
-        for (i = 0; i < [_cells count]; i++) {
-            PSMTabBarCell *currentCell = [_cells objectAtIndex:i];
-            NSRect cellFrame = [currentCell frame];
-            cellFrame.origin.x += totalChange;
-
-            if (i < numberOfVisibleCells) {
-                float target = [[targetWidths objectAtIndex:i] floatValue];
-
-                if (currentCell.isPinned) {
-                    // Pinned cells snap to target width immediately - no gradual animation.
-                    totalChange += target - cellFrame.size.width;
-                    cellFrame.size.width = target;
-                    [currentCell setFrame:cellFrame];
-                } else if (fabs(cellFrame.size.width - target) < _animationDelta) {
-                    cellFrame.size.width = target;
-                    totalChange += cellFrame.size.width - target;
-                    [currentCell setFrame:cellFrame];
-                } else if (cellFrame.size.width > target) {
-                    cellFrame.size.width -= _animationDelta;
-                    totalChange -= _animationDelta;
-                    updated = YES;
-                } else if (cellFrame.size.width < target) {
-                    cellFrame.size.width += _animationDelta;
-                    totalChange += _animationDelta;
-                    [currentCell setFrame:cellFrame];
-                    updated = YES;
-                }
-            }
-
-            [currentCell setFrame:cellFrame];
-        }
-
-        _animationDelta += 4.0f;
-    }
-
-    if (!updated) {
-        [self finishUpdateWithRegularWidths:targetWidths
-                         widthsWithOverflow:targetWidths];
-        [timer invalidate];
-        _animationTimer = nil;
-    }
-
-    [self setNeedsDisplay:YES];
 }
 
 - (void)finishUpdateWithRegularWidths:(NSArray *)regularWidths
@@ -1652,7 +995,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
             cellRect = [self.style frameForAddTabButtonWithCellWidths:newValues height:self.bounds.size.height];
         } else {
             cellRect.origin.x = 0;
-            cellRect.origin.y = [[newValues lastObject] floatValue];
+            cellRect.origin.y = MAX(0, NSHeight(self.bounds) - NSHeight(cellRect));
         }
 
         [self _setupAddTabButton:cellRect];
@@ -1690,7 +1033,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
                 ([[cell representedObject] isEqualTo:[_tabView selectedTabViewItem]] ||
                  [self allowsBackgroundTabClosing])) {
                     NSPoint mousePoint =
-                    [self convertPoint:[[self window] pointFromScreenCoords:[NSEvent mouseLocation]]
+                    [self convertPoint:[[self window] convertPointFromScreen:[NSEvent mouseLocation]]
                               fromView:nil];
                     NSRect closeRect = [cell closeButtonRectForFrame:cellRect];
 
@@ -1748,7 +1091,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
             [cell setIsInOverflowMenu:NO];
 
             // indicator
-            if (![[cell indicator] isHidden] && !_hideIndicators) {
+            if (![[cell indicator] isHidden]) {
                 [[cell indicator] setFrame:[cell indicatorRectForFrame:cellRect]];
                 if (![[self subviews] containsObject:[cell indicator]]) {
                     [self addSubview:[cell indicator]];
@@ -1763,7 +1106,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
             // set up menu items
             NSMenuItem *menuItem;
             if (overflowMenu == nil) {
-                overflowMenu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
+                overflowMenu = [[NSMenu alloc] initWithTitle:@"TITLE"];
                 if (@available(macOS 26, *)) {
                     // It's not a pulldown menu in 26
                 } else {
@@ -1789,7 +1132,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
             }
 
             [overflowMenu addItem:menuItem];
-            [menuItem release];
         }
     }
 
@@ -1870,13 +1212,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
     [self setLastMouseDownEvent:theEvent];
     // what cell?
     NSPoint mousePt = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-    NSRect frame = [self frame];
-
-    const BOOL mouseIsOverVerticalResizeHandle = (_tabLocation == PSMTab_RightTab) ? (mousePt.x < 3) : (mousePt.x > frame.size.width - 3);
-    if ([self orientation] == PSMTabBarVerticalOrientation && [self allowsResizing] && partnerView && mouseIsOverVerticalResizeHandle) {
-        _resizing = YES;
-    }
-
     NSRect cellFrame;
     PSMTabBarCell *cell = [self cellForPoint:mousePt cellFrame:&cellFrame];
     if (cell) {
@@ -1922,40 +1257,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 
     NSPoint currentPoint = [self convertPoint:[theEvent locationInWindow] fromView:nil];
 
-    if (_resizing) {
-        NSRect frame = [self frame];
-        float resizeAmount = [theEvent deltaX];
-        if (_tabLocation == PSMTab_RightTab) {
-            resizeAmount = -resizeAmount;
-        }
-        const BOOL shouldResize = (_tabLocation == PSMTab_RightTab) ?
-            ((currentPoint.x < 0 && resizeAmount > 0) || (currentPoint.x > 0 && resizeAmount < 0)) :
-            ((currentPoint.x > frame.size.width && resizeAmount > 0) || (currentPoint.x < frame.size.width && resizeAmount < 0));
-        if (shouldResize) {
-            [[NSCursor resizeLeftRightCursor] push];
-
-            NSRect partnerFrame = [partnerView frame];
-
-            //do some bounds checking
-            if ((frame.size.width + resizeAmount > [self cellMinWidth]) && (frame.size.width + resizeAmount < [self cellMaxWidth])) {
-                if (_tabLocation == PSMTab_RightTab) {
-                    frame.origin.x -= resizeAmount;
-                    frame.size.width += resizeAmount;
-                    partnerFrame.size.width -= resizeAmount;
-                } else {
-                    frame.size.width += resizeAmount;
-                    partnerFrame.size.width -= resizeAmount;
-                    partnerFrame.origin.x += resizeAmount;
-                }
-
-                [self setFrame:frame];
-                [partnerView setFrame:partnerFrame];
-                [[self superview] setNeedsDisplay:YES];
-            }
-        }
-        return;
-    }
-
     if ([self.delegate respondsToSelector:@selector(tabViewShouldDragWindow:event:)] &&
         [self.delegate tabViewShouldDragWindow:_tabView event:theEvent]) {
         [self.window makeKeyAndOrderFront:nil];
@@ -1982,12 +1283,12 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
         float dy = fabs(currentPoint.y - trackingStartPoint.y);
         float distance = sqrt(dx * dx + dy * dy);
 
-        if (distance >= self.minimumTabDragDistance && !_didDrag && ![[PSMTabDragAssistant sharedDragAssistant] isDragging] &&
+        if (distance >= self.minimumTabDragDistance && !_didDrag && !TerminalTabDrag.shared.isDragging &&
                 [[self delegate] respondsToSelector:@selector(tabView:shouldDragTabViewItem:fromTabBar:)] &&
                 [[self delegate] tabView:_tabView shouldDragTabViewItem:[cell representedObject] fromTabBar:self]) {
             _didDrag = YES;
             ILog(@"Start dragging with mouse down event %@ in window %p with frame %@", [self lastMouseDownEvent], self.window, NSStringFromRect(self.window.frame));
-            [[PSMTabDragAssistant sharedDragAssistant] startDraggingCell:cell fromTabBar:self withMouseDownEvent:[self lastMouseDownEvent]];
+            [TerminalTabDrag.shared beginFrom:self cell:cell event:theEvent];
         }
     }
 }
@@ -1995,7 +1296,7 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
     // Middle click closes a tab, even if the click is not on the close button.
-    if ([theEvent buttonNumber] == 2 && !_resizing) {
+    if ([theEvent buttonNumber] == 2) {
         NSPoint mousePt = [self convertPoint:[theEvent locationInWindow] fromView:nil];
         NSRect cellFrame;
         PSMTabBarCell *cell = [self cellForPoint:mousePt cellFrame:&cellFrame];
@@ -2011,12 +1312,6 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 - (void)mouseUp:(NSEvent *)theEvent {
     _preDragSelectedTabIndex = NSNotFound;
     _haveInitialDragLocation = NO;
-    if (_resizing) {
-        _resizing = NO;
-        [[NSCursor arrowCursor] set];
-        return;
-    }
-
     [self handleMouseUp:theEvent];
 
     _closeClicked = NO;
@@ -2134,159 +1429,31 @@ static NSString *PSMSmartTruncationPrefix(NSString *title, NSInteger length) {
 
 #pragma mark NSDraggingSource
 
-- (NSDraggingSession *)beginDraggingSessionWithItems:(NSArray<NSDraggingItem *> *)items event:(NSEvent *)event source:(id<NSDraggingSource>)source {
-    ILog(@"Begin dragging tab bar control %p with event %@ source from\n%@",
-         self, event, [NSThread callStackSymbols]);
-    return [super beginDraggingSessionWithItems:items event:event source:source];
+- (BOOL)ignoreModifierKeysForDraggingSession:(NSDraggingSession *)session { return YES; }
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+    return [TerminalTabDrag.shared updateDestination:self sender:sender];
 }
 
-- (BOOL)ignoreModifierKeysForDraggingSession:(NSDraggingSession *)session {
-    return YES;
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+    return [TerminalTabDrag.shared updateDestination:self sender:sender];
 }
 
-// File-level statics for tracking drag move frequency
-#if PSM_DEBUG_DRAG_PERFORMANCE
-static int gDragMoveCount = 0;
-static CFAbsoluteTime gDragMoveLastTime = 0;
-static CFAbsoluteTime gDragMoveFirstTime = 0;
-#endif
-
-- (void)draggingSession:(NSDraggingSession *)session willBeginAtPoint:(NSPoint)screenPoint {
-#if PSM_DEBUG_DRAG_PERFORMANCE
-    // Reset drag move tracking
-    gDragMoveCount = 0;
-    gDragMoveLastTime = 0;
-    gDragMoveFirstTime = 0;
-    NSLog(@"[PSMTabBar] draggingSession:willBeginAtPoint: - drag session started");
-#endif
-    [[PSMTabDragAssistant sharedDragAssistant] draggingBeganAt:screenPoint];
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
+    [TerminalTabDrag.shared exitDestination:self];
 }
 
-- (void)draggingSession:(NSDraggingSession *)session movedToPoint:(NSPoint)screenPoint {
-#if PSM_DEBUG_DRAG_PERFORMANCE
-    CFAbsoluteTime now = CACurrentMediaTime();
-    gDragMoveCount++;
-
-    if (gDragMoveFirstTime == 0) {
-        gDragMoveFirstTime = now;
-    }
-
-    // Log every call to see actual frequency
-    double sinceLast = gDragMoveLastTime > 0 ? (now - gDragMoveLastTime) * 1000 : 0;
-    double elapsed = now - gDragMoveFirstTime;
-    double avgFps = elapsed > 0 ? (gDragMoveCount / elapsed) : 0;
-
-    // Log every 10th call, or first few calls
-    NSLog(@"[PSMTabBar] draggingSession:movedToPoint: #%d, interval=%.1fms, avg=%.1f calls/sec",
-          gDragMoveCount, sinceLast, avgFps);
-    gDragMoveLastTime = now;
-#endif
-
-    [[PSMTabDragAssistant sharedDragAssistant] draggingMovedTo:screenPoint];
+- (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {
+    return [self draggingUpdated:sender] != NSDragOperationNone;
 }
 
-#pragma mark NSDraggingDestination
-
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender {
-    if ([[[sender draggingPasteboard] types] indexOfObject:@"com.iterm2.psm.controlitem"] != NSNotFound) {
-        if ([[self delegate] respondsToSelector:@selector(tabView:shouldDropTabViewItem:inTabBar:moveSourceWindow:)] &&
-            ![[self delegate] tabView:[[sender draggingSource] tabView]
-                shouldDropTabViewItem:[[[PSMTabDragAssistant sharedDragAssistant] draggedCell] representedObject]
-                             inTabBar:self
-                     moveSourceWindow:nil]) {
-            return NSDragOperationNone;
-        }
-
-        [[PSMTabDragAssistant sharedDragAssistant] draggingEnteredTabBar:self atPoint:[self convertPoint:[sender draggingLocation] fromView:nil]];
-        return NSDragOperationMove;
-    } else if ([[self delegate] respondsToSelector:@selector(tabView:draggingEnteredTabBarForSender:)]) {
-        NSDragOperation op = [[self delegate] tabView:_tabView draggingEnteredTabBarForSender:sender];
-        if (op != NSDragOperationNone) {
-            [[PSMTabDragAssistant sharedDragAssistant] startAnimationWithOrientation:_orientation width:_cellOptimumWidth];
-            [[PSMTabDragAssistant sharedDragAssistant] draggingEnteredTabBar:self atPoint:[self convertPoint:[sender draggingLocation] fromView:nil]];
-        }
-        return op;
-    } else {
-        return NSDragOperationNone;
-    }
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+    return [TerminalTabDrag.shared dropIn:self sender:sender];
 }
 
-- (NSDragOperation)draggingUpdated:(id <NSDraggingInfo>)sender {
-    PSMTabBarCell *cell = [self cellForPoint:[self convertPoint:[sender draggingLocation] fromView:nil] cellFrame:nil];
-
-    if ([[[sender draggingPasteboard] types] indexOfObject:@"com.iterm2.psm.controlitem"] != NSNotFound) {
-
-        if ([[self delegate] respondsToSelector:@selector(tabView:shouldDropTabViewItem:inTabBar:moveSourceWindow:)] &&
-            ![[self delegate] tabView:[[sender draggingSource] tabView]
-                shouldDropTabViewItem:[[[PSMTabDragAssistant sharedDragAssistant] draggedCell] representedObject]
-                             inTabBar:self
-                     moveSourceWindow:nil]) {
-            return NSDragOperationNone;
-        }
-
-        [[PSMTabDragAssistant sharedDragAssistant] draggingUpdatedInTabBar:self atPoint:[self convertPoint:[sender draggingLocation] fromView:nil]];
-        return NSDragOperationMove;
-    } else if ([[self delegate] respondsToSelector:@selector(tabView:shouldAcceptDragFromSender:)] &&
-               [[self delegate] tabView:_tabView shouldAcceptDragFromSender:sender]) {
-        [[PSMTabDragAssistant sharedDragAssistant] draggingUpdatedInTabBar:self atPoint:[self convertPoint:[sender draggingLocation] fromView:nil]];
-        return NSDragOperationMove;
-    } else if (cell) {
-        //something that was accepted by the delegate was dragged on
-        [_tabView selectTabViewItem:[cell representedObject]];
-        return NSDragOperationCopy;
-    }
-
-    return NSDragOperationNone;
-}
-
-- (void)draggingExited:(id <NSDraggingInfo>)sender {
-    [[PSMTabDragAssistant sharedDragAssistant] draggingExitedTabBar:self];
-}
-
-- (BOOL)prepareForDragOperation:(id <NSDraggingInfo>)sender {
-    // validate the drag operation only if there's a valid tab bar to drop into
-    BOOL badType = [[[sender draggingPasteboard] types] indexOfObject:@"com.iterm2.psm.controlitem"] == NSNotFound;
-    if (badType && [[self delegate] respondsToSelector:@selector(tabView:shouldAcceptDragFromSender:)] &&
-        ![[self delegate] tabView:_tabView shouldAcceptDragFromSender:sender]) {
-        badType = YES;
-    }
-    return badType ||
-           [[PSMTabDragAssistant sharedDragAssistant] destinationTabBar] != nil;
-}
-
-- (BOOL)_delegateAcceptsSender:(id <NSDraggingInfo>)sender {
-    return [[self delegate] respondsToSelector:@selector(tabView:shouldAcceptDragFromSender:)] &&
-           [[self delegate] tabView:_tabView shouldAcceptDragFromSender:sender];
-}
-
-- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender {
+- (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)point operation:(NSDragOperation)operation {
     _haveInitialDragLocation = NO;
-    if ([[[sender draggingPasteboard] types] indexOfObject:@"com.iterm2.psm.controlitem"] != NSNotFound ||
-        [self _delegateAcceptsSender:sender]) {
-        [[PSMTabDragAssistant sharedDragAssistant] performDragOperation:sender];
-    } else if ([[self delegate] respondsToSelector:@selector(tabView:acceptedDraggingInfo:onTabViewItem:)]) {
-        //forward the drop to the delegate
-        [[self delegate] tabView:_tabView acceptedDraggingInfo:sender onTabViewItem:[[self cellForPoint:[self convertPoint:[sender draggingLocation] fromView:nil] cellFrame:nil] representedObject]];
-    }
-    return YES;
-}
-
-- (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)aPoint operation:(NSDragOperation)operation {
-#if PSM_DEBUG_DRAG_PERFORMANCE
-    // Log drag move summary
-    CFAbsoluteTime elapsed = gDragMoveFirstTime > 0 ? (CACurrentMediaTime() - gDragMoveFirstTime) : 0;
-    double avgFps = elapsed > 0 ? (gDragMoveCount / elapsed) : 0;
-    NSLog(@"[PSMTabBar] draggingSession:endedAtPoint: - drag ended. Total moves: %d over %.2fs (avg %.1f calls/sec)",
-          gDragMoveCount, elapsed, avgFps);
-#endif
-
-    _haveInitialDragLocation = NO;
-    if (operation != NSDragOperationNone) {
-        [self removeTabForCell:[[PSMTabDragAssistant sharedDragAssistant] draggedCell]];
-        [[PSMTabDragAssistant sharedDragAssistant] finishDrag];
-    } else {
-        [[PSMTabDragAssistant sharedDragAssistant] draggedImageEndedAt:aPoint operation:operation];
-    }
+    [TerminalTabDrag.shared endAt:point operation:operation];
 }
 
 #pragma mark -
@@ -2299,8 +1466,8 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
 
 - (void)closeTabClick:(id)sender button:(int)button {
     NSTabViewItem *item = [sender representedObject];
-    [[sender retain] autorelease];
-    [[item retain] autorelease];
+
+
 
     if ([[self delegate] respondsToSelector:@selector(tabView:shouldCloseTabViewItem:)]){
         if (![[self delegate] tabView:_tabView shouldCloseTabViewItem:item]){
@@ -2349,12 +1516,6 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
 }
 
 - (void)frameDidChange:(NSNotification *)notification {
-    //figure out if the new frame puts the control in the way of the resize widget
-    NSRect resizeWidgetFrame = [[[self window] contentView] frame];
-    resizeWidgetFrame.origin.x += resizeWidgetFrame.size.width - 22;
-    resizeWidgetFrame.size.width = 22;
-    resizeWidgetFrame.size.height = 22;
-
     [self update];
     // trying to address the drawing artifacts for the progress indicators - hackery follows
     // this one fixes the "blanking" effect when the control hides and shows itself
@@ -2385,7 +1546,7 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
     // Rebuild tracking areas for all visible cells based on their current frames.
     // This ensures tracking areas stay valid after view lifecycle events like
     // moving to a different window, display sleep/wake, etc.
-    const NSPoint mousePoint = [self convertPoint:[[self window] pointFromScreenCoords:[NSEvent mouseLocation]]
+    const NSPoint mousePoint = [self convertPoint:[[self window] convertPointFromScreen:[NSEvent mouseLocation]]
                                          fromView:nil];
 
     for (PSMTabBarCell *cell in _cells) {
@@ -2438,65 +1599,7 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
 }
 
 - (void)windowStatusDidChange:(NSNotification *)notification {
-    // hide? must readjust things if I'm not supposed to be showing
-    // this block of code only runs when the app launches
-    if ([self hideForSingleTab] && ([_cells count] <= 1) && !_awakenedFromNib) {
-        // must adjust frames now before display
-        NSRect myFrame = [self frame];
-        if ([self orientation] == PSMTabBarHorizontalOrientation) {
-            if (partnerView) {
-                NSRect partnerFrame = [partnerView frame];
-                // above or below me?
-                if (myFrame.origin.y - 22 > [partnerView frame].origin.y) {
-                    // partner is below me
-                    [self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y + 21, myFrame.size.width, myFrame.size.height - 21)];
-                    [partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y, partnerFrame.size.width, partnerFrame.size.height + 21)];
-                } else {
-                    // partner is above me
-                    [self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, myFrame.size.width, myFrame.size.height - 21)];
-                    [partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y - 21, partnerFrame.size.width, partnerFrame.size.height + 21)];
-                }
-                [partnerView setNeedsDisplay:YES];
-                [self setNeedsDisplay:YES];
-            } else {
-                // for window movement
-                NSRect windowFrame = [[self window] frame];
-                [[self window] setFrame:NSMakeRect(windowFrame.origin.x, windowFrame.origin.y + 21, windowFrame.size.width, windowFrame.size.height - 21) display:YES];
-                [self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, myFrame.size.width, myFrame.size.height - 21)];
-            }
-        } else {
-            if (partnerView) {
-                NSRect partnerFrame = [partnerView frame];
-                //to the left or right?
-                if (myFrame.origin.x < [partnerView frame].origin.x){
-                    // partner is to the left
-                    [self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, 1, myFrame.size.height)];
-                    [partnerView setFrame:NSMakeRect(partnerFrame.origin.x - myFrame.size.width + 1, partnerFrame.origin.y, partnerFrame.size.width + myFrame.size.width - 1, partnerFrame.size.height)];
-                } else {
-                    // partner to the right
-                    [self setFrame:NSMakeRect(myFrame.origin.x + myFrame.size.width, myFrame.origin.y, 1, myFrame.size.height)];
-                    [partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y, partnerFrame.size.width + myFrame.size.width, partnerFrame.size.height)];
-                }
-                _tabBarWidth = myFrame.size.width;
-                [partnerView setNeedsDisplay:YES];
-                [self setNeedsDisplay:YES];
-            } else {
-                // for window movement
-                NSRect windowFrame = [[self window] frame];
-                [[self window] setFrame:NSMakeRect(windowFrame.origin.x + myFrame.size.width - 1, windowFrame.origin.y, windowFrame.size.width - myFrame.size.width + 1, windowFrame.size.height) display:YES];
-                [self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, 1, myFrame.size.height)];
-            }
-        }
-
-        _isHidden = YES;
-
-        if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidHide:)]) {
-            [[self delegate] tabView:[self tabView] tabBarDidHide:self];
-        }
-    }
-
     [self setNeedsDisplay:YES];
-     _awakenedFromNib = YES;
     [self update];
 }
 
@@ -2561,36 +1664,7 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
 }
 
 - (void)tabViewDidChangeNumberOfTabViewItems:(NSTabView *)aTabView {
-    NSArray *tabItems = [_tabView tabViewItems];
-    // go through cells, remove any whose representedObjects are not in [tabView tabViewItems]
-    NSMutableArray *cellsToRemove = [NSMutableArray array];
-    for (PSMTabBarCell *cell in _cells) {
-        if (![tabItems containsObject:[cell representedObject]]) {
-            [cellsToRemove addObject:cell];
-        }
-    }
-    for (PSMTabBarCell *cell in cellsToRemove) {
-        if ([[self delegate] respondsToSelector:@selector(tabView:didCloseTabViewItem:)]) {
-            [[self delegate] tabView:aTabView didCloseTabViewItem:[cell representedObject]];
-        }
-
-        [self removeTabForCell:cell];
-    }
-
-    // go through tab view items, add cell for any not present
-    NSMutableArray *cellItems = [self representedTabViewItems];
-    int i = 0;
-    for (NSTabViewItem *item in tabItems) {
-        if (![cellItems containsObject:item]) {
-            [self addTabViewItem:item atIndex:i];
-        }
-        i++;
-    }
-
-    // pass along for other delegate responses
-    if ([[self delegate] respondsToSelector:@selector(tabViewDidChangeNumberOfTabViewItems:)]) {
-        [[self delegate] tabViewDidChangeNumberOfTabViewItems:aTabView];
-    }
+    [TerminalTabOrdering synchronize:self with:aTabView];
 }
 
 - (NSDragOperation)tabView:(NSTabView *)tabView draggingEnteredTabBarForSender:(id<NSDraggingInfo>)tagViewItem {
@@ -2745,7 +1819,7 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
     for (i = 0; i < cnt; i++) {
         PSMTabBarCell *cell = [_cells objectAtIndex:i];
 
-        if (NSPointInRect(point, [cell frame])) {
+        if (!cell.isInOverflowMenu && NSPointInRect(point, [cell frame])) {
             if (outFrame) {
                 *outFrame = [cell frame];
             }
@@ -2753,16 +1827,6 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
         }
     }
     return nil;
-}
-
-- (PSMTabBarCell *)lastVisibleTab
-{
-    int i, cellCount = [_cells count];
-    for(i = 0; i < cellCount; i++){
-        if ([[_cells objectAtIndex:i] isInOverflowMenu])
-            return [_cells objectAtIndex:(i-1)];
-    }
-    return [_cells objectAtIndex:(cellCount - 1)];
 }
 
 - (int)numberOfVisibleTabs
@@ -2938,42 +2002,8 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
     }
 }
 
-- (void)moveTabAtIndex:(NSInteger)sourceIndex toTabBar:(PSMTabBarControl *)destinationTabBar atIndex:(NSInteger)destinationIndex {
-    assert(destinationTabBar != self);
-    PSMTabBarCell *movingCell = _cells[sourceIndex];
-    [destinationTabBar.cells insertObject:movingCell atIndex:destinationIndex];
-    [movingCell setControlView:destinationTabBar];
-
-    // Remove the tracking rects and bindings registered on the old tab.
-    [movingCell removeCloseButtonTrackingRectFrom:self];
-    [movingCell removeCellTrackingRectFrom:self];
-    [self removeTabForCell:movingCell];
-
-    if ([self.delegate respondsToSelector:@selector(tabView:willDropTabViewItem:inTabBar:)]) {
-        [self.delegate tabView:self.tabView
-           willDropTabViewItem:movingCell.representedObject
-                      inTabBar:destinationTabBar];
-    }
-
-    [self.tabView removeTabViewItem:[movingCell representedObject]];
-    [[destinationTabBar tabView] insertTabViewItem:[movingCell representedObject] atIndex:destinationIndex];
-
-    // Rebind the cell to the new control.
-    [destinationTabBar initializeStateForCell:movingCell];
-    [destinationTabBar bindPropertiesForCell:movingCell andTabViewItem:[movingCell representedObject]];
-
-    // Select the newly moved item in the destination tab view.
-    [[destinationTabBar tabView] selectTabViewItem:[movingCell representedObject]];
-
-    if ([self.delegate respondsToSelector:@selector(tabView:didDropTabViewItem:inTabBar:)]) {
-        [self.delegate tabView:self.tabView
-            didDropTabViewItem:movingCell.representedObject
-                      inTabBar:destinationTabBar];
-    }
-    if ([self.tabView numberOfTabViewItems] == 0 &&
-        [self.delegate respondsToSelector:@selector(tabView:closeWindowForLastTabViewItem:)]) {
-        [self.delegate tabView:self.tabView closeWindowForLastTabViewItem:[movingCell representedObject]];
-    }
+- (void)moveTabAtIndex:(NSInteger)sourceIndex toTabBar:(TerminalTabBarView *)destinationTabBar atIndex:(NSInteger)destinationIndex {
+    [TerminalTabOrdering transferFrom:self index:sourceIndex to:destinationTabBar index:destinationIndex];
 }
 
 - (void)setNeedsUpdate:(BOOL)needsUpdate {
@@ -2981,7 +2011,7 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
 }
 
 - (void)setNeedsUpdate:(BOOL)needsUpdate animate:(BOOL)animate {
-    _needsUpdateAnimate = _needsUpdateAnimate && animate;
+    _needsUpdateAnimate |= animate;
     if (_needsUpdate == needsUpdate) {
         return;
     }
@@ -3000,7 +2030,8 @@ static CFAbsoluteTime gDragMoveFirstTime = 0;
     if (!_needsUpdate) {
         return;
     }
-    [self setNeedsUpdate:_needsUpdateAnimate];
+    _needsUpdate = NO;
+    _needsUpdateAnimate = NO;
     [self update];
 }
 

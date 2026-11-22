@@ -1,16 +1,15 @@
 //
 //  PSMTabBarCell.m
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 10/13/05.
 //  Copyright 2005 Positive Spin Media. All rights reserved.
 //
 
 #import "PSMTabBarCell.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "PSMTabStyle.h"
 #import "PSMProgressIndicator.h"
-#import "PSMTabDragAssistant.h"
 
 extern void AppendPinnedDebugLogMessage(NSString *key, NSString *value, ...);
 
@@ -190,7 +189,7 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
 
 #pragma mark - Creation/Destruction
 
-- (id)initWithControlView:(PSMTabBarControl *)controlView {
+- (id)initWithControlView:(TerminalTabBarView *)controlView {
     self = [super init];
     if (self) {
         [self setControlView:controlView];
@@ -209,38 +208,6 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
     return self;
 }
 
-- (id)initPlaceholderWithFrame:(NSRect)frame
-                      expanded:(BOOL)value
-                 inControlView:(PSMTabBarControl *)controlView {
-    self = [super init];
-    if (self) {
-        [self setControlView:controlView];
-        _isPlaceholder = YES;
-        if (!value) {
-            if ([controlView orientation] == PSMTabBarHorizontalOrientation) {
-                frame.size.width = 0;
-            } else {
-                frame.size.height = 0;
-            }
-        }
-        [self setFrame:frame];
-        _closeButtonOver = NO;
-        _closeButtonPressed = NO;
-        _indicator = nil;
-        _hasCloseButton = YES;
-        _count = 0;
-        _tabColor = nil;
-        _modifierString = [@"" copy];
-        _truncationStyle = NSLineBreakByTruncatingTail;
-        if (value) {
-            [self setCurrentStep:(kPSMTabDragAnimationSteps - 1)];
-        } else {
-            [self setCurrentStep:0];
-        }
-        [self setUpAccessibilityElement];
-    }
-    return self;
-}
 
 - (void)dealloc {
     [_delayedStringValueTimer invalidate];
@@ -463,17 +430,6 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
     [[self psmTabControlView] update:[[self psmTabControlView] automaticallyAnimates]]; // binding notice is too fast
 }
 
-- (void)setCurrentStep:(int)value {
-    if (value < 0) {
-        value = 0;
-    }
-
-    if (value > (kPSMTabDragAnimationSteps - 1)) {
-        value = (kPSMTabDragAnimationSteps - 1);
-    }
-
-    _currentStep = value;
-}
 
 - (BOOL)hasCloseButton {
     if (self.frame.size.width > 85) {
@@ -525,21 +481,11 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
 #pragma mark - Drawing
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
-    if (_isPlaceholder){
-        // Don't draw zero-size placeholders (they appear as thin vertical/horizontal lines)
-        if (cellFrame.size.width <= 0 || cellFrame.size.height <= 0) {
-            return;
-        }
-        [[NSColor colorWithCalibratedWhite:0 alpha:0.2] set];
-        NSRectFillUsingOperation(cellFrame, NSCompositingOperationSourceAtop);
-        return;
-    }
-
     [[[self psmTabControlView] style] drawTabCell:self highlightAmount:[self highlightAmount]];
 }
 
 - (void)drawPostHocDecorationsOnSelectedCell:(PSMTabBarCell *)cell
-                               tabBarControl:(PSMTabBarControl *)bar {
+                               tabBarControl:(TerminalTabBarView *)bar {
     [[[self psmTabControlView] style] drawPostHocDecorationsOnSelectedCell:cell
                                                              tabBarControl:bar];
 }
@@ -641,41 +587,6 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
     _closeButtonTrackingArea = area;
 }
 
-#pragma mark - Drag Support
-
-- (NSImage *)dragImage {
-    NSRect cellFrame =
-        [[[self psmTabControlView] style] dragRectForTabCell:self
-                                                 orientation:[[self psmTabControlView] orientation]];
-
-    NSBitmapImageRep *rep;
-    rep = [self.psmTabControlView bitmapImageRepForCachingDisplayInRect:cellFrame];
-    [self.psmTabControlView cacheDisplayInRect:cellFrame toBitmapImageRep:rep];
-    NSImage *image = [[NSImage alloc] initWithSize:[rep size]];
-    [image addRepresentation:rep];
-    NSImage *returnImage = [[NSImage alloc] initWithSize:[rep size]];
-    [returnImage lockFocus];
-    [[NSColor windowBackgroundColor] set];
-    NSRectFill(NSMakeRect(0, 0, returnImage.size.width, returnImage.size.height));
-    [image drawAtPoint:NSZeroPoint
-              fromRect:NSZeroRect
-             operation:NSCompositingOperationSourceOver
-              fraction:1.0];
-    [returnImage unlockFocus];
-    if (![[self indicator] isHidden]) {
-        // TODO: This image is missing!
-        NSImage *piImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"pi"]];
-        [returnImage lockFocus];
-        NSPoint indicatorPoint = self.indicator.frame.origin;
-        [piImage drawAtPoint:indicatorPoint
-                    fromRect:NSZeroRect
-                   operation:NSCompositingOperationSourceOver
-                    fraction:1.0];
-        [returnImage unlockFocus];
-    }
-    return returnImage;
-}
-
 #pragma mark - NSCoding
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
@@ -683,8 +594,6 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
     if ([aCoder allowsKeyedCoding]) {
         [aCoder encodeRect:_frame forKey:@"frame"];
         [aCoder encodeSize:_stringSize forKey:@"stringSize"];
-        [aCoder encodeInt:_currentStep forKey:@"currentStep"];
-        [aCoder encodeBool:_isPlaceholder forKey:@"isPlaceholder"];
         [aCoder encodeInt:_tabState forKey:@"tabState"];
         [aCoder encodeBool:_closeButtonOver forKey:@"closeButtonOver"];
         [aCoder encodeBool:_closeButtonPressed forKey:@"closeButtonPressed"];
@@ -704,8 +613,6 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
             _frame = [aDecoder decodeRectForKey:@"frame"];
             NSLog(@"decoding cell");
             _stringSize = [aDecoder decodeSizeForKey:@"stringSize"];
-            _currentStep = [aDecoder decodeIntForKey:@"currentStep"];
-            _isPlaceholder = [aDecoder decodeBoolForKey:@"isPlaceholder"];
             _tabState = [aDecoder decodeIntForKey:@"tabState"];
             _closeButtonOver = [aDecoder decodeBoolForKey:@"closeButtonOver"];
             _closeButtonPressed = [aDecoder decodeBoolForKey:@"closeButtonPressed"];
@@ -778,7 +685,7 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
 }
 
 - (CGFloat)highlightAnimationDuration {
-    if ([(PSMTabBarControl *)self.controlView orientation] == PSMTabBarHorizontalOrientation) {
+    if ([(TerminalTabBarView *)self.controlView orientation] == PSMTabBarHorizontalOrientation) {
         return 0.2;
     } else {
         return 0;
@@ -795,7 +702,7 @@ static NSRect PSMConvertAccessibilityFrameToScreen(NSView *view, NSRect frame) {
 #pragma mark - PSMProgressIndicatorDelegate
 
 - (void)progressIndicatorNeedsUpdate {
-    return [(PSMTabBarControl *)self.controlView progressIndicatorNeedsUpdate];
+    return [(TerminalTabBarView *)self.controlView progressIndicatorNeedsUpdate];
 }
 
 @end

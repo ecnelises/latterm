@@ -33,7 +33,6 @@
 #import "NSUserDefaults+iTerm.h"
 #import "NSView+RecursiveDescription.h"
 #import "NSView+iTerm.h"
-#import "NSWindow+PSM.h"
 #import "NSWorkspace+iTerm.h"
 #import "PSMMinimalTabStyle.h"
 #import "PTYNoteViewController.h"
@@ -18994,7 +18993,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
         return NSDragOperationNone;
     }
 
-    if (!([[[sender draggingPasteboard] types] indexOfObject:@"com.iterm2.psm.controlitem"] != NSNotFound)) {
+    if (!([[[sender draggingPasteboard] types] indexOfObject:TerminalTabPasteboardType] != NSNotFound)) {
         if ([[MovePaneController sharedInstance] isMovingSession:self]) {
             // Moving me onto myself
             DLog(@"sessionViewDraggingEntered: move onto self");
@@ -19271,7 +19270,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     const CGFloat lineHeight = [self.textview lineHeight];
     NSPoint p = NSMakePoint([iTermPreferences sideMargins] + cx * charWidth,
                             ([self.screen numberOfLines] - [self.screen height] + cy) * lineHeight);
-    const NSPoint origin = [self.textview.window pointToScreenCoords:[self.textview convertPoint:p toView:nil]];
+    const NSPoint origin = [self.textview.window convertPointToScreen:[self.textview convertPoint:p toView:nil]];
     return NSMakeRect(origin.x,
                       origin.y,
                       charWidth,

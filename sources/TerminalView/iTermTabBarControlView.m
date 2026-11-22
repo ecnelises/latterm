@@ -34,7 +34,7 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
 @end
 
 @implementation iTermTabBarControlView {
-    iTermDelayedPerform *_flashDelayedPerform;  // weak
+    __weak iTermDelayedPerform *_flashDelayedPerform;
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
@@ -66,7 +66,6 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
 }
 
 - (void)setCmdPressed:(BOOL)cmdPressed {
@@ -163,12 +162,11 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
 - (void)scheduleFadeOutAfterDelay {
     DLog(@"schedule fade out after delay");
     // Schedule a fade out. This can be canceled.
-    [self retain];
     __block BOOL aborted = NO;
     _flashDelayedPerform = [NSView animateWithDuration:[iTermAdvancedSettingsModel tabFlashAnimationDuration]
                                                  delay:[iTermAdvancedSettingsModel tabAutoShowHoldTime]
                                             animations:^{
-                                                if (!_cmdPressed) {
+                                                if (!self.cmdPressed) {
                                                     DLog(@"delayed fade out running");
                                                     self.flashState = kFlashFadingOut;
                                                     [self setAlphaValue:0 animated:YES];
@@ -183,13 +181,12 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
                                                     DLog(@"delayed fade out completed");
                                                     if (finished && self.flashState == kFlashFadingOut) {
                                                         self.flashState = kFlashOff;
-                                                        [_itermTabBarDelegate iTermTabBarDidFinishFlash];
+                                                        [self.itermTabBarDelegate iTermTabBarDidFinishFlash];
                                                     }
                                                 }
-                                                if (_flashDelayedPerform.completed) {
-                                                    _flashDelayedPerform = nil;
+                                                if (self->_flashDelayedPerform.completed) {
+                                                    self->_flashDelayedPerform = nil;
                                                 }
-                                                [self release];
                                             }];
     DLog(@"Schedule dp %@", _flashDelayedPerform);
 }
@@ -210,7 +207,6 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
     _flashDelayedPerform.canceled = YES;
     _flashDelayedPerform = nil;
 
-    [self retain];
     [NSView animateWithDuration:[iTermAdvancedSettingsModel tabFlashAnimationDuration]
                      animations:^{
                          self.flashState = kFlashFadingOut;
@@ -219,9 +215,8 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
                      completion:^(BOOL finished) {
                          if (finished && self.flashState == kFlashFadingOut) {
                              self.flashState = kFlashOff;
-                             [_itermTabBarDelegate iTermTabBarDidFinishFlash];
+                             [self.itermTabBarDelegate iTermTabBarDidFinishFlash];
                          }
-                         [self release];
                      }];
 }
 
@@ -310,7 +305,6 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
 
 - (BOOL)cellShouldShowTabProgressBar:(PSMTabBarCell *)cell {
     if (self.tabView.numberOfTabViewItems <= 1 ||
-        cell.isPlaceholder ||
         cell.isInOverflowMenu ||
         ![self cellAllowsTabProgressBar:cell]) {
         return NO;
@@ -332,7 +326,7 @@ typedef NS_ENUM(NSInteger, iTermTabBarFlashState) {
 }
 
 - (NSView *)customProgressBarViewForTabCell:(PSMTabBarCell *)cell {
-    iTermProgressBarView *progressBar = [[[iTermProgressBarView alloc] init] autorelease];
+    iTermProgressBarView *progressBar = [[iTermProgressBarView alloc] init];
     progressBar.heightValue = PSMTabBarProgressBarHeight;
     return progressBar;
 }

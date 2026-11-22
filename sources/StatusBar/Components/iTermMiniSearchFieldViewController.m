@@ -20,7 +20,7 @@
 #import "NSEvent+iTerm.h"
 #import "NSObject+iTerm.h"
 #import "NSTextField+iTerm.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 @interface iTermMiniSearchFieldViewController ()<NSMenuItemValidation, NSControlTextEditingDelegate, iTermLayoutReportingViewDelegate>
 

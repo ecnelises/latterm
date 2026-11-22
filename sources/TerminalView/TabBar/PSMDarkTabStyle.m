@@ -8,7 +8,7 @@
 
 #import "PSMDarkTabStyle.h"
 #import "PSMTabBarCell.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 @implementation PSMDarkTabStyle
 
@@ -106,7 +106,7 @@
     return insets;
 }
 
-- (void)drawTabBar:(PSMTabBarControl *)bar
+- (void)drawTabBar:(TerminalTabBarView *)bar
             inRect:(NSRect)rect
           clipRect:(NSRect)clipRect
         horizontal:(BOOL)horizontal

@@ -278,27 +278,10 @@ extension PseudoTerminal: ColorsMenuItemViewDelegate {
     }
 
     /// Finds the frame of the target tab’s cell in the tab bar for popover anchoring.
-    private func rectOfTab(in tabBar: PSMTabBarControl) -> NSRect {
+    private func rectOfTab(in tabBar: TerminalTabBarView) -> NSRect {
         let targetItem = tabViewItemForColorPicker ?? currentTab()?.tabViewItem
-        guard targetItem != nil else { return tabBar.bounds }
-
-        // Scan across the tab bar to find the cell whose representedObject matches.
-        let midY = tabBar.bounds.midY
-        var probeX: CGFloat = 1
-        while probeX < tabBar.bounds.width {
-            var frame = NSRect.zero
-            if let cell = tabBar.cell(for: NSMakePoint(probeX, midY),
-                                      cellFrame: &frame) as? PSMTabBarCell {
-                if cell.representedObject as AnyObject === targetItem {
-                    return frame
-                }
-                // Skip past this cell to the next one.
-                probeX = NSMaxX(frame) + 1
-            } else {
-                probeX += 20
-            }
-        }
-        return tabBar.bounds
+        let cells = tabBar.cells() as? [PSMTabBarCell] ?? []
+        return cells.first { !$0.isInOverflowMenu && $0.representedObject as AnyObject? === targetItem }?.frame ?? tabBar.bounds
     }
 
     // MARK: - Pinned Tabs

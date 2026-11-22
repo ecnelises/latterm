@@ -17,7 +17,7 @@
 #import "NSImage+iTerm.h"
 #import "NSStringITerm.h"
 #import "PSMMinimalTabStyle.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "PTYWindow.h"
 #import "SFSymbolEnum.h"
 

@@ -272,7 +272,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 }
 
 - (void)drawPostHocDecorationsOnSelectedCell:(PSMTabBarCell *)cell
-                               tabBarControl:(PSMTabBarControl *)bar {
+                               tabBarControl:(TerminalTabBarView *)bar {
     if (self.anyTabHasColor) {
         const BOOL tabColorIsDark = ([self tabColorBrightness:cell] < 0.);
         NSRect containingFrame = cell.frame;
@@ -438,7 +438,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 
 - (void)drawEndInset {
     NSColor *color;
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     PSMTabBarCell *cell = [self selectedCellInTabBarControl:bar];
     if (cell == nil || cell.isInOverflowMenu) {
         // Must be one of the overflow tabs
@@ -454,7 +454,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     if (!cell) {
         return self.tabBarColor;
     }
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     BOOL selected = (bar.orientation == PSMTabBarHorizontalOrientation) || [self firstTabIsSelected];
 
     return [self effectiveBackgroundColorForTabWithTabColor:cell.tabColor
@@ -464,7 +464,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 }
 
 - (PSMTabBarCell *)selectedVisibleCell {
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     for (PSMTabBarCell *cell in bar.cells.reverseObjectEnumerator) {
         if (!cell.isInOverflowMenu && cell.state == NSControlStateValueOn) {
             return cell;
@@ -475,7 +475,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 }
 
 - (NSRect)startInsetFrame {
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     if (bar.orientation == PSMTabBarHorizontalOrientation) {
         if (self.tabBar.cells.count == 0) {
             return NSZeroRect;
@@ -492,7 +492,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
         return NSZeroRect;
     }
     PSMTabBarCell *cell = self.lastVisibleCell;
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     if (bar.orientation == PSMTabBarHorizontalOrientation) {
         return NSMakeRect(NSMaxX(cell.frame),
                           0,
@@ -515,12 +515,12 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 }
 
 - (PSMTabBarCell *)firstVisibleCell {
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     return bar.cells.firstObject;
 }
 
 - (PSMTabBarCell *)lastVisibleCell {
-    PSMTabBarControl *bar = self.tabBar;
+    TerminalTabBarView *bar = self.tabBar;
     for (PSMTabBarCell *cell in bar.cells.reverseObjectEnumerator) {
         if (!cell.isInOverflowMenu) {
             return cell;
@@ -529,7 +529,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     return nil;
 }
 
-- (PSMTabBarCell *)selectedCellInTabBarControl:(PSMTabBarControl *)bar {
+- (PSMTabBarCell *)selectedCellInTabBarControl:(TerminalTabBarView *)bar {
     for (PSMTabBarCell *cell in bar.cells) {
         if (cell.state == NSControlStateValueOn) {
             return cell;
@@ -538,7 +538,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     return nil;
 }
 
-- (NSInteger)selectedIndex:(PSMTabBarControl *)bar {
+- (NSInteger)selectedIndex:(TerminalTabBarView *)bar {
     PSMTabBarCell *cell = [self selectedCellInTabBarControl:bar];
     if (cell.isInOverflowMenu) {
         return NSNotFound;
@@ -546,7 +546,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     return [bar.cells indexOfObject:cell];
 }
 
-- (NSInteger)numberOfVisibleCells:(PSMTabBarControl *)bar {
+- (NSInteger)numberOfVisibleCells:(TerminalTabBarView *)bar {
     NSInteger i = 0;
     for (PSMTabBarCell *cell in bar.cells) {
         if (cell.isInOverflowMenu) {
@@ -557,7 +557,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     return i;
 }
 
-- (void)drawTabBar:(PSMTabBarControl *)bar
+- (void)drawTabBar:(TerminalTabBarView *)bar
             inRect:(NSRect)rect
           clipRect:(NSRect)clipRect
         horizontal:(BOOL)horizontal
@@ -594,7 +594,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     }
 }
 
-- (void)drawDividerBetweenTabBarAndContent:(NSRect)rect bar:(PSMTabBarControl *)bar {
+- (void)drawDividerBetweenTabBarAndContent:(NSRect)rect bar:(TerminalTabBarView *)bar {
 }
 
 - (BOOL)shouldDrawTopLineSelected:(BOOL)selected
@@ -625,24 +625,24 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 
 #pragma mark Draw outline around bottom tab bar
 
-- (void)drawOutlineAroundBottomTabBarWithOneTab:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundBottomTabBarWithOneTab:(TerminalTabBarView *)bar {
 }
 
-- (void)drawOutlineAroundBottomTabBarWithFirstTabSelected:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundBottomTabBarWithFirstTabSelected:(TerminalTabBarView *)bar {
     [self drawOutlineAfterSelectedTabInBottomTabBar:bar];
 }
 
-- (void)drawOutlineAroundBottomTabBarWithLastTabSelected:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundBottomTabBarWithLastTabSelected:(TerminalTabBarView *)bar {
     [self drawOutlineBeforeSelectedTabInBottomTabBar:bar];
     [self drawOutlineAfterSelectedTabInBottomTabBar:bar];
 }
 
-- (void)drawOutlineAroundBottomTabBarWithInteriorTabSelected:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundBottomTabBarWithInteriorTabSelected:(TerminalTabBarView *)bar {
     [self drawOutlineBeforeSelectedTabInBottomTabBar:bar];
     [self drawOutlineAfterSelectedTabInBottomTabBar:bar];
 }
 
-- (void)drawOutlineAfterSelectedTabInBottomTabBar:(PSMTabBarControl *)bar {
+- (void)drawOutlineAfterSelectedTabInBottomTabBar:(TerminalTabBarView *)bar {
     NSBezierPath *path = [NSBezierPath bezierPath];
 
     PSMTabBarCell *const cell = [self selectedCellInTabBarControl:bar];
@@ -662,7 +662,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     [path stroke];
 }
 
-- (void)drawOutlineBeforeSelectedTabInBottomTabBar:(PSMTabBarControl *)bar {
+- (void)drawOutlineBeforeSelectedTabInBottomTabBar:(TerminalTabBarView *)bar {
     NSBezierPath *path = [NSBezierPath bezierPath];
 
     PSMTabBarCell *const cell = [self selectedCellInTabBarControl:bar];
@@ -691,31 +691,31 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 
 #pragma mark Draw outline around top tab bar
 
-- (void)drawOutlineAroundTopTabBarWithOneTab:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundTopTabBarWithOneTab:(TerminalTabBarView *)bar {
     if (!self.treatLeftInsetAsPartOfFirstTab) {
         [self drawOutlineBeforeSelectedTabInTopTabBar:bar];
         [self drawOutlineAfterSelectedTabInTopTabBar:bar];
     }
 }
 
-- (void)drawOutlineAroundTopTabBarWithFirstTabSelected:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundTopTabBarWithFirstTabSelected:(TerminalTabBarView *)bar {
     if (!self.treatLeftInsetAsPartOfFirstTab) {
         [self drawOutlineBeforeSelectedTabInTopTabBar:bar];
     }
     [self drawOutlineAfterSelectedTabInTopTabBar:bar];
 }
 
-- (void)drawOutlineAroundTopTabBarWithLastTabSelected:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundTopTabBarWithLastTabSelected:(TerminalTabBarView *)bar {
     [self drawOutlineBeforeSelectedTabInTopTabBar:bar];
     [self drawOutlineAfterSelectedTabInTopTabBar:bar];
 }
 
-- (void)drawOutlineAroundTopTabBarWithInteriorTabSelected:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundTopTabBarWithInteriorTabSelected:(TerminalTabBarView *)bar {
     [self drawOutlineBeforeSelectedTabInTopTabBar:bar];
     [self drawOutlineAfterSelectedTabInTopTabBar:bar];
 }
 
-- (void)drawOutlineAfterSelectedTabInTopTabBar:(PSMTabBarControl *)bar {
+- (void)drawOutlineAfterSelectedTabInTopTabBar:(TerminalTabBarView *)bar {
     NSBezierPath *path = [NSBezierPath bezierPath];
 
     PSMTabBarCell *const cell = [self selectedCellInTabBarControl:bar];
@@ -735,7 +735,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
     [path stroke];
 }
 
-- (void)drawOutlineBeforeSelectedTabInTopTabBar:(PSMTabBarControl *)bar {
+- (void)drawOutlineBeforeSelectedTabInTopTabBar:(TerminalTabBarView *)bar {
     NSBezierPath *path = [NSBezierPath bezierPath];
 
     PSMTabBarCell *const cell = [self selectedCellInTabBarControl:bar];
@@ -763,7 +763,7 @@ static CGFloat PSMWeightedAverage(CGFloat l, CGFloat u, CGFloat w) {
 
 #pragma mark Draw outline around vertical tab bar
 
-- (void)drawOutlineAroundVerticalTabBar:(PSMTabBarControl *)bar {
+- (void)drawOutlineAroundVerticalTabBar:(TerminalTabBarView *)bar {
     PSMTabBarCell *cell = [self selectedCellInTabBarControl:bar];
     const BOOL selectedIsVisible = cell && !cell.isInOverflowMenu;
     const NSRect bounds = bar.bounds;

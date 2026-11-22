@@ -1,13 +1,13 @@
 //
 //  PSMOverflowPopUpButton.m
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 11/4/05.
 //  Copyright 2005 Positive Spin Media. All rights reserved.
 //
 
 #import "PSMOverflowPopUpButton.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 @implementation PSMOverflowPopUpButton {
     NSImage         *_PSMTabBarOverflowPopUpImage;
@@ -22,8 +22,8 @@
         [self setBordered:NO];
         [self setTitle:@""];
         [self setPreferredEdge:NSMaxXEdge];
-        _PSMTabBarOverflowPopUpImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"overflowImage"]];
-        _PSMTabBarOverflowDownPopUpImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"overflowImagePressed"]];
+        _PSMTabBarOverflowPopUpImage = [[NSImage alloc] initByReferencingFile:[[TerminalTabBarView bundle] pathForImageResource:@"overflowImage"]];
+        _PSMTabBarOverflowDownPopUpImage = [[NSImage alloc] initByReferencingFile:[[TerminalTabBarView bundle] pathForImageResource:@"overflowImagePressed"]];
     }
     return self;
 }

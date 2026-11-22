@@ -1,6 +1,6 @@
 //
 //  PSMProgressIndicator.h
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 2/23/06.
 //  Copyright 2006 Positive Spin Media. All rights reserved.

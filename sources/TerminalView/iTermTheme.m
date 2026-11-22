@@ -17,8 +17,6 @@
 #import "PSMMinimalTabStyle.h"
 #import "PSMTabStyle.h"
 #import "PSMDarkTabStyle.h"
-#import "PSMLightHighContrastTabStyle.h"
-#import "PSMDarkHighContrastTabStyle.h"
 #import "PSMYosemiteTabStyle.h"
 
 @implementation iTermTheme

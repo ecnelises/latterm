@@ -1,12 +1,13 @@
 #import <XCTest/XCTest.h>
 #import "PSMMinimalTabStyle.h"
+#import "iTerm2SharedARC-Swift.h"
 
 @interface PSMMinimalTabStyle (DrawingTests)
-- (void)drawOutlineAroundVerticalTabBar:(PSMTabBarControl *)bar;
+- (void)drawOutlineAroundVerticalTabBar:(TerminalTabBarView *)bar;
 - (NSColor *)backgroundColorSelected:(BOOL)selected highlightAmount:(CGFloat)highlightAmount;
 @end
 
-@interface MinimalStyleTestBar : PSMTabBarControl
+@interface MinimalStyleTestBar : TerminalTabBarView
 @property(nonatomic, copy) NSArray<PSMTabBarCell *> *testCells;
 @end
 @implementation MinimalStyleTestBar
@@ -15,6 +16,7 @@
 
 @interface MinimalStyleTestOptions : NSObject<PSMTabBarControlDelegate, PSMMinimalTabStyleDelegate>
 @property(nonatomic) BOOL mergeFirstTab;
+@property(nonatomic) BOOL highVisibility;
 @property(nonatomic) CGFloat outlineStrength;
 @property(nonatomic) CGFloat dimming;
 @end
@@ -24,7 +26,8 @@
 - (NSColor *)minimalTabStyleBackgroundColor {
     return [NSColor colorWithSRGBRed:0.2 green:0.2 blue:0.2 alpha:1];
 }
-- (id)tabView:(PSMTabBarControl *)bar valueOfOption:(PSMTabBarControlOptionKey)option {
+- (id)tabView:(TerminalTabBarView *)bar valueOfOption:(PSMTabBarControlOptionKey)option {
+    if ([option isEqual:PSMTabBarControlOptionHighVisibility]) { return @(self.highVisibility); }
     if ([option isEqual:PSMTabBarControlOptionMinimalStyleTreatLeftInsetAsPartOfFirstTab]) {
         return @(self.mergeFirstTab);
     }
@@ -42,6 +45,27 @@
 @interface MinimalTabStyleTests : XCTestCase
 @end
 @implementation MinimalTabStyleTests
+
+- (void)testClassicHighContrastStylesHonorSelectionAndVisibility {
+    MinimalStyleTestOptions *options = [[MinimalStyleTestOptions alloc] init];
+    TerminalTabBarView *bar = [[TerminalTabBarView alloc] initWithFrame:NSMakeRect(0, 0, 200, 30)];
+    bar.delegate = options;
+    PSMDarkHighContrastTabStyle *dark = [[PSMDarkHighContrastTabStyle alloc] init];
+    dark.tabBar = bar;
+    for (NSNumber *visibility in @[ @NO, @YES ]) {
+        options.highVisibility = visibility.boolValue;
+        NSColor *selected = [dark textColorDefaultSelected:YES backgroundColor:nil windowIsMainAndAppIsActive:YES];
+        XCTAssertEqualObjects(selected, options.highVisibility ? NSColor.blackColor : NSColor.whiteColor);
+        XCTAssertEqualObjects([dark textColorDefaultSelected:NO backgroundColor:nil windowIsMainAndAppIsActive:YES],
+                              NSColor.whiteColor);
+        CGFloat intensity = [dark backgroundColorSelected:YES highlightAmount:1].whiteComponent;
+        XCTAssertEqualWithAccuracy(intensity, options.highVisibility ? 0.85 : 0.25, 0.001);
+    }
+    PSMLightHighContrastTabStyle *light = [[PSMLightHighContrastTabStyle alloc] init];
+    XCTAssertEqualObjects([light backgroundColorSelected:YES highlightAmount:1], NSColor.windowBackgroundColor);
+    XCTAssertEqualObjects([light topLineColorSelected:NO], [light bottomLineColorSelected:YES]);
+    XCTAssertEqualObjects(light.accessoryTextColor, NSColor.blackColor);
+}
 
 - (NSBitmapImageRep *)renderAtScale:(NSInteger)scale draw:(void (^)(void))draw {
     NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL

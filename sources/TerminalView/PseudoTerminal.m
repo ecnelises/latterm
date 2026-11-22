@@ -25,13 +25,10 @@
 #import "NSStringITerm.h"
 #import "NSView+RecursiveDescription.h"
 #import "NSView+iTerm.h"
-#import "NSWindow+PSM.h"
 #import "NSWindow+iTerm.h"
 #import "NSWorkspace+iTerm.h"
 #import "PSMCachedTitle.h"
-#import "PSMDarkHighContrastTabStyle.h"
 #import "PSMDarkTabStyle.h"
-#import "PSMLightHighContrastTabStyle.h"
 #import "PSMMinimalTabStyle.h"
 #import "PSMTabStyle.h"
 #import "PSMYosemiteTabStyle.h"
@@ -7100,7 +7097,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
 - (BOOL)tabView:(NSTabView*)aTabView
     shouldDragTabViewItem:(NSTabViewItem *)tabViewItem
-               fromTabBar:(PSMTabBarControl *)tabBarControl
+               fromTabBar:(TerminalTabBarView *)tabBarControl
 {
     if (_layoutLocked) {
         return NO;
@@ -7145,7 +7142,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
 - (BOOL)tabView:(NSTabView*)aTabView
     shouldDropTabViewItem:(NSTabViewItem *)tabViewItem
-                 inTabBar:(PSMTabBarControl *)aTabBarControl
+                 inTabBar:(TerminalTabBarView *)aTabBarControl
          moveSourceWindow:(BOOL *)moveSourceWindow {
     if (![aTabBarControl tabView]) {
         // Tab dropping outside any existing tabbar to create a new window.
@@ -7166,7 +7163,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
 - (void)tabView:(NSTabView*)aTabView
     willDropTabViewItem:(NSTabViewItem *)tabViewItem
-               inTabBar:(PSMTabBarControl *)aTabBarControl {
+               inTabBar:(TerminalTabBarView *)aTabBarControl {
     PTYTab *aTab = [tabViewItem identifier];
     for (PTYSession* aSession in [aTab sessions]) {
         [aSession setIgnoreResizeNotifications:YES];
@@ -7201,7 +7198,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
 - (void)tabView:(NSTabView*)aTabView
     didDropTabViewItem:(NSTabViewItem *)tabViewItem
-              inTabBar:(PSMTabBarControl *)aTabBarControl {
+              inTabBar:(TerminalTabBarView *)aTabBarControl {
     PTYTab *aTab = [tabViewItem identifier];
     PseudoTerminal *term = (PseudoTerminal *)[aTabBarControl delegate];
     [self didDonateTab:aTab toWindowController:term];
@@ -7229,85 +7226,6 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 {
     //NSLog(@"closeWindowForLastTabViewItem: %@", [tabViewItem label]);
     [[self window] close];
-}
-
-- (NSImage *)imageFromSelectedTabView:(NSTabView *)aTabView
-                          tabViewItem:(NSTabViewItem *)tabViewItem {
-    NSView *tabRootView = [tabViewItem view];
-
-    NSRect contentFrame;
-    NSRect viewRect;
-    contentFrame = viewRect = [tabRootView frame];
-    switch ([iTermPreferences intForKey:kPreferenceKeyTabPosition]) {
-        case PSMTab_LeftTab:
-        case PSMTab_RightTab:
-            contentFrame.size.width += _contentView.leftTabBarWidth;
-            break;
-
-        case PSMTab_TopTab:
-        case PSMTab_BottomTab:
-            contentFrame.size.height += _contentView.tabBarControl.height;
-            break;
-    }
-
-    // Grabs whole tabview image.
-    NSImage *viewImage = [[[NSImage alloc] initWithSize:contentFrame.size] autorelease];
-
-    PTYTab *tab = tabViewItem.identifier;
-    [tab bounceMetal];
-
-    NSImage *tabViewImage = [tabRootView snapshot];
-
-    [viewImage lockFocus];
-    switch ([iTermPreferences intForKey:kPreferenceKeyTabPosition]) {
-        case PSMTab_LeftTab:
-            viewRect.origin.x += _contentView.leftTabBarWidth;
-            viewRect.size.width -= _contentView.leftTabBarWidth;
-            break;
-
-        case PSMTab_RightTab:
-            viewRect.size.width -= _contentView.leftTabBarWidth;
-            break;
-
-        case PSMTab_TopTab:
-            break;
-
-        case PSMTab_BottomTab:
-            viewRect.origin.y += _contentView.tabBarControl.height;
-            break;
-    }
-
-    [tabViewImage drawAtPoint:viewRect.origin
-                     fromRect:NSZeroRect
-                    operation:NSCompositingOperationSourceOver
-                     fraction:1.0];
-    [viewImage unlockFocus];
-
-    return viewImage;
-}
-
-- (NSImage *)imageFromNonSelectedTabViewItem:(NSTabViewItem *)tabViewItem {
-    NSImage *viewImage = [[tabViewItem identifier] image:YES];
-    return viewImage;
-}
-
-- (BOOL)tabViewDragShouldExitWindow:(NSTabView *)tabView {
-    return [iTermAdvancedSettingsModel allowDragOfTabIntoNewWindow];
-}
-
-- (NSImage *)tabView:(NSTabView *)aTabView
- imageForTabViewItem:(NSTabViewItem *)tabViewItem
-           styleMask:(NSWindowStyleMask *)styleMask {
-    *styleMask = self.window.styleMask;
-
-    NSImage *viewImage;
-    if (tabViewItem == [aTabView selectedTabViewItem]) {
-        viewImage = [self imageFromSelectedTabView:aTabView tabViewItem:tabViewItem];
-    } else {
-        viewImage = [self imageFromNonSelectedTabViewItem:tabViewItem];
-    }
-
-    return viewImage;
 }
 
 - (BOOL)useSeparateStatusbarsPerPane {
@@ -7663,7 +7581,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     return rootMenu;
 }
 
-- (PSMTabBarControl *)tabView:(NSTabView *)aTabView
+- (TerminalTabBarView *)tabView:(NSTabView *)aTabView
     newTabBarForDraggedTabViewItem:(NSTabViewItem *)tabViewItem
                            atPoint:(NSPoint)point
 {
@@ -7840,7 +7758,8 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
 
 - (BOOL)tabView:(NSTabView *)tabView shouldAcceptDragFromSender:(id<NSDraggingInfo>)sender
 {
-    return YES;
+    SessionView *source = [MovePaneController sharedInstance].session.view;
+    return !_layoutLocked && source && sender.draggingSource == source;
 }
 
 - (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)aTabViewItem {
@@ -8148,7 +8067,7 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
     return _contentView.tabView;
 }
 
-static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
+static CGFloat iTermDimmingAmount(TerminalTabBarView *tabView) {
     if (tabView.window.isKeyWindow) {
         return 0;
     }
@@ -8199,7 +8118,7 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
     return NO;
 }
 
-- (id)tabView:(PSMTabBarControl *)tabView valueOfOption:(PSMTabBarControlOptionKey)option {
+- (id)tabView:(TerminalTabBarView *)tabView valueOfOption:(PSMTabBarControlOptionKey)option {
     if ([option isEqualToString:PSMTabBarControlOptionColoredSelectedTabOutlineStrength]) {
         return @([iTermAdvancedSettingsModel coloredSelectedTabOutlineStrength]);
     } else if ([option isEqualToString:PSMTabBarControlOptionMinimalStyleBackgroundColorDifference]) {
@@ -8295,7 +8214,7 @@ static CGFloat iTermDimmingAmount(PSMTabBarControl *tabView) {
     return nil;
 }
 
-- (void)tabViewDidClickAddTabButton:(PSMTabBarControl *)tabView {
+- (void)tabViewDidClickAddTabButton:(TerminalTabBarView *)tabView {
     if (self.currentSession.isTmuxClient) {
         [self newTmuxTab:nil];
         return;
@@ -11246,7 +11165,7 @@ static BOOL iTermApproximatelyEqualRects(NSRect lhs, NSRect rhs, double epsilon)
 
 - (IBAction)moveSessionToWindow:(id)sender {
     [[MovePaneController sharedInstance] moveSessionToNewWindow:[self currentSession]
-                                                        atPoint:[[self window] pointToScreenCoords:NSMakePoint(10, -10)]];
+                                                        atPoint:[[self window] convertPointToScreen:NSMakePoint(10, -10)]];
 
 }
 
@@ -12039,7 +11958,7 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
                               genericName:[NSString stringWithFormat:@"Window #%d", number_+1]]);
 }
 
-- (PSMTabBarControl*)tabBarControl
+- (TerminalTabBarView*)tabBarControl
 {
     return _contentView.tabBarControl;
 }
@@ -13039,7 +12958,7 @@ typedef NS_ENUM(NSUInteger, iTermBroadcastCommand) {
 }
 
 - (BOOL)tabAnyDragInProgress:(PTYTab *)tab {
-    return [PSMTabBarControl isAnyDragInProgress];
+    return [TerminalTabBarView isAnyDragInProgress];
 }
 
 - (void)currentSessionWordAtCursorDidBecome:(NSString *)word {

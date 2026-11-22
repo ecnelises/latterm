@@ -1,6 +1,6 @@
 //
 //  PSMTabStyle.h
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 2/17/06.
 //  Copyright 2006 Positive Spin Media. All rights reserved.
@@ -11,13 +11,13 @@ Protocol to be observed by all style delegate objects.  These objects handle the
 */
 
 #import "PSMTabBarCell.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol PSMTabStyle <NSObject>
 
-@property(nonatomic, weak, nullable) PSMTabBarControl *tabBar;
+@property(nonatomic, weak, nullable) TerminalTabBarView *tabBar;
 @property(nonatomic, readonly, nullable) NSAppearance *accessoryAppearance;
 @property(nonatomic, readonly) CGFloat edgeDragHeight;
 @property(nonatomic, readonly) BOOL supportsMultiLineLabels;
@@ -38,7 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSImage *)addTabButtonRolloverImage;
 
 // cell specific parameters
-- (NSRect)dragRectForTabCell:(PSMTabBarCell *)cell orientation:(PSMTabBarOrientation)orientation;
 - (NSRect)closeButtonRectForTabCell:(PSMTabBarCell *)cell;
 - (NSRect)indicatorRectForTabCell:(PSMTabBarCell *)cell;
 - (NSRect)progressBarRectForTabCell:(PSMTabBarCell *)cell;
@@ -57,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 // drawing
 - (void)drawTabCell:(PSMTabBarCell *)cell highlightAmount:(CGFloat)highlightAmount;
 - (void)drawBackgroundInRect:(NSRect)rect color:(nullable NSColor*)color horizontal:(BOOL)horizontal;
-- (void)drawTabBar:(PSMTabBarControl *)bar
+- (void)drawTabBar:(TerminalTabBarView *)bar
             inRect:(NSRect)rect
           clipRect:(NSRect)clipRect
         horizontal:(BOOL)horizontal
@@ -76,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
                    windowIsMainAndAppIsActive:(BOOL)mainAndActive;
 - (NSColor *)backgroundColorSelected:(BOOL)selected highlightAmount:(CGFloat)highlightAmount;
 - (void)drawPostHocDecorationsOnSelectedCell:(PSMTabBarCell *)cell
-                               tabBarControl:(PSMTabBarControl *)bar;
+                               tabBarControl:(TerminalTabBarView *)bar;
 - (NSColor *)textColorForCell:(PSMTabBarCell *)cell;
 - (NSRect)adjustedCellRect:(NSRect)rect generic:(NSRect)generic;
 - (NSRect)dirtyFrameForCell:(PSMTabBarCell *)cell;
@@ -94,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface PSMTabBarControl (StyleAccessors)
+@interface TerminalTabBarView (StyleAccessors)
 
 - (NSMutableArray *)cells;
 - (void)sanityCheck:(NSString *)callsite;

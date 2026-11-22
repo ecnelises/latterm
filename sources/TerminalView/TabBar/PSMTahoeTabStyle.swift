@@ -24,7 +24,7 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
     private var _orientation: PSMTabBarOrientation = .horizontalOrientation
     
     // MARK: - PSMTabStyle Properties
-    @objc weak var tabBar: PSMTabBarControl?
+    @objc weak var tabBar: TerminalTabBarView?
     
     @objc var tabBarColor: NSColor {
         return NSColor(srgbRed: 225.0 / 255.0,
@@ -209,24 +209,6 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
     }
     
     // MARK: - Cell Specific
-    
-    @objc func dragRect(forTabCell cell: PSMTabBarCell, orientation tabOrientation: PSMTabBarOrientation) -> NSRect {
-        var dragRect = cell.frame
-        dragRect.size.width += 1
-        
-        if (Int(cell.tabState) & PSMTab_SelectedMask) != 0 {
-            if tabOrientation != .horizontalOrientation {
-                dragRect.size.height += 1.0
-                dragRect.origin.y -= 1.0
-                dragRect.origin.x += 2.0
-                dragRect.size.width -= 3.0
-            }
-        } else if tabOrientation == .verticalOrientation {
-            dragRect.origin.x -= 1
-        }
-        
-        return dragRect
-    }
     
     @objc func closeButtonRect(forTabCell cell: PSMTabBarCell) -> NSRect {
         if cell.isPinned {
@@ -453,7 +435,7 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
         let outerRadius = pillRadius + progressRingWidth
         // Two nested rounded rects with even-odd winding form a ring: the outer
         // rect is filled and the pill-shaped inner rect is punched out so the
-        // tab shows through. PSMTabBarControl applies this as an even-odd layer
+        // tab shows through. TerminalTabBarView applies this as an even-odd layer
         // mask (the winding rule set here is not carried by iterm_CGPath).
         let path = NSBezierPath(roundedRect: outerRect, xRadius: outerRadius, yRadius: outerRadius)
         path.append(NSBezierPath(roundedRect: pillRect, xRadius: pillRadius, yRadius: pillRadius))
@@ -620,7 +602,7 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
         NSColor(white: 0.9, alpha: 1.0)
     }
     
-    @objc func drawTabBar(_ bar: PSMTabBarControl, in rect: NSRect, clipRect: NSRect, horizontal: Bool, withOverflow: Bool) {
+    @objc func drawTabBar(_ bar: TerminalTabBarView, in rect: NSRect, clipRect: NSRect, horizontal: Bool, withOverflow: Bool) {
         if _orientation != bar.orientation {
             _orientation = bar.orientation
         }
@@ -643,24 +625,7 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
         }
         clippingPath(rect: backgroundRect).addClip()
         
-        // no tab view == not connected
-        guard let _ = bar.tabView else {
-            var labelRect = rect
-            labelRect.size.height -= 4.0
-            labelRect.origin.y += 4.0
-            
-            let contents = "PSMTabBarControl"
-            let attrStr = NSMutableAttributedString(string: contents)
-            let range = NSRange(location: 0, length: contents.count)
-            attrStr.addAttribute(.font, value: NSFont.systemFont(ofSize: fontSize), range: range)
-            
-            let centeredParagraphStyle = NSMutableParagraphStyle()
-            centeredParagraphStyle.alignment = .center
-            attrStr.addAttribute(.paragraphStyle, value: centeredParagraphStyle, range: range)
-            
-            attrStr.draw(in: labelRect)
-            return
-        }
+        guard bar.tabView != nil else { return }
         // draw cells
         var drawableCells = ((bar.cells() as? [PSMTabBarCell]) ?? []).filter { cell in
             return !cell.isInOverflowMenu && NSIntersectsRect(cell.frame.insetBy(dx: -1, dy: -1), clipRect)
@@ -674,15 +639,7 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
             for cell in drawableCells {
                 cell.draw(withFrame: cell.frame, in: bar)
             }
-            // For divider drawing, filter out zero-width placeholder cells first
-            // so dividers are drawn between actual visible cells
-            let cellsForDividers = drawableCells.filter { cell in
-                if cell.isPlaceholder {
-                    return orientation == .horizontalOrientation ? cell.frame.width > 0 : cell.frame.height > 0
-                }
-                return true
-            }
-            let sorted = cellsForDividers.sorted { lhs, rhs in
+            let sorted = drawableCells.sorted { lhs, rhs in
                 if orientation == .horizontalOrientation {
                     lhs.frame.minX < rhs.frame.minX
                 } else {
@@ -1086,7 +1043,7 @@ class PSMTahoeTabStyle: NSObject, PSMTabStyle {
     }
     
     @objc func drawPostHocDecorations(onSelectedCell cell: PSMTabBarCell,
-                                      tabBarControl bar: PSMTabBarControl) {
+                                      tabBarControl bar: TerminalTabBarView) {
     }
 
     // MARK: - Private Helper Methods

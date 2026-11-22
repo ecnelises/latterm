@@ -12,7 +12,6 @@
 #import "ITAddressBookMgr.h"
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"
-#import "NSWindow+PSM.h"
 #import "PTYSession+Private.h"
 #import "PTYSession.h"
 #import "iTerm2SharedARC-Swift.h"

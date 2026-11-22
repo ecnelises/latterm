@@ -26,18 +26,18 @@
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 @protocol iTermSwipeHandler;
 
 // An NSTabView offers the tab bar control and a view in which one of several NSTabViewItem objects
 // (each of which has an associated NSView) is displayed. This subclass doesn't draw the control;
 // that's expected to be a subview of its container. That tab bar control is PTYTabView's delegate.
-// This implementation adds delegate callbacks as needed by PSMTabBarControl and keeps track of the
+// This implementation adds delegate callbacks as needed by TerminalTabBarView and keeps track of the
 // MRU order of tabs, as well as providing methods for cycling among them.
 @interface PTYTabView : NSTabView
 
-// Override setDelegate so that it accepts PSMTabBarControl without warning
+// Override setDelegate so that it accepts TerminalTabBarView without warning
 @property(atomic, weak) id<PSMTabViewDelegate> delegate;
 @property(nonatomic, weak) id<iTermSwipeHandler> swipeHandler;
 

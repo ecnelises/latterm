@@ -36,12 +36,10 @@
 #import "NSView+iTerm.h"
 #import "NSImage+iTerm.h"
 #import "NSView+RecursiveDescription.h"
-#import "NSWindow+PSM.h"
 #import "PreferencePanel.h"
 #import "ProfileModel.h"
 #import "ProfilesWindowPreferencesViewController.h"
-#import "PSMTabBarControl.h"
-#import "PSMTabDragAssistant.h"
+#import "TerminalTabBarView.h"
 #import "PSMTabStyle.h"
 #import "PTYNoteViewController.h"
 #import "PTYScrollView.h"
@@ -165,13 +163,13 @@ static void SetAgainstGrainDim(BOOL isVertical, NSSize *dest, CGFloat value) {
     __weak NSWindowController<iTermWindowController> *realParentWindow_;  // non-nil only if parent is PseudoTerminal*. Implements optional methods of protocol.
     FakeWindow* fakeParentWindow_;  // non-nil only if parent is FakeWindow*
 
-    // The tab number that is observed by PSMTabBarControl.
+    // The tab number that is observed by TerminalTabBarView.
     int objectCount_;
 
-    // The icon to display in the tab. Observed by PSMTabBarControl.
+    // The icon to display in the tab. Observed by TerminalTabBarView.
     NSImage* icon_;
 
-    // Whether the session is "busy". Observed by PSMTabBarControl.
+    // Whether the session is "busy". Observed by TerminalTabBarView.
     BOOL isProcessing_;
 
     // Does any session have new output?
@@ -721,7 +719,7 @@ static void SetAgainstGrainDim(BOOL isVertical, NSSize *dest, CGFloat value) {
 - (NSRect)absoluteFrame {
     NSRect result;
     result.origin = [root_ convertPoint:NSMakePoint(0, 0) toView:nil];
-    result.origin = [[root_ window] pointToScreenCoords:result.origin];
+    result.origin = [[root_ window] convertPointToScreen:result.origin];
     result.size = [root_ frame].size;
     return result;
 }
@@ -7094,9 +7092,12 @@ typedef struct {
 }
 
 - (BOOL)session:(PTYSession *)session shouldAllowDrag:(id<NSDraggingInfo>)sender {
-    if ([[[sender draggingPasteboard] types] indexOfObject:@"com.iterm2.psm.controlitem"] != NSNotFound) {
-        // Dragging a tab handle. Source is a PSMTabBarControl.
-        PTYTab *theTab = (PTYTab *)[[[[PSMTabDragAssistant sharedDragAssistant] draggedCell] representedObject] identifier];
+    if ([[[sender draggingPasteboard] types] indexOfObject:TerminalTabPasteboardType] != NSNotFound) {
+        // Dragging a tab handle. Source is a TerminalTabBarView.
+        PTYTab *theTab = (PTYTab *)TerminalTabDrag.shared.item.identifier;
+        if (!theTab || ![[sender draggingSource] isKindOfClass:TerminalTabBarView.class]) {
+            return NO;
+        }
         if ([[theTab sessions] containsObject:session] || [[theTab sessions] count] > 1) {
             DLog(@"shouldAllowDrag: source tab has multiple sessions - NO");
             return NO;
@@ -7137,7 +7138,10 @@ typedef struct {
                                                           atPoint:[sender draggingLocation]];
     } else {
         // Drag a tab into a split
-        PTYTab *theTab = (PTYTab *)[[[[PSMTabDragAssistant sharedDragAssistant] draggedCell] representedObject] identifier];
+        PTYTab *theTab = (PTYTab *)TerminalTabDrag.shared.item.identifier;
+        if (!theTab || ![[sender draggingSource] isKindOfClass:TerminalTabBarView.class]) {
+            return NO;
+        }
         const BOOL moved = [[MovePaneController sharedInstance] dropTab:theTab
                                                               inSession:session
                                                                    half:[session.view removeSplitSelectionView]
@@ -7333,13 +7337,13 @@ typedef struct {
     if ([[MovePaneController sharedInstance] dropping]) {
         return YES;
     }
-    if ([[PSMTabDragAssistant sharedDragAssistant] dropping]) {
+    if (TerminalTabDrag.shared.isDropping) {
         return YES;
     }
     if ([[MovePaneController sharedInstance] isDragInProgress]) {
         return NO;
     }
-    if ([[PSMTabDragAssistant sharedDragAssistant] isDragging]) {
+    if (TerminalTabDrag.shared.isDragging) {
         return NO;
     }
     return _temporarilyUnmaximizedSessionGUID == nil;

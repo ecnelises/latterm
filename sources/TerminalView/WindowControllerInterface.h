@@ -10,7 +10,7 @@
 @class iTermPopupWindowController;
 @class iTermRestorableSession;
 @class iTermSwiftyStringGraph;
-@class PSMTabBarControl;
+@class TerminalTabBarView;
 @class PTYSession;
 @class PTYTab;
 @class PTYTabView;
@@ -219,7 +219,7 @@
 - (void)closeTab:(PTYTab *)aTab soft:(BOOL)soft;
 
 // Accessor for tab bar.
-- (PSMTabBarControl*)tabBarControl;
+- (TerminalTabBarView*)tabBarControl;
 
 // Return the number of tabs in this window.
 - (int)numberOfTabs;

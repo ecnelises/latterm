@@ -1,6 +1,6 @@
 //
 //  PSMOverflowPopUpButton.h
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 11/4/05.
 //  Copyright 2005 Positive Spin Media. All rights reserved.

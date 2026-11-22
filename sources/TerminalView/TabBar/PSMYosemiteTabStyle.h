@@ -1,6 +1,6 @@
 //
 //  PSMYosemiteTabStyle.h
-//  PSMTabBarControl
+//  TerminalTabBarView
 //
 //  Created by John Pannell on 2/17/06.
 //  Copyright 2006 Positive Spin Media. All rights reserved.
@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "PSMTabStyle.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,6 +46,8 @@ int DebugLogImpl(const char *file, int line, const char *function, NSString* val
 
 #pragma mark - For subclasses
 
+- (CGFloat)fontSize;
+- (NSColor *)bottomLineColorSelected:(BOOL)selected;
 - (NSColor *)topLineColorSelected:(BOOL)selected;
 - (BOOL)anyTabHasColor;
 - (CGFloat)tabColorBrightness:(PSMTabBarCell *)cell;

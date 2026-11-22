@@ -6,7 +6,7 @@
 //
 //
 
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 
 // If the superview conforms to this protocol then the willHide method gets called from -setHidden:
 // and when the tabbar's alphaValue changes withsetAlphaValue:animated: then it also updates the
@@ -15,7 +15,6 @@
 - (void)tabBarControlViewWillHide:(BOOL)hidden;
 @end
 
-// NOTE: The delegate should nil out of itermTabBarDelegate when it gets dealloced; we may live on because of delayed performs.
 @protocol iTermTabBarControlViewDelegate <NSObject>
 
 - (BOOL)iTermTabBarShouldFlashAutomatically;
@@ -28,10 +27,10 @@
 - (void)iTermTabBarDidUpdateProgressBars;
 @end
 
-// A customized version of PSMTabBarControl.
-@interface iTermTabBarControlView : PSMTabBarControl
+// A customized version of TerminalTabBarView.
+@interface iTermTabBarControlView : TerminalTabBarView
 
-@property(nonatomic, assign) id<iTermTabBarControlViewDelegate> itermTabBarDelegate;
+@property(nonatomic, weak) id<iTermTabBarControlViewDelegate> itermTabBarDelegate;
 
 // Set to yes when cmd pressed, no when released. We take care of the timing.
 @property(nonatomic, assign) BOOL cmdPressed;

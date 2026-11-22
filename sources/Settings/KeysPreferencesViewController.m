@@ -31,7 +31,7 @@
 #import "NSView+iTerm.h"
 #import "NSTextField+iTerm.h"
 #import "PreferencePanel.h"
-#import "PSMTabBarControl.h"
+#import "TerminalTabBarView.h"
 #import "iTermShortcutInputView.h"
 #import "iTermSizeRememberingView.h"
 

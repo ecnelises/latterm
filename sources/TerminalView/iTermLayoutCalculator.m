@@ -22,7 +22,7 @@
 
 #import "iTermLayoutCalculator.h"
 
-// These match the PSMTabBarControl constants
+// These match the TerminalTabBarView constants
 const int kLayoutTabPositionTop = 0;
 const int kLayoutTabPositionBottom = 1;
 const int kLayoutTabPositionLeft = 2;

@@ -32,7 +32,6 @@
 #import "MovePaneController.h"
 #import "NSResponder+iTerm.h"
 #import "PSMMinimalTabStyle.h"
-#import "PSMTabDragAssistant.h"
 #import "PTYScrollView.h"
 #import "PTYSession.h"
 #import "PTYTab.h"
@@ -198,7 +197,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
 - (instancetype)initWithFrame:(NSRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self registerForDraggedTypes:@[ iTermMovePaneDragType, @"com.iterm2.psm.controlitem" ]];
+        [self registerForDraggedTypes:@[ iTermMovePaneDragType, TerminalTabPasteboardType ]];
         lastResizeDate_ = [NSDate date];
         _showInlineProgressBar = YES;
         _announcements = [[NSMutableArray alloc] init];
@@ -1731,7 +1730,7 @@ typedef struct {
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
     if ([_delegate sessionViewShouldSplitSelectionAfterDragUpdate:sender]) {
-        // draggingUpdated:'s draggingLocation can be stale during tab drags (see PSMTabDragAssistant).
+        // draggingUpdated:'s draggingLocation can be stale during tab drags.
         const NSPoint mouseLocationInWindow = [self.window convertPointFromScreen:[NSEvent mouseLocation]];
         const NSPoint point = [self convertPoint:mouseLocationInWindow fromView:nil];
         const NSRect bounds = self.bounds;
