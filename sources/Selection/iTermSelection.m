@@ -7,6 +7,7 @@
 //
 
 #import "iTermSelection.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "DebugLogging.h"
 #import "iTermPreferences.h"
 #import "NSArray+iTerm.h"
@@ -27,7 +28,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
 + (instancetype)subSelectionWithAbsRange:(VT100GridAbsWindowedRange)unsafeRange
                                     mode:(iTermSelectionMode)mode
                                    width:(int)width {
-    iTermSubSelection *sub = [[[iTermSubSelection alloc] init] autorelease];
+    iTermSubSelection *sub = [[iTermSubSelection alloc] init];
     VT100GridAbsWindowedRange range = VT100GridAbsWindowedRangeClampedToWidth(unsafeRange, width);
     sub.absRange = range;
     sub.selectionMode = mode;
@@ -75,28 +76,14 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
 }
 
 - (BOOL)containsAbsCoord:(VT100GridAbsCoord)coord {
-    const VT100GridAbsCoord start = VT100GridAbsCoordRangeMin(_absRange.coordRange);
-    const VT100GridAbsCoord end = VT100GridAbsCoordRangeMax(_absRange.coordRange);
-
-    BOOL contained = NO;
-    if (_selectionMode == kiTermSelectionModeBox) {
-        const int left = MIN(start.x, end.x);
-        const int right = MAX(start.x, end.x);
-        const long long top = MIN(start.y, end.y);
-        const long long bottom = MAX(start.y, end.y);
-        contained = (coord.x >= left && coord.x < right && coord.y >= top && coord.y <= bottom);
-    } else {
-        long long w = MAX(MAX(MAX(1, coord.x), start.x), end.x) + 1;
-        long long coordPos = (long long)coord.y * w + coord.x;
-        long long minPos = (long long)start.y * w + start.x;
-        long long maxPos = (long long)end.y * w + end.x;
-
-        contained = coordPos >= minPos && coordPos < maxPos;
+    if (_selectionMode != kiTermSelectionModeBox) {
+        return VT100GridAbsWindowedRangeContainsAbsCoord(_absRange, coord);
     }
-    if (_absRange.columnWindow.length) {
-        contained = contained && VT100GridRangeContains(_absRange.columnWindow, coord.x);
-    }
-    return contained;
+    const VT100GridAbsCoord start = _absRange.coordRange.start;
+    const VT100GridAbsCoord end = _absRange.coordRange.end;
+    return coord.x >= MIN(start.x, end.x) && coord.x < MAX(start.x, end.x) &&
+           coord.y >= MIN(start.y, end.y) && coord.y <= MAX(start.y, end.y) &&
+           (!_absRange.columnWindow.length || VT100GridRangeContains(_absRange.columnWindow, coord.x));
 }
 
 - (instancetype)copyWithZone:(NSZone *)zone {
@@ -109,43 +96,6 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
     theCopy.boxColumnBounds = self.boxColumnBounds;
 
     return theCopy;
-}
-
-- (NSArray *)nonwindowedComponentsWithWidth:(int)width {
-    if (self.selectionMode == kiTermSelectionModeBox ||
-        self.absRange.columnWindow.length <= 0) {
-        return @[ self ];
-    }
-    NSMutableArray *result = [NSMutableArray array];
-    [[self class] enumerateAbsoluteRangesInAbsWindowedRange:self.absRange
-                                                      block:^(VT100GridAbsCoordRange subrange) {
-        iTermSubSelection *sub =
-            [iTermSubSelection subSelectionWithAbsRange:VT100GridAbsWindowedRangeMake(subrange, 0, 0)
-                                                   mode:_selectionMode
-                                                  width:width];
-        sub.connected = YES;
-        [result addObject:sub];
-    }];
-    [[result lastObject] setConnected:NO];
-    return result;
-}
-
-+ (void)enumerateAbsoluteRangesInAbsWindowedRange:(VT100GridAbsWindowedRange)absWindowedRange
-                                            block:(void (^)(VT100GridAbsCoordRange))block {
-    if (absWindowedRange.columnWindow.length) {
-        const int right = absWindowedRange.columnWindow.location + absWindowedRange.columnWindow.length;
-        int startX = VT100GridAbsWindowedRangeStart(absWindowedRange).x;
-        for (long long y = absWindowedRange.coordRange.start.y; y < absWindowedRange.coordRange.end.y; y++) {
-            block(VT100GridAbsCoordRangeMake(startX, y, right, y));
-            startX = absWindowedRange.columnWindow.location;
-        }
-        block(VT100GridAbsCoordRangeMake(startX,
-                                         absWindowedRange.coordRange.end.y,
-                                         VT100GridAbsWindowedRangeEnd(absWindowedRange).x,
-                                         absWindowedRange.coordRange.end.y));
-    } else {
-        block(absWindowedRange.coordRange);
-    }
 }
 
 - (BOOL)isEqual:(id)object {
@@ -209,11 +159,6 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
         _subSelections = [[NSMutableArray alloc] init];
     }
     return self;
-}
-
-- (void)dealloc {
-    [_subSelections release];
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -322,7 +267,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
         }
     }
     [self extendPastNulls];
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 // needAccurateWindow means that soft boundaries must be recomputed. If it's
@@ -416,7 +361,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
 
     DLog(@"Begin selection, range=%@", VT100GridAbsWindowedRangeDescription(_absRange));
     [self extendPastNulls];
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 - (void)endLiveSelection {
@@ -469,7 +414,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
                 // newlines.
                 _resumable = [self appendLogicalSubSelectionsForVisualLiveRange];
             } else {
-                iTermSubSelection *sub = [[[iTermSubSelection alloc] init] autorelease];
+                iTermSubSelection *sub = [[iTermSubSelection alloc] init];
                 sub.absRange = _absRange;
                 sub.selectionMode = _selectionMode;
                 [_subSelections addObject:sub];
@@ -485,7 +430,8 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
     _liveRangeIsVisual = NO;
 
     if (sideEffects) {
-        [_delegate selectionDidChange:[[self retain] autorelease]];
+        NS_VALID_UNTIL_END_OF_SCOPE iTermSelection *selection = self;
+        [_delegate selectionDidChange:selection];
         [_delegate liveSelectionDidEnd];
     }
 }
@@ -522,7 +468,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
         case kiTermSelectionModeBox:
             break;
     }
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 - (BOOL)haveLiveSelection {
@@ -541,7 +487,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
         _absRange = VT100GridAbsWindowedRangeMake(VT100GridAbsCoordRangeMake(-1, -1, -1, -1), 0, 0);
         _liveRangeIsVisual = NO;
         [_subSelections removeAllObjects];
-        [_delegate selectionDidChange:[[self retain] autorelease]];
+        [_delegate selectionDidChange:self];
     }
 }
 
@@ -574,7 +520,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
     if (coord.y < totalScrollbackOverflow) {
         coord.x = 0; coord.y = totalScrollbackOverflow;
     }
-    NSArray<iTermSubSelection *> *subselectionsBefore = [[self.allSubSelections copy] autorelease] ?: @[];
+    NSArray<iTermSubSelection *> *subselectionsBefore = [self.allSubSelections copy] ?: @[];
     VT100GridAbsWindowedRange range = [self absRangeForCurrentModeAtAbsCoord:coord
                                                     includeParentheticals:NO
                                                        needAccurateWindow:NO];
@@ -604,7 +550,8 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
 
     _extend = YES;
     [self extendPastNulls];
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    NS_VALID_UNTIL_END_OF_SCOPE iTermSelection *selection = self;
+    [_delegate selectionDidChange:selection];
     if (startLiveSelection) {
         return YES;
     }
@@ -739,7 +686,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
 
 - (void)setSelectedAbsRange:(VT100GridAbsWindowedRange)selectedRange {
     _absRange = selectedRange;
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -753,7 +700,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
     // such a copy), which marks the wrong cells and leaves stale highlight.
     theCopy->_liveRangeIsVisual = _liveRangeIsVisual;
     for (iTermSubSelection *sub in _subSelections) {
-        [theCopy->_subSelections addObject:[[sub copy] autorelease]];
+        [theCopy->_subSelections addObject:[sub copy]];
     }
     theCopy->_resumable = _resumable;
 
@@ -866,7 +813,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
                     previousSub.connected = YES;
                     previousSub.precedesSameLineBidiPiece = YES;
                 }
-                iTermSubSelection *sub = [[[iTermSubSelection alloc] init] autorelease];
+                iTermSubSelection *sub = [[iTermSubSelection alloc] init];
                 sub.absRange = VT100GridAbsWindowedRangeMake(
                     VT100GridAbsCoordRangeMake(run.location, y, NSMaxRange(run), y), 0, 0);
                 sub.selectionMode = kiTermSelectionModeCharacter;
@@ -935,7 +882,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
     // line boundaries, marking same-line splits connected), so a mid-drag external
     // read matches the post-drag committed selection instead of the raw visual
     // columns the drag is sweeping.
-    NSMutableArray<iTermSubSelection *> *result = [[_subSelections mutableCopy] autorelease];
+    NSMutableArray<iTermSubSelection *> *result = [_subSelections mutableCopy];
     [result addObjectsFromArray:[self decomposedLogicalSubSelectionsForVisualLiveRange]];
     return result;
 }
@@ -998,7 +945,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
                                                                                     mode:mode
                                                                                    width:self.width]];
     }
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 - (void)setLastAbsRange:(VT100GridAbsWindowedRange)lastRange mode:(iTermSelectionMode)mode {
@@ -1012,7 +959,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
                                                                          mode:mode
                                                                         width:self.width]];
     }
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 - (void)addSubSelection:(iTermSubSelection *)sub {
@@ -1032,8 +979,9 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
 
 - (void)setSelectedLogicalRange:(VT100GridAbsWindowedRange)range
                            mode:(iTermSelectionMode)mode {
-    const BOOL hadSelection = self.hasSelection;
-    [self clearSelection];
+    NS_VALID_UNTIL_END_OF_SCOPE iTermSelection *selection = self;
+    const BOOL hadSelection = selection.hasSelection;
+    [selection clearSelection];
     // Set the mode, as beginSelectionAtAbsCoord: did. clearSelection does not
     // reset it, so a stale mode (a prior Box/option-drag selection) would survive
     // and make the commit's null-extension unflip the range with the wrong mode
@@ -1072,7 +1020,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
         // Empty range with no prior selection: neither clearSelection (fires only if
         // there was a selection) nor addSubSelection posted selectionDidChange, so
         // post it here for parity with endLiveSelection, which always posts it.
-        [_delegate selectionDidChange:[[self retain] autorelease]];
+        [_delegate selectionDidChange:self];
     }
     // Fire liveSelectionDidEnd like endLiveSelection does, so the side effects the
     // migrated callers (select-command-output, smart select, copy mode, VoiceOver
@@ -1093,7 +1041,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
         }
         [_subSelections addObject:sub];
     }
-    [_delegate selectionDidChange:[[self retain] autorelease]];
+    [_delegate selectionDidChange:self];
 }
 
 - (void)removeWindowsWithWidth:(int)width {
@@ -1113,8 +1061,7 @@ static NSString *const kiTermSubSelectionBoxColumnBounds = @"Box Column Bounds";
             }
         }
     }
-    [_subSelections autorelease];
-    _subSelections = [newSubs retain];
+    _subSelections = newSubs;
 }
 
 static NSRange iTermMakeRange(NSInteger location, NSInteger length) {
@@ -1333,7 +1280,7 @@ static NSRange iTermClampVisualSpanToColumnWindow(int lo, int hi, VT100GridRange
     }
 
     // Add in tab fillers preceding already-selected tabs.
-    NSMutableIndexSet *indexes = [[basicIndexes mutableCopy] autorelease];
+    NSMutableIndexSet *indexes = [basicIndexes mutableCopy];
 
     NSRange range;
     if (_absRange.columnWindow.length > 0) {
@@ -1376,7 +1323,7 @@ static NSRange iTermClampVisualSpanToColumnWindow(int lo, int hi, VT100GridRange
         // Live ranges can have box subs, which is just a pain to deal with, so make a copy,
         // end live selection in the copy (which converts boxes to individual selections), and
         // then try again on the copy.
-        iTermSelection *temp = [[self copy] autorelease];
+        iTermSelection *temp = [self copy];
         // Side effects could cause an infinite recursion to here. The delegate shouldn't know that
         // we're using a copy for this.
         [temp endLiveSelectionWithSideEffects:NO];

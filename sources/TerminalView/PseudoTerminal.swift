@@ -9,6 +9,27 @@ import ColorPicker
 
 @objc
 extension PseudoTerminal {
+    @objc(moveTabToDetachedWindow:)
+    func moveTabToDetachedWindow(_ tab: PTYTab?) -> PseudoTerminal? {
+        guard !layoutLocked else {
+            RLog("Layout is locked, refusing to move tab to a new window")
+            return nil
+        }
+        guard let tab, let tabs = tabs(), tabs.count > 1,
+              let origin = window?.frame.origin else { return nil }
+        it_assert(tabs.contains(tab), "Called on wrong window")
+        let point = NSPoint(x: origin.x + 10, y: origin.y + 10)
+        guard let item = tab.tabViewItem,
+              let destination = terminalDraggedFromAnotherWindow(at: point) else { return nil }
+        // PTYTab's reference to its item is weak between the two tab views.
+        withExtendedLifetime(item) {
+            tabView()?.removeTabViewItem(item)
+            destination.insert(tab, at: 0)
+            destination.fitWindowToTabs()
+        }
+        return destination as? PseudoTerminal
+    }
+
     // Set the session's profile dictionary and initialize its screen and name. Sets the
     // window title to the session's name. If size is not nil then the session is initialized to fit
     // a view of that size; otherwise the size is derived from the existing window if there is already
@@ -321,6 +342,48 @@ extension PseudoTerminal: ColorsMenuItemViewDelegate {
         let targetIndex = lastPinnedIndex + 1
         if currentIndex != targetIndex {
             moveTab(at: currentIndex, to: targetIndex)
+        }
+    }
+}
+
+extension PseudoTerminal {
+    @objc(acceptsPaneDragFrom:)
+    func acceptsPaneDrag(from source: Any?) -> Bool {
+        guard !layoutLocked, let pane = MovePaneController.sharedInstance().session, !pane.locked,
+              pane.delegate?.realParentWindow()?.layoutLocked == false, let view = pane.view else { return false }
+        return source as? SessionView === view
+    }
+
+    @objc(tabItemForPaneDropFrom:inTabView:)
+    func tabItemForPaneDrop(from dragSource: Any?, in tabs: NSTabView) -> NSTabViewItem? {
+        let controller = MovePaneController.sharedInstance()
+        guard acceptsPaneDrag(from: dragSource),
+              let session = controller.session, let source = session.delegate as? PTYTab,
+              let panes = source.sessions() else { return nil }
+
+        if session.isTmuxClient && panes.count > 1 {
+            controller.clearSession()
+            session.tmuxController?.breakOutWindowPane(session.tmuxPane, toTabAside: terminalGuid)
+            return nil
+        }
+
+        if panes.count == 1, source.realParentWindow() === self, let item = source.tabViewItem {
+            // Reorder the existing tab without closing its window or losing its identity.
+            controller.clearSession()
+            tabs.removeTabViewItem(item)
+            return item
+        }
+
+        let view = controller.removeAndClearSession()
+        return withExtendedLifetime(view) {
+            guard let tab = PTYTab(session: session, parentWindow: self) else { return nil }
+            tab.activeSession = session
+            tab.delegate = self
+            let item = NSTabViewItem(identifier: tab)
+            tab.tabViewItem = item
+            tab.numberOfSessionsDidChange()
+            saveTmuxWindowOrigins()
+            return item
         }
     }
 }

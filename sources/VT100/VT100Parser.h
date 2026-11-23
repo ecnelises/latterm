@@ -32,10 +32,8 @@
 - (NSInteger)startConductorRecoveryModeWithID:(NSString *)dcsID tree:(NSDictionary *)tree;
 - (void)cancelConductorRecoveryMode;
 
-// CVector was created for this method. Because so many VT100Token*s are created and destroyed,
-// too much time is spent adjusting their retain counts. Since an iTermObjectPool is used to avoid
-// alloc/dealloc calls, the retain counts aren't useful. Finally, NSMutableArray in OS 10.9 doesn't
-// respect initWithCapacity: for capacities over 16.
+// Each appended token holds one reference owned by the vector. Consumers release
+// those references with CVectorReleaseObjects before destroying the pointer storage.
 //
 // Returns the number of bytes of input that were executed excluding inband sigaling (ssh, tmux).
 - (int)addParsedTokensToVector:(CVector *)vector;

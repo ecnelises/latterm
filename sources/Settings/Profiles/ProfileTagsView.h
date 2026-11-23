@@ -18,7 +18,7 @@
 
 @interface ProfileTagsView : NSView <NSTableViewDataSource, NSTableViewDelegate>
 
-@property(nonatomic, assign) id<ProfileTagsViewDelegate> delegate;
+@property(nonatomic, weak) id<ProfileTagsViewDelegate> delegate;
 @property(nonatomic, readonly) NSArray *selectedTags;
 @property(nonatomic, readonly, retain) NSScrollView *scrollView;
 

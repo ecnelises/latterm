@@ -58,6 +58,10 @@ extern NSString *const iTermMultiServerRestorationKeyChildPID;
 
 @interface iTermMultiServerJobManager : NSObject<iTermJobManager>
 
+- (void)asyncPartialAttachToServer:(iTermGeneralServerConnection)serverConnection
+                     withProcessID:(NSNumber *)pid
+                        completion:(void (^)(id<iTermJobManagerPartialResult> result))completion;
+
 + (BOOL)getGeneralConnection:(iTermGeneralServerConnection *)generalConnection
    fromRestorationIdentifier:(NSDictionary *)dict;
 @end

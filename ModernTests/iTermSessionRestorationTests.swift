@@ -15,6 +15,96 @@ import XCTest
 
 final class iTermSessionRestorationTests: XCTestCase {
 
+    @MainActor
+    func testUndoTerminationReattachesTheOriginalViewAndSession() throws {
+        let fixture = TerminalWindowTestFixture()
+        defer { fixture.close() }
+        let session = fixture.addTab()
+        let originalViewID = ObjectIdentifier(try XCTUnwrap(session.view))
+        session.terminate()
+        XCTAssertEqual(session.swiftState.viewAwaitingTerminationUndo.map(ObjectIdentifier.init), originalViewID)
+        XCTAssertFalse(fixture.terminal.currentSession() === session)
+
+        XCTAssertTrue(session.revive())
+        iTermController.sharedInstance()?.removeSession(fromRestorableSessions: session)
+        fixture.terminal.addRevivedSession(session)
+        XCTAssertNil(session.swiftState.viewAwaitingTerminationUndo)
+        XCTAssertTrue(fixture.terminal.currentSession() === session)
+        let revivedView = try XCTUnwrap(session.view)
+        XCTAssertEqual(ObjectIdentifier(revivedView), originalViewID)
+        XCTAssertTrue(revivedView.window === fixture.window)
+    }
+
+    @MainActor
+    func testAppKitResolvesTheSavedWindowRestorerAndReadsItsArchivedArrangement() throws {
+        XCTAssertTrue(NSClassFromString("PseudoTerminalRestorer") === PseudoTerminalRestorer.self)
+        let archive = NSKeyedArchiver(requiringSecureCoding: false)
+        archive.encode(["Tab GUID": "tab"], forKey: kTerminalWindowStateRestorationWindowArrangementKey)
+        archive.finishEncoding()
+        let coder = try NSKeyedUnarchiver(forReadingFrom: archive.encodedData)
+        coder.requiresSecureCoding = false
+        let state = PseudoTerminalState(coder: coder)
+        XCTAssertTrue(state.coder === coder)
+        XCTAssertEqual(state.arrangement?["Tab GUID"] as? String, "tab")
+        coder.finishDecoding()
+    }
+
+    @MainActor
+    func testDatabaseFinishingDuringFullscreenWaitsForTheLastWindow() {
+        let queue = WindowRestorationQueue()
+        var events: [String] = []
+        queue.enqueue {
+            events.append("fullscreen")
+            queue.pauseForFullscreen()
+            queue.drain()
+        }
+        queue.enqueue { events.append("window") }
+        queue.afterRestoration { events.append("post") }
+        queue.drain()
+        queue.externalRestorationFinished()
+        queue.afterWindows { events.append("after windows") }
+        XCTAssertEqual(events, ["fullscreen"])
+        queue.fullscreenFinished()
+        queue.externalRestorationFinished()
+        XCTAssertEqual(events, ["fullscreen", "window", "after windows", "post"])
+    }
+
+    @MainActor
+    func testLastFullscreenWindowAndReentrantPostRestorationCallbacks() {
+        let queue = WindowRestorationQueue()
+        var events: [Int] = []
+        queue.enqueue { queue.pauseForFullscreen() }
+        queue.afterRestoration {
+            events.append(1)
+            queue.afterRestoration { events.append(3) }
+            queue.externalRestorationFinished()
+        }
+        queue.afterRestoration { events.append(2) }
+        queue.drain()
+        queue.externalRestorationFinished()
+        XCTAssertTrue(events.isEmpty)
+        queue.fullscreenFinished()
+        queue.afterRestoration { events.append(4) }
+        XCTAssertEqual(events, [1, 2, 3, 4])
+    }
+
+    @MainActor
+    func testSynchronousResumeDoesNotRepeatTheCurrentWindow() {
+        let queue = WindowRestorationQueue()
+        var events: [Int] = []
+        queue.enqueue {
+            events.append(1)
+            queue.pauseForFullscreen()
+            queue.fullscreenFinished()
+        }
+        queue.enqueue { events.append(2) }
+        queue.afterRestoration { events.append(3) }
+        queue.drain()
+        XCTAssertEqual(events, [1, 2])
+        queue.externalRestorationFinished()
+        XCTAssertEqual(events, [1, 2, 3])
+    }
+
     func testTerminalRestoresModifierLevelWithoutOverwritingKittyFlags() {
         let terminal = VT100Terminal()
         var state = terminal.stateDictionary!
@@ -96,5 +186,153 @@ final class iTermSessionRestorationTests: XCTestCase {
         ]
         let restored = iTermSavedProfile(savedState: legacy)
         XCTAssertEqual(restored.overriddenFields, NSMutableSet(array: ["Name", "Command"]))
+    }
+}
+
+extension iTermSessionRestorationTests {
+    // The collector passes attachment objects through by identity. It never starts a job.
+    private final class Attachment: NSObject, iTermPartialAttachment {
+        var partialResult: iTermJobManagerPartialResult!
+        var jobManager: iTermJobManager!
+        var queue: DispatchQueue!
+    }
+
+    private final class JobResult: NSObject, iTermJobManagerPartialResult {}
+
+    private final class ReconnectingManager: iTermMultiServerJobManager {
+        var socketNumber: Int32?
+        var pid: NSNumber?
+        var reply: ((iTermJobManagerPartialResult) -> Void)?
+
+        override func asyncPartialAttach(toServer connection: iTermGeneralServerConnection, withProcessID pid: NSNumber,
+                                         completion: @escaping (iTermJobManagerPartialResult) -> Void) {
+            socketNumber = connection.multi.number
+            self.pid = pid
+            reply = completion
+        }
+    }
+
+    func testJobAttachmentPreservesServerIdentifierManagerQueueAndResult() throws {
+        let manager = ReconnectingManager()
+        let result = JobResult()
+        let identifier = ["Type": "multiserver", "Version": 1, "Socket": 3, "Child PID": 314] as [AnyHashable: Any]
+        var requestedQueue: DispatchQueue?
+        var received: RestorationAttachments?
+        PTYSession.openJobAttachment(for: identifier, makeManager: { queue in
+            requestedQueue = queue
+            return manager
+        }, completion: { received = $0 })
+        XCTAssertNil(received)
+        XCTAssertEqual(manager.socketNumber, 3)
+        XCTAssertEqual(manager.pid, 314)
+        let reply = try XCTUnwrap(manager.reply)
+        manager.reply = nil
+        reply(result)
+        // Production uses the dictionary decoded from disk as an Objective-C dictionary key.
+        let objcMap = try XCTUnwrap(received) as NSDictionary
+        let restored = try XCTUnwrap(objcMap[identifier as NSDictionary] as? iTermPartialAttachment)
+        XCTAssertTrue(restored.jobManager === manager)
+        XCTAssertTrue(restored.partialResult === result)
+        XCTAssertTrue(restored.queue === requestedQueue)
+    }
+
+    func testUnsupportedServerIdentifierCompletesWithoutOpeningAManager() {
+        let identifier: [AnyHashable: Any] = ["Type": "multiserver", "Version": 100, "Socket": 3, "Child PID": 314]
+        var calls = 0
+        PTYSession.openJobAttachment(for: identifier, makeManager: { _ in
+            XCTFail("An unsupported identifier must never open a connection")
+            return nil
+        }, completion: { results in
+            XCTAssertTrue(results.isEmpty)
+            calls += 1
+        })
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testTimeoutDeliversOnlyReadyAttachmentsAndForwardsEveryLateTab() {
+        let first = Attachment()
+        let lateFirst = Attachment()
+        let lateSecond = Attachment()
+        let identifier: NSDictionary = ["pid": 1]
+        var deliveries = [RestorationAttachments]()
+        var orphans = [[iTermPartialAttachment]]()
+        let batch = RestorationAttachmentBatch(count: 3, completion: { deliveries.append($0) },
+                                                late: { orphans.append($0) })
+        batch.receive([identifier: first])
+        batch.finish() // deadline
+        batch.receive([identifier: lateFirst])
+        batch.receive([["pid": 2]: lateSecond])
+        batch.finish() // all tabs eventually returned
+        XCTAssertEqual(deliveries.count, 1)
+        XCTAssertTrue(deliveries.first?[["pid": 1]] as? Attachment === first)
+        XCTAssertEqual(orphans.count, 2)
+        XCTAssertTrue(orphans.first?.first as? Attachment === lateFirst)
+        XCTAssertTrue(orphans.last?.first as? Attachment === lateSecond)
+    }
+
+    func testAllTabsArriveBeforeDeadlineAndEqualIdentifiersMerge() {
+        let first = Attachment()
+        let replacement = Attachment()
+        var deliveries = [RestorationAttachments]()
+        let batch = RestorationAttachmentBatch(count: 2, completion: { deliveries.append($0) },
+                                                late: { _ in XCTFail("No tab arrived late") })
+        batch.receive([["pid": 1]: first])
+        batch.receive([["pid": 1]: replacement, ["pid": 2]: first])
+        XCTAssertEqual(deliveries.count, 1, "The last tab must finish restoration immediately")
+        batch.finish()
+        XCTAssertEqual(deliveries.count, 1)
+        XCTAssertEqual(deliveries.first?.count, 2)
+        XCTAssertTrue(deliveries.first?[["pid": 1]] as? Attachment === replacement)
+    }
+
+    func testLayoutsWithoutReattachableJobsCompleteOnMain() {
+        let skipped = [TAB_ARRANGEMENT_SESSION: [SESSION_ARRANGEMENT_TMUX_PANE: 0]]
+        let invalid = [TAB_ARRANGEMENT_SESSION: [SESSION_ARRANGEMENT_SERVER_DICT: ["type": "unknown"]]]
+        let split: PTYTab.Arrangement = [TAB_ARRANGEMENT_VIEW_TYPE: VIEW_TYPE_SPLITTER, SUBVIEWS: [skipped, invalid]]
+        let layouts: [PTYTab.Arrangement] = [[:], [TAB_ARRANGEMENT_ROOT: skipped], [TAB_ARRANGEMENT_ROOT: split]]
+        let restored = expectation(description: "Every tab completes once")
+        restored.expectedFulfillmentCount = layouts.count
+        for layout in layouts {
+            PTYTab.openPartialAttachments(forArrangement: layout) { results in
+                XCTAssertTrue(Thread.isMainThread)
+                XCTAssertTrue(results.isEmpty)
+                restored.fulfill()
+            }
+        }
+        wait(for: [restored], timeout: 5)
+    }
+
+    func testSessionMapRequiresEveryLeafAndSupportsLegacyIdentifiers() throws {
+        let first = try XCTUnwrap(PTYSession(synthetic: true))
+        let second = try XCTUnwrap(PTYSession(synthetic: true))
+        func layout(_ ids: [PTYTab.Arrangement]) -> PTYTab.Arrangement {
+            [TAB_ARRANGEMENT_ROOT: [TAB_ARRANGEMENT_VIEW_TYPE: VIEW_TYPE_SPLITTER, SUBVIEWS: ids]]
+        }
+        let legacy = [TAB_ARRANGEMENT_SESSION: [SESSION_UNIQUE_ID: first.guid]]
+        let modern = [TAB_ARRANGEMENT_SESSION: [SESSION_ARRANGEMENT_GUID: second.guid]]
+        let nested = [TAB_ARRANGEMENT_VIEW_TYPE: VIEW_TYPE_SPLITTER, SUBVIEWS: [legacy, modern]] as PTYTab.Arrangement
+        let saved = layout([nested, legacy])
+        let map = try XCTUnwrap(PTYTab.sessionMap(withArrangement: saved, sessions: [second, first, first]))
+        XCTAssertEqual(map.count, 2)
+        XCTAssertTrue(map[first.guid] === first)
+        XCTAssertTrue(map[second.guid] === second)
+        XCTAssertNil(PTYTab.sessionMap(withArrangement: saved, sessions: [first]))
+        XCTAssertNil(PTYTab.sessionMap(withArrangement: layout([legacy, [:]]), sessions: [first]))
+        XCTAssertNil(PTYTab.sessionMap(withArrangement: [:], sessions: [first]))
+        XCTAssertNil(PTYSession.guid(inArrangement: [SESSION_ARRANGEMENT_GUID: 42]))
+        XCTAssertEqual(PTYTab.sessionMap(withArrangement: layout([]), sessions: [first])?.count, 0)
+    }
+
+    func testRegistrationKeepsLatestContentsUntilStartupCleanup() {
+        let id = UUID().uuidString
+        let first: NSDictionary = ["generation": 1]
+        let latest: NSDictionary = ["generation": 2]
+        PTYSession.registerSession(inArrangement: [SESSION_ARRANGEMENT_GUID: id, SESSION_ARRANGEMENT_CONTENTS: first])
+        XCTAssertEqual(PTYSession.registeredContents(forGUID: id), first)
+        PTYSession.registerSession(inArrangement: [SESSION_ARRANGEMENT_GUID: id, SESSION_ARRANGEMENT_CONTENTS: latest])
+        PTYSession.registerSession(inArrangement: [SESSION_ARRANGEMENT_GUID: id])
+        XCTAssertEqual(PTYSession.registeredContents(forGUID: id), latest)
+        PTYSession.removeAllRegisteredSessions()
+        XCTAssertNil(PTYSession.registeredContents(forGUID: id))
     }
 }

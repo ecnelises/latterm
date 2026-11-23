@@ -8,7 +8,7 @@
 #import "iTermLineBlockArray.h"
 
 #import "DebugLogging.h"
-#import "iTermCumulativeSumCache.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermTuple.h"
 #import "LineBlock.h"
 #import "NSArray+iTerm.h"

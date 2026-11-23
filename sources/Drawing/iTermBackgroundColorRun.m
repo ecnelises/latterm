@@ -89,7 +89,7 @@ static NSRange NSMakeRangeFromEndpointsInclusive(NSUInteger start, NSUInteger in
     }
 
     // Add it to the array.
-    iTermBoxedBackgroundColorRun *box = [[[iTermBoxedBackgroundColorRun alloc] init] autorelease];
+    iTermBoxedBackgroundColorRun *box = [[iTermBoxedBackgroundColorRun alloc] init];
     memcpy(box.valuePointer, run, sizeof(*run));
     [runs addObject:box];
 }
@@ -174,7 +174,7 @@ static NSRange NSMakeRangeFromEndpointsInclusive(NSUInteger start, NSUInteger in
     }
 
     iTermBackgroundColorRunsInLine *backgroundColorRuns =
-        [[[iTermBackgroundColorRunsInLine alloc] init] autorelease];
+        [[iTermBackgroundColorRunsInLine alloc] init];
     backgroundColorRuns.array = runs;
     backgroundColorRuns.y = y;
     backgroundColorRuns.line = displayLineNumber;
@@ -216,17 +216,12 @@ static NSRange NSMakeRangeFromEndpointsInclusive(NSUInteger start, NSUInteger in
     [self addBackgroundRun:&run toArray:runs endingAtModel:width visual:width];
 
     iTermBackgroundColorRunsInLine *backgroundColorRuns =
-    [[[iTermBackgroundColorRunsInLine alloc] init] autorelease];
+    [[iTermBackgroundColorRunsInLine alloc] init];
     backgroundColorRuns.array = runs;
     backgroundColorRuns.y = y;
     backgroundColorRuns.line = row;
     backgroundColorRuns.sourceLine = row;
     return backgroundColorRuns;
-}
-
-- (void)dealloc {
-    [_array release];
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -254,17 +249,11 @@ static NSRange NSMakeRangeFromEndpointsInclusive(NSUInteger start, NSUInteger in
 }
 
 + (instancetype)boxedBackgroundColorRunWithValue:(iTermBackgroundColorRun)value {
-    iTermBoxedBackgroundColorRun *run = [[[self alloc] init] autorelease];
+    iTermBoxedBackgroundColorRun *run = [[self alloc] init];
     if (run) {
         run->_value = value;
     }
     return run;
-}
-
-- (void)dealloc {
-    [_backgroundColor release];
-    [_unprocessedBackgroundColor release];
-    [super dealloc];
 }
 
 - (BOOL)isDefault {

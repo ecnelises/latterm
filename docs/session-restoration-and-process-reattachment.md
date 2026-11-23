@@ -113,7 +113,7 @@ session exists, the attach-vs-launch decision is already determinate.
 lives up to its name: it builds the window/frame, geometry, and hotkey setup but
 creates **zero** `PTYSession` objects. There are two callers:
 
-- `PseudoTerminalRestorer.m` - the window-restoration entry point
+- `PseudoTerminalRestorer.swift` - the window-restoration entry point
   (`restoring:YES`). It builds the bare window and returns it through the
   restoration `completionHandler`, after which `asyncRestoreState:` drives the
   async partial-attachment phase. This is the path described here. (How this
@@ -240,7 +240,7 @@ the restorer with `system:YES`, `PseudoTerminalRestorer` does **not** build a
 window. It decodes the window GUID from the coder, parks macOS's
 `completionHandler` in the controller keyed by that GUID
 (`setSystemRestorationCallback:windowIdentifier:`), and returns
-(`PseudoTerminalRestorer.m:154-169`). The system thus never restores a window
+(`PseudoTerminalRestorer.swift`). The system thus never restores a window
 itself; it only hands iTerm2 a callback that must eventually be satisfied.
 
 ### How iTerm2 drives the real restoration
@@ -275,21 +275,20 @@ placement. So it is important to always call it, with the real restored window.
 This is why fullscreen windows are a special case. For a non-fullscreen window
 the restorer calls `completionHandler([term window], nil)` immediately. For a
 window restoring into Lion fullscreen (`togglingLionFullScreen`), it instead
-**defers** the call: it sets `gWaitingForFullScreen`, retains the handler, and
+**defers** the call: it pauses the restoration queue, keeps the window controller alive, and
 installs a `didEnterLionFullscreen` callback that calls
 `completionHandler([theTerm window], nil)` only after the fullscreen transition
-finishes, then resumes draining queued blocks (`PseudoTerminalRestorer.m:268-288`).
+finishes, then resumes draining queued blocks (`PseudoTerminalRestorer.swift`).
 That ordering lets macOS see a window already in its fullscreen state and place
 it on the correct Space.
 
 ### Batching and not blocking the OS
 
-`PseudoTerminalRestorer` queues each window-creation block (`queuedBlocks`) and
+`PseudoTerminalRestorer` queues each window-creation block (`WindowRestorationQueue`) and
 drains them with `runQueuedBlocks`, pausing while a fullscreen transition is in
-flight (`gWaitingForFullScreen`, as above). A post-restoration completion block
+flight. A post-restoration completion block
 runs only once both the queued window blocks have all run and external
-restoration has finished (`gExternalRestorationDidComplete` /
-`runPostRestorationBlockIfNeeded`); that block restores buried sessions and kicks
+restoration has finished (`WindowRestorationQueue.deliverCompletions`); that block restores buried sessions and kicks
 off the orphan-server sweep (see "Orphan adoption"). Returning the window through
 the `completionHandler` (early for normal windows, post-transition for fullscreen
 ones) and doing the daemon attach asynchronously afterward is what keeps the slow
@@ -298,9 +297,9 @@ work from blocking the OS's restoration machinery.
 ### Precedence and opt-outs
 
 Before any of the above, the restorer bails early in several cases
-(`PseudoTerminalRestorer.m:138-204`):
+(`PseudoTerminalRestorer.swift`):
 
-- compare-rendering mode, the AppleScript test-app build, and unit tests complete
+- compare-rendering mode and unit tests complete
   with a `nil` window.
 - `kPreferenceKeyOpenArrangementAtStartup`: restoration is aborted (complete
   `nil`), the arrangement's sessions are registered, and the saved default
@@ -312,9 +311,9 @@ Above all of this, the OS-level "Close windows when quitting an app"
 (`NSQuitAlwaysKeepsWindows`) still governs whether macOS attempts restoration at
 all.
 
-**Key files:** `sources/TerminalView/PseudoTerminalRestorer.m`
-(`restoreWindowWithIdentifier:...system:completionHandler:`, `queuedBlocks`,
-`runQueuedBlocks`, `runPostRestorationBlockIfNeeded`),
+**Key files:** `sources/TerminalView/PseudoTerminalRestorer.swift`
+(`restoreWindowWithIdentifier:...system:completionHandler:`, `WindowRestorationQueue`,
+`runQueuedBlocks`, `deliverCompletions`),
 `sources/StateRestoration/iTermRestorableStateController.m`
 (`setSystemRestorationCallback:windowIdentifier:`, `restoreWithSystemCallbacks:`,
 `invokeRemainingCompletionBlocksAsFailure`),

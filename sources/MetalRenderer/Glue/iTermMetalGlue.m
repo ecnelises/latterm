@@ -8,6 +8,7 @@
 #import "iTermMetalGlue.h"
 
 #import "DebugLogging.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermAttributedStringBuilder.h"
 #import "iTermBoxDrawingBezierCurveFactory.h"

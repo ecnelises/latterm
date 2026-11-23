@@ -9,6 +9,28 @@ import XCTest
 @testable import iTerm2SharedARC
 
 class LineBufferTests: XCTestCase {
+    func testCumulativeSumsAfterDroppingAndCopyingBlocks() throws {
+        let cache = CumulativeSumCache()
+        [2, 3, 4, 5, 6].forEach(cache.appendValue)
+        cache.removeFirstValue()
+        let snapshot = try XCTUnwrap(cache.copy() as? CumulativeSumCache)
+        cache.setFirstValue(1)
+        cache.removeFirstValue()
+        cache.removeFirstValue()
+        cache.setLastValue(8)
+        cache.appendValue(9)
+        XCTAssertEqual(cache.sumOfAllValues, 22)
+        var roundUp = ObjCBool(true)
+        XCTAssertEqual(cache.index(containingValue: 5, roundUp: &roundUp), 1)
+        XCTAssertTrue(roundUp.boolValue)
+        XCTAssertEqual(snapshot.sumOfAllValues, 18)
+        XCTAssertEqual(snapshot.value(at: 0), 3)
+        while cache.count > 0 { cache.removeLastValue() }
+        cache.appendValue(7)
+        XCTAssertEqual(cache.sumOfAllValues, 7)
+        XCTAssertEqual(cache.offset, 0)
+    }
+
     func testBasic() throws {
         let linebuffer = LineBuffer()
         let width = Int32(80)

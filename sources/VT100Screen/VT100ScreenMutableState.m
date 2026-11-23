@@ -3329,19 +3329,6 @@ void VT100ScreenEraseCell(screen_char_t *sct,
     return marksToMove;
 }
 
-- (NSArray<id<IntervalTreeObject>> *)intervalTreeObjectsContainedEntirelyInAbsRange:(VT100GridAbsCoordRange)absCoordRange {
-    NSMutableArray<id<IntervalTreeObject>> *result = [NSMutableArray array];
-    Interval *interval = [self intervalForGridAbsCoordRange:absCoordRange];
-    for (NSArray<id<IntervalTreeObject>> *objects in [self.intervalTree forwardLocationEnumeratorAt:interval.location]) {
-        for (id<IntervalTreeObject> obj in objects) {
-            if (obj.entry.interval.limit <= interval.limit) {
-                [result addObject:obj];
-            }
-        }
-    }
-    return result;
-}
-
 // FTCS C
 - (void)commandDidEndWithRange:(VT100GridCoordRange)range {
     id<VT100ScreenMarkReading> mark = nil;
@@ -5449,7 +5436,7 @@ static NSString *iTermOSC7MachineIDFromComponents(NSURLComponents *components) {
     }
 
     // Remove interval tree objects that were entirely within the replaced range.
-    NSArray<id<IntervalTreeObject>> *objectsToRemove = [self intervalTreeObjectsContainedEntirelyInAbsRange:absRange];
+    NSArray<id<IntervalTreeObject>> *objectsToRemove = [self.mutableIntervalTree objectsContainedInInterval:[self intervalForGridAbsCoordRange:absRange]];
     if (removedIntervalTreeObjects) {
         *removedIntervalTreeObjects = [iTermSavedIntervalTreeObject fromObjects:objectsToRemove
                                                                       startLine:absRange.start.y

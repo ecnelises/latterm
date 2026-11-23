@@ -105,7 +105,7 @@ ITERM_IGNORE_PARTIAL_BEGIN
 }
 
 - (NSTouchBar *)makeGenericTouchBar {
-    NSTouchBar *touchBar = [[[NSTouchBar alloc] init] autorelease];
+    NSTouchBar *touchBar = [[NSTouchBar alloc] init];
     touchBar.delegate = self;
     touchBar.defaultItemIdentifiers = @[ iTermTouchBarIdentifierManPage,
                                          iTermTouchBarIdentifierColorPreset,
@@ -215,7 +215,7 @@ ITERM_IGNORE_PARTIAL_BEGIN
 - (NSTouchBar *)amendTouchBar:(NSTouchBar *)touchBar {
     touchBar.customizationIdentifier = @"regular";
     if (self.anyFullScreen) {
-        NSMutableArray *temp = [[touchBar.defaultItemIdentifiers mutableCopy] autorelease];
+        NSMutableArray *temp = [touchBar.defaultItemIdentifiers mutableCopy];
         NSInteger index = [temp indexOfObject:NSTouchBarItemIdentifierOtherItemsProxy];
         if (index != NSNotFound) {
             touchBar.customizationIdentifier = @"full screen";
@@ -246,10 +246,10 @@ ITERM_IGNORE_PARTIAL_BEGIN
 }
 
 - (NSTouchBarItem *)functionKeysTouchBarItem {
-    NSScrollView *scrollView = [[[NSScrollView alloc] init] autorelease];
-    NSCustomTouchBarItem *item = [[[NSCustomTouchBarItem alloc] initWithIdentifier:iTermTouchBarFunctionKeysScrollView] autorelease];
+    NSScrollView *scrollView = [[NSScrollView alloc] init];
+    NSCustomTouchBarItem *item = [[NSCustomTouchBarItem alloc] initWithIdentifier:iTermTouchBarFunctionKeysScrollView];
     item.view = scrollView;
-    NSView *documentView = [[[NSView alloc] init] autorelease];
+    NSView *documentView = [[NSView alloc] init];
     documentView.translatesAutoresizingMaskIntoConstraints = NO;
     scrollView.documentView = documentView;
     NSButton *previous = nil;
@@ -336,8 +336,8 @@ ITERM_IGNORE_PARTIAL_BEGIN
                                                                        dark:dark
                                                                     profile:dict];
             NSDictionary *attributes = @{ NSForegroundColorAttributeName: textColor };
-            NSAttributedString *title = [[[NSAttributedString alloc] initWithString:name
-                                                                         attributes:attributes] autorelease];
+            NSAttributedString *title = [[NSAttributedString alloc] initWithString:name
+                                                                         attributes:attributes];
             button = [iTermTouchBarButton buttonWithTitle:@""
                                                    target:self
                                                    action:@selector(colorPresetTouchBarItemSelected:)];
@@ -357,10 +357,10 @@ ITERM_IGNORE_PARTIAL_BEGIN
 }
 
 - (NSTouchBarItem *)colorPresetsScrollViewTouchBarItem {
-    NSScrollView *scrollView = [[[NSScrollView alloc] init] autorelease];
-    NSCustomTouchBarItem *item = [[[NSCustomTouchBarItem alloc] initWithIdentifier:iTermTouchBarIdentifierColorPresetScrollview] autorelease];
+    NSScrollView *scrollView = [[NSScrollView alloc] init];
+    NSCustomTouchBarItem *item = [[NSCustomTouchBarItem alloc] initWithIdentifier:iTermTouchBarIdentifierColorPresetScrollview];
     item.view = scrollView;
-    NSView *documentView = [[[NSView alloc] init] autorelease];
+    NSView *documentView = [[NSView alloc] init];
     documentView.translatesAutoresizingMaskIntoConstraints = NO;
     scrollView.documentView = documentView;
     [self addButtonsToColorPresetsDocumentView:documentView];
@@ -373,7 +373,7 @@ ITERM_IGNORE_PARTIAL_BEGIN
     if ([identifier isEqualToString:iTermTabBarTouchBarIdentifier]) {
         NSScrubber *scrubber;
         if (!self.tabsTouchBarItem) {
-            self.tabsTouchBarItem = [[[NSCustomTouchBarItem alloc] initWithIdentifier:identifier] autorelease];
+            self.tabsTouchBarItem = [[NSCustomTouchBarItem alloc] initWithIdentifier:identifier];
             self.tabsTouchBarItem.customizationLabel = @"Full Screen Tab Bar";
 
             scrubber = [[NSScrubber alloc] initWithFrame:NSMakeRect(0, 0, 320, 30)];
@@ -384,7 +384,7 @@ ITERM_IGNORE_PARTIAL_BEGIN
             [scrubber registerClass:[NSScrubberTextItemView class] forItemIdentifier:iTermTabBarItemTouchBarIdentifier];
 
             // Use the flow layout.
-            NSScrubberLayout *scrubberLayout = [[[NSScrubberFlowLayout alloc] init] autorelease];
+            NSScrubberLayout *scrubberLayout = [[NSScrubberFlowLayout alloc] init];
             scrubber.scrubberLayout = scrubberLayout;
 
             scrubber.mode = NSScrubberModeFree;
@@ -432,24 +432,24 @@ ITERM_IGNORE_PARTIAL_BEGIN
         label = @"Previous Mark";
     } else if ([identifier isEqualToString:iTermTouchBarIdentifierColorPreset]) {
         image = [NSImage imageNamed:NSImageNameTouchBarColorPickerFill];
-        NSPopoverTouchBarItem *item = [[[NSPopoverTouchBarItem alloc] initWithIdentifier:identifier] autorelease];
+        NSPopoverTouchBarItem *item = [[NSPopoverTouchBarItem alloc] initWithIdentifier:identifier];
         item.customizationLabel = @"Color Preset";
         item.showsCloseButton = YES;
         item.collapsedRepresentationImage = image;
 
-        NSTouchBar *secondaryTouchBar = [[[NSTouchBar alloc] init] autorelease];
+        NSTouchBar *secondaryTouchBar = [[NSTouchBar alloc] init];
         secondaryTouchBar.delegate = self;
         secondaryTouchBar.defaultItemIdentifiers = @[ iTermTouchBarIdentifierColorPresetScrollview ];
         item.popoverTouchBar = secondaryTouchBar;
         return item;
     } else if ([identifier isEqualToString:iTermTouchBarIdentifierFunctionKeys]) {
         image = [NSImage it_imageNamed:@"Touch Bar Function Keys" forClass:self.class];
-        NSPopoverTouchBarItem *item = [[[NSPopoverTouchBarItem alloc] initWithIdentifier:identifier] autorelease];
+        NSPopoverTouchBarItem *item = [[NSPopoverTouchBarItem alloc] initWithIdentifier:identifier];
         item.customizationLabel = @"Function Keys Popover";
         item.showsCloseButton = YES;
         item.collapsedRepresentationImage = image;
 
-        NSTouchBar *functionKeys = [[[NSTouchBar alloc] init] autorelease];
+        NSTouchBar *functionKeys = [[NSTouchBar alloc] init];
         functionKeys.delegate = self;
         functionKeys.defaultItemIdentifiers = @[ iTermTouchBarFunctionKeysScrollView ];
         item.popoverTouchBar = functionKeys;
@@ -467,7 +467,7 @@ ITERM_IGNORE_PARTIAL_BEGIN
         } else {
             button = [iTermTouchBarButton buttonWithTitle:label target:self action:selector];
         }
-        NSCustomTouchBarItem *item = [[[NSCustomTouchBarItem alloc] initWithIdentifier:identifier] autorelease];
+        NSCustomTouchBarItem *item = [[NSCustomTouchBarItem alloc] initWithIdentifier:identifier];
         item.view = button;
         item.customizationLabel = label;
         if ([identifier isEqualToString:iTermTouchBarIdentifierManPage]) {
@@ -491,7 +491,7 @@ ITERM_IGNORE_PARTIAL_BEGIN
     if (!action) {
         return nil;
     }
-    NSCustomTouchBarItem *item = [[[NSCustomTouchBarItem alloc] initWithIdentifier:identifier] autorelease];
+    NSCustomTouchBarItem *item = [[NSCustomTouchBarItem alloc] initWithIdentifier:identifier];
     iTermTouchBarButton *button = [iTermTouchBarButton buttonWithTitle:action.label
                                                                 target:self
                                                                 action:@selector(touchBarItemSelected:)];

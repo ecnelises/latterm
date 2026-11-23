@@ -11,7 +11,6 @@
 #import "iTermGitPollWorker.h"
 #import "iTermHotKeyController.h"
 #import "iTermLogoGenerator.h"
-#import "iTermMinimumSubsequenceMatcher.h"
 #import "iTermOpenQuicklyCommands.h"
 #import "iTermOpenQuicklyItem.h"
 #import "iTermProfileHotKey.h"

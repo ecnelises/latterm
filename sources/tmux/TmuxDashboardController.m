@@ -19,7 +19,7 @@
 #import "iTermVariableScope+Global.h"
 #import "TmuxSessionsTable.h"
 #import "TmuxController.h"
-#import "TSVParser.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "TmuxControllerRegistry.h"
 #import "PTYTab.h"
 #import "PseudoTerminal.h"

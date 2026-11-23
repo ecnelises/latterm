@@ -13,6 +13,10 @@
 
 @implementation LineBlock(SwiftInterop)
 
+- (void)initializeClients {
+    self.clients = [[iTermAtomicMutableArrayOfWeakObjects alloc] init];
+}
+
 - (NSData *)decompressedDataFromV4Data:(NSData *)v4data {
     iTermCompressibleCharacterBuffer *cb = [[iTermCompressibleCharacterBuffer alloc] initWithEncodedData:v4data];
     if (!cb) {

@@ -168,7 +168,7 @@ void PFMoveToApplicationsFolderIfNecessary(void) {
 	needAuthorization |= ([fm fileExistsAtPath:destinationPath] && ![fm isWritableFileAtPath:destinationPath]);
 
 	// Setup the alert
-	NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+	NSAlert *alert = [[NSAlert alloc] init];
 	{
 		NSString *informativeText = nil;
 
@@ -284,7 +284,7 @@ void PFMoveToApplicationsFolderIfNecessary(void) {
 fail:
 	{
 		// Show failure message
-		alert = [[[NSAlert alloc] init] autorelease];
+		alert = [[NSAlert alloc] init];
 		[alert setMessageText:kStrMoveApplicationCouldNotMove];
 		[alert runModal];
 		MoveInProgress = NO;
@@ -387,7 +387,7 @@ static NSString *ContainingDiskImageDevice(NSString *path) {
 
 	NSString *device = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:fs.f_mntfromname length:strlen(fs.f_mntfromname)];
 
-	NSTask *hdiutil = [[[NSTask alloc] init] autorelease];
+	NSTask *hdiutil = [[NSTask alloc] init];
 	[hdiutil setLaunchPath:@"/usr/bin/hdiutil"];
 	[hdiutil setArguments:[NSArray arrayWithObjects:@"info", @"-plist", nil]];
 	[hdiutil setStandardOutput:[NSPipe pipe]];
@@ -429,12 +429,12 @@ static BOOL Trash(NSString *path) {
 	// This allows us to trash the app in macOS Sierra even when the app is running inside
 	// an app translocation image.
 	if (!result) {
-		NSAppleScript *appleScript = [[[NSAppleScript alloc] initWithSource:
+		NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:
 									   [NSString stringWithFormat:@"\
 										set theFile to POSIX file \"%@\" \n\
 									   	tell application \"Finder\" \n\
 									  		move theFile to trash \n\
-									  	end tell", path]] autorelease];
+										end tell", path]];
 		NSDictionary *errorDict = nil;
 		NSAppleEventDescriptor *scriptResult = [appleScript executeAndReturnError:&errorDict];
 		if (scriptResult == nil) {
@@ -571,12 +571,12 @@ static NSString *UntranslocatedPath(NSString *path) {
 	if (SecTranslocateCreateOriginalPathForURL == NULL) return nil;
 
 	NSURL *url = [NSURL fileURLWithPath:path];
-	CFURLRef originalURL = SecTranslocateCreateOriginalPathForURL((CFURLRef)url, NULL);
+	CFURLRef originalURL = SecTranslocateCreateOriginalPathForURL((__bridge CFURLRef)url, NULL);
 	if (originalURL == NULL) return nil;
 
 	// Copy before releasing originalURL: -path returns a string whose lifetime is
 	// tied to the (toll-free bridged) URL.
-	NSString *originalPath = [[[(NSURL *)originalURL path] copy] autorelease];
+	NSString *originalPath = [[(__bridge NSURL *)originalURL path] copy];
 	CFRelease(originalURL);
 
 	// Validate before any caller acts on this (we may trash/relaunch based on
@@ -596,7 +596,7 @@ static NSString *UntranslocatedPath(NSString *path) {
 // translocate it on the next launch. Returns YES only if the attribute is
 // actually gone afterward, so the caller can avoid an infinite relaunch loop.
 static BOOL ClearQuarantine(NSString *path) {
-	NSTask *task = [[[NSTask alloc] init] autorelease];
+	NSTask *task = [[NSTask alloc] init];
 	[task setLaunchPath:@"/usr/bin/xattr"];
 	[task setArguments:[NSArray arrayWithObjects:@"-d", @"-r", @"com.apple.quarantine", path, nil]];
 	[task setStandardOutput:[NSFileHandle fileHandleWithNullDevice]];

@@ -8,7 +8,7 @@
 #import "iTermTmuxWindowCache.h"
 
 #import "NSArray+iTerm.h"
-#import "TSVParser.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "TmuxController.h"
 #import "TmuxControllerRegistry.h"
 

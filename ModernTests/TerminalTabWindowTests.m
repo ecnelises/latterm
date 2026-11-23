@@ -1,7 +1,12 @@
 #import <XCTest/XCTest.h>
 #import "iTermRootTerminalView.h"
 #import "iTermTabBarControlView.h"
-#import "MovePaneController.h"
+#import "ITAddressBookMgr.h"
+#import "ProfileModel.h"
+#import "PseudoTerminal.h"
+#import "PTYSession.h"
+#import "PTYTab.h"
+#import "SessionView.h"
 #import "PSMTabBarCell.h"
 #import "PSMTabStyle.h"
 #import "iTerm2SharedARC-Swift.h"
@@ -100,6 +105,40 @@
     XCTAssertEqualObjects(bar.tabView.tabViewItems, (@[second, delegate.replacement, third]));
     XCTAssertEqual(bar.tabView.selectedTabViewItem, delegate.replacement);
     [probe.draggingPasteboard releaseGlobally];
+}
+
+- (void)testDroppingPinnedSinglePaneAtFarEndKeepsItsTabInPinnedSection {
+    Profile *profile = [[ProfileModel sharedInstance] defaultBookmark];
+    PseudoTerminal *term = [[PseudoTerminal alloc] initWithSmartLayout:NO
+                                                            windowType:WINDOW_TYPE_NORMAL
+                                                       savedWindowType:WINDOW_TYPE_NORMAL
+                                                            percentage:(iTermPercentage){0, 0}
+                                                                screen:-1
+                                                               profile:profile];
+    for (int i = 0; i < 3; i++) {
+        PTYSession *pane = [[PTYSession alloc] initSynthetic:NO];
+        pane.profile = profile;
+        [term setupSession:pane withSize:NULL];
+        [term insertSession:pane atIndex:i];
+    }
+    PTYTab *pinned = term.tabs.firstObject;
+    pinned.pinned = YES;
+    TerminalTabBarView *bar = term.tabBarControl;
+    [bar update:NO];
+    MovePaneController *controller = [MovePaneController sharedInstance];
+    [controller movePane:pinned.activeSession];
+    TabDragProbe *probe = [[TabDragProbe alloc] init];
+    probe.draggingSource = pinned.activeSession.view;
+    probe.draggingLocation = [bar convertPoint:NSMakePoint(NSMaxX(bar.bounds), NSMaxY(bar.bounds)) toView:nil];
+    probe.draggingPasteboard = [NSPasteboard pasteboardWithUniqueName];
+    [probe.draggingPasteboard setString:@"" forType:iTermMovePaneDragType];
+    XCTAssertTrue([bar performDragOperation:(id<NSDraggingInfo>)probe]);
+    XCTAssertEqualObjects(term.tabs.firstObject, pinned);
+    XCTAssertTrue([bar isPinnedForTabViewItem:pinned.tabViewItem]);
+    XCTAssertEqual(term.tabs.count, 3u);
+    [probe.draggingPasteboard releaseGlobally];
+    [controller exitMovePaneMode];
+    [term.window close];
 }
 
 - (void)testDraggingUsesLocalItemIdentityAndRespectsPinnedBoundary {

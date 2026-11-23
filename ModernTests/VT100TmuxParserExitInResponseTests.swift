@@ -23,7 +23,7 @@ final class VT100TmuxParserExitInResponseTests: XCTestCase {
         }
         var vector = CVector()
         CVectorCreate(&vector, 100)
-        defer { CVectorDestroy(&vector) }
+        defer { CVectorReleaseObjectsAndDestroy(vector) }
         _ = parser.addParsedTokens(to: &vector)
         var tokens = [VT100Token]()
         for i in 0..<CVectorCount(&vector) {
@@ -50,6 +50,14 @@ final class VT100TmuxParserExitInResponseTests: XCTestCase {
 
     // A server known to be 1.9 or later: the %exit line is data, the block
     // closes at its %end, and the parser stays hooked for what follows.
+    func testExitAsFirstCompleteLineAfterReattachmentUnhooks() {
+        let parser = VT100Parser()
+        parser.encoding = String.Encoding.utf8.rawValue
+        parser.startTmuxRecoveryMode(withID: "session")
+        let tokens = parse("%exit cancelled\r\n", parser: parser)
+        XCTAssertTrue(tokens.contains { $0.type == TMUX_EXIT && $0.string == "%exit cancelled" })
+    }
+
     func testExitInsideResponseIsDataOnModernServer() {
         let parser = makeHookedParser()
         parser.setTmuxServerMayOmitEndGuardBeforeExit(false)

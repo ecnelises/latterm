@@ -29,7 +29,6 @@
 
 #import "LineBuffer.h"
 
-#import "BackgroundThread.h"
 #import "DebugLogging.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermGCD.h"

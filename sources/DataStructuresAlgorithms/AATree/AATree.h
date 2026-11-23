@@ -71,7 +71,7 @@
     NSMutableSet *changedNodes;
 }
 
-@property(assign) id<AATreeDelegate> delegate;
+@property(weak) id<AATreeDelegate> delegate;
 
 /*!
  * @abstract				Initializes the tree with the specified key comparator.

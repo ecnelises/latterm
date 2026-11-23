@@ -64,7 +64,7 @@ Latterm/
 ├── sources/               # Main application code (ObjC + Swift, compiled in iTerm2SharedARC)
 ├── ModernTests/           # Unified Swift/ObjC XCTest suite (ARC + ASan)
 ├── PerformanceTests/      # Rendering and terminal benchmark XCTest suite
-├── ThirdParty/            # Remaining vendored libraries (e.g., PSMTabBarControl, FMDB)
+├── ThirdParty/            # Remaining vendored libraries (e.g., FMDB)
 ├── tools/                 # Build, test, and notarized release scripts
 ├── iTerm2.sdef            # AppleScript dictionary
 ├── AGENTS.md              # Agent guide and code best practices

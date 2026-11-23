@@ -223,23 +223,24 @@ NSString *iTermPreciseTimerLogString(NSString *identifier,
          [@"-" stringRepeatedTimes:millisWidth - 3]]; // p95
     }
     for (size_t i = 0; i < count; i++) {
-        if (histograms && [histograms[i] count] == 0) {
+        iTermHistogram *histogram = histograms[i];
+        if (histograms && histogram.count == 0) {
             continue;
         }
         NSTimeInterval mean = iTermPreciseTimerStatsGetMean(&stats[i]) * 1000.0;
         if (histograms) {
-            double p75 = [histograms[i] valueAtNTile:0.75];
+            double p75 = [histogram valueAtNTile:0.75];
             [log appendFormat:@"%@%@ %-20s%@ %@  %5d  %@  %@  %@ [%@]\n",
              [@"|   " stringRepeatedTimes:stats[i].level],
              iTermEmojiForDuration(p75),
              stats[i].name,
              [@"    " stringRepeatedTimes:maxlevel - stats[i].level],
              formatMillis(mean),
-             (int)[histograms[i] count],
-             formatMillis([histograms[i] valueAtNTile:0.5]),
+             (int)histogram.count,
+             formatMillis([histogram valueAtNTile:0.5]),
              formatMillis(p75),
-             formatMillis([histograms[i] valueAtNTile:0.95]),
-             [histograms[i] sparklineGraphWithPrecision:2 multiplier:1 units:@"ms"]];
+             formatMillis([histogram valueAtNTile:0.95]),
+             [histogram sparklineGraphWithPrecision:2 multiplier:1 units:@"ms"]];
         } else {
             NSTimeInterval stddev = iTermPreciseTimerStatsGetStddev(&stats[i]) * 1000.0;
             const NSInteger n = iTermPreciseTimerStatsGetCount(&stats[i]);

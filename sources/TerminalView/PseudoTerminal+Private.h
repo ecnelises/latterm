@@ -129,7 +129,7 @@ extern NSString *const TERMINAL_ARRANGEMENT_LAYOUT_LOCKED;
 
 // This is a reference to the window's content view, here for convenience because it has
 // the right type.
-@property (nonatomic, readonly) __unsafe_unretained iTermRootTerminalView *contentView;
+@property (nonatomic, weak, readonly) iTermRootTerminalView *contentView;
 
 - (void)returnTabBarToContentView;
 - (void)updateForTransparency:(NSWindow<PTYWindow> *)window;

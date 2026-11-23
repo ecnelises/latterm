@@ -6,6 +6,67 @@
 //
 
 import Foundation
+import Synchronization
+
+@objc(iTermAtomicMutableArrayOfWeakObjects)
+final class AtomicMutableArrayOfWeakObjects: NSObject, LineBlockClientList {
+    private let storage = Synchronization.Mutex<[WeakBox<AnyObject>]>([])
+
+    @objc(array)
+    static func makeArray() -> AtomicMutableArrayOfWeakObjects {
+        AtomicMutableArrayOfWeakObjects()
+    }
+
+    @objc var strongObjects: [Any] {
+        storage.withLock { boxes in
+            boxes.compactMap { $0.value }
+        }
+    }
+
+    @objc var count: Int {
+        storage.withLock { $0.count }
+    }
+
+    @objc(addObject:)
+    func append(_ object: Any) {
+        storage.withLock { boxes in
+            boxes.append(WeakBox(object as AnyObject))
+        }
+    }
+
+    @objc(removeAllObjects)
+    func removeAll() {
+        storage.withLock { boxes in
+            boxes.removeAll(keepingCapacity: false)
+        }
+    }
+
+    @objc(removeObjectsPassingTest:)
+    func removeObjects(passingTest predicate: (Any?) -> Bool) {
+        storage.withLock { boxes in
+            boxes.removeAll { box in
+                predicate(box.value)
+            }
+        }
+    }
+
+    @objc func prune() {
+        storage.withLock { boxes in
+            boxes.removeAll { $0.value == nil }
+        }
+    }
+
+    @objc(compactMap:)
+    func compactMap(_ transform: (Any) -> AnyObject?) -> AtomicMutableArrayOfWeakObjects {
+        let result = AtomicMutableArrayOfWeakObjects()
+        for item in strongObjects {
+            if let mapped = transform(item) {
+                result.append(mapped)
+            }
+        }
+        return result
+    }
+}
 
 @objc(iTermMutableArrayOfWeakObjects)
 class MutableArrayOfWeakObjects: NSObject {

@@ -28,11 +28,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [_dcsParser release];
-    [super dealloc];
-}
-
 - (BOOL)shouldUnhook:(NSString *)uniqueID {
     return [_dcsParser.uniqueID isEqualToString:uniqueID];
 }
@@ -62,7 +57,6 @@
 - (BOOL)dcsHooked {
     return _dcsParser.isHooked;
 }
-
 
 - (void)parseControlWithConsumer:(VT100ByteStreamConsumer *)consumer
                      incidentals:(CVector *)incidentals

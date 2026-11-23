@@ -19,7 +19,7 @@ extern const double kFindCursorHoldTime;
 // This is the superclass for a class cluster.
 @interface iTermFindCursorView : NSView
 
-@property(nonatomic, assign) id<iTermFindCursorViewDelegate> delegate;
+@property(nonatomic, weak) id<iTermFindCursorViewDelegate> delegate;
 @property(nonatomic, assign) NSPoint cursorPosition;
 @property(nonatomic, assign) BOOL autohide;
 @property(nonatomic, assign) BOOL stopping;

@@ -44,7 +44,7 @@
 
 @interface iTermPopupWindowController : NSWindowController
 
-@property(nonatomic, assign) id<PopupDelegate> delegate;
+@property(nonatomic, weak) id<PopupDelegate> delegate;
 
 - (instancetype)initWithWindowNibName:(NSString*)nibName
                              tablePtr:(NSTableView**)table

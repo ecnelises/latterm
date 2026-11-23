@@ -104,7 +104,6 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class iTermColorMap;
 @class iTermController;
 @class iTermNotificationController;
-@class iTermPromptOnCloseReason;
 @class iTermQuickLookController;
 @protocol iTermSessionScope;
 @class SessionView;
@@ -254,8 +253,6 @@ typedef enum {
 // If the tab is a tmux window, this gives its name.
 - (nullable NSString *)tmuxWindowName;
 
-- (BOOL)session:(PTYSession *)session shouldAllowDrag:(id<NSDraggingInfo>)sender;
-- (BOOL)session:(PTYSession *)session performDragOperation:(id<NSDraggingInfo>)sender;
 
 // Indicates if the splits in a tmux tab are currently being dragged. Affects how resizing works for tmux tabs.
 - (BOOL)sessionBelongsToTmuxTabWhoseSplitsAreBeingDragged;
@@ -417,8 +414,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 // appropriately.
 @property(nonatomic, assign) BOOL newOutput;
 
-// Do we need to prompt on close for this session?
-@property(nonatomic, readonly, nullable) iTermPromptOnCloseReason *promptOnCloseReason;
 
 // Array of subprocessess names. WARNING: This forces a synchronous update of the process cache.
 // It is up-to-date but too slow to call frequently.
@@ -739,29 +734,11 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 + (NSDictionary *)modifiedArrangement:(NSDictionary *)arrangement
                               mutator:(NSDictionary *(^)(NSDictionary *))mutator;
 + (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-             replacingProfileWithGUID:(NSString *)badGuid
-                          withProfile:(Profile *)goodProfile;
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-     replacingOldCWDOfSessionWithGUID:(NSString *)guid
-                           withOldCWD:(NSString *)replacementOldCWD;
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-                  settingCustomLocale:(NSString *)lang;
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-                       profileMutator:(Profile *(^)(Profile *))profileMutator;
-
+                  settingCustomLocale:(nullable NSString *)lang;
 + (BOOL)handleShortcutWithoutTerminal:(NSEvent*)event;
 + (void)selectMenuItem:(NSString*)theName;
 + (void)registerBuiltInFunctions;
 + (NSMapTable<NSString *, PTYSession *> *)sessionMap;
-
-// Register the contents in the arrangement so that if the session is later
-// restored from an arrangement with the same guid as |arrangement|, the
-// contents will be copied over.
-+ (void)registerSessionInArrangement:(NSDictionary *)arrangement;
-
-// Forget all sessions registered with registerSessionInArrangement. Normally
-// called after startup activities are done.
-+ (void)removeAllRegisteredSessions;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (nullable instancetype)initSynthetic:(BOOL)synthetic NS_DESIGNATED_INITIALIZER;
@@ -815,13 +792,6 @@ backgroundColor:(nullable NSColor *)backgroundColor;
                                   profile:(Profile *)profile
                          workingDirectory:(NSString *)workingDirectory
                                      size:(VT100GridSize)size;
-+ (nullable NSString *)guidInArrangement:(NSDictionary *)arrangement;
-
-// The canonicalized stableID stored in an arrangement, or nil if the
-// arrangement predates the stableID (or carries a malformed one).
-+ (nullable NSString *)stableIDInArrangement:(NSDictionary *)arrangement;
-+ (nullable NSString *)initialWorkingDirectoryFromArrangement:(NSDictionary *)arrangement;
-
 - (void)textViewFontDidChange;
 
 - (void)notifyActive;

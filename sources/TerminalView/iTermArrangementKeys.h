@@ -23,9 +23,21 @@ extern NSString *const TAB_Y;
 extern NSString *const TAB_WIDTH;
 extern NSString *const TAB_HEIGHT;
 
+extern NSString *const TAB_ARRANGEMENT_IS_ACTIVE;
+extern NSString *const TAB_ARRANGEMENT_IS_MAXIMIZED;
+extern NSString *const TAB_ARRANGEMENT_TITLE_OVERRIDE;
+extern NSString *const TAB_GUID;
+
 // Session arrangement keys (defined in PTYSession.m).
 extern NSString *const SESSION_ARRANGEMENT_BOOKMARK;
 extern NSString *const SESSION_ARRANGEMENT_PROGRAM;
+extern NSString *const SESSION_ARRANGEMENT_SERVER_DICT;
+extern NSString *const SESSION_ARRANGEMENT_TMUX_PANE;
+extern NSString *const SESSION_ARRANGEMENT_GUID;
+extern NSString *const SESSION_UNIQUE_ID;
+extern NSString *const SESSION_ARRANGEMENT_STABLE_ID;
+extern NSString *const SESSION_ARRANGEMENT_CONTENTS;
+extern NSString *const SESSION_ARRANGEMENT_WORKING_DIRECTORY;
 
 // Keys inside the SESSION_ARRANGEMENT_PROGRAM dictionary.
 extern NSString *const kProgramType;

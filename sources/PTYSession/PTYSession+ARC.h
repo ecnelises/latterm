@@ -14,9 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface PTYSession (ARC)<iTermPopupWindowPresenter>
 
-+ (void)openPartialAttachmentsForArrangement:(NSDictionary *)arrangement
-                                  completion:(void (^)(NSDictionary *))completion;
-
 - (void)fetchAutoLogFilenameWithCompletion:(void (^)(NSString *filename))completion;
 - (void)setTermIDIfPossible;
 

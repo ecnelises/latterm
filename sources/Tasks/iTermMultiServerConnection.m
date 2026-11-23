@@ -22,14 +22,26 @@
 // separate and much larger budget than the hard connect/launch failure count.
 static const int iTermMultiServerMaxForeignServersToSkip = 128;
 
-@class iTermMultiServerConnectionState;
+@class iTermMultiServerConnectionGlobalState;
 
-@interface iTermMultiServerConnectionGlobalState: iTermSynchronizedState<iTermMultiServerConnectionState *>
+@interface iTermMultiServerConnectionGlobalState: iTermSynchronizedState<iTermMultiServerConnectionGlobalState *>
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, iTermMultiServerConnection *> *registry;
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, NSMutableArray<iTermCallback *> *> *pending;
 @end
 
 @implementation iTermMultiServerConnectionGlobalState
+@synthesize registry = _registry, pending = _pending;
+
+- (NSMutableDictionary *)registry {
+    [self check];
+    return _registry;
+}
+
+- (NSMutableDictionary *)pending {
+    [self check];
+    return _pending;
+}
+
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
     self = [super initWithQueue:queue];
     if (self) {
@@ -47,6 +59,23 @@ static const int iTermMultiServerMaxForeignServersToSkip = 128;
 @end
 
 @implementation iTermMultiServerPerConnectionState
+@synthesize client = _client, unattachedChildren = _unattachedChildren;
+
+- (iTermFileDescriptorMultiClient *)client {
+    [self check];
+    return _client;
+}
+
+- (void)setClient:(iTermFileDescriptorMultiClient *)client {
+    [self check];
+    _client = client;
+}
+
+- (NSMutableArray *)unattachedChildren {
+    [self check];
+    return _unattachedChildren;
+}
+
 - (instancetype)initWithQueue:(dispatch_queue_t)queue client:(iTermFileDescriptorMultiClient *)client {
     self = [super initWithQueue:queue];
     if (self) {

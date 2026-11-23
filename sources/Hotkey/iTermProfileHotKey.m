@@ -6,6 +6,7 @@
 #import "NSScreen+iTerm.h"
 #import "NSWorkspace+iTerm.h"
 #import "PseudoTerminal.h"
+#import "PTYTab.h"
 #import "SolidColorView.h"
 #import "iTermAdvancedSettingsModel.h"
 #import "iTermApplication.h"
@@ -138,11 +139,6 @@ static NSString *const kArrangement = @"Arrangement";
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_restorableState release];
-    [_profileGuid release];
-    [_windowController release];
-    [_windowControllerBeingBorn release];
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -173,7 +169,6 @@ static NSString *const kArrangement = @"Arrangement";
 
     RLog(@"Create new window controller for profile hotkey");
     PseudoTerminal *windowController = [self windowControllerFromRestorableState];
-    [_windowController release];
     _windowController = nil;
     if (windowController) {
         if (url) {
@@ -196,7 +191,7 @@ static NSString *const kArrangement = @"Arrangement";
         return;
     }
     [self getWindowControllerFromProfile:[self profile] url:url completion:^(PseudoTerminal *windowController) {
-        if (_windowController.weaklyReferencedObject == nil) {
+        if (self->_windowController.weaklyReferencedObject == nil) {
             self.windowController = [windowController weakSelf];
         }
         if (completion) {
@@ -211,8 +206,7 @@ static NSString *const kArrangement = @"Arrangement";
     // internal calls, unfortunately, but better to catch the bugs.
     assert(!_windowController.weaklyReferencedObject);
 
-    [_windowController release];
-    _windowController = [windowController.weakSelf retain];
+    _windowController = windowController.weakSelf;
     if (!_windowController.weaklyReferencedObject) {
         return;
     }
@@ -285,7 +279,7 @@ static NSString *const kArrangement = @"Arrangement";
     DLog(@"calculate floating level");
     iTermApplication *app = [iTermApplication sharedApplication];
     const BOOL otherWindowHasSheetModal = [app.it_windowsWithSheetModals anyWithBlock:^BOOL(NSWindow *window) {
-        return window != _windowController.window;
+        return window != self->_windowController.window;
     }];
     if (otherWindowHasSheetModal) {
         DLog(@"There is a sheet modal");
@@ -902,7 +896,7 @@ static NSString *const kArrangement = @"Arrangement";
         _rollOutCancelable = NO;
         [self orderOut];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (_activationPending && ![NSApp isActive]) {
+            if (self->_activationPending && ![NSApp isActive]) {
                 [NSApp activateIgnoringOtherApps:YES];
             }
         });
@@ -1012,7 +1006,7 @@ static NSString *const kArrangement = @"Arrangement";
 #pragma mark - Private
 
 - (PseudoTerminal *)windowControllerFromRestorableState {
-    NSDictionary *arrangement = [[self.restorableState[kArrangement] copy] autorelease];
+    NSDictionary *arrangement = [self.restorableState[kArrangement] copy];
     self.restorableState = nil;
     if (!arrangement) {
         return nil;
@@ -1050,7 +1044,7 @@ static NSString *const kArrangement = @"Arrangement";
     if ([[hotkeyProfile objectForKey:KEY_WINDOW_TYPE] intValue] == WINDOW_TYPE_LION_FULL_SCREEN) {
         // Lion fullscreen doesn't make sense with hotkey windows. Change
         // window type to traditional fullscreen.
-        NSMutableDictionary *replacement = [[hotkeyProfile mutableCopy] autorelease];
+        NSMutableDictionary *replacement = [hotkeyProfile mutableCopy];
         replacement[KEY_WINDOW_TYPE] = @(WINDOW_TYPE_TRADITIONAL_FULL_SCREEN);
         hotkeyProfile = replacement;
     }
@@ -1311,7 +1305,6 @@ static NSString *const kArrangement = @"Arrangement";
 }
 
 - (void)windowWillClose {
-    [_windowController release];
     _windowController = nil;
     self.restorableState = nil;
 }

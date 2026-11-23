@@ -35,30 +35,9 @@ typedef NS_ENUM(NSInteger, SplitSelectionViewMode) {
     SplitSelectionViewModeSelect
 };
 
-@class PTYSession;
-
 @protocol SplitSelectionViewDelegate <NSObject>
 
 // dest will be null when canceling.
 - (void)didSelectDestinationSession:(PTYSession *)session
                                half:(SplitSessionHalf)half;
-@end
-
-@interface SplitSelectionView : NSView
-@property (nonatomic, readonly) SplitSelectionViewMode mode;
-
-// frame is the frame fo the parent view.
-// session is the session we overlay.
-// the delegate gets called when a selection is made.
-- (instancetype)initWithMode:(SplitSelectionViewMode)mode
-                   withFrame:(NSRect)frame
-                     session:(PTYSession *)session
-                    delegate:(id<SplitSelectionViewDelegate>)delegate;
-
-// Update the selected half for a drag at the given point
-- (void)updateAtPoint:(NSPoint)point;
-
-// Which half is currently selected.
-- (SplitSessionHalf)half;
-
 @end

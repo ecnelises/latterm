@@ -61,18 +61,11 @@
         _eventHotKey = eventHotKey;
         _hotKeyID = hotKeyID;
         _shortcut = [shortcut copy];
-        _target = [target retain];
+        _target = target;
         _selector = selector;
         _userData = [userData copy];
     }
     return self;
-}
-
-- (void)dealloc {
-    [_target release];
-    [_userData release];
-    [_shortcut release];
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -133,9 +126,6 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_hotKeys release];
-    [_suspendedHotKeys release];
-    [super dealloc];
 }
 
 #pragma mark - Notifications
@@ -237,12 +227,12 @@
         eventHotKey = existingHotKey.eventHotKey;
     }
 
-    iTermHotKey *hotkey = [[[iTermHotKey alloc] initWithEventHotKey:eventHotKey
+    iTermHotKey *hotkey = [[iTermHotKey alloc] initWithEventHotKey:eventHotKey
                                                                  id:hotKeyID
                                                            shortcut:shortcut
                                                            userData:userData
                                                              target:target
-                                                           selector:selector] autorelease];
+                                                           selector:selector];
     DLog(@"Registered %@", hotkey);
     if (_suspended) {
         DLog(@"NOTE: Add to suspended list");
@@ -369,9 +359,10 @@ static OSStatus EventHandler(EventHandlerCallRef inHandler,
         }
         DLog(@"Send to %@", hotkey.target);
         // The target returns an array of siblings that were handled at the same time.
-        NSArray *handledSiblings = [hotkey.target performSelector:hotkey.selector
-                                                       withObject:hotkey.userData
-                                                       withObject:[hotkeys arrayByRemovingObject:hotkey]];
+        typedef NSArray *(*HotKeyHandler)(id, SEL, NSDictionary *, NSArray *);
+        HotKeyHandler invoke = (HotKeyHandler)[hotkey.target methodForSelector:hotkey.selector];
+        NSArray *handledSiblings = invoke(hotkey.target, hotkey.selector, hotkey.userData,
+                                         [hotkeys arrayByRemovingObject:hotkey]);
         if (handledSiblings) {
             [handled addObjectsFromArray:handledSiblings];
         } else {

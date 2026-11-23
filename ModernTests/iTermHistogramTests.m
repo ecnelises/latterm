@@ -35,7 +35,8 @@
 }
 
 - (NSUInteger)samplerValueCountOf:(iTermHistogram *)histogram {
-    return [histogram.dictionaryValue[@"sampler"][@"values"] count];
+    NSArray *values = histogram.dictionaryValue[@"sampler"][@"values"];
+    return values.count;
 }
 
 // The global Metal histograms live for the whole process and merge every frame,

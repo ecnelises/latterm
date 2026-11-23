@@ -6,6 +6,7 @@
 //
 //
 
+#import "TokenExecutorHelpers.h"
 #import "VT100Parser.h"
 
 #import "DebugLogging.h"
@@ -73,10 +74,6 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
 
 - (void)dealloc {
     VT100ByteStreamFree(&_byteStream);
-    [_savedStateForPartialParse release];
-    [_controlParser release];
-    [_sshParsers release];
-    [super dealloc];
 }
 
 - (void)forceUnhookDCS:(NSString *)uniqueID {
@@ -107,8 +104,7 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
         recoveryToken.type = SSH_RECOVERY_BOUNDARY;
         recoveryToken.csi->p[0] = _nextBoundaryNumber - 1;
         recoveryToken.csi->count = 1;
-        [recoveryToken retain];
-        CVectorAppend(vector, recoveryToken);
+        CVectorAppendVT100Token(vector, recoveryToken);
         _emitRecoveryToken = NO;
     }
 
@@ -190,7 +186,7 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
                                 DLog(@"Inferring %d is the main SSH process", pid);
                                 _mainSSHParserPID = pid;
                             }
-                            sshParser = [[[VT100Parser alloc] init] autorelease];
+                            sshParser = [[VT100Parser alloc] init];
                             sshParser.encoding = self.encoding;
                             sshParser.depth = self.depth + 1;
                             DLog(@"%@: Allocate ssh parser %@", self, sshParser);
@@ -220,7 +216,7 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
                         };
                         DLog(@"%@: reparsing yielded %d tokens", self, end - start);
                         for (int i = start; i < end; i++) {
-                            VT100Token *token = CVectorGet(vector, i);
+                            VT100Token *token = CVectorGetVT100Token(vector, i);
                             SSHInfo sshInfo = token.sshInfo;
                             if (!sshInfo.valid) {
                                 DLog(@"%@: Update ssh info in rewritten token %@ to %@", self, token, SSHInfoDescription(myInfo));
@@ -274,7 +270,7 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
 
                     case DCS_TMUX_CODE_WRAP: {
                         isSignaling = YES;
-                        VT100Parser *tempParser = [[[VT100Parser alloc] init] autorelease];
+                        VT100Parser *tempParser = [[VT100Parser alloc] init];
                         tempParser.encoding = encoding;
                         NSData *data = [token.string dataUsingEncoding:encoding];
                         [tempParser putStreamData:data.bytes
@@ -334,7 +330,6 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
             position = cursor;
         }
         length = VT100ByteStreamConsumerGetConsumed(&consumer);
-
 
         if (VT100ByteStreamConsumerGetConsumed(&consumer) > 0) {
             ITAssertWithMessage(VT100ByteStreamGetCapacity(&_byteStream) >= VT100ByteStreamGetConsumed(&_byteStream) + VT100ByteStreamConsumerGetConsumed(&consumer),
@@ -399,8 +394,7 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
         // tokens were already added.
         if (token->type != DCS_TMUX_CODE_WRAP &&
             (token->type != SSH_OUTPUT || self.depth == 0)) {
-            [token retain];
-            CVectorAppend(vector, token);
+            CVectorAppendVT100Token(vector, token);
         }
         if (!isSignaling) {
             *nonSignalingCountPtr += (_byteStream.offset - initialOffset);
@@ -531,7 +525,7 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
         NSString *childDcsId = tuple[0];
         NSDictionary *childTree = tuple[1];
 
-        VT100Parser *childParser = [[[VT100Parser alloc] init] autorelease];
+        VT100Parser *childParser = [[VT100Parser alloc] init];
         childParser.encoding = self.encoding;
         childParser.depth = self.depth + 1;
         _sshParsers[childPID] = childParser;
@@ -707,7 +701,6 @@ static _Atomic int64_t sOutstandingPreconvertBytes = 0;
         atomic_fetch_sub(&sOutstandingPreconvertBytes, stringBytes);
     };
     token.asyncStringConversion = conv;
-    [conv release];
 }
 
 - (void)preconvertStringToken:(VT100Token *)token {

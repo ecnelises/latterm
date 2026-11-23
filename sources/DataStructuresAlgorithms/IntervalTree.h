@@ -98,14 +98,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<id<IntervalTreeImmutableObject>> *_Nullable)objectsWithSmallestLocationAfter:(long long)location;
 
 // Enumerates backwards by location (NOT LIMIT)
-- (NSEnumerator<IntervalTreeImmutableObject> *)reverseEnumeratorAt:(long long)start;
-- (NSEnumerator<IntervalTreeImmutableObject> *)reverseEnumerator;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)reverseEnumeratorAt:(long long)start;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)reverseEnumerator;
 
-- (NSEnumerator<IntervalTreeImmutableObject> *)reverseLimitEnumeratorAt:(long long)start;
-- (NSEnumerator<IntervalTreeImmutableObject> *)forwardLocationEnumeratorAt:(long long)start;
-- (NSEnumerator<IntervalTreeImmutableObject> *)forwardLimitEnumeratorAt:(long long)start;
-- (NSEnumerator<IntervalTreeImmutableObject> *)reverseLimitEnumerator;
-- (NSEnumerator<IntervalTreeImmutableObject> *)forwardLimitEnumerator;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)reverseLimitEnumeratorAt:(long long)start;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)forwardLocationEnumeratorAt:(long long)start;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)forwardLimitEnumeratorAt:(long long)start;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)reverseLimitEnumerator;
+- (NSEnumerator<NSArray<id<IntervalTreeImmutableObject>> *> *)forwardLimitEnumerator;
 
 // Serialize, adding offset to interval locations (useful for taking the tail
 // of an interval tree).

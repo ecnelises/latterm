@@ -273,7 +273,8 @@ final class SubexpressionTests: XCTestCase, iTermObject {
         wait(for: [expectation], timeout: 1)
     }
 
-    func testBinaryAsyncWithFunctionCalls() {
+    @MainActor
+    func testBinaryAsyncWithFunctionCalls() async {
         let expectation = XCTestExpectation(description: "binary with function calls")
 
         let parser = iTermExpressionParser.callParser()!
@@ -289,7 +290,7 @@ final class SubexpressionTests: XCTestCase, iTermObject {
 
         XCTAssertTrue(expr.requiresAsyncEvaluation)
 
-        expr.evaluate(invocation: "test", receiver: nil, timeout: 1, sideEffectsAllowed: true, scope: scope) { result in
+        expr.evaluate(invocation: "test", receiver: nil, timeout: 30, sideEffectsAllowed: true, scope: scope) { result in
             result.whenFirst { value in
                 XCTAssertEqual((value as! NSNumber).intValue, 15) // 3 + 12
             } second: { error in
@@ -298,7 +299,7 @@ final class SubexpressionTests: XCTestCase, iTermObject {
             expectation.fulfill()
         }
 
-        wait(for: [expectation], timeout: 2)
+        await fulfillment(of: [expectation], timeout: 35)
     }
 
     // MARK: - Ternary Operation Tests

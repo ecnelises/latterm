@@ -44,6 +44,27 @@ static const int iTermMultiServerMaximumSupportedRestorationIdentifierVersion = 
 @end
 
 @implementation iTermMultiServerJobManagerState
+@synthesize conn = _conn, child = _child;
+
+- (iTermMultiServerConnection *)conn {
+    [self check];
+    return _conn;
+}
+
+- (void)setConn:(iTermMultiServerConnection *)conn {
+    [self check];
+    _conn = conn;
+}
+
+- (iTermFileDescriptorMultiClientChild *)child {
+    [self check];
+    return _child;
+}
+
+- (void)setChild:(iTermFileDescriptorMultiClientChild *)child {
+    [self check];
+    _child = child;
+}
 @end
 
 @interface iTermMultiServerJobManager()

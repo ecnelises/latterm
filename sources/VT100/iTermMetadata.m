@@ -17,7 +17,7 @@ void iTermMetadataInit(iTermMetadata *obj,
     obj->timestamp = timestamp;
     obj->rtlFound = rtlFound;
     obj->lineAttribute = lineAttribute;
-    obj->externalAttributes = [(id)externalAttributes retain];
+    obj->externalAttributes = (__bridge_retained void *)externalAttributes;
 }
 
 void iTermImmutableMetadataInit(iTermImmutableMetadata *obj,
@@ -40,16 +40,15 @@ iTermMetadata iTermMetadataTemporaryWithTimestamp(NSTimeInterval timestamp) {
 }
 
 iTermMetadata iTermMetadataCopy(iTermMetadata obj) {
-    // The analyzer says this is a leak but I really don't think it is.
     return iTermImmutableMetadataMutableCopy(iTermMetadataMakeImmutable(obj));
 }
 
 iTermMetadata iTermImmutableMetadataMutableCopy(iTermImmutableMetadata obj) {
-    iTermExternalAttributeIndex *index = obj.externalAttributes ? [iTermImmutableMetadataGetExternalAttributesIndex(obj) mutableCopyWithZone:nil] : nil;
+    iTermExternalAttributeIndex *index = obj.externalAttributes ? [iTermImmutableMetadataGetExternalAttributesIndex(obj) mutableCopyWithZone:NULL] : nil;
     return (iTermMetadata) {
         .timestamp = obj.timestamp,
         .rtlFound = obj.rtlFound,
-        .externalAttributes = index,
+        .externalAttributes = (__bridge_retained void *)index,
         .lineAttribute = obj.lineAttribute
     };
 }
@@ -58,39 +57,45 @@ iTermImmutableMetadata iTermImmutableMetadataCopy(iTermImmutableMetadata obj) {
     return iTermMetadataMakeImmutable(iTermImmutableMetadataMutableCopy(obj));
 }
 
-void iTermMetadataRetain(iTermMetadata obj) {
-    [(id)obj.externalAttributes retain];
-}
-
-void iTermMetadataRelease(iTermMetadata obj) {
-    [(id)obj.externalAttributes release];
-}
-
-iTermMetadata iTermMetadataRetainAutorelease(iTermMetadata obj) {
-    [[(id)obj.externalAttributes retain] autorelease];
-    return obj;
-}
-
-iTermMetadata iTermMetadataAutorelease(iTermMetadata obj) {
-    [(id)obj.externalAttributes autorelease];
-    return obj;
-}
-
 void iTermImmutableMetadataRetain(iTermImmutableMetadata obj) {
-    [(id)obj.externalAttributes retain];
+    if (obj.externalAttributes) {
+        CFRetain(obj.externalAttributes);
+    }
 }
 
 void iTermImmutableMetadataRelease(iTermImmutableMetadata obj) {
-    [(id)obj.externalAttributes release];
-}
-
-iTermImmutableMetadata iTermImmutableMetadataRetainAutorelease(iTermImmutableMetadata obj) {
-    [[(id)obj.externalAttributes retain] autorelease];
-    return obj;
+    if (obj.externalAttributes) {
+        CFRelease(obj.externalAttributes);
+    }
 }
 
 iTermImmutableMetadata iTermImmutableMetadataAutorelease(iTermImmutableMetadata obj) {
-    [(id)obj.externalAttributes autorelease];
+    if (obj.externalAttributes) {
+        CFAutorelease(obj.externalAttributes);
+    }
+    return obj;
+}
+
+iTermImmutableMetadata iTermImmutableMetadataRetainAutorelease(iTermImmutableMetadata obj) {
+    iTermImmutableMetadataRetain(obj);
+    return iTermImmutableMetadataAutorelease(obj);
+}
+
+void iTermMetadataRetain(iTermMetadata obj) {
+    iTermImmutableMetadataRetain(iTermMetadataMakeImmutable(obj));
+}
+
+void iTermMetadataRelease(iTermMetadata obj) {
+    iTermImmutableMetadataRelease(iTermMetadataMakeImmutable(obj));
+}
+
+iTermMetadata iTermMetadataAutorelease(iTermMetadata obj) {
+    iTermImmutableMetadataAutorelease(iTermMetadataMakeImmutable(obj));
+    return obj;
+}
+
+iTermMetadata iTermMetadataRetainAutorelease(iTermMetadata obj) {
+    iTermImmutableMetadataRetainAutorelease(iTermMetadataMakeImmutable(obj));
     return obj;
 }
 
@@ -99,7 +104,7 @@ void iTermMetadataReplaceWithCopy(iTermMetadata *obj) {
         return;
     }
     iTermExternalAttributeIndex *eaIndex = iTermMetadataGetExternalAttributesIndex(*obj);
-    iTermMetadataSetExternalAttributes(obj, [[eaIndex copy] autorelease]);
+    iTermMetadataSetExternalAttributes(obj, [eaIndex copy]);
 }
 
 NSArray *iTermImmutableMetadataEncodeToArray(iTermImmutableMetadata obj) {
@@ -117,25 +122,24 @@ NSArray *iTermMetadataEncodeToArray(iTermMetadata obj) {
 
 void iTermMetadataSetExternalAttributes(iTermMetadata *obj,
                                         iTermExternalAttributeIndex *externalAttributes) {
-    [(id)obj->externalAttributes autorelease];
-    obj->externalAttributes = [externalAttributes retain];
-
+    iTermMetadataAutorelease(*obj);
+    obj->externalAttributes = (__bridge_retained void *)externalAttributes;
 }
 
 id<iTermExternalAttributeIndexReading> _Nullable
 iTermImmutableMetadataGetExternalAttributesIndex(iTermImmutableMetadata obj) {
-    return [[(iTermExternalAttributeIndex *)obj.externalAttributes retain] autorelease];
+    return (__bridge iTermExternalAttributeIndex *)obj.externalAttributes;
 }
 
 iTermExternalAttributeIndex *iTermMetadataGetExternalAttributesIndex(iTermMetadata obj) {
-    return [[(iTermExternalAttributeIndex *)obj.externalAttributes retain] autorelease];
+    return (__bridge iTermExternalAttributeIndex *)obj.externalAttributes;
 }
 
 iTermExternalAttributeIndex *iTermMetadataGetExternalAttributesIndexCreatingIfNeeded(iTermMetadata *obj) {
     if (!obj->externalAttributes) {
-        iTermMetadataSetExternalAttributes(obj, [[[iTermExternalAttributeIndex alloc] init] autorelease]);
+        iTermMetadataSetExternalAttributes(obj, [[iTermExternalAttributeIndex alloc] init]);
     }
-    return [[(iTermExternalAttributeIndex *)obj->externalAttributes retain] autorelease];
+    return (__bridge iTermExternalAttributeIndex *)obj->externalAttributes;
 }
 
 void iTermImmutableMetadataDeriveLineAttributeFromExternalAttributes(iTermImmutableMetadata *metadata) {
@@ -162,14 +166,14 @@ void iTermMetadataInitFromArray(iTermMetadata *obj, NSArray *array) {
         iTermMetadataInit(obj,
                           [array[0] doubleValue],
                           NO,
-                          [[[iTermExternalAttributeIndex alloc] initWithDictionary:array[1]] autorelease],
+                          [[iTermExternalAttributeIndex alloc] initWithDictionary:array[1]],
                           lineAttr);
         return;
     }
     iTermMetadataInit(obj,
                       [array[0] doubleValue],
                       [array[2] boolValue],
-                      [[[iTermExternalAttributeIndex alloc] initWithDictionary:array[1]] autorelease],
+                      [[iTermExternalAttributeIndex alloc] initWithDictionary:array[1]],
                       lineAttr);
 }
 
@@ -249,7 +253,7 @@ NSString *iTermMetadataShortDescription(iTermMetadata metadata, int length) {
 NSArray *iTermMetadataArrayFromData(NSData *data) {
     iTermMetadata temp;
     memset(&temp, 0, sizeof(temp));
-    iTermTLVDecoder *decoder = [[[iTermTLVDecoder alloc] initWithData:data] autorelease];
+    iTermTLVDecoder *decoder = [[iTermTLVDecoder alloc] initWithData:data];
     if (![decoder decodeDouble:&temp.timestamp]) {
         return nil;
     }
@@ -274,7 +278,7 @@ NSData *iTermMetadataEncodeToData(iTermMetadata metadata) {
 }
 
 NSData *iTermImmutableMetadataEncodeToData(iTermImmutableMetadata metadata) {
-    iTermTLVEncoder *encoder = [[[iTermTLVEncoder alloc] init] autorelease];
+    iTermTLVEncoder *encoder = [[iTermTLVEncoder alloc] init];
     [encoder encodeDouble:metadata.timestamp];
     iTermExternalAttributeIndex *attr = iTermImmutableMetadataGetExternalAttributesIndex(metadata);
     [encoder encodeData:[attr data] ?: [NSData data]];
@@ -286,7 +290,7 @@ NSData *iTermImmutableMetadataEncodeToData(iTermImmutableMetadata metadata) {
 iTermMetadata iTermMetadataDecodedFromData(NSData *data) {
     iTermMetadata temp;
     memset(&temp, 0, sizeof(temp));
-    iTermTLVDecoder *decoder = [[[iTermTLVDecoder alloc] initWithData:data] autorelease];
+    iTermTLVDecoder *decoder = [[iTermTLVDecoder alloc] initWithData:data];
     if (![decoder decodeDouble:&temp.timestamp]) {
         return iTermMetadataDefault();
     }

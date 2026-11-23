@@ -350,7 +350,10 @@
                                   [table convertRect:[table rectOfRow:0] toView:quickly.window.contentView]);
         }];
         [self expectationForPredicate:resultsVisible evaluatedWithObject:quickly handler:nil];
-        [self waitForExpectationsWithTimeout:10 handler:nil];
+        // AppKit delivers the resize and window activation on the main run loop.
+        // Under ASan, an application activation can occupy it for several seconds.
+        const NSTimeInterval windowTransitionTimeout = 60;
+        [self waitForExpectationsWithTimeout:windowTransitionTimeout handler:nil];
         [self attachSettingsWindow:quickly.window name:@"Open Quickly setting result"];
         [quickly openSelectedRow];
         iTermAdvancedSettingsViewController *advanced = [panel valueForKey:@"_advancedViewController"];
@@ -361,7 +364,7 @@
             return tabs.selectedTabViewItem == [panel valueForKey:@"_advancedTabViewItem"] && panel.window.visible;
         }];
         [self expectationForPredicate:revealed evaluatedWithObject:panel handler:nil];
-        [self waitForExpectationsWithTimeout:10 handler:nil];
+        [self waitForExpectationsWithTimeout:windowTransitionTimeout handler:nil];
         XCTAssertFalse(quickly.window.visible);
         NSTableView *expert = [advanced valueForKey:@"_tableView"];
         NSArray *rows = [advanced filteredAdvancedSettings];

@@ -13,6 +13,49 @@
     dispatch_source_t _readSource;
     NSMutableArray *_readQueue;
 }
+@synthesize children = _children, pendingLaunches = _pendingLaunches;
+@synthesize readFD = _readFD, writeFD = _writeFD, serverPID = _serverPID;
+@synthesize daemonProcessSource = _daemonProcessSource;
+
+- (NSMutableArray *)children {
+    [self check];
+    return _children;
+}
+
+- (NSMutableDictionary *)pendingLaunches {
+    [self check];
+    return _pendingLaunches;
+}
+
+- (dispatch_source_t)daemonProcessSource {
+    [self check];
+    return _daemonProcessSource;
+}
+
+- (void)setDaemonProcessSource:(dispatch_source_t)source {
+    [self check];
+    _daemonProcessSource = source;
+}
+
+- (pid_t)serverPID {
+    [self check];
+    return _serverPID;
+}
+
+- (void)setServerPID:(pid_t)serverPID {
+    [self check];
+    _serverPID = serverPID;
+}
+
+- (int)readFD {
+    [self check];
+    return _readFD;
+}
+
+- (int)writeFD {
+    [self check];
+    return _writeFD;
+}
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
     self = [super initWithQueue:queue];
@@ -49,6 +92,7 @@
 }
 
 - (void)setWriteFD:(int)writeFD {
+    [self check];
     if (writeFD >= 0) {
         [self setFileDescriptorNonblocking:writeFD];
     }
@@ -61,6 +105,7 @@
 }
 
 - (void)setReadFD:(int)readFD {
+    [self check];
     if (readFD >= 0) {
         [self setFileDescriptorNonblocking:readFD];
     }
@@ -79,6 +124,7 @@
 // between them. As long as whenReadable: for the payload is called from within
 // the whenReadable block for the length, it is safe.
 - (void)whenReadable:(void (^)(iTermFileDescriptorMultiClientState *))block {
+    [self check];
     if (_readFD < 0) {
         block(self);
         return;
@@ -104,6 +150,7 @@
 }
 
 - (void)didBecomeReadable {
+    [self check];
     NSArray *queue = [_readQueue copy];
     [_readQueue removeAllObjects];
 
@@ -122,6 +169,7 @@
 
 // See the comment on whenReadable:. This works the same way.
 - (void)whenWritable:(void (^)(iTermFileDescriptorMultiClientState *state))block {
+    [self check];
     if (_writeFD < 0) {
         block(self);
         return;
@@ -148,6 +196,7 @@
 }
 
 - (void)didBecomeWritable {
+    [self check];
     NSArray *queue = [_writeQueue copy];
     [_writeQueue removeAllObjects];
 

@@ -41,7 +41,6 @@
 #import "TmuxGateway.h"
 #import "TmuxLayoutParser.h"
 #import "TmuxWindowOpener.h"
-#import "TSVParser.h"
 
 NSString *const kTmuxControllerSessionsWillChange = @"kTmuxControllerSessionsWillChange";
 NSString *const kTmuxControllerSessionsDidChange = @"kTmuxControllerSessionsDidChange";

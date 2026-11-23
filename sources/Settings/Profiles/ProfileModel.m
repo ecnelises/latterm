@@ -76,7 +76,7 @@ static NSInteger gLessLoggingCount;
     if (!sharedProfileGUID) {
         return;
     }
-    MutableProfile *sharedProfile = [[[[ProfileModel sharedInstance] profileWithGuid:sharedProfileGUID] mutableCopy] autorelease];
+    MutableProfile *sharedProfile = [[[ProfileModel sharedInstance] profileWithGuid:sharedProfileGUID] mutableCopy];
     if (!sharedProfile) {
         return;
     }
@@ -164,14 +164,9 @@ static NSInteger gLessLoggingCount;
 
 - (void)dealloc
 {
-    [journal_ release];
-    [_modelName release];
-    [_delayedNotifications release];
 //    [_debugGuids release];
 //    [_debugHistory release];
-    [_menuController release];
     NSLog(@"Deallocating bookmark model!");
-    [super dealloc];
 }
 
 // Use only when tmuxUsesDedicatedProfile is off
@@ -179,7 +174,7 @@ static NSInteger gLessLoggingCount;
     Profile *profile = [self bookmarkWithName:@"tmux"];
     if (!profile) {
         Profile *defaultBookmark = [self defaultBookmark];
-        NSMutableDictionary *tmuxProfile = [[defaultBookmark mutableCopy] autorelease];
+        NSMutableDictionary *tmuxProfile = [defaultBookmark mutableCopy];
         tmuxProfile[KEY_HAS_HOTKEY] = @NO;
         
         [tmuxProfile setObject:@"tmux" forKey:KEY_NAME];
@@ -191,7 +186,7 @@ static NSInteger gLessLoggingCount;
         profile = tmuxProfile;
     }
     if ([Profile isLegacyBrowserCustomCommand:profile[KEY_CUSTOM_COMMAND]]) {
-        MutableProfile *sanitized = [[profile mutableCopy] autorelease];
+        MutableProfile *sanitized = [profile mutableCopy];
         sanitized[KEY_CUSTOM_COMMAND] = kProfilePreferenceCommandTypeLoginShellValue;
         profile = sanitized;
     }
@@ -218,8 +213,8 @@ static NSInteger gLessLoggingCount;
               commandIndexSet:indexes
                  tagIndexSets:nil];
     NSMutableAttributedString *result =
-        [[[NSMutableAttributedString alloc] initWithString:command ?: @""
-                                                attributes:defaultAttributes ?: @{}] autorelease];
+        [[NSMutableAttributedString alloc] initWithString:command ?: @""
+                                                attributes:defaultAttributes ?: @{}];
     [indexes enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
         [result setAttributes:highlightedAttributes range:range];
     }];
@@ -240,8 +235,8 @@ static NSInteger gLessLoggingCount;
               commandIndexSet:nil
                  tagIndexSets:nil];
     NSMutableAttributedString *result =
-        [[[NSMutableAttributedString alloc] initWithString:name
-                                                attributes:defaultAttributes] autorelease];
+        [[NSMutableAttributedString alloc] initWithString:name
+                                                attributes:defaultAttributes];
     [indexes enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
         [result setAttributes:highlightedAttributes range:range];
     }];
@@ -267,8 +262,8 @@ static NSInteger gLessLoggingCount;
     NSMutableArray *result = [NSMutableArray array];
     for (int i = 0; i < tags.count; i++) {
         NSMutableAttributedString *attributedString =
-            [[[NSMutableAttributedString alloc] initWithString:tags[i]
-                                                    attributes:defaultAttributes] autorelease];
+            [[NSMutableAttributedString alloc] initWithString:tags[i]
+                                                    attributes:defaultAttributes];
         NSIndexSet *indexSet = indexSets[i];
         [indexSet enumerateRangesUsingBlock:^(NSRange range, BOOL *stop) {
             [attributedString setAttributes:highlightedAttributes range:range];
@@ -350,7 +345,7 @@ static NSInteger gLessLoggingCount;
     NSArray *phrases = [filter componentsBySplittingProfileListQuery];
     NSMutableArray<iTermProfileSearchToken *> *tokens = [NSMutableArray array];
     for (NSString *phrase in phrases) {
-        iTermProfileSearchToken *token = [[[iTermProfileSearchToken alloc] initWithPhrase:phrase] autorelease];
+        iTermProfileSearchToken *token = [[iTermProfileSearchToken alloc] initWithPhrase:phrase];
         [tokens addObject:token];
     }
     return tokens;
@@ -482,7 +477,7 @@ static NSInteger gLessLoggingCount;
 }
 
 - (void)addBookmark:(Profile*)bookmark inSortedOrder:(BOOL)sort {
-    NSMutableDictionary *newBookmark = [[bookmark mutableCopy] autorelease];
+    NSMutableDictionary *newBookmark = [bookmark mutableCopy];
 
     // Ensure required fields are present
     if (![newBookmark objectForKey:KEY_NAME]) {
@@ -505,7 +500,7 @@ static NSInteger gLessLoggingCount;
     }
     [ProfileModel migratePromptOnCloseInMutableBookmark:newBookmark];
     [ProfileModel migrateDeprecatedKeysInMutableBookmark:newBookmark];
-    bookmark = [[newBookmark copy] autorelease];
+    bookmark = [newBookmark copy];
 
     int theIndex;
     if (sort) {
@@ -834,7 +829,7 @@ static NSInteger gLessLoggingCount;
 }
 
 - (Profile *)setObjectsFromDictionary:(NSDictionary *)dictionary inProfile:(Profile *)profile {
-    NSMutableDictionary *newDict = [[profile mutableCopy] autorelease];
+    NSMutableDictionary *newDict = [profile mutableCopy];
     [dictionary enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [newDict setObject:obj forKey:key];
     }];
@@ -867,8 +862,6 @@ static NSInteger gLessLoggingCount;
 }
 
 - (void)setDefaultByGuid:(NSString*)guid {
-    [guid retain];
-    [defaultBookmarkGuid_ release];
     defaultBookmarkGuid_ = guid;
     if (prefs_) {
         [prefs_ setObject:defaultBookmarkGuid_ forKey:KEY_DEFAULT_GUID];
@@ -903,15 +896,15 @@ static NSInteger gLessLoggingCount;
         preserveName = YES;
     }
 
-    NSMutableDictionary *dict = [[bookmark mutableCopy] autorelease];
+    NSMutableDictionary *dict = [bookmark mutableCopy];
     if (preserveName) {
-        dict[KEY_NAME] = [[origProfile[KEY_NAME] copy] autorelease];
+        dict[KEY_NAME] = [origProfile[KEY_NAME] copy];
     }
-    dict[KEY_GUID] = [[origGuid copy] autorelease];
+    dict[KEY_GUID] = [origGuid copy];
 
     // Change the dict in the sessions bookmarks so that if you copy it back, it gets copied to
     // the new profile.
-    dict[KEY_ORIGINAL_GUID] = [[bookmark[KEY_GUID] copy] autorelease];
+    dict[KEY_ORIGINAL_GUID] = [bookmark[KEY_GUID] copy];
     [dict it_mergeFrom:overrides];
     [[ProfileModel sessionsInstance] setBookmark:dict withGuid:origGuid];
     [self postNotificationName:kReloadAllProfiles object:nil userInfo:nil];
@@ -985,7 +978,6 @@ static NSInteger gLessLoggingCount;
         return;
     }
     Profile* bookmark = [bookmarks_ objectAtIndex:sourceRow];
-    [bookmark retain];
     [ProfileModel log:[NSString stringWithFormat:@"%@: Moving guid %@ to row %@. First, remove it from row %@",
                         self,
                         guid,
@@ -1000,7 +992,6 @@ static NSInteger gLessLoggingCount;
                         guid,
                         @(destinationRow)]];
     [bookmarks_ insertObject:bookmark atIndex:destinationRow];
-    [bookmark release];
 }
 
 - (void)rebuildMenus
@@ -1024,7 +1015,6 @@ static NSInteger gLessLoggingCount;
         for (NSNotification *notification in _delayedNotifications) {
             [[NSNotificationCenter defaultCenter] postNotification:notification];
         }
-        [_delayedNotifications release];
         _delayedNotifications = nil;
         [self flush];
     } else {
@@ -1066,7 +1056,6 @@ static NSInteger gLessLoggingCount;
         // has code that coalesces userinfos for this notification.
         [self postNotificationName:kReloadAddressBookNotification object:nil userInfo:@{ @"array": journal_ }];
     }
-    [journal_ release];
     journal_ = [[NSMutableArray alloc] init];
 }
 

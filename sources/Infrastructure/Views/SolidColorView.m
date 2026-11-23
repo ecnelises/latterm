@@ -16,14 +16,9 @@
 - (instancetype)initWithFrame:(NSRect)frame color:(NSColor*)color {
     self = [super initWithFrame:frame];
     if (self) {
-        _color = [color retain];
+        _color = color;
     }
     return self;
-}
-
-- (void)dealloc {
-    [_color release];
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -39,8 +34,7 @@
 }
 
 - (void)setColor:(NSColor*)color {
-    [_color autorelease];
-    _color = [color retain];
+    _color = color;
     [self setNeedsDisplay:YES];
 }
 
@@ -63,7 +57,7 @@
 - (instancetype)initWithFrame:(NSRect)frame color:(NSColor *)color {
     self = [self initWithFrame:frame];
     if (self) {
-        self.color = [color retain];
+        self.color = color;
     }
     return self;
 }
@@ -84,19 +78,13 @@
     return self;
 }
 
-- (void)dealloc {
-    [_color release];
-    [super dealloc];
-}
-
 - (NSString *)description {
     return [NSString stringWithFormat:@"<%@: %p frame=%@ isHidden=%@ alphaValue=%@>",
             [self class], self, NSStringFromRect(self.frame), @(self.isHidden), @(self.alphaValue)];
 }
 
 - (void)setColor:(NSColor *)color {
-    [_color autorelease];
-    _color = [color retain];
+    _color = color;
     self.layer.backgroundColor = [color CGColor];
 }
 

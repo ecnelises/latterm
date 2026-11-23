@@ -27,18 +27,9 @@
     return self;
 }
 
-- (void)dealloc
-{
-    [bookmarks release];
-    [filter release];
-    [_lockedGuid release];
-    [super dealloc];
-}
-
 - (void)setSortDescriptors:(NSArray*)newSortDescriptors
 {
-    [sortDescriptors autorelease];
-    sortDescriptors = [newSortDescriptors retain];
+    sortDescriptors = [newSortDescriptors copy];
 }
 
 - (void)dump
@@ -99,8 +90,8 @@
                                                                           orGuid:self.lockedGuid];
     for (NSNumber *n in filteredBookmarks) {
         int i = [n intValue];
-        [bookmarks addObject:[[[ProfileTableRow alloc] initWithBookmark:[underlyingModel profileAtIndex:i]
-                                                        underlyingModel:underlyingModel] autorelease]];
+        [bookmarks addObject:[[ProfileTableRow alloc] initWithBookmark:[underlyingModel profileAtIndex:i]
+                                                        underlyingModel:underlyingModel]];
     }
     [self sort];
     DLog(@"There are now %d bookmarks", (int)bookmarks.count);
@@ -114,11 +105,10 @@
         [bookmarks insertObject:[bookmarks objectAtIndex:origRow] atIndex:row];
         [bookmarks removeObjectAtIndex:origRow];
     } else if (origRow > row) {
-        ProfileTableRow* temp = [[bookmarks objectAtIndex:origRow] retain];
+        ProfileTableRow* temp = bookmarks[origRow];
         [bookmarks removeObjectAtIndex:origRow];
         [bookmarks insertObject:temp atIndex:row];
-        [temp release];
-    }
+        }
 }
 
 - (void)pushOrderToUnderlyingModel
@@ -153,8 +143,7 @@
 - (void)setFilter:(NSString*)newFilter
 {
     self.lockedGuid = nil;
-    [filter release];
-    filter = [[NSMutableString stringWithString:newFilter] retain];
+    filter = [newFilter mutableCopy];
 }
 
 @end

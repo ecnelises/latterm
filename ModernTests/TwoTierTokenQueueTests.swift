@@ -13,6 +13,27 @@ import XCTest
 @testable import iTerm2SharedARC
 
 final class TwoTierTokenQueueTests: XCTestCase {
+    func testSideEffectFlagsReportPreviousBitsAndReset() {
+        let queue = iTermTaskQueue()
+        XCTAssertEqual(queue.setFlag(1), 0)
+        XCTAssertEqual(queue.setFlag(1), 1)
+        XCTAssertEqual(queue.setFlag(2), 1)
+        XCTAssertEqual(queue.resetFlags(), 3)
+        XCTAssertEqual(queue.setFlag(2), 0)
+    }
+
+    func testTasksEnqueuedWhileDrainingStayInOrder() {
+        let queue = iTermTaskQueue()
+        var seen: [Int] = []
+        queue.appendTasks([{ seen.append(1) }, { seen.append(2) }])
+        queue.dequeue()?()
+        queue.append { seen.append(3) }
+        XCTAssertEqual(queue.count, 2)
+        while let task = queue.dequeue() { task() }
+        XCTAssertEqual(seen, [1, 2, 3])
+        XCTAssertEqual(queue.count, 0)
+    }
+
     private func makeTokenArray() -> TokenArray {
         var vector = CVector()
         CVectorCreate(&vector, 1)

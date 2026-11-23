@@ -69,7 +69,7 @@ const int kMaxResultContextWords = 4;
     const int kMaxOptions = [AutocompleteView maxOptions];
     self = [super initWithWindowNibName:@"Autocomplete"
                                tablePtr:nil
-                                  model:[[[PopupModel alloc] initWithMaxEntries:kMaxOptions] autorelease]];
+                                  model:[[PopupModel alloc] initWithMaxEntries:kMaxOptions]];
     if (!self) {
         return nil;
     }
@@ -83,17 +83,6 @@ const int kMaxResultContextWords = 4;
     _searchEngine.automaticallySynchronize = NO;
     _searchEngine.maxConsumeCount = 128;
     return self;
-}
-
-- (void)dealloc
-{
-    [findResults_ release];
-    [stack_ release];
-    [moreText_ release];
-    [context_ release];
-    [prefix_ release];
-    [_searchEngine release];
-    [super dealloc];
 }
 
 - (NSArray<NSString *> *)contextWordsStartingAt:(VT100GridCoord)startCoord
@@ -409,13 +398,13 @@ precededByWhitespace:(BOOL)precededByWhitespace
     more_ = YES;
     _searchEngine.dataSource = screen;
 
-    iTermSearchRequest *request = [[[iTermSearchRequest alloc] initWithQuery:prefix_
+    iTermSearchRequest *request = [[iTermSearchRequest alloc] initWithQuery:prefix_
                                                                         mode:iTermFindModeCaseInsensitiveSubstring
                                                                   startCoord:VT100GridCoordMake(x_, y_)
                                                                       offset:1
                                                                      options:FindMultipleResults | FindOptBackwards
                                                              forceMainScreen:NO
-                                                               startPosition:nil] autorelease];
+                                                               startPosition:nil];
     // Limit the queue size to avoid hanging the main thread while pulling a huge number of results
     // off the queue. Lots of search results aren't very useful for us anyway.
     [request setMaxQueueSize:128];
@@ -428,7 +417,6 @@ precededByWhitespace:(BOOL)precededByWhitespace
 - (void)onClose {
     [self.delegate popupIsSearching:NO];
     [stack_ removeAllObjects];
-    [moreText_ release];
     moreText_ = nil;
 
     if (_searchEngine.timer) {
@@ -451,7 +439,6 @@ precededByWhitespace:(BOOL)precededByWhitespace
         [stack_ removeAllObjects];
         if (moreText_) {
             [[self delegate] popupInsertText:moreText_ popup:self];
-            [moreText_ release];
             moreText_ = nil;
         }
         [[self delegate] popupInsertText:[e mainValue] popup:self];
@@ -487,8 +474,8 @@ precededByWhitespace:(BOOL)precededByWhitespace
 - (void)_pushStackObject
 {
     NSArray* value = [NSArray arrayWithObjects:
-                      [[moreText_ ? moreText_ : @"" copy] autorelease],
-                      [[prefix_ copy] autorelease],
+                      [moreText_ ? moreText_ : @"" copy],
+                      [prefix_ copy],
                       [NSNumber numberWithBool:whitespaceBeforeCursor_],
                       nil];
     assert([value count] == 3);
@@ -499,11 +486,8 @@ precededByWhitespace:(BOOL)precededByWhitespace
 {
     NSArray* value = [stack_ lastObject];
     assert([value count] == 3);
-    if (moreText_) {
-        [moreText_ release];
-    }
-    moreText_ = [[NSMutableString stringWithString:[value objectAtIndex:0]] retain];
-    prefix_ = [[NSMutableString stringWithString:[value objectAtIndex:1]] retain];
+    moreText_ = [[value objectAtIndex:0] mutableCopy];
+    prefix_ = [[value objectAtIndex:1] mutableCopy];
     whitespaceBeforeCursor_ = [[value objectAtIndex:2] boolValue];
     [stack_ removeLastObject];
 }

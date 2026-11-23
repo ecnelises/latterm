@@ -36,6 +36,7 @@
 #import "PTYWindow.h"
 #import "objc/runtime.h"
 
+NSString *const iTermWindowStateKeyGUID = @"guid";
 NSString *const kTerminalWindowStateRestorationWindowArrangementKey = @"ptyarrangement";
 NSString *const iTermWindowDocumentedEditedDidChange = @"iTermWindowDocumentedEditedDidChange";
 

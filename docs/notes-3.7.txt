@@ -15,9 +15,38 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Convert PTYSession and all remaining core
+  application Objective-C sources to ARC.
+- Move the cursor on the first Shift-arrow press
+  when entering Copy Mode automatically.
+- Highlight the shortest matching text in Open
+  Quickly, including matches after emoji.
+- Refresh dynamic profiles using native macOS
+  file events when a watched folder changes.
+- Fix grouped screen mark enumeration when
+  reading snapshots or collecting all matches.
+- Drag panes between splits, tabs, and windows
+  using native AppKit drag sessions. Reordering a
+  single-pane tab preserves its pinned state.
+- Size fixed tmux clients correctly when nested
+  panes have different split positions.
 - Select split panes and workgroup peers in the
   vertical tab bar. Drag tabs between windows
   using native AppKit drag sessions.
+- Keep the current instant replay buffer when a
+  saved recording cannot be loaded.
+- Finish restoring full-screen windows before
+  running startup completion callbacks.
+- Recognize tmux exit when it is the first line
+  received after reconnecting.
+- Fix a leak when a window times out waiting for
+  terminal sessions to reconnect at startup.
+- Keep panes in place while saving a session
+  archive. Save split layouts and restore session
+  profiles and directories in Swift.
+- Migrate the task queue, scrollback caches,
+  and Metal background and highlight rendering
+  to Swift.
 - Replace RegexKitLite and CoreParse.framework
   with cached NSRegularExpression helpers and a
   native Swift recursive-descent expression

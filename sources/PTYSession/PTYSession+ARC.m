@@ -19,26 +19,12 @@
 #import "iTermComposerManager.h"
 #import "iTermExpect.h"
 #import "iTermExpressionEvaluator.h"
-#import "iTermMultiServerJobManager.h"
 #import "iTermPreferences.h"
 #import "iTermProfilePreferences.h"
 #import "iTermResult.h"
-#import "iTermThreadSafety.h"
 #import "iTermUserDefaults.h"
 #import "iTermVariableScope.h"
 #import "iTermWarning.h"
-
-extern NSString *const SESSION_ARRANGEMENT_TMUX_PANE;
-extern NSString *const SESSION_ARRANGEMENT_SERVER_DICT;
-
-@interface iTermPartialAttachment: NSObject<iTermPartialAttachment>
-@end
-
-@implementation iTermPartialAttachment
-@synthesize partialResult;
-@synthesize jobManager;
-@synthesize queue;
-@end
 
 @interface PTYSession(Private)
 @property(nonatomic, retain) iTermExpectation *pasteBracketingOopsieExpectation;
@@ -47,56 +33,6 @@ extern NSString *const SESSION_ARRANGEMENT_SERVER_DICT;
 @end
 
 @implementation PTYSession (ARC)
-
-#pragma mark - Arrangements
-
-+ (void)openPartialAttachmentsForArrangement:(NSDictionary *)arrangement
-                                  completion:(void (^)(NSDictionary *))completion {
-    DLog(@"PTYSession.openPartialAttachmentsForArrangement: start");
-    if (arrangement[SESSION_ARRANGEMENT_TMUX_PANE] ||
-        ![iTermAdvancedSettingsModel runJobsInServers] ||
-        ![iTermMultiServerJobManager available]) {
-        DLog(@"PTYSession.openPartialAttachmentsForArrangement: NO, is tmux");
-        completion(@{});
-        return;
-    }
-    NSDictionary *restorationIdentifier = [NSDictionary castFrom:arrangement[SESSION_ARRANGEMENT_SERVER_DICT]];
-    if (!restorationIdentifier) {
-        DLog(@"PTYSession.openPartialAttachmentsForArrangement: NO, lacks server dict\n%@", arrangement[SESSION_ARRANGEMENT_SERVER_DICT]);
-        completion(@{});
-        return;
-    }
-    iTermGeneralServerConnection generalConnection;
-    if (![iTermMultiServerJobManager getGeneralConnection:&generalConnection
-                                fromRestorationIdentifier:restorationIdentifier]) {
-        DLog(@"PTYSession.openPartialAttachmentsForArrangement: NO, not multiserver");
-        completion(@{});
-        return;
-    }
-    if (generalConnection.type != iTermGeneralServerConnectionTypeMulti) {
-        assert(NO);
-    }
-    const char *label = [iTermThread uniqueQueueLabelWithName:@"com.iterm2.job-manager"].UTF8String;
-    dispatch_queue_t jobManagerQueue = dispatch_queue_create(label, DISPATCH_QUEUE_SERIAL);
-    iTermMultiServerJobManager *jobManager =
-        [[iTermMultiServerJobManager alloc] initWithQueue:jobManagerQueue];
-    DLog(@"PTYSession.openPartialAttachmentsForArrangement: request partial attach");
-    [jobManager asyncPartialAttachToServer:generalConnection
-                             withProcessID:@(generalConnection.multi.pid)
-                                completion:^(id<iTermJobManagerPartialResult> partialResult) {
-        DLog(@"PTYSession.openPartialAttachmentsForArrangement: finished");
-        if (!partialResult) {
-            assert(NO);
-            return;
-        }
-        RLog(@"PTYSession.openPartialAttachmentsForArrangement: SUCCESS for pid %@", @(generalConnection.multi.pid));
-        iTermPartialAttachment *attachment = [[iTermPartialAttachment alloc] init];
-        attachment.jobManager = jobManager;
-        attachment.partialResult = partialResult;
-        attachment.queue = jobManagerQueue;
-        completion(@{ restorationIdentifier: attachment });
-    }];
-}
 
 #pragma mark - Attaching
 

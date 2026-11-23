@@ -504,23 +504,23 @@ iTermP3Color iTermSRGBColorToP3Color(iTermSRGBColor srgb) {
     if ([s hasPrefix:@"p3#"] && (s.length == 9 || s.length == 15)) {
         return [self colorFromHexString:s];
     }
-    NSData *data = [[[NSData alloc] initWithBase64EncodedString:s options:0] autorelease];
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:s options:0];
     if (!data.length) {
         return nil;
     }
     NSError *error = nil;
-    NSKeyedUnarchiver *decoder = [[[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error] autorelease];
+    NSKeyedUnarchiver *decoder = [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
     if (error) {
         NSLog(@"Failed to decode color from string %@", s);
         RLog(@"Failed to decode color from string %@", s);
         return nil;
     }
-    NSColor *color = [[[NSColor alloc] initWithCoder:decoder] autorelease];
+    NSColor *color = [[NSColor alloc] initWithCoder:decoder];
     return color;
 }
 
 - (NSString *)stringValue {
-    NSKeyedArchiver *coder = [[[NSKeyedArchiver alloc] initRequiringSecureCoding:YES] autorelease];
+    NSKeyedArchiver *coder = [[NSKeyedArchiver alloc] initRequiringSecureCoding:YES];
     coder.outputFormat = NSPropertyListBinaryFormat_v1_0;
     [self encodeWithCoder:coder];
     [coder finishEncoding];
@@ -1014,11 +1014,11 @@ BOOL iTermSRGBColorFromHexString(NSString *hexString, iTermSRGBColor *colorOut) 
         return result;
     }
 
-    NSView *view = [[[SolidColorView alloc] initWithFrame:NSMakeRect(0, 0, 1, 1) color:self] autorelease];
+    NSView *view = [[SolidColorView alloc] initWithFrame:NSMakeRect(0, 0, 1, 1) color:self];
     view.appearance = appearance;
     NSImage *image = [view snapshot];
 
-    NSBitmapImageRep *imageRep = [[[NSBitmapImageRep alloc] initWithData:[image TIFFRepresentation]] autorelease];
+    NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc] initWithData:[image TIFFRepresentation]];
     result = [imageRep colorAtX:0 y:0];
 
     dict[self] = result;
@@ -1075,9 +1075,9 @@ BOOL iTermSRGBColorFromHexString(NSString *hexString, iTermSRGBColor *colorOut) 
         return self;
     }
 
-    NSColorSpace *nslab = [[[NSColorSpace alloc] initWithCGColorSpace:labColorSpace] autorelease];
-    CIColor *ciColor1 = [[[CIColor alloc] initWithColor:[self colorUsingColorSpace:nslab]] autorelease];
-    CIColor *ciColor2 = [[[CIColor alloc] initWithColor:[color colorUsingColorSpace:nslab]] autorelease];
+    NSColorSpace *nslab = [[NSColorSpace alloc] initWithCGColorSpace:labColorSpace];
+    CIColor *ciColor1 = [[CIColor alloc] initWithColor:[self colorUsingColorSpace:nslab]];
+    CIColor *ciColor2 = [[CIColor alloc] initWithColor:[color colorUsingColorSpace:nslab]];
     CIColor *ciBlendedColor;
 
     // Get LAB components of each color
@@ -1101,7 +1101,7 @@ BOOL iTermSRGBColorFromHexString(NSString *hexString, iTermSRGBColor *colorOut) 
         CGColorSpaceRelease(labColorSpace);
         return self;
     }
-    ciBlendedColor = [[[CIColor alloc] initWithColor:[NSColor colorWithCGColor:cgColor]] autorelease];
+    ciBlendedColor = [[CIColor alloc] initWithColor:[NSColor colorWithCGColor:cgColor]];
     CGColorRelease(cgColor);
     CGColorSpaceRelease(labColorSpace);
 

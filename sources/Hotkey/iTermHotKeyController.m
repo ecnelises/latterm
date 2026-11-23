@@ -76,10 +76,6 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
 - (void)dealloc {
     [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_hotKeys release];
-    [_previousState release];
-    [_profileHotKeysBirthingWindows release];
-    [super dealloc];
 }
 
 #pragma mark - APIs
@@ -256,7 +252,7 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
 }
 
 - (void)autoHideHotKeyWindowsExcept:(NSArray<NSWindowController *> *)exceptions {
-    NSMutableArray *controllers = [[[self hotKeyWindowControllers] mutableCopy] autorelease];
+    NSMutableArray *controllers = [[self hotKeyWindowControllers] mutableCopy];
     [controllers removeObjectsInArray:exceptions];
     [self autoHideHotKeyWindows:controllers];
 }
@@ -602,7 +598,7 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
         DLog(@"Not updating previous state because the existing previous state's owner is rolling in");
         return;
     }
-    self.previousState = [[[iTermPreviousState alloc] init] autorelease];
+    self.previousState = [[iTermPreviousState alloc] init];
     self.previousState.owner = profileHotKey;
     RLog(@"Stored previous state");
 }
@@ -644,9 +640,8 @@ NSString *const TERMINAL_ARRANGEMENT_PROFILE_GUID = @"Hotkey Profile GUID";
     }
     if (![self otherHotKeyWindowWillBecomeKeyAfterOrderOut:profileHotKey]) {
         RLog(@"Restoring the previous state %p", self.previousState);
-        iTermPreviousState *previousState = [self.previousState retain];
+        iTermPreviousState *previousState = self.previousState;
         BOOL result = [previousState restoreAllowingAppSwitch:!profileHotKey.closedByOtherHotkeyWindowOpening];
-        [previousState autorelease];
         if (!profileHotKey.closedByOtherHotkeyWindowOpening) {
             self.previousState = nil;
         }

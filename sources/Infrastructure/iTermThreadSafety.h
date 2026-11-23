@@ -36,9 +36,9 @@
 //   }];
 // }
 //
-// // The fact that this takes a MyState argument means that it must be called
-// // on self.thread or else crash.
+// // Call check in a state accessor or before accessing stored state directly.
 // - (void)reallyIncrementWithState:(MyState *)state {
+//     [state check];
 //     state.count = @(state.count.integerValue + 1);
 // }
 //
@@ -63,9 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class iTermThreadChecker;
 
-// This object is magic. If you retain it on a thread it's not allowed to be
-// used on, it will crash immediately. T is the type that it holds. Typically,
-// you'd subclass this and set T to the subclass:
+// The state getter and dispatch callbacks check queue affinity. Subclasses
+// call check in accessors for their own state. T is usually the concrete subclass.
 //
 // @class MyState;
 // @interface MyState: iTermSynchronizedState<MyState *>

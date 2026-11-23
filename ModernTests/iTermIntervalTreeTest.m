@@ -1,22 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "IntervalTree.h"
-
-@interface ITObject : NSObject <IntervalTreeObject>
-@end
-
-@implementation ITObject
-- (id)initWithDictionary:(NSDictionary *)dict {
-    return [self init];
-}
-- (NSDictionary *)dictionaryValue {
-    return @{};
-}
-- (instancetype)copyOfIntervalTreeObject {
-    return [[ITObject alloc] init];
-}
-
-@synthesize entry;
-@end
+#import "PTYAnnotation.h"
+#import "iTerm2SharedARC-Swift.h"
 
 static Interval *MakeInterval(long long location, long long length) {
     return [[Interval alloc] initWithLocation:location length:length];
@@ -26,26 +11,26 @@ static Interval *MakeInterval(long long location, long long length) {
 @end
 
 @implementation IntervalTreeTest {
-    ITObject *obj1_;
-    ITObject *obj2_;
-    ITObject *obj3_;
-    ITObject *obj4_;
-    ITObject *obj5_;
-    ITObject *obj6_;
-    ITObject *obj7_;
+    PTYAnnotation *obj1_;
+    PTYAnnotation *obj2_;
+    PTYAnnotation *obj3_;
+    PTYAnnotation *obj4_;
+    PTYAnnotation *obj5_;
+    PTYAnnotation *obj6_;
+    PTYAnnotation *obj7_;
     IntervalTree *tree_;
     unsigned int seed_;
 }
 
 - (void)setUp {
     tree_ = nil;
-    obj1_ = [[ITObject alloc] init];
-    obj2_ = [[ITObject alloc] init];
-    obj3_ = [[ITObject alloc] init];
-    obj4_ = [[ITObject alloc] init];
-    obj5_ = [[ITObject alloc] init];
-    obj6_ = [[ITObject alloc] init];
-    obj7_ = [[ITObject alloc] init];
+    obj1_ = [[PTYAnnotation alloc] init];
+    obj2_ = [[PTYAnnotation alloc] init];
+    obj3_ = [[PTYAnnotation alloc] init];
+    obj4_ = [[PTYAnnotation alloc] init];
+    obj5_ = [[PTYAnnotation alloc] init];
+    obj6_ = [[PTYAnnotation alloc] init];
+    obj7_ = [[PTYAnnotation alloc] init];
     seed_ = 0;
 }
 
@@ -58,7 +43,7 @@ static Interval *MakeInterval(long long location, long long length) {
 - (void)assertEntriesInInterval:(Interval *)interval equal:(NSArray *)expectedObjects {
     NSArray *foundObjects = [tree_ objectsInInterval:interval];
     XCTAssert(foundObjects.count == expectedObjects.count);
-    for (ITObject *object in foundObjects) {
+    for (PTYAnnotation *object in foundObjects) {
         BOOL ok = NO;
         for (NSObject *obj in expectedObjects) {
             if (object == obj) {
@@ -261,7 +246,7 @@ static Interval *MakeInterval(long long location, long long length) {
         for (int i = 0; i < N; i++) {
             IntervalTreeEntry *entry = [[IntervalTreeEntry alloc] init];
             entry.interval = [self randomInterval];
-            entry.object = [[ITObject alloc] init];
+            entry.object = [[PTYAnnotation alloc] init];
             [limits addObject:@(entry.interval.limit)];
             if (!objectWithLargestLimit || entry.interval.limit > objectWithLargestLimit.entry.interval.limit) {
                 objectWithLargestLimit = entry.object;
@@ -362,4 +347,55 @@ static Interval *MakeInterval(long long location, long long length) {
     [tree_ removeObject:obj3_];
     [tree_ sanityCheck];
 }
+- (void)testAllObjectsDrainsRemainingBatchesForEveryOrder {
+    IntervalTree *tree = [[IntervalTree alloc] init];
+    PTYAnnotation *first = [[PTYAnnotation alloc] init];
+    PTYAnnotation *second = [[PTYAnnotation alloc] init];
+    [tree addObject:first withInterval:[Interval intervalWithLocation:2 length:8]];
+    [tree addObject:second withInterval:[Interval intervalWithLocation:4 length:1]];
+    NSArray *ascending = @[ @[first], @[second] ];
+    NSArray *descending = @[ @[second], @[first] ];
+    XCTAssertEqualObjects([tree forwardLocationEnumeratorAt:2].allObjects, ascending);
+    XCTAssertEqualObjects([tree reverseEnumeratorAt:LLONG_MAX].allObjects, descending);
+    XCTAssertEqualObjects([tree forwardLimitEnumeratorAt:5].allObjects, (@[ @[first] ]));
+    XCTAssertEqualObjects([tree reverseLimitEnumeratorAt:10].allObjects, (@[ @[second] ]));
+    NSEnumerator *remaining = tree.forwardLimitEnumerator;
+    XCTAssertEqualObjects(remaining.nextObject, @[second]);
+    XCTAssertEqualObjects(remaining.allObjects, (@[ @[first] ]));
+    XCTAssertNil(remaining.nextObject);
+    XCTAssertEqualObjects(tree.reverseLimitEnumerator.allObjects, ascending);
+}
+
+- (void)testFastEnumerationOfReadOnlyScreenTreeReturnsImmutablePeers {
+    IntervalTree *tree = [[IntervalTree alloc] init];
+    PTYAnnotation *note = [[PTYAnnotation alloc] init];
+    [tree addObject:note withInterval:[Interval intervalWithLocation:3 length:5]];
+    iTermIntervalTreeSanitizingAdapter *adapter = [[iTermIntervalTreeSanitizingAdapter alloc] initWithSource:tree];
+    id peer = note.doppelganger;
+    XCTAssertNotEqual(peer, note);
+    XCTAssertEqualObjects(adapter.forwardLimitEnumerator.allObjects, (@[ @[peer] ]));
+    NSUInteger count = 0;
+    for (NSArray *group in adapter.reverseEnumerator) {
+        XCTAssertEqualObjects(group, @[peer]);
+        count++;
+    }
+    XCTAssertEqual(count, 1u);
+}
+
+- (void)testContainedMarksIncludeEmptyEndBoundaryButExcludeOverlaps {
+    IntervalTree *tree = [[IntervalTree alloc] init];
+    NSMutableArray *marks = [NSMutableArray array];
+    for (Interval *interval in @[ MakeInterval(2, 7), MakeInterval(4, 2), MakeInterval(4, 6), MakeInterval(8, 0), MakeInterval(14, 1) ]) {
+        PTYAnnotation *mark = [[PTYAnnotation alloc] init];
+        [marks addObject:mark];
+        [tree addObject:mark withInterval:interval];
+    }
+    XCTAssertEqualObjects([tree objectsContainedInInterval:MakeInterval(4, 4)], (@[ marks[1], marks[3] ]));
+}
+
+- (void)testInvalidSerializedIntervalCannotOverflowItsLimit {
+    XCTAssertNil(([Interval intervalWithDictionary:@{ @"Location": @(LLONG_MAX), @"Length": @2 }]));
+    XCTAssertNil(([Interval intervalWithDictionary:@{ @"Location": @1, @"Length": @(LLONG_MAX) }]));
+}
+
 @end

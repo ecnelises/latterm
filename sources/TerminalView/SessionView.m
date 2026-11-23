@@ -29,7 +29,6 @@
 #import "NSTimer+iTerm.h"
 #import "NSView+iTerm.h"
 #import "NSView+RecursiveDescription.h"
-#import "MovePaneController.h"
 #import "NSResponder+iTerm.h"
 #import "PSMMinimalTabStyle.h"
 #import "PTYScrollView.h"
@@ -57,6 +56,8 @@ static const CGFloat iTermGetSessionViewToolbarHeight(void) {
 // Last time any window was resized TODO(georgen):it would be better to track per window.
 static NSDate* lastResizeDate_;
 
+NSPasteboardType const iTermMovePaneDragType = @"com.latterm.pane-item";
+NSNotificationName const iTermSessionDidChangeTabNotification = @"iTermSessionDidChangeTabNotification";
 NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewWasSelectedForInspectionNotification";
 
 
@@ -111,7 +112,6 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     iTermLegacyViewDelegate,
     iTermSearchResultsMinimapViewDelegate,
     iTermSessionNoteViewDelegate,
-    NSDraggingSource,
     PTYScrollerDelegate,
     SplitSelectionViewDelegate>
 @property(nonatomic, strong) PTYScrollView *scrollview;
@@ -131,6 +131,7 @@ NSString *const SessionViewWasSelectedForInspectionNotification = @"SessionViewW
     // When moving a pane, a view is put over all sessions to help the user
     // choose how to split the destination.
     SplitSelectionView *_splitSelectionView;
+    NSDragOperation _paneDragOperation;
 
     BOOL _showTitle;
     BOOL _showBottomStatusBar;
@@ -1711,15 +1712,14 @@ typedef struct {
 - (void)draggingSession:(NSDraggingSession *)session
            endedAtPoint:(NSPoint)aPoint
               operation:(NSDragOperation)operation {
-    if (![[MovePaneController sharedInstance] dragFailed]) {
-        [[MovePaneController sharedInstance] dropInSession:nil half:kNoHalf atPoint:aPoint];
-    }
+    [[MovePaneController sharedInstance] endDragFrom:self atPoint:aPoint operation:operation];
 }
 
 #pragma mark NSDraggingDestination protocol
 
 - (NSDragOperation)draggingEntered:(id < NSDraggingInfo >)sender {
-    return [_delegate sessionViewDraggingEntered:sender];
+    _paneDragOperation = [_delegate sessionViewDraggingEntered:sender];
+    return _paneDragOperation;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
@@ -1729,7 +1729,7 @@ typedef struct {
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-    if ([_delegate sessionViewShouldSplitSelectionAfterDragUpdate:sender]) {
+    if (_splitSelectionView) {
         // draggingUpdated:'s draggingLocation can be stale during tab drags.
         const NSPoint mouseLocationInWindow = [self.window convertPointFromScreen:[NSEvent mouseLocation]];
         const NSPoint point = [self convertPoint:mouseLocationInWindow fromView:nil];
@@ -1737,7 +1737,7 @@ typedef struct {
         [_splitSelectionView updateAtPoint:NSMakePoint(MIN(MAX(point.x, NSMinX(bounds)), NSMaxX(bounds)),
                                                        MIN(MAX(point.y, NSMinY(bounds)), NSMaxY(bounds)))];
     }
-    return NSDragOperationMove;
+    return _paneDragOperation;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {

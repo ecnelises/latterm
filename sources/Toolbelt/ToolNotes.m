@@ -95,7 +95,6 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
                                                          trackingMode:NSSegmentSwitchTrackingSelectOne
                                                                target:self
                                                                action:@selector(modeChanged:)];
-        [modeControl_ retain];
         modeControl_.selectedSegment = 0;
         modeControl_.controlSize = NSControlSizeSmall;
         [modeControl_ sizeToFit];
@@ -319,7 +318,6 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
                                                        options:NSFileWrapperReadingImmediate
                                                          error:&error];
     const BOOL readable = (wrapper != nil);
-    [wrapper release];
     return readable;
 }
 
@@ -375,7 +373,6 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
     if (token == knownNotesFileToken_) {
         return;
     }
-    [knownNotesFileToken_ release];
     knownNotesFileToken_ = [token copy];
 }
 
@@ -416,12 +413,6 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
         }
         [self writeGlobalNotesToDisk];
     }
-    [modeControl_ release];
-    [scrollView_ release];
-    [sessionNoteModel_ release];
-    [filemanager_ release];
-    [knownNotesFileToken_ release];
-    [super dealloc];
 }
 
 - (NSString *)filename {
@@ -482,7 +473,6 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
 }
 
 - (void)loadGlobalNote {
-    [sessionNoteModel_ release];
     sessionNoteModel_ = nil;
     // Clear first so a missing/unreadable notes.rtfd (e.g. deleted by a sync import) doesn't leave the
     // previous mode's session-note text in the view as if it were the global note. Otherwise the next
@@ -523,9 +513,8 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
 }
 
 - (void)loadSessionNote {
-    [sessionNoteModel_ release];
     id<iTermToolbeltViewDelegate> delegate = [[self toolWrapper] delegate].delegate;
-    sessionNoteModel_ = [[delegate toolbeltCurrentSessionNoteModel] retain];
+    sessionNoteModel_ = [delegate toolbeltCurrentSessionNoteModel];
     [textView_ setString:sessionNoteModel_.text ?: @""];
     textView_.font = [NSFont it_toolbeltFont];
 }
@@ -570,7 +559,7 @@ typedef NS_ENUM(NSInteger, ToolNotesMode) {
     } else {
         if (!sessionNoteModel_) {
             id<iTermToolbeltViewDelegate> delegate = [[self toolWrapper] delegate].delegate;
-            sessionNoteModel_ = [[delegate toolbeltEnsureCurrentSessionNoteModel] retain];
+            sessionNoteModel_ = [delegate toolbeltEnsureCurrentSessionNoteModel];
         }
         if (sessionNoteModel_) {
             ignoreSessionNoteNotification_ = YES;

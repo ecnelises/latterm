@@ -58,7 +58,7 @@ final class ToolWrapperLifetimeTests: XCTestCase {
             wrapper.setValue("Profiles", forKey: "name")
             weakWrapper = wrapper
             XCTAssertTrue(wrapper.subviews.compactMap { $0 as? NSTextField }
-                .contains { $0.stringValue == "Profiles" })
+                .contains { $0.stringValue == NSLocalizedString("Profiles", comment: "Toolbelt panel title") })
         }
         XCTAssertNil(weakWrapper)
     }

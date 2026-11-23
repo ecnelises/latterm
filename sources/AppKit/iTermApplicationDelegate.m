@@ -31,7 +31,6 @@
 #import "ColorsMenuItemView.h"
 #import "FileTransferManager.h"
 #import "ITAddressBookMgr.h"
-#import "MovePaneController.h"
 #import "NSAppearance+iTerm.h"
 #import "NSApplication+iTerm.h"
 #import "NSArray+iTerm.h"
@@ -54,7 +53,6 @@
 #import "PTYWindow.h"
 #import "PreferencePanel.h"
 #import "PseudoTerminal.h"
-#import "PseudoTerminalRestorer.h"
 #import "QLPreviewPanel+iTerm.h"
 #import "TmuxControllerRegistry.h"
 #import "TmuxDashboardController.h"
@@ -93,7 +91,6 @@
 #import "iTermProfilePreferences.h"
 #import "iTermProfilesMenuController.h"
 #import "iTermProfilesWindowController.h"
-#import "iTermPromptOnCloseReason.h"
 #import "iTermQuickLookController.h"
 #import "iTermRecordingCodec.h"
 #import "iTermRemotePreferences.h"
@@ -367,7 +364,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
                                                          forEventClass:kInternetEventClass
                                                             andEventID:kAEGetURL];
         [[iTermOrphanServerAdopter sharedInstance] setDelegate:self];
-        launchTime_ = [[NSDate date] retain];
+        launchTime_ = [NSDate date];
         _workspaceSessionActive = YES;
         _focusFollowsMouseController = [[iTermFocusFollowsMouseController alloc] init];
     }
@@ -378,12 +375,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
-    [_appNapStoppingActivity release];
-    [_focusFollowsMouseController release];
-    [_globalScopeController release];
-    [_untitledWindowStateMachine release];
 
-    [super dealloc];
 }
 
 #pragma mark - Interface Builder
@@ -447,8 +439,8 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     [viewMenu addItem:[NSMenuItem separatorItem]];
 
     NSSize tabColorViewSize = [ColorsMenuItemView preferredSize];
-    ColorsMenuItemView *labelTrackView = [[[ColorsMenuItemView alloc]
-                                           initWithFrame:NSMakeRect(0, 0, tabColorViewSize.width, tabColorViewSize.height)] autorelease];
+    ColorsMenuItemView *labelTrackView = [[ColorsMenuItemView alloc]
+                                           initWithFrame:NSMakeRect(0, 0, tabColorViewSize.width, tabColorViewSize.height)];
     [self addMenuItemView:labelTrackView toMenu:viewMenu title:NSLocalizedString(@"Current Tab Color", @"Tab color menu title")];
 
     if ([iTermAdvancedSettingsModel showHintsInSplitPaneMenuItems]) {
@@ -723,14 +715,14 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 - (NSMenu *)downloadsMenu {
     if (!downloadsMenu_) {
-        downloadsMenu_ = [[[NSMenuItem alloc] init] autorelease];
+        downloadsMenu_ = [[NSMenuItem alloc] init];
         downloadsMenu_.title = NSLocalizedString(@"Downloads", @"Menu item title");
         NSMenu *mainMenu = [[NSApplication sharedApplication] mainMenu];
         [mainMenu insertItem:downloadsMenu_
                      atIndex:mainMenu.itemArray.count - 1];
-        [downloadsMenu_ setSubmenu:[[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Downloads", @"Menu item title")] autorelease]];
+        [downloadsMenu_ setSubmenu:[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Downloads", @"Menu item title")]];
 
-        NSMenuItem *clearAll = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Clear All", @"Menu item title") action:@selector(clearAllDownloads:) keyEquivalent:@""] autorelease];
+        NSMenuItem *clearAll = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Clear All", @"Menu item title") action:@selector(clearAllDownloads:) keyEquivalent:@""];
         [downloadsMenu_.submenu addItem:clearAll];
         [downloadsMenu_.submenu addItem:[NSMenuItem separatorItem]];
     }
@@ -739,14 +731,14 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
 
 - (NSMenu *)uploadsMenu {
     if (!uploadsMenu_) {
-        uploadsMenu_ = [[[NSMenuItem alloc] init] autorelease];
+        uploadsMenu_ = [[NSMenuItem alloc] init];
         uploadsMenu_.title = NSLocalizedString(@"Uploads", @"Menu item title");
         NSMenu *mainMenu = [[NSApplication sharedApplication] mainMenu];
         [mainMenu insertItem:uploadsMenu_
                      atIndex:mainMenu.itemArray.count - 1];
-        [uploadsMenu_ setSubmenu:[[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Uploads", @"Menu item title")] autorelease]];
+        [uploadsMenu_ setSubmenu:[[NSMenu alloc] initWithTitle:NSLocalizedString(@"Uploads", @"Menu item title")]];
 
-        NSMenuItem *clearAll = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Clear All", @"Menu item title") action:@selector(clearAllUploads:) keyEquivalent:@""] autorelease];
+        NSMenuItem *clearAll = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Clear All", @"Menu item title") action:@selector(clearAllUploads:) keyEquivalent:@""];
         [uploadsMenu_.submenu addItem:clearAll];
         [uploadsMenu_.submenu addItem:[NSMenuItem separatorItem]];
     }
@@ -779,7 +771,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     if ([filename hasSuffix:@".itermcolors"]) {
         RLog(@"Importing color presets from %@", filename);
         if ([iTermColorPresets importColorPresetFromFile:filename]) {
-            NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+            NSAlert *alert = [[NSAlert alloc] init];
             alert.messageText = @"Colors Scheme Imported";
             alert.informativeText = @"The color scheme was imported and added to presets. You can find it under Settings > Profiles > Colors > Load Presets….";
             [alert runModal];
@@ -808,7 +800,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         BOOL isDir;
         [[NSFileManager defaultManager] fileExistsAtPath:filename isDirectory:&isDir];
         iTermController *controller = [iTermController sharedInstance];
-        NSMutableDictionary *bookmark = [[[controller defaultBookmark] mutableCopy] autorelease];
+        NSMutableDictionary *bookmark = [[controller defaultBookmark] mutableCopy];
 
         if (isDir) {
             bookmark[KEY_WORKING_DIRECTORY] = filename;
@@ -935,7 +927,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
     _disableTermination = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
         dispatch_async(dispatch_get_main_queue(), ^{
-            _disableTermination = NO;
+            self->_disableTermination = NO;
         });
     });
     [[iTermPresentationController sharedInstance] update];
@@ -1006,7 +998,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
                                         @"Prompt-on-quit informative text when sessions will be closed");
         }
         [NSApp activateIgnoringOtherApps:YES];
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = [NSString stringWithFormat:NSLocalizedString(@"Quit %@?",
                                                                          @"Prompt-on-quit title"),
                              appName];
@@ -1119,7 +1111,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
          openAllSelector:@selector(newSessionsInWindow:)];
     [self addArrangementsToDockMenu:aMenu];
 
-    return ([aMenu autorelease]);
+    return (aMenu);
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)aNotification {
@@ -1199,7 +1191,7 @@ static NSModalResponse iTermCompareRenderingRunModal(id self, SEL _cmd) {
         }
     }
 
-    _buriedSessionsState = [[coder decodeObjectForKey:iTermBuriedSessionState] retain];
+    _buriedSessionsState = [coder decodeObjectForKey:iTermBuriedSessionState];
     if (finishedLaunching_) {
         [self restoreBuriedSessionsState];
     }
@@ -1383,7 +1375,7 @@ void TurnOnDebugLoggingAutomatically(void) {
             [self restoreWindows];
         });
     } else {
-        [_untitledWindowStateMachine didFinishRestoringWindows];
+        [self->_untitledWindowStateMachine didFinishRestoringWindows];
     }
 
     [[iTermInputSourceForcer sharedInstance] begin];
@@ -1393,7 +1385,7 @@ void TurnOnDebugLoggingAutomatically(void) {
     DLog(@"restoreWindows");
     [_restorableStateController restoreWindowsWithCompletion:^{
         RLog(@"Window restoration is totally complete");
-        [_untitledWindowStateMachine didFinishRestoringWindows];
+        [self->_untitledWindowStateMachine didFinishRestoringWindows];
         ScreenCharGarbageCollectImages();
         [[WorkgroupRestorationCoordinator sharedInstance] reconstructReadyAnchors];
     }];
@@ -1455,8 +1447,8 @@ void TurnOnDebugLoggingAutomatically(void) {
         [[NSProcessInfo processInfo] setAutomaticTerminationSupportEnabled:YES];
         [[NSProcessInfo processInfo] disableAutomaticTermination:@"User Preference"];
         _appNapStoppingActivity =
-                [[[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityUserInitiatedAllowingIdleSystemSleep
-                                                                reason:@"User Preference"] retain];
+                [[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityUserInitiatedAllowingIdleSystemSleep
+                                                                reason:@"User Preference"];
     }
     [self turnOffMetalCaptureEnabledIfNeeded];
     [iTermFontPanel makeDefault];
@@ -1499,7 +1491,7 @@ void TurnOnDebugLoggingAutomatically(void) {
     // Register our services provider. Registration must happen only when we're
     // ready to accept requests, so I do it after a spin of the runloop.
     dispatch_async(dispatch_get_main_queue(), ^{
-        [NSApp setServicesProvider:[[[iTermServiceProvider alloc] init] autorelease]];
+        [NSApp setServicesProvider:[[iTermServiceProvider alloc] init]];
     });
 
     // Sometimes, open untitled doc isn't called in Lion. We need to give application:openFile:
@@ -1529,7 +1521,7 @@ void TurnOnDebugLoggingAutomatically(void) {
             [self restoreBuriedSessionsState];
             [[WorkgroupRestorationCoordinator sharedInstance] reconstructReadyAnchors];
             if ([[iTermController sharedInstance] numberOfDecodesPending] == 0) {
-                _orphansAdopted = YES;
+                self->_orphansAdopted = YES;
                 [[iTermOrphanServerAdopter sharedInstance] openWindowWithOrphansWithCompletion:nil];
             } else {
                 [[NSNotificationCenter defaultCenter] addObserver:self
@@ -1569,10 +1561,10 @@ void TurnOnDebugLoggingAutomatically(void) {
     NSMenu *appMenu = [[[[NSApp mainMenu] itemArray] firstObject] submenu];
     [appMenu addItem:[NSMenuItem separatorItem]];
 
-    NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Toggle Key Recording", @"Menu item title") action:@selector(toggleKeyRecording:) keyEquivalent:@""] autorelease];
+    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Toggle Key Recording", @"Menu item title") action:@selector(toggleKeyRecording:) keyEquivalent:@""];
     [appMenu addItem:item];
 
-    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Replay Recorded Keys", @"Menu item title") action:@selector(replayRecordedKeys:) keyEquivalent:@""] autorelease];
+    item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Replay Recorded Keys", @"Menu item title") action:@selector(replayRecordedKeys:) keyEquivalent:@""];
     [appMenu addItem:item];
 #endif
 }
@@ -1615,36 +1607,36 @@ static iTermKeyEventReplayer *gReplayer;
 #endif
 
 - (NSMenu *)statusBarMenu {
-    NSMenu *menu = [[[NSMenu alloc] init] autorelease];
+    NSMenu *menu = [[NSMenu alloc] init];
     NSMenuItem *item;
 
-    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Settings", @"Menu item title")
+    item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Settings", @"Menu item title")
                                        action:@selector(showAndOrderFrontRegardlessPrefWindow:)
-                                keyEquivalent:@""] autorelease];
+                                keyEquivalent:@""];
     [menu addItem:item];
 
-    item = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bring All Windows to Front", @"Menu item title")
+    item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Bring All Windows to Front", @"Menu item title")
                                        action:@selector(arrangeInFront:)
-                                keyEquivalent:@""] autorelease];
+                                keyEquivalent:@""];
     [menu addItem:item];
 
-    item = [[[NSMenuItem alloc] init] autorelease];
-    _statusIconBuriedSessions = [[[NSMenu alloc] init] autorelease];
+    item = [[NSMenuItem alloc] init];
+    _statusIconBuriedSessions = [[NSMenu alloc] init];
     item.submenu = _statusIconBuriedSessions;
     item.title = NSLocalizedString(@"Buried Sessions", @"Menu item title");
     [menu addItem:item];
 
     [[iTermBuriedSessions sharedInstance] setMenus:[NSArray arrayWithObjects:_buriedSessions, _statusIconBuriedSessions, nil]];
 
-    NSMenuItem *mainMenuItem = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Main Menu", @"Menu item title") action:nil keyEquivalent:@""] autorelease];
+    NSMenuItem *mainMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Main Menu", @"Menu item title") action:nil keyEquivalent:@""];
     mainMenuItem.submenu = [[NSApp mainMenu] it_deepCopy];
     [menu addItem:mainMenuItem];
     
-    item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Quit %@",
+    item = [[NSMenuItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Quit %@",
                                                                                            @"Status item quit menu item"),
                                                iTermApplicationDisplayName()]
                                        action:@selector(terminate:)
-                                keyEquivalent:@""] autorelease];
+                                keyEquivalent:@""];
     [menu addItem:item];
     return menu;
 }
@@ -1701,7 +1693,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (void)revealWithURL:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO];
     NSURLQueryItem *item = [components.queryItems objectPassingTest:^BOOL(NSURLQueryItem *item, NSUInteger index, BOOL *stop) {
         return [item.name isEqualToString:@"sessionid"];
     }];
@@ -1717,7 +1709,7 @@ static iTermKeyEventReplayer *gReplayer;
 
 // Internal means we don't go through AppKit's URL handling; it's a direct call within the app.
 - (BOOL)handleiTerm2URL:(NSURL *)url internal:(BOOL)internal {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO];
     if ([components.path isEqualToString:@"reveal"]) {
         [self revealWithURL:url];
         return YES;
@@ -1773,7 +1765,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (void)popChannel:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO];
     NSString *guid = nil;
     NSString *token = nil;
     for (NSURLQueryItem *item in components.queryItems) {
@@ -1807,7 +1799,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (void)revealMarkFromURL:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO];
     NSString *guid = nil;
     NSString *markID = nil;
     for (NSURLQueryItem *item in components.queryItems) {
@@ -1829,7 +1821,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (void)revealAnnotationFromURL:(NSURL *)url {
-    NSURLComponents *components = [[[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO] autorelease];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO];
     NSString *guid = nil;
     NSString *ann = nil;
     for (NSURLQueryItem *item in components.queryItems) {
@@ -1852,7 +1844,7 @@ static iTermKeyEventReplayer *gReplayer;
 
 - (void)revealLocationFromURL:(NSURL *)url {
     NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
-    iTermSelection *selection = [[[iTermSelection alloc] init] autorelease];
+    iTermSelection *selection = [[iTermSelection alloc] init];
     NSString *guid = nil;
     for (NSURLQueryItem *item in components.queryItems) {
         if ([item.name isEqualToString:@"session"]) {
@@ -1867,8 +1859,8 @@ static iTermKeyEventReplayer *gReplayer;
     selection.delegate = session.textview;
     for (NSURLQueryItem *item in components.queryItems) {
         if ([item.name isEqualToString:@"sub"]) {
-            iTermSubSelection *sub = [[[iTermSubSelection alloc] initWithCompactString:item.value
-                                                                                screen:session.screen] autorelease];
+            iTermSubSelection *sub = [[iTermSubSelection alloc] initWithCompactString:item.value
+                                                                                screen:session.screen];
             if (sub) {
                 [selection addSubSelection:sub];
             }
@@ -1893,12 +1885,12 @@ static iTermKeyEventReplayer *gReplayer;
     const BOOL silent = ([components.queryItems objectPassingTest:^BOOL(NSURLQueryItem *element, NSUInteger index, BOOL *stop) {
         return [element.name isEqualToString:@"silent"];
     }] != nil);
-    iTermCommandURLHandler *handler = [[[iTermCommandURLHandler alloc] initWithCommand:command
+    iTermCommandURLHandler *handler = [[iTermCommandURLHandler alloc] initWithCommand:command
                                                                               hostname:hostname
                                                                               username:username
                                                                              directory:directory
                                                                               offerTab:(iTermController.sharedInstance.currentTerminal != nil)
-                                                                                silent:silent] autorelease];
+                                                                                silent:silent];
     [handler showWithCompletion:^(iTermCommandURLHandler *handler) {
         if ([handler.action isEqualTo: iTermCommandURLHandler.openInWindow]) {
             [[iTermController sharedInstance] openWindow:YES
@@ -1987,7 +1979,7 @@ static iTermKeyEventReplayer *gReplayer;
 
 - (void)updateAddressBookMenu:(NSNotification *)aNotification {
     DLog(@"Updating Profile menu");
-    iTermProfileModelJournalParams *params = [[[iTermProfileModelJournalParams alloc] init] autorelease];
+    iTermProfileModelJournalParams *params = [[iTermProfileModelJournalParams alloc] init];
     if ([iTermAdvancedSettingsModel openProfilesInNewWindow]) {
         params.selector = @selector(newSessionInWindowAtIndex:);
         params.alternateSelector = @selector(newSessionInTabAtIndex:);
@@ -2191,9 +2183,9 @@ static iTermKeyEventReplayer *gReplayer;
 
 - (void)addMenuItemView:(NSView *)view toMenu:(NSMenu *)menu title:(NSString *)title {
     NSMenuItem *newItem;
-    newItem = [[[iTermTabColorMenuItem alloc] initWithTitle:title
+    newItem = [[iTermTabColorMenuItem alloc] initWithTitle:title
                                                      action:@selector(changeTabColorToMenuAction:)
-                                              keyEquivalent:@""] autorelease];
+                                              keyEquivalent:@""];
     [newItem setView:view];
     [menu addItem:newItem];
 }
@@ -2209,11 +2201,10 @@ static iTermKeyEventReplayer *gReplayer;
                                              action:nil
                                       keyEquivalent:@""];
     [superMenu addItem:newMenuItem];
-    [newMenuItem release];
 
     // Create the bookmark submenus for new session
     // Build the bookmark menu
-    bookmarksMenu = [[[NSMenu alloc] init] autorelease];
+    bookmarksMenu = [[NSMenu alloc] init];
 
     [[iTermController sharedInstance] addBookmarksToMenu:bookmarksMenu
                                                supermenu:superMenu
@@ -2231,7 +2222,7 @@ static iTermKeyEventReplayer *gReplayer;
     NSMenuItem *container = [theMenu addItemWithTitle:NSLocalizedString(@"Restore Arrangement", @"Menu item title")
                                                action:nil
                                         keyEquivalent:@""];
-    NSMenu *subMenu = [[[NSMenu alloc] init] autorelease];
+    NSMenu *subMenu = [[NSMenu alloc] init];
     [container setSubmenu:subMenu];
     [self updateRestoreWindowArrangementsMenu:container asTabs:NO fromDock:YES];
 }
@@ -2272,7 +2263,6 @@ static iTermKeyEventReplayer *gReplayer;
                                              keyEquivalent:@""];
             [aMenuItem setTag:i-1];
             [aMenu addItem:aMenuItem];
-            [aMenuItem release];
         }
         i++;
     }
@@ -2616,7 +2606,7 @@ static iTermKeyEventReplayer *gReplayer;
     NSResponder *responder = [self responderForUndoRedoSelector:selector menuItem:sender];
     if (responder) {
         @try {
-            [responder performSelector:selector withObject:sender];
+            [NSApp sendAction:selector to:responder from:sender];
         } @catch (NSException *exception) {
             RLog(@"%@", exception);
         }
@@ -2719,12 +2709,12 @@ static iTermKeyEventReplayer *gReplayer;
                 } else {
                     DLog(@"Create a new window");
                     // Create a new term and add the session to it.
-                    term = [[[PseudoTerminal alloc] initWithSmartLayout:YES
+                    term = [[PseudoTerminal alloc] initWithSmartLayout:YES
                                                              windowType:iTermWindowDefaultType()
                                                         savedWindowType:iTermWindowDefaultType()
                                                              percentage:(iTermPercentage){ .width = -1, .height = -1 }
                                                                  screen:-1
-                                                                profile:nil] autorelease];
+                                                                profile:nil];
                     if (term) {
                         [[iTermController sharedInstance] addTerminalWindow:term];
                         term.terminalGuid = restorableSession.terminalGuid;
@@ -2743,12 +2733,12 @@ static iTermKeyEventReplayer *gReplayer;
                 if (!term) {
                     // Create a new window
                     DLog(@"Create a new window");
-                    term = [[[PseudoTerminal alloc] initWithSmartLayout:YES
+                    term = [[PseudoTerminal alloc] initWithSmartLayout:YES
                                                              windowType:iTermWindowDefaultType()
                                                         savedWindowType:iTermWindowDefaultType()
                                                              percentage:(iTermPercentage){ .width = -1, .height = -1 }
                                                                  screen:-1
-                                                                profile:nil] autorelease];
+                                                                profile:nil];
                     [[iTermController sharedInstance] addTerminalWindow:term];
                     term.terminalGuid = restorableSession.terminalGuid;
                     fitTermToTabs = YES;
@@ -2955,7 +2945,7 @@ static iTermKeyEventReplayer *gReplayer;
 }
 
 - (IBAction)gpuRendererAvailability:(id)sender {
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = @"GPU Renderer Availability";
     PseudoTerminal *term = [[iTermController sharedInstance] currentTerminal];
     PTYSession *session = [term currentSession];
@@ -3092,7 +3082,6 @@ static iTermKeyEventReplayer *gReplayer;
 - (void)restoreBuriedSessionsState {
     if (_buriedSessionsState) {
         [[iTermBuriedSessions sharedInstance] restoreFromState:_buriedSessionsState];
-        [_buriedSessionsState release];
         _buriedSessionsState = nil;
     }
 }
@@ -3226,8 +3215,8 @@ static iTermKeyEventReplayer *gReplayer;
                           profile:(Profile *)preferredProfile
                        completion:(void (^)(PTYSession *))didMakeSession {
     Profile *defaultProfile = preferredProfile ?: [[ProfileModel sharedInstance] defaultBookmark];
-    PTYSession *session = [[term.sessionFactory newSessionWithProfile:defaultProfile
-                                                               parent:nil] autorelease];
+    PTYSession *session = [term.sessionFactory newSessionWithProfile:defaultProfile
+                                                               parent:nil];
     [term addSessionInNewTab:session];
     iTermGeneralServerConnection temp = generalConnection;
     iTermSessionAttachOrLaunchRequest *launchRequest =
@@ -3255,8 +3244,8 @@ static iTermKeyEventReplayer *gReplayer;
                         windowController:(PseudoTerminal *)term
                               completion:(void (^)(PTYSession *))didMakeSession {
     Profile *defaultProfile = [[ProfileModel sharedInstance] defaultBookmark];
-    PTYSession *session = [[term.sessionFactory newSessionWithProfile:defaultProfile
-                                                               parent:nil] autorelease];
+    PTYSession *session = [term.sessionFactory newSessionWithProfile:defaultProfile
+                                                               parent:nil];
     [term addSessionInNewTab:session];
     iTermSessionAttachOrLaunchRequest *launchRequest =
     [iTermSessionAttachOrLaunchRequest launchRequestWithSession:session
@@ -3316,7 +3305,7 @@ static iTermKeyEventReplayer *gReplayer;
     DLog(@"Enqueue(1) restoration for window with identifier %@", identifier);
     [_untitledWindowStateMachine didRestoreSomeWindows];
     [PseudoTerminalRestorer restoreWindowWithIdentifier:identifier
-                                    pseudoTerminalState:[[[PseudoTerminalState alloc] initWithCoder:coder] autorelease]
+                                    pseudoTerminalState:[[PseudoTerminalState alloc] initWithCoder:coder]
                                                  system:NO
                                       completionHandler:completion];
 }
@@ -3328,7 +3317,7 @@ static iTermKeyEventReplayer *gReplayer;
     [_untitledWindowStateMachine didRestoreSomeWindows];
     NSDictionary *dict = [NSDictionary castFrom:record.propertyListValue];
     if (!dict) {
-        NSError *error = [[[NSError alloc] initWithDomain:@"com.iterm2.app-delegate" code:1 userInfo:nil] autorelease];
+        NSError *error = [[NSError alloc] initWithDomain:@"com.iterm2.app-delegate" code:1 userInfo:nil];
         completion(nil, error);
         return;
     }
@@ -3341,7 +3330,6 @@ static iTermKeyEventReplayer *gReplayer;
                                                  system:NO
                                       completionHandler:^(NSWindow *window, NSError *error) {
         DLog(@"Did restore window with state %p", state);
-        [state autorelease];
         if (error || !window) {
             completion(window, error);
             return;
@@ -3464,7 +3452,7 @@ static iTermKeyEventReplayer *gReplayer;
         }
     }
 
-    _buriedSessionsState = [[NSArray fromGraphRecord:app withKey:iTermBuriedSessionState] retain];
+    _buriedSessionsState = [NSArray fromGraphRecord:app withKey:iTermBuriedSessionState];
 
     NSNumber *sessionActivityCounter = [NSNumber fromGraphRecord:app withKey:kSessionActivityCounterKey];
     if (sessionActivityCounter) {

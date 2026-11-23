@@ -469,12 +469,6 @@
   return instance;
 }
 
-- (void)dealloc {
-    [_keyDown release];
-    [_keyUp release];
-    [super dealloc];
-}
-
 #pragma mark - APIs
 
 - (void)setRemapModifiers:(BOOL)remapModifiers {

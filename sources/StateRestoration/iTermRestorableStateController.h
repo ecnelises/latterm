@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 // identifier gets restored. If restoration completes
 // without this window, the callback is run with two nil
 // arguments.
-- (void)setSystemRestorationCallback:(void (^)(NSWindow *, NSError *))callback
+- (void)setSystemRestorationCallback:(void (^)(NSWindow * _Nullable, NSError * _Nullable))callback
                     windowIdentifier:(NSString *)windowIdentifier;
 
 @end

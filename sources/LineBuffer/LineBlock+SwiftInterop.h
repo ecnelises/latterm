@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface LineBlock(SwiftInterop)
 
+- (void)initializeClients;
 - (NSData * _Nullable)decompressedDataFromV4Data:(NSData *)v4data;
 - (void)sanityCheckBidiDisplayInfoForRawLine:(int)i;
 - (void)reallyReloadBidiInfo;

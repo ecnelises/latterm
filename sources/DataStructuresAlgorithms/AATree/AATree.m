@@ -139,6 +139,7 @@
 
 
 @implementation AATree {
+    BOOL _lockInitialized;
 #if DEBUG
     NSMutableArray *_debugJournal;
 #endif
@@ -152,7 +153,10 @@
 
     if (self = [super init]) {
         keyComparator = [aKeyComparator copy];
-        pthread_rwlock_init(&rwLock, NULL);
+        if (pthread_rwlock_init(&rwLock, NULL) != 0) {
+            return nil;
+        }
+        _lockInitialized = YES;
     }
     return self;
 }
@@ -169,7 +173,7 @@
     AATree *copy = [[AATree alloc] initWithKeyComparator:keyComparator];
 
     [self __lockForReading];
-    copy.root = [[root copy] autorelease];
+    copy.root = [root copy];
     copy.count = count;
     [self __unlock];
 
@@ -267,7 +271,7 @@ static NSString *PrependSpaces(NSString *s, NSInteger count) {
     if (maxLeft < interior.length / 2) {
         maxLeft = interior.length / 2;
     }
-    NSMutableArray<NSString *> *padded = [[left mutableCopy] autorelease];
+    NSMutableArray<NSString *> *padded = [left mutableCopy];
     for (NSUInteger i = 0; i < MAX(left.count, right.count); i++) {
         if (i < left.count) {
             padded[i] = PrependSpaces(padded[i], maxLeft - padded[i].length);
@@ -339,12 +343,10 @@ static NSString *PrependSpaces(NSString *s, NSInteger count) {
         }
 #endif
     }
-    [changedNodes release];
     changedNodes = nil;
     [self __unlock];
 #if DEBUG
     @synchronized([AATree class]) {
-        [_debugJournal release];
         _debugJournal = nil;
     }
 #endif
@@ -359,7 +361,7 @@ static NSString *PrependSpaces(NSString *s, NSInteger count) {
 
     [self __lockForWriting];
     changedNodes = [[NSMutableSet alloc] init];
-    AATreeNode *newNode = [[[AATreeNode alloc] initWithData:anObject boundToKey:[[aKey copy] autorelease]] autorelease];
+    AATreeNode *newNode = [[AATreeNode alloc] initWithData:anObject boundToKey:[aKey copy]];
     AATreeNode *prevRoot = self.root;
     self.root = [self __insertNode:newNode atRoot:root];
     if (prevRoot != self.root) {
@@ -373,7 +375,6 @@ static NSString *PrependSpaces(NSString *s, NSInteger count) {
     if (changedNodes.count > 0) {
         [_delegate aaTree:self didChangeSubtreesAtNodes:changedNodes];
     }
-    [changedNodes release];
     changedNodes = nil;
     [self __unlock];
 }
@@ -404,9 +405,9 @@ static NSString *PrependSpaces(NSString *s, NSInteger count) {
 
 - (void) dealloc
 {
-    [root release];
-    [keyComparator release];
-    [super dealloc];
+    if (_lockInitialized) {
+        pthread_rwlock_destroy(&rwLock);
+    }
 }
 
 

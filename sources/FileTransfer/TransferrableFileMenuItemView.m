@@ -36,14 +36,6 @@ static const CGFloat kHorizontalMargin = 14;
     return self;
 }
 
-- (void)dealloc {
-    [_filename release];
-    [_subheading release];
-    [_statusMessage release];
-    [_progressIndicator release];
-    [super dealloc];
-}
-
 // Works around an OS bug. If the menu is closed with an item selected and then reopened, the
 // item remains selected. If you then select a different item, the originally selected item won't
 // get redrawn!
@@ -89,12 +81,12 @@ static const CGFloat kHorizontalMargin = 14;
     }
 
     NSMutableParagraphStyle *leftAlignStyle =
-        [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+        [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     [leftAlignStyle setAlignment:NSTextAlignmentLeft];
     [leftAlignStyle setLineBreakMode:NSLineBreakByTruncatingTail];
 
     NSMutableParagraphStyle *rightAlignStyle =
-        [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+        [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     [rightAlignStyle setAlignment:NSTextAlignmentRight];
     [rightAlignStyle setLineBreakMode:NSLineBreakByTruncatingTail];
 

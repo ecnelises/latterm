@@ -391,7 +391,7 @@ extern const CGFloat PTYTextViewMarginClickGraceWidth;
 @property(nonatomic, weak) id<PTYTextViewDataSource> dataSource;
 
 // The delegate. Interfaces to the rest of the app for this view.
-@property(nonatomic, assign) id<PTYTextViewDelegate> delegate;
+@property(nonatomic, weak) id<PTYTextViewDelegate> delegate;
 
 // Array of dictionaries.
 @property(nonatomic, copy) NSArray<NSDictionary<NSString *, id> *> *smartSelectionRules;

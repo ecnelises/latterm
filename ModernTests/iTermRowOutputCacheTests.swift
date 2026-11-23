@@ -74,6 +74,14 @@ final class iTermRowOutputCacheTests: XCTestCase {
         XCTAssertFalse(lookupTiny(cache, &differentConfig))
     }
 
+    func testScrollbackBoundaryFlagParticipatesInCacheKey() {
+        let cache = iTermRowOutputCache(capacity: 2)
+        var key = makeKey(config: 3, generation: 1)
+        storeTiny(cache, &key)
+        key.contentIdentity.eligibleForDWC = 1
+        XCTAssertFalse(lookupTiny(cache, &key))
+    }
+
     // Capacity is enforced with least-recently-used eviction.
     func testLRUEviction() {
         let cache = iTermRowOutputCache(capacity: 2)

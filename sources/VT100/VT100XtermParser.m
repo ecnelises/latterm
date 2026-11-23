@@ -6,6 +6,7 @@
 //
 //
 
+#import "TokenExecutorHelpers.h"
 #import "VT100XtermParser.h"
 #import "DebugLogging.h"
 #import "NSData+iTerm.h"
@@ -301,9 +302,8 @@ typedef enum {
                @1337: @(XTERMCC_SET_KVP),
                @21337: @(XTERMCC_SET_TAB_STATUS),
            };
-        [theMap retain];
-    });
 
+    });
 
     NSNumber *enumNumber = theMap[@(mode)];
     if (enumNumber) {
@@ -318,12 +318,11 @@ typedef enum {
                                      encoding:(NSStringEncoding)encoding {
     VT100Token *headerToken = [VT100Token token];
     headerToken->type = XTERMCC_MULTITOKEN_HEADER_SET_KVP;
-    headerToken.string = [[[NSString alloc] initWithData:data
-                                                encoding:encoding] autorelease];
+    headerToken.string = [[NSString alloc] initWithData:data
+                                                encoding:encoding];
     [self parseKeyValuePairInToken:headerToken];
-    [headerToken retain];
-    // The analyzer thinks this leaks but it does not.
-    CVectorAppend(vector, headerToken);
+
+    CVectorAppendVT100Token(vector, headerToken);
 }
 
 + (void)emitIncidentalForMultitokenBodyInVector:(CVector *)vector
@@ -331,11 +330,10 @@ typedef enum {
                                        encoding:(NSStringEncoding)encoding {
     VT100Token *token = [VT100Token token];
     token->type = XTERMCC_MULTITOKEN_BODY;
-    token.string = [[[NSString alloc] initWithData:data
-                                          encoding:encoding] autorelease];
-    [token retain];
-    // The analyzer thinks this leaks but it does not.
-    CVectorAppend(vector, token);
+    token.string = [[NSString alloc] initWithData:data
+                                          encoding:encoding];
+
+    CVectorAppendVT100Token(vector, token);
 }
 
 + (void)decodeFromContext:(iTermParserContext *)context
@@ -453,8 +451,8 @@ typedef enum {
                     DLog(@"Multitoken complete, returning MULTITOKEN_END");
                     result->type = XTERMCC_MULTITOKEN_END;
                 } else {
-                    result.string = [[[NSString alloc] initWithData:data
-                                                           encoding:encoding] autorelease];
+                    result.string = [[NSString alloc] initWithData:data
+                                                           encoding:encoding];
                     result->type = [self tokenTypeForMode:mode];
                     DLog(@"Finished parsing, returning type=%d", result->type);
                     if (result->type == XTERMCC_SET_KVP) {

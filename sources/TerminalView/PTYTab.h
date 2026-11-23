@@ -104,10 +104,6 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
 + (NSSize)sizeForTmuxWindowWithAffinity:(NSString *)affinity
                              controller:(TmuxController *)controller;
 
-// Save the contents of all sessions. Used during window restoration so that if
-// the sessions are later restored from a saved arrangement during startup
-// activities, their contents can be rescued.
-+ (void)registerSessionsInArrangement:(NSDictionary *)arrangement;
 + (void)registerBuiltInFunctions;
 + (NSSize)cellSizeForBookmark:(Profile *)bookmark;
 
@@ -124,9 +120,6 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
               reservedTabGUIDs:(NSSet<NSString *> *)reservedTabGUIDs
                        options:(NSDictionary *)options;
 
-+ (NSDictionary<NSString *, PTYSession *> *)sessionMapWithArrangement:(NSDictionary *)arrangement
-                                                             sessions:(NSArray *)sessions;
-
 + (PTYTab *)openTabWithTmuxLayout:(NSMutableDictionary *)parseTree
                     visibleLayout:(NSMutableDictionary *)visibleParseTree
                        inTerminal:(NSWindowController<iTermWindowController> *)term
@@ -134,34 +127,10 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
                    tmuxController:(TmuxController *)tmuxController
                  openInBackground:(BOOL)openInBackground;
 
-+ (BOOL)arrangement:(NSDictionary *)arrangement
-         passesTest:(BOOL (^NS_NOESCAPE)(NSDictionary *candidate))closure;
-+ (NSDictionary *)modifiedArrangement:(NSDictionary *)arrangement
-                              mutator:(NSDictionary *(^)(NSDictionary *))mutator;
-
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-             replacingProfileWithGUID:(NSString *)badGuid
-                          withProfile:(Profile *)goodProfile;
-
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-     replacingOldCWDOfSessionWithGUID:(NSString *)guid
-                           withOldCWD:(NSString *)replacementOldCWD;
-
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-                  settingCustomLocale:(NSString *)lang;
-+ (NSDictionary *)repairedArrangement:(NSDictionary *)arrangement
-                       profileMutator:(Profile *(^)(Profile *))profileMutator;
-
-+ (NSDictionary *)arrangementForSessionWithGUID:(NSString *)sessionGUID
-                                  inArrangement:(NSDictionary *)arrangement;
-
 - (NSDictionary *)arrangementWithOnlySession:(PTYSession *)session
                                      profile:(Profile *)profile
                                  saveProgram:(BOOL)saveProgram
                                 pendingJumps:(NSArray<iTermSSHReconnectionInfo *> *)pendingJumps;
-
-+ (void)openPartialAttachmentsForArrangement:(NSDictionary *)arrangement
-                                  completion:(void (^)(NSDictionary *))completion;
 
 // init/dealloc
 - (instancetype)initWithSession:(PTYSession *)session
@@ -205,7 +174,7 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
 - (void)setIsProcessing:(BOOL)aFlag;
 - (void)terminateAllSessions;
 - (NSArray *)windowPanes;
-- (NSArray*)sessionViews;
+- (NSArray<SessionView *> *)sessionViews;
 - (void)setFilter:(NSString *)query inSession:(PTYSession *)oldSession;
 - (void)replaceActiveSessionWithSyntheticSession:(PTYSession *)newSession;
 - (void)unmaximizeTemporarilyAndActivate:(PTYSession *(^)(void))sessionPicker;
@@ -254,8 +223,6 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
 // NOTE: Do not call this directly. It doesn't handle tmux correctly.
 - (void)maximize;
 - (void)toggleMaximizeSession:(PTYSession *)session;
-// Does any session in this tab require prompt on close?
-- (iTermPromptOnCloseReason *)promptOnCloseReason;
 
 - (NSArray<PTYSession *> *)sessions;
 - (void)removeSession:(PTYSession *)aSession;
@@ -300,20 +267,6 @@ extern NSString *const PTYTabArrangementOptionsPendingJumps;
             constructIdMap:(BOOL)constructIdMap
                    encoder:(id<iTermEncoderAdapter>)encoder
                    options:(NSDictionary *)options;
-+ (BOOL)encodeWithContents:(BOOL)contents
-            constructIdMap:(BOOL)constructIdMap
-                   encoder:(id<iTermEncoderAdapter>)encoder
-                   options:(NSDictionary *)options
-             activeSession:(PTYSession *)activeSession
-                   tabGuid:(NSString *)guid
-             titleOverride:(NSString *)titleOverride
-               isMaximized:(BOOL)isMaximized
-          savedArrangement:(NSDictionary *)savedArrangement
-                     idMap:(NSMutableDictionary<NSNumber *, SessionView *> *)idMap
-                      root:(NSView *)root
-         sessionViewFinder:(SessionView *(^NS_NOESCAPE)(NSString *guid))sessionViewFinder
-             sessionFinder:(PTYSession *(^NS_NOESCAPE)(SessionView *sessionView))sessionFinder;
-+ (NSSplitView *)placeholderSplitViewForSession:(PTYSession *)session;
 
 // Recompute the tab's title (honoring a title override, the tmux prefix, and the
 // subtitle) and publish it to tab.title and the tab bar. Call this when something

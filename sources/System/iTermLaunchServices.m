@@ -71,13 +71,12 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
     NSURL *appURL = nil;
     BOOL set = YES;
 
-    appURL = (NSURL *)LSCopyDefaultApplicationURLForURL((CFURLRef)[NSURL URLWithString:[scheme stringByAppendingString:@":"]],
+    appURL = (__bridge_transfer NSURL *)LSCopyDefaultApplicationURLForURL((__bridge CFURLRef)[NSURL URLWithString:[scheme stringByAppendingString:@":"]],
                                                         kLSRolesAll,
                                                         NULL);
-    [appURL autorelease];
 
     if (appURL == nil) {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = [NSString stringWithFormat:@"iTerm is not the default handler for %@. "
                              @"Would you like to set iTerm as the default handler?",
                              scheme];
@@ -88,7 +87,7 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
     } else if (![[[NSFileManager defaultManager] displayNameAtPath:[appURL path]] isEqualToString:@"iTerm 2"]) {
         NSString *theTitle = [NSString stringWithFormat:@"iTerm is not the default handler for %@. "
                                                         @"Would you like to set iTerm as the default handler?", scheme];
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = theTitle;
         alert.informativeText = [NSString stringWithFormat:@"The current handler is: %@",
                                  [[NSFileManager defaultManager] displayNameAtPath:[appURL path]]];
@@ -99,15 +98,15 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
 
     if (set) {
         _urlHandlersByGuid[scheme] = guid;
-        LSSetDefaultHandlerForURLScheme((CFStringRef)scheme,
-                                        (CFStringRef)[[NSBundle mainBundle] bundleIdentifier]);
+        LSSetDefaultHandlerForURLScheme((__bridge CFStringRef)scheme,
+                                        (__bridge CFStringRef)[[NSBundle mainBundle] bundleIdentifier]);
     }
     [self updateUserDefaults];
 }
 
 - (void)registerForiTerm2Scheme {
-    LSSetDefaultHandlerForURLScheme((CFStringRef)@"iterm2",
-                                    (CFStringRef)[[NSBundle mainBundle] bundleIdentifier]);
+    LSSetDefaultHandlerForURLScheme((__bridge CFStringRef)@"iterm2",
+                                    (__bridge CFStringRef)[[NSBundle mainBundle] bundleIdentifier]);
 }
 
 
@@ -163,9 +162,9 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
             NSError *error;
             if ([_currentFileUrlForOpenPanel getResourceValue:&uti forKey:NSURLTypeIdentifierKey error:&error]) {
                 RLog(@"UTI is %@. Make it the default viewer.", uti);
-                LSSetDefaultRoleHandlerForContentType((CFStringRef)uti,
+                LSSetDefaultRoleHandlerForContentType((__bridge CFStringRef)uti,
                                                       kLSRolesViewer,
-                                                      (CFStringRef)bundleId);
+                                                      (__bridge CFStringRef)bundleId);
                 _currentFileUrlForOpenPanel = nil;
             }
         }
@@ -174,7 +173,7 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
 }
 
 - (BOOL)offerToPickApplicationToOpenFile:(NSString *)fullPath {
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = [NSString stringWithFormat:@"There is no application set to open the document “%@”", [fullPath lastPathComponent]];
     alert.informativeText = @"Choose an application on your computer to open this file.";
     [alert addButtonWithTitle:@"Choose Application…"];
@@ -239,10 +238,10 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
 }
 
 - (BOOL)iTermIsDefaultTerminal {
-    CFStringRef unixExecutableContentType = (CFStringRef)@"public.unix-executable";
+    CFStringRef unixExecutableContentType = (__bridge CFStringRef)@"public.unix-executable";
     CFStringRef unixHandler = LSCopyDefaultRoleHandlerForContentType(unixExecutableContentType, kLSRolesShell);
     NSString *iTermBundleId = [[NSBundle mainBundle] bundleIdentifier];
-    BOOL result = [iTermBundleId isEqualToString:(NSString *)unixHandler];
+    BOOL result = [iTermBundleId isEqualToString:(__bridge NSString *)unixHandler];
     if (unixHandler) {
         CFRelease(unixHandler);
     }
@@ -257,18 +256,18 @@ static NSString *const kOldStyleUrlHandlersUserDefaultsKey = @"URLHandlers";
 }
 
 - (void)setDefaultTerminal:(NSString *)bundleId {
-    CFStringRef unixExecutableContentType = (CFStringRef)@"public.unix-executable";
+    CFStringRef unixExecutableContentType = (__bridge CFStringRef)@"public.unix-executable";
     LSSetDefaultRoleHandlerForContentType(unixExecutableContentType,
                                           kLSRolesShell,
-                                          (CFStringRef) bundleId);
+                                          (__bridge CFStringRef) bundleId);
 }
 
 #pragma mark - NSOpenSavePanelDelegate
 
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url {
     Boolean acceptsItem = NO;
-    LSCanURLAcceptURL((CFURLRef)_currentFileUrlForOpenPanel,
-                      (CFURLRef)url,
+    LSCanURLAcceptURL((__bridge CFURLRef)_currentFileUrlForOpenPanel,
+                      (__bridge CFURLRef)url,
                       kLSRolesViewer,
                       kLSAcceptDefault,
                       &acceptsItem);

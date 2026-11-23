@@ -95,16 +95,12 @@ const NSInteger VT100ScreenBigFileDownloadThreshold = 1024 * 1024 * 1024;
         // tree's broadcast uses altScreenLineBuffer; both broadcasts
         // share the same backing widths / overflow, but route to
         // different observer sets via the distinct guids.
-        // VT100Screen.m is in the non-ARC target; the alloc's +1 must
-        // be balanced. The strong setter retains for us, so autorelease
-        // here so the +1 is paired and we don't leak the data source
-        // (and its guid string) for every session.
         _mutableState.savedTreeMutationThreadDataSource =
-            [[[iTermSavedTreeRCDataSource alloc] initWithGuid:[[NSUUID UUID] UUIDString]
-                                                      backing:(id<iTermResilientCoordinateDataSource>)_mutableState] autorelease];
+            [[iTermSavedTreeRCDataSource alloc] initWithGuid:[[NSUUID UUID] UUIDString]
+                                                      backing:(id<iTermResilientCoordinateDataSource>)_mutableState];
         _mutableState.savedTreeMainThreadDataSource =
-            [[[iTermSavedTreeRCDataSource alloc] initWithGuid:[[NSUUID UUID] UUIDString]
-                                                      backing:(id<iTermResilientCoordinateDataSource>)_state] autorelease];
+            [[iTermSavedTreeRCDataSource alloc] initWithGuid:[[NSUUID UUID] UUIDString]
+                                                      backing:(id<iTermResilientCoordinateDataSource>)_state];
         _mutableState.mutableSavedIntervalTree.mainThreadDataSource =
             _mutableState.savedTreeMainThreadDataSource;
         _mutableState.mutableSavedIntervalTree.mutationThreadDataSource =
@@ -114,22 +110,9 @@ const NSInteger VT100ScreenBigFileDownloadThreshold = 1024 * 1024 * 1024;
 
         [iTermNotificationController sharedInstance];
 
-        dvr_ = [DVR alloc];
-        [dvr_ initWithBufferCapacity:[iTermPreferences intForKey:kPreferenceKeyInstantReplayMemoryMegabytes] * 1024 * 1024];
+        dvr_ = [[DVR alloc] initWithBufferCapacity:[iTermPreferences intForKey:kPreferenceKeyInstantReplayMemoryMegabytes] * 1024 * 1024];
     }
     return self;
-}
-
-- (void)dealloc {
-    [dvr_ release];
-    [_state release];
-    [_mutableState release];
-    [_animatedLines release];
-    [_searchBuffer release];
-    [_searchEngine release];
-    [_syncDistributor release];
-
-    [super dealloc];
 }
 
 - (NSString *)description {
@@ -248,15 +231,9 @@ const NSInteger VT100ScreenBigFileDownloadThreshold = 1024 * 1024 * 1024;
 }
 
 - (iTermTerminalContentSnapshot *)snapshotForcingPrimaryGrid:(BOOL)forcePrimary {
-    if (forcePrimary) {
-        return [[[iTermTerminalContentSnapshot alloc] initWithLineBuffer:_state.linebuffer
-                                                                    grid:_state.primaryGrid
-                                                      cumulativeOverflow:_state.cumulativeScrollbackOverflow] autorelease];
-    }
-    return [[[iTermTerminalContentSnapshot alloc] initWithLineBuffer:_state.linebuffer
-                                                                grid:_state.currentGrid
-                                                  cumulativeOverflow:_state.cumulativeScrollbackOverflow] autorelease];
-
+    return [[iTermTerminalContentSnapshot alloc] initWithLineBuffer:_state.linebuffer
+                                                              grid:forcePrimary ? _state.primaryGrid : _state.currentGrid
+                                                cumulativeOverflow:_state.cumulativeScrollbackOverflow];
 }
 
 - (LineBufferPosition *)positionForTailSearchOfScreen {
@@ -315,15 +292,11 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
 #pragma mark - PTYTextViewDataSource
 
 - (id<iTermTextDataSource>)snapshotDataSource {
-    return [[[iTermTerminalContentSnapshot alloc] initWithLineBuffer:_state.linebuffer
-                                                                grid:_state.currentGrid
-                                                  cumulativeOverflow:_state.cumulativeScrollbackOverflow] autorelease];
+    return [self snapshotForcingPrimaryGrid:NO];
 }
 
 - (id<iTermTextDataSource>)snapshotWithPrimaryGrid {
-    return [[[iTermTerminalContentSnapshot alloc] initWithLineBuffer:_state.linebuffer
-                                                                grid:_state.primaryGrid
-                                                  cumulativeOverflow:_state.cumulativeScrollbackOverflow] autorelease];
+    return [self snapshotForcingPrimaryGrid:YES];
 }
 
 - (void)replaceRange:(VT100GridAbsCoordRange)range
@@ -557,9 +530,9 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
     NSMutableArray<ScreenCharArray *> *result = [NSMutableArray array];
     for (NSInteger i = range.location; i < NSMaxRange(range); i++) {
         const screen_char_t *line = [_state.currentGrid immutableScreenCharsAtLineNumber:i - numLinesInLineBuffer];
-        ScreenCharArray *array = [[[ScreenCharArray alloc] initWithLine:line
+        ScreenCharArray *array = [[ScreenCharArray alloc] initWithLine:line
                                                                  length:width
-                                                           continuation:line[width]] autorelease];
+                                                           continuation:line[width]];
         [result addObject:array];
     }
     return result;
@@ -782,7 +755,7 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
         path = [workingDirectory stringByAppendingPathComponent:filename];
     }
     DLog(@"path=%@", path);
-    SCPPath *scpPath = [[[SCPPath alloc] init] autorelease];
+    SCPPath *scpPath = [[SCPPath alloc] init];
     scpPath.path = path;
     scpPath.hostname = remoteHost.hostname;
     scpPath.username = remoteHost.username;
@@ -1039,14 +1012,14 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
             return NO;
         }
         id<VT100ScreenMarkReading> mark = obj;
-        const VT100GridCoord intervalStart = [_state coordRangeForInterval:mark.entry.interval].start;
-        if (intervalStart.y >= _state.numberOfScrollbackLines + self.currentGrid.cursor.y) {
+        const VT100GridCoord intervalStart = [self->_state coordRangeForInterval:mark.entry.interval].start;
+        if (intervalStart.y >= cursorLine) {
             return NO;
         }
         // Found a screen mark above the cursor.
         const VT100GridAbsCoord cursorAbsCoord = VT100GridAbsCoordFromCoord(intervalStart,
                                                                             self.totalScrollbackOverflow);
-        if (VT100GridAbsCoordRangeContainsAbsCoord(_state.currentPromptRange, cursorAbsCoord)) {
+        if (VT100GridAbsCoordRangeContainsAbsCoord(self->_state.currentPromptRange, cursorAbsCoord)) {
             // Mark is within the current command's range.
             return NO;
         }
@@ -1539,7 +1512,7 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
 
 // Deprecated - old format
 - (NSDictionary *)contentsOfNonCurrentGrid {
-    LineBuffer *temp = [[[LineBuffer alloc] initWithBlockSize:4096] autorelease];
+    LineBuffer *temp = [[LineBuffer alloc] initWithBlockSize:4096];
     VT100Grid *grid;
     if (_state.currentGrid == _state.primaryGrid) {
         grid = _state.altGrid;
@@ -1550,7 +1523,7 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
         return @{};
     }
     [grid appendLines:grid.size.height toLineBuffer:temp];
-    iTermMutableDictionaryEncoderAdapter *encoder = [[[iTermMutableDictionaryEncoderAdapter alloc] init] autorelease];
+    iTermMutableDictionaryEncoderAdapter *encoder = [[iTermMutableDictionaryEncoderAdapter alloc] init];
     [temp encode:encoder maxLines:10000];
     return encoder.mutableDictionary;
 }
@@ -1626,16 +1599,15 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
 - (VT100ScreenState *)switchToSharedState {
     ++_sharedStateCount;
     DLog(@"switch to shared state. count becomes %@", @(_sharedStateCount));
-    VT100ScreenState *savedState = [_state autorelease];
-    _state = [[_mutableState sanitizingAdapter] retain];
+    VT100ScreenState *savedState = _state;
+    _state = [_mutableState sanitizingAdapter];
     return savedState;
 }
 
 - (void)restoreState:(VT100ScreenState *)state {
     --_sharedStateCount;
     DLog(@"restore state. count becomes %@", @(_sharedStateCount));
-    [_state autorelease];
-    _state = [state retain];
+    _state = state;
     BOOL resetDirty = NO;
     if (_forceMergeGrids) {
         DLog(@"merge grids");
@@ -1716,10 +1688,8 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
         [self updateSearchBuffer:mutableStateLineBufferWasDirty];
     } else {
         DLog(@"copy state");
-        [_state autorelease];
         _state = [mutableState copy];
 
-        [_searchBuffer release];
         _searchBuffer = nil;
         if (_wantsSearchBuffer) {
             _searchBuffer = [_state.linebuffer copy];
@@ -1753,7 +1723,6 @@ additionalWordCharacters:(NSString *)additionalWordCharacters
         return;
     }
     if (!_wantsSearchBuffer) {
-        [_searchBuffer release];
         _searchBuffer = nil;
         DLog(@"nil out searchBuffer");
     } else if (!_searchBuffer) {

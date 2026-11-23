@@ -17,39 +17,14 @@
 @property (atomic) BOOL ready;
 @end
 
-@implementation iTermSynchronizedState {
-    const char *_queueLabel;
-}
+@implementation iTermSynchronizedState
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
     self = [super init];
     if (self) {
         _queue = queue;
-        _queueLabel = dispatch_queue_get_label(queue);
-        assert(_queueLabel);
     }
     return self;
-}
-
-- (void)dealloc {
-    [super dealloc];
-}
-
-static void Check(iTermSynchronizedState *self) {
-    assert(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) == self->_queueLabel);
-}
-
-- (instancetype)retain {
-    id result = [super retain];
-    [self check];
-    return result;
-}
-
-// Can't check on release because autorelease pools can be drained on a different thread.
-
-- (instancetype)autorelease {
-    [self check];
-    return [super autorelease];
 }
 
 - (id)state {
@@ -59,7 +34,7 @@ static void Check(iTermSynchronizedState *self) {
 
 - (void)check {
     if (self.ready) {
-        Check(self);
+        dispatch_assert_queue(self.queue);
     }
 }
 
@@ -76,9 +51,8 @@ static void Check(iTermSynchronizedState *self) {
 }
 
 + (instancetype)sharedInstance {
-    iTermMainThreadState *instance = [self uncheckedSharedInstance];
-    [instance check];
-    return instance;
+    dispatch_assert_queue(dispatch_get_main_queue());
+    return [self uncheckedSharedInstance];
 }
 @end
 
@@ -115,13 +89,9 @@ NSPointerArray *gThreads;
 
 #if CHECK_DOUBLE_INVOKES
 + (iTermThread *)currentThread {
-    const char *currentLabel = dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL);
     @synchronized (gThreads) {
-        for (iTermThread *thread in gThreads) {
-            if ([[thread retain] autorelease] == nil) {
-                continue;
-            }
-            if (dispatch_queue_get_label(thread->_queue) == currentLabel) {
+        for (iTermThread *thread in gThreads.allObjects) {
+            if ([thread isCurrentQueue]) {
                 return thread;
             }
         }
@@ -135,17 +105,17 @@ NSPointerArray *gThreads;
     self = [super init];
     if (self) {
         _queue = queue;
-        dispatch_retain(_queue);
-        _state = [stateFactory(_queue) retain];
+        dispatch_queue_set_specific(queue, &_queue, (void *)&_queue, NULL);
+        _state = stateFactory(queue);
         _state.ready = YES;
 #if CHECK_DOUBLE_INVOKES
-        _stacks = [@[] retain];
+        _stacks = @[];
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            gThreads = [[NSPointerArray weakObjectsPointerArray] retain];
+            gThreads = [NSPointerArray weakObjectsPointerArray];
         });
         @synchronized (gThreads) {
-            [gThreads addPointer:self];
+            [gThreads addPointer:(__bridge void *)self];
         }
 #endif
     }
@@ -160,19 +130,18 @@ NSPointerArray *gThreads;
 
 - (instancetype)initWithLabel:(NSString *)label
                  stateFactory:(iTermThreadStateFactoryBlockType)stateFactory {
-    const char *cstr = [iTermThread uniqueQueueLabelWithName:label].UTF8String;
-    return [self initWithQueue:dispatch_queue_create(cstr, DISPATCH_QUEUE_SERIAL)
-                  stateFactory:stateFactory];
+    NSString *queueLabel = [iTermThread uniqueQueueLabelWithName:label];
+    dispatch_queue_t queue = dispatch_queue_create(queueLabel.UTF8String, DISPATCH_QUEUE_SERIAL);
+    return [self initWithQueue:queue stateFactory:stateFactory];
 }
 
 - (void)dealloc {
-    dispatch_release(_queue);
+    dispatch_queue_set_specific(_queue, &_queue, NULL, NULL);
     assert(!_deferred);
-    [_state release];
-#if CHECK_DOUBLE_INVOKES
-    [_stacks release];
-#endif
-    [super dealloc];
+}
+
+- (BOOL)isCurrentQueue {
+    return dispatch_get_specific(&_queue) == (void *)&_queue;
 }
 
 - (NSString *)description {
@@ -210,7 +179,7 @@ NSPointerArray *gThreads;
     while (YES) {
         NSArray *blocks = nil;
         @synchronized (self) {
-            blocks = [[_deferred copy] autorelease];
+            blocks = [_deferred copy];
             [_deferred removeAllObjects];
             if (blocks.count == 0) {
                 _deferred = nil;
@@ -226,51 +195,47 @@ NSPointerArray *gThreads;
 }
 
 - (void)dispatchAsync:(void (^)(id))block {
-    [self retain];
     @synchronized (self) {
         if (_deferred) {
-            [_deferred addObject:[[block copy] autorelease]];
+            [_deferred addObject:[block copy]];
             return;
         }
     }
 #if CHECK_DOUBLE_INVOKES
     NSArray *stacks = [[iTermThread currentThread] currentStacks] ?: @[ [[NSThread callStackSymbols]  componentsJoinedByString:@"\n"] ];
-    [stacks retain];
 #endif
     dispatch_async(_queue, ^{
 #if CHECK_DOUBLE_INVOKES
-        NSArray *saved = [_stacks retain];
-        _stacks = stacks;
+        NSArray *saved = self->_stacks;
+        self->_stacks = stacks;
 #endif
+        [self check];
         block(self->_state);
 #if CHECK_DOUBLE_INVOKES
-        _stacks = saved;
-        [stacks release];
-        [saved release];
+        self->_stacks = saved;
 #endif
-        [self release];
     });
 }
 
 - (void)dispatchSync:(void (^ NS_NOESCAPE)(id))block {
-    [self retain];
-    assert(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) != dispatch_queue_get_label(_queue));
+    dispatch_assert_queue_not(_queue);
     dispatch_sync(_queue, ^{
+        [self check];
         block(self->_state);
-        [self release];
     });
 }
 
 - (void)dispatchRecursiveSync:(void (^ NS_NOESCAPE)(id))block {
-    if (dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) == dispatch_queue_get_label(_queue)) {
-        block(self->_state);
+    if ([self isCurrentQueue]) {
+        [self check];
+        block(_state);
     } else {
         [self dispatchSync:block];
     }
 }
 
 - (iTermCallback *)newCallbackWithBlock:(void (^)(id, id))callback {
-    return [[iTermCallback onThread:self block:callback] retain];
+    return [iTermCallback onThread:self block:callback];
 }
 
 - (iTermCallback *)newCallbackWithWeakTarget:(id)target selector:(SEL)selector userInfo:(id)userInfo {
@@ -284,7 +249,7 @@ NSPointerArray *gThreads;
 }
 
 - (void)check {
-    [_state check];
+    dispatch_assert_queue(_queue);
 }
 
 @end
@@ -301,13 +266,13 @@ NSPointerArray *gThreads;
 }
 
 + (instancetype)onThread:(iTermThread *)thread block:(void (^)(id, id))block {
-    return [[[self alloc] initWithThread:thread block:block] autorelease];
+    return [[self alloc] initWithThread:thread block:block];
 }
 
 - (instancetype)initWithThread:(iTermThread *)thread block:(void (^)(id, id))block {
     self = [super init];
     if (self) {
-        _thread = [thread retain];
+        _thread = thread;
         _block = [block copy];
         _group = dispatch_group_create();
         dispatch_group_enter(_group);
@@ -320,68 +285,48 @@ NSPointerArray *gThreads;
     return self;
 }
 
-- (void)dealloc {
-    [_thread release];
-    [_block release];
 #if CHECK_DOUBLE_INVOKES
+- (void)dealloc {
     assert(_magic == 0xdeadbeef);
-    [_invokeStack release];
-    [_creationStack release];
-    [_debugInfo release];
     _magic = 0;
+}
 #endif
-    dispatch_release(_group);
-    _block = nil;
-    _group = nil;
-    [super dealloc];
+
+- (void)finishWithState:(iTermSynchronizedState *)state object:(id)object callerStack:(NSString *)stack {
+    [_thread check];
+#if CHECK_DOUBLE_INVOKES
+    ITAssertWithMessage(!_invokeStack, @"Previously invoked from:\n%@\n\nNow invoked from:\n%@\n\nCreated from:\n%@\n%@",
+                        _invokeStack, stack, _creationStack, _debugInfo);
+    _invokeStack = [stack copy];
+#endif
+#if DEBUG
+    if (self.trace) {
+        DLog(@"Callback on %@ from %@", _thread.label, stack);
+    }
+#endif
+    _block(state, object);
+    dispatch_group_leave(_group);
+}
+
+- (NSString *)callerStack {
+#if CHECK_DOUBLE_INVOKES
+    return [[iTermThread currentThread] currentStack] ?: [[NSThread callStackSymbols] componentsJoinedByString:@"\n"];
+#else
+    return nil;
+#endif
 }
 
 - (void)invokeWithObject:(id)object {
-#if DEBUG
-    BOOL trace = self.trace;
-#endif
-    void (^block)(id, id) = [_block retain];
-    [self retain];
-#if CHECK_DOUBLE_INVOKES
-    NSString *stack = [[[iTermThread currentThread] currentStack] retain];
-#endif
+    NSString *stack = self.callerStack;
     [_thread dispatchAsync:^(iTermSynchronizedState *state) {
-#if CHECK_DOUBLE_INVOKES
-        ITAssertWithMessage(!self->_invokeStack, @"Previously invoked from:\n%@\n\nNow invoked from:\n%@\n\nCreated from:\n%@\n%@",
-                     _invokeStack, stack, _creationStack, _debugInfo);
-        _invokeStack = [stack copy];
-        [stack release];
-#endif
-#if DEBUG
-        if (trace) {
-            NSLog(@"%@", stack);
-        }
-#endif
-        block(state, object);
-        [block release];
-        dispatch_group_leave(_group);
-        [self release];
+        [self finishWithState:state object:object callerStack:stack];
     }];
 }
 
 - (void)invokeMaybeImmediatelyWithObject:(id)object {
-    void (^block)(id, id) = [_block retain];
-    [self retain];
-#if CHECK_DOUBLE_INVOKES
-    NSString *stack = [[_thread currentStack] retain];
-#endif
+    NSString *stack = self.callerStack;
     [_thread dispatchRecursiveSync:^(iTermSynchronizedState *state) {
-#if CHECK_DOUBLE_INVOKES
-        ITAssertWithMessage(!self->_invokeStack, @"Previously invoked from:\n%@\n\nNow invoked from:\n%@\n\nCreated from:\n%@\n%@",
-                     _invokeStack, stack, _creationStack, _debugInfo);
-
-        _invokeStack = [stack copy];
-        [stack release];
-#endif
-        block(state, object);
-        [block release];
-        dispatch_group_leave(_group);
-        [self release];
+        [self finishWithState:state object:object callerStack:stack];
     }];
 }
 
@@ -412,22 +357,6 @@ NSPointerArray *gThreads;
 
 - (void)check {
     [_thread check];
-}
-
-- (instancetype)retain {
-    id result = [super retain];
-    [self check];
-    return result;
-}
-
-- (oneway void)release {
-    [self check];
-    [super release];
-}
-
-- (instancetype)autorelease {
-    [self check];
-    return [super autorelease];
 }
 
 @end

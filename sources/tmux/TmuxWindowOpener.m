@@ -13,7 +13,7 @@
 #import "PseudoTerminal.h"
 #import "PTYTab.h"
 #import "ScreenChar.h"
-#import "TmuxHistoryParser.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "TmuxLayoutParser.h"
 #import "TmuxStateParser.h"
 

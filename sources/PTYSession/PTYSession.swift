@@ -34,6 +34,12 @@ class PTYSessionClipping: NSObject {
 }
 @objc
 class PTYSessionSwiftState: NSObject {
+    // Keep the detached view available until the user revives the session
+    // or its undo window expires.
+    @objc var viewAwaitingTerminationUndo: SessionView?
+    fileprivate var showingEscapeCursor = false
+    @objc var cursorOverrideChangedDuringFlash = false
+
     // The iTermWorkgroupInstance owns the peer port (held
     // strongly by it and by the workgroup controller's dict).
     weak var peerPort: PTYSessionPeerPort?
@@ -126,6 +132,106 @@ class PTYSessionSwiftState: NSObject {
     // before the sheet finishes.
     var activeAddClippingPanel: AddClippingPanel?
 
+}
+
+extension PTYSession {
+    @objc(restoreLiveSession:inTab:)
+    func restoreLiveSession(_ live: PTYSession, in tab: PTYTab?) {
+        // Swapping the pane can release the tab's last reference to this replay
+        // session. Its zoom state and teardown both belong to the displaced pane.
+        withExtendedLifetime(self) {
+            tab?.showLiveSession(live, inPlaceOf: self)
+            live.restoreState(forZoom: savedStateForZoom)
+            softTerminate()
+        }
+    }
+
+    @objc(showEscapeCursorWithCurrentType:)
+    func showEscapeCursor(currentType: ITermCursorType) {
+        guard !swiftState.showingEscapeCursor,
+              iTermPreferences.bool(forKey: kPreferenceKeyVisualIndicatorForEsc) else { return }
+        swiftState.showingEscapeCursor = true
+        let original = cursorTypeOverride
+        let temporary: ITermCursorType = currentType == .CURSOR_BOX ? .CURSOR_UNDERLINE : .CURSOR_BOX
+        cursorTypeOverride = NSNumber(value: temporary.rawValue)
+        textview?.setCursorNeedsDisplay()
+        swiftState.cursorOverrideChangedDuringFlash = false
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 15.0) { [self] in
+            if !swiftState.cursorOverrideChangedDuringFlash {
+                cursorTypeOverride = original
+            }
+            swiftState.showingEscapeCursor = false
+        }
+    }
+}
+
+// MARK: - Saved sessions
+extension PTYSession {
+    private static let registeredContentsLock = NSLock()
+    private static var registeredContents = [String: NSDictionary]()
+
+    /// Startup registers scrollback before opening the windows that will consume it.
+    /// Keep the original dictionary so registering a session does not copy its scrollback.
+    @objc(registerSessionInArrangement:)
+    static func registerSession(inArrangement arrangement: NSDictionary) {
+        guard let guid = arrangement[SESSION_ARRANGEMENT_GUID] as? String,
+              let contents = arrangement[SESSION_ARRANGEMENT_CONTENTS] as? NSDictionary else { return }
+        DLog("Register arrangement for \(guid)")
+        registeredContentsLock.withLock { registeredContents[guid] = contents }
+    }
+
+    @objc(registeredContentsForGUID:)
+    static func registeredContents(forGUID guid: String) -> NSDictionary? {
+        registeredContentsLock.withLock { registeredContents[guid] }
+    }
+
+    @objc static func removeAllRegisteredSessions() {
+        DLog("Remove all registered sessions")
+        registeredContentsLock.withLock { registeredContents.removeAll() }
+    }
+
+    @objc(guidInArrangement:)
+    static func guid(inArrangement arrangement: [AnyHashable: Any]?) -> String? {
+        guard let arrangement else { return nil }
+        return (arrangement[SESSION_ARRANGEMENT_GUID] ?? arrangement[SESSION_UNIQUE_ID]) as? String
+    }
+
+    @objc(stableIDInArrangement:)
+    static func stableID(inArrangement arrangement: [AnyHashable: Any]) -> String? {
+        (arrangement[SESSION_ARRANGEMENT_STABLE_ID] as? String).flatMap(StableSessionID.canonical)
+    }
+
+    @objc(initialWorkingDirectoryFromArrangement:)
+    static func initialWorkingDirectory(fromArrangement arrangement: [AnyHashable: Any]) -> String? {
+        arrangement[SESSION_ARRANGEMENT_WORKING_DIRECTORY] as? String
+    }
+
+    @objc(repairedArrangement:profileMutator:)
+    static func repairedArrangement(_ arrangement: [AnyHashable: Any],
+                                    profileMutator: ([AnyHashable: Any]) -> [AnyHashable: Any]) -> [AnyHashable: Any] {
+        guard let profile = arrangement[SESSION_ARRANGEMENT_BOOKMARK] as? [AnyHashable: Any] else { return arrangement }
+        var result = arrangement
+        result[SESSION_ARRANGEMENT_BOOKMARK] = profileMutator(profile)
+        return result
+    }
+
+    @objc(repairedArrangement:replacingProfileWithGUID:withProfile:)
+    static func repairedArrangement(_ arrangement: [AnyHashable: Any], replacingProfileWithGUID guid: String,
+                                    withProfile replacement: [AnyHashable: Any]) -> [AnyHashable: Any] {
+        repairedArrangement(arrangement) { profile in
+            profile[KEY_GUID] as? String == guid ? replacement : profile
+        }
+    }
+
+    @objc(repairedArrangement:replacingOldCWDOfSessionWithGUID:withOldCWD:)
+    static func repairedArrangement(_ arrangement: [AnyHashable: Any], replacingOldCWDOfSessionWithGUID guid: String,
+                                    withOldCWD cwd: String) -> [AnyHashable: Any] {
+        guard arrangement[SESSION_ARRANGEMENT_GUID] as? String == guid else { return arrangement }
+        var result = arrangement
+        result[SESSION_ARRANGEMENT_WORKING_DIRECTORY] = cwd
+        return result
+    }
 }
 
 // MARK: - Annotations and Mark URLs

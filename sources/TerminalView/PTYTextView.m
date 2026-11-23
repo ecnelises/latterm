@@ -6,7 +6,6 @@
 #import "FutureMethods.h"
 #import "FutureMethods.h"
 #import "ITAddressBookMgr.h"
-#import "MovePaneController.h"
 #import "MovingAverage.h"
 #import "NSAppearance+iTerm.h"
 #import "NSArray+iTerm.h"
@@ -379,78 +378,76 @@ static CGFloat iTermQuantizeCharacterWidth(CGFloat width, CGFloat scale) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self
                                              selector:@selector(accessibilityAnnounceNewOutputAfterSettle)
                                                object:nil];
-    [_mouseHandler release];
-    [_selection release];
-    [_oldSelection release];
-    [_smartSelectionRules release];
+    _mouseHandler = nil;
+    _selection = nil;
+    _oldSelection = nil;
+    _smartSelectionRules = nil;
 
     [self removeAllTrackingAreas];
     if ([self isFindingCursor]) {
         [self.findCursorWindow close];
     }
-    [_findCursorWindow release];
+    _findCursorWindow = nil;
 
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_colorMap release];
+    _colorMap = nil;
 
-    [_fontTable release];
+    _fontTable = nil;
 
-    [_markedTextAttributes release];
+    _markedTextAttributes = nil;
 
-    [_semanticHistoryController release];
+    _semanticHistoryController = nil;
 
-    [cursor_ release];
+    cursor_ = nil;
     [threeFingerTapGestureRecognizer_ disconnectTarget];
-    [threeFingerTapGestureRecognizer_ release];
+    threeFingerTapGestureRecognizer_ = nil;
 
     _indicatorsHelper.delegate = nil;
-    [_indicatorsHelper release];
+    _indicatorsHelper = nil;
     _selectionScrollHelper.delegate = nil;
-    [_selectionScrollHelper release];
+    _selectionScrollHelper = nil;
     _findOnPageHelper.delegate = nil;
-    [_findOnPageHelper release];
-    [_drawingHook release];
+    _findOnPageHelper = nil;
+    _drawingHook = nil;
     _drawingHelper.delegate = nil;
-    [_drawingHelper release];
-    [_accessibilityHelper release];
-    [_lastAccessibilityCursorLineLocatedString release];
-    [_accessibilityPendingOutputStartAbsY release];
-    [_accessibilityPendingOutputCursorLineString release];
-    [_badgeLabel release];
+    _drawingHelper = nil;
+    _accessibilityHelper = nil;
+    _lastAccessibilityCursorLineLocatedString = nil;
+    _accessibilityPendingOutputStartAbsY = nil;
+    _accessibilityPendingOutputCursorLineString = nil;
+    _badgeLabel = nil;
     [_quickLookController close];
-    [_quickLookController release];
-    [_contextMenuHelper release];
-    [_highlightedRows release];
-    [_scrollAccumulator release];
-    [_horizontalScrollAccumulator release];
+    _quickLookController = nil;
+    _contextMenuHelper = nil;
+    _highlightedRows = nil;
+    _scrollAccumulator = nil;
+    _horizontalScrollAccumulator = nil;
     _keyboardHandler.delegate = nil;
-    [_keyboardHandler release];
+    _keyboardHandler = nil;
     _urlActionHelper.delegate = nil;
-    [_urlActionHelper release];
-    [_indicatorMessagePopoverViewController release];
-    [_notes release];
-    [_lastUrlActionCanceler release];
-    [_portholes release];
-    [_portholesNeedUpdatesJoiner release];
-    [_trackingChildWindows release];
-    [_hoverBlockCopyButton release];
-    [_hoverBlockFoldButton release];
-    [_buttons release];
+    _urlActionHelper = nil;
+    _indicatorMessagePopoverViewController = nil;
+    _notes = nil;
+    _lastUrlActionCanceler = nil;
+    _portholes = nil;
+    _portholesNeedUpdatesJoiner = nil;
+    _trackingChildWindows = nil;
+    _hoverBlockCopyButton = nil;
+    _hoverBlockFoldButton = nil;
+    _buttons = nil;
     [_singleClickTimer invalidate];
-    [_singleClickTimer release];
-    [_marginColorWidthBuffer release];
-    [_marginColorTwiceHeightBuffer release];
+    _singleClickTimer = nil;
+    _marginColorWidthBuffer = nil;
+    _marginColorTwiceHeightBuffer = nil;
     _cursorSlideAnimator.delegate = nil;
-    [_cursorSlideAnimator release];
+    _cursorSlideAnimator = nil;
 
-    [super dealloc];
 }
 
 - (void)setDataSource:(id<PTYTextViewDataSource>)dataSource {
     _dataSource = dataSource;
     if (dataSource) {
-        [_colorMap autorelease];
-        _colorMap = [_dataSource.colorMap retain];
+        _colorMap = _dataSource.colorMap;
     }
 }
 
@@ -1264,7 +1261,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
 - (void)mouseDown:(NSEvent *)event {
     [_singleClickTimer invalidate];
-    [_singleClickTimer release];
     _singleClickTimer = nil;
     
     [self.delegate textViewWillHandleMouseDown:event];
@@ -1443,9 +1439,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     DLog(@"Mouse exited %@", self);
     [self updateUnderlinedURLs:event];
 
-    [_hoverBlockCopyButton autorelease];
     _hoverBlockCopyButton = nil;
-    [_hoverBlockFoldButton autorelease];
     _hoverBlockFoldButton = nil;
     if (_indicatorsHelper.suppressedTopRightIdentifiers.count > 0) {
         _indicatorsHelper.suppressedTopRightIdentifiers = nil;
@@ -1950,10 +1944,10 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     [_dataSource performBlockWithSavedGrid:^(id<PTYTextViewSynchronousUpdateStateReading>  _Nullable savedState) {
         if (savedState) {
             originalState = [self syncUpdateState];
-            DLog(@"PTYTextView.performBlockWithFlickerFixerGrid: set cusrorVisible=%@", _cursorVisible ? @"true": @"false");
+            DLog(@"PTYTextView.performBlockWithFlickerFixerGrid: set cursorVisible=%@", self->_cursorVisible ? @"true": @"false");
             [self loadSyncUpdateState:savedState];
         } else {
-            DLog(@"PTYTextView.performBlockWithFlickerFixerGrid: (no saved grid) cusrorVisible=%@", _cursorVisible ? @"true": @"false");
+            DLog(@"PTYTextView.performBlockWithFlickerFixerGrid: (no saved grid) cursorVisible=%@", self->_cursorVisible ? @"true": @"false");
         }
 
         block();
@@ -1966,12 +1960,11 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 - (void)loadSyncUpdateState:(id<PTYTextViewSynchronousUpdateStateReading>)savedState {
     _cursorVisible = savedState.cursorVisible;
     _drawingHelper.colorMap = savedState.colorMap;
-    [_colorMap autorelease];
-    _colorMap = [savedState.colorMap retain];
+    _colorMap = savedState.colorMap;
 }
 
 - (PTYTextViewSynchronousUpdateState *)syncUpdateState {
-    PTYTextViewSynchronousUpdateState *originalState = [[[PTYTextViewSynchronousUpdateState alloc] init] autorelease];
+    PTYTextViewSynchronousUpdateState *originalState = [[PTYTextViewSynchronousUpdateState alloc] init];
     originalState.colorMap = _colorMap;
     originalState.cursorVisible = _cursorVisible;
     return originalState;
@@ -1987,7 +1980,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     // Layer backing avoids offscreen rendering while Metal draws the text.
     // Remove the layer when legacy drawing resumes to avoid scrolling artifacts.
     if (suppressDrawing) {
-        self.layer = [[[CALayer alloc] init] autorelease];
+        self.layer = [[CALayer alloc] init];
     } else {
         self.layer = nil;
     }
@@ -2517,8 +2510,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (void)setMarkedTextAttributes:(NSDictionary *)attr {
-    [_markedTextAttributes autorelease];
-    _markedTextAttributes = [attr retain];
+    _markedTextAttributes = attr;
 }
 
 - (void)setFontTable:(iTermFontTable *)fontTable
@@ -2545,8 +2537,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     self.charWidth = spacedSize.width;
     self.lineHeight = spacedSize.height;
 
-    [_fontTable autorelease];
-    _fontTable = [fontTable retain];
+    _fontTable = fontTable;
     [self didUpdateFont];
 }
 
@@ -2740,7 +2731,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     anythingIsBlinking = [self _markChangedSelectionAndBlinkDirty:redrawBlink width:width];
 
     // Copy selection position to detect change in selected chars next call.
-    [_oldSelection release];
     _oldSelection = [_selection copy];
 
     // Redraw lines with dirty characters
@@ -3145,9 +3135,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 }
 
 - (void)accessibilityClearPendingOutputState {
-    [_accessibilityPendingOutputStartAbsY release];
     _accessibilityPendingOutputStartAbsY = nil;
-    [_accessibilityPendingOutputCursorLineString release];
     _accessibilityPendingOutputCursorLineString = nil;
 }
 
@@ -3158,7 +3146,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     NSString *oldTrimmed = [oldCursorLineString stringByTrimmingCharactersInSet:
         [NSCharacterSet it_accessibilityTrimCharacterSet]];
     // Remove the command line from the output if it appears at the expected position.
-    NSMutableArray<NSString *> *lines = [[trimmedLines mutableCopy] autorelease];
+    NSMutableArray<NSString *> *lines = [trimmedLines mutableCopy];
     const long long cmdIndex = oldAbsoluteCursorY - firstAbsoluteLine;
     if (cmdIndex >= 0 && cmdIndex < (long long)lines.count &&
         oldTrimmed.length > 0 &&
@@ -3294,9 +3282,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
     if (cursorMovedDown && oldAbsY > 0) {
         if (!outputAnnouncementPending) {
-            [_accessibilityPendingOutputStartAbsY release];
-            _accessibilityPendingOutputStartAbsY = [@(oldAbsY) retain];
-            [_accessibilityPendingOutputCursorLineString release];
+            _accessibilityPendingOutputStartAbsY = @(oldAbsY);
             _accessibilityPendingOutputCursorLineString =
                 [_lastAccessibilityCursorLineLocatedString.string copy];
         }
@@ -3346,8 +3332,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     if (!newLocatedString) {
         newLocatedString = [self accessibilityLocatedStringForCursorLine];
     }
-    [_lastAccessibilityCursorLineLocatedString autorelease];
-    _lastAccessibilityCursorLineLocatedString = [newLocatedString retain];
+    _lastAccessibilityCursorLineLocatedString = newLocatedString;
     _accessibilityPreviousRefreshAbsY = absCursorY;
 }
 
@@ -3851,7 +3836,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
                                                 numberOfLines:[_dataSource numberOfLines]
                                       totalScrollbackOverflow:overflow];
     helper.delegate = self.dataSource;
-    return [helper autorelease];
+    return helper;
 }
 
 - (void)moveSelectionEndpoint:(PTYTextViewSelectionEndpoint)endpoint
@@ -4277,9 +4262,9 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
 - (NSDictionary *(^)(screen_char_t, iTermExternalAttribute *, const iTermImmutableMetadata *))attributeProviderUsingProcessedColors:(BOOL)processed
                                                                         elideDefaultBackgroundColor:(BOOL)elideDefaultBackgroundColor {
-    return [[^NSDictionary *(screen_char_t theChar, iTermExternalAttribute *ea, const iTermImmutableMetadata *metadata) {
+    return [^NSDictionary *(screen_char_t theChar, iTermExternalAttribute *ea, const iTermImmutableMetadata *metadata) {
         return [self charAttributes:theChar externalAttributes:ea metadata:metadata processed:processed elideDefaultBackgroundColor:elideDefaultBackgroundColor];
-    } copy] autorelease];
+    } copy];
 }
 
 - (id)contentWithAttributes:(BOOL)attributes timestamps:(BOOL)timestamps {
@@ -4308,10 +4293,10 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
 // Save method
 - (void)saveDocumentAs:(id)sender {
-    iTermModernSavePanel *aSavePanel = [[[iTermModernSavePanel alloc] init] autorelease];
+    iTermModernSavePanel *aSavePanel = [[iTermModernSavePanel alloc] init];
     aSavePanel.preferredSSHIdentity = SSHIdentity.localhost;
 
-    NSButton *timestampsButton = [[[NSButton alloc] init] autorelease];
+    NSButton *timestampsButton = [[NSButton alloc] init];
     [timestampsButton setButtonType:NSButtonTypeSwitch];
     timestampsButton.title = @"Include timestamps";
     NSString *userDefaultsKey = @"NoSyncSaveWithTimestamps";
@@ -4327,7 +4312,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         path = [searchPaths objectAtIndex:0];
     }
 
-    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"yyyy-MM-dd hh-mm-ss" options:0 locale:nil];
     NSString *formattedDate = [dateFormatter stringFromDate:[NSDate date]];
     // Stupid mac os can't have colons in filenames
@@ -4437,7 +4422,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
 - (void)highlightMarkOnLine:(int)line hasErrorCode:(BOOL)hasErrorCode {
     const CGFloat y = line * _lineHeight + NSMinY(self.frame);
-    NSView *highlightingView = [[[iTermHighlightRowView alloc] initWithFrame:NSMakeRect(0, y, self.frame.size.width, _lineHeight)] autorelease];
+    NSView *highlightingView = [[iTermHighlightRowView alloc] initWithFrame:NSMakeRect(0, y, self.frame.size.width, _lineHeight)];
     [highlightingView setWantsLayer:YES];
     [self.enclosingScrollView.documentView addSubview:highlightingView];
 
@@ -4448,10 +4433,8 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
     // Animate it out, removing from superview when complete.
     [CATransaction begin];
-    [highlightingView retain];
     [CATransaction setCompletionBlock:^{
         [highlightingView removeFromSuperview];
-        [highlightingView release];
     }];
     const NSTimeInterval duration = PTYTextViewHighlightLineAnimationDuration;
 
@@ -4476,7 +4459,6 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     [_delegate textViewDidHighlightMark];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(duration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self removeHighlightedRow:entry];
-        [entry release];
     });
 }
 
@@ -4487,7 +4469,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 #pragma mark - Annotations
 
 - (void)addViewForNote:(id<PTYAnnotationReading>)annotation focus:(BOOL)focus visible:(BOOL)visible {
-    PTYNoteViewController *note = [[[PTYNoteViewController alloc] initWithAnnotation:annotation] autorelease];
+    PTYNoteViewController *note = [[PTYNoteViewController alloc] initWithAnnotation:annotation];
     note.delegate = self;
     [_notes addObject:note];
     // Make sure scrollback overflow is reset.
@@ -4513,7 +4495,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
         return;
     }
     [self withRelativeCoordRange:_selection.lastAbsRange.coordRange block:^(VT100GridCoordRange range) {
-        PTYAnnotation *annotation = [[[PTYAnnotation alloc] init] autorelease];
+        PTYAnnotation *annotation = [[PTYAnnotation alloc] init];
         [_dataSource addNote:annotation inRange:range focus:YES visible:YES];
     }];
 }
@@ -4888,7 +4870,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
 
     // start the drag
     NSPasteboardItem *pbItem = [imageInfo pasteboardItem];
-    NSDraggingItem *dragItem = [[[NSDraggingItem alloc] initWithPasteboardWriter:pbItem] autorelease];
+    NSDraggingItem *dragItem = [[NSDraggingItem alloc] initWithPasteboardWriter:pbItem];
     [dragItem setDraggingFrame:NSMakeRect(dragPoint.x, dragPoint.y, icon.size.width, icon.size.height)
                       contents:icon];
     NSDraggingSession *draggingSession = [self beginDraggingSessionWithItems:@[ dragItem ]
@@ -4912,7 +4894,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     }
 
     imageSize = NSMakeSize(_charWidth * length, _lineHeight);
-    anImage = [[[NSImage alloc] initWithSize:imageSize] autorelease];
+    anImage = [[NSImage alloc] initWithSize:imageSize];
     [anImage lockFocus];
     if ([aString length] > 15) {
         tmpString = [NSString stringWithFormat:@"%@…",
@@ -4932,10 +4914,10 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     dragPoint.x -= imageSize.width / 2;
 
     // start the drag
-    NSPasteboardItem *pbItem = [[[NSPasteboardItem alloc] init] autorelease];
+    NSPasteboardItem *pbItem = [[NSPasteboardItem alloc] init];
     [pbItem setString:aString forType:UTTypeUTF8PlainText.identifier];
     NSDraggingItem *dragItem =
-        [[[NSDraggingItem alloc] initWithPasteboardWriter:pbItem] autorelease];
+        [[NSDraggingItem alloc] initWithPasteboardWriter:pbItem];
     [dragItem setDraggingFrame:NSMakeRect(dragPoint.x,
                                           dragPoint.y,
                                           anImage.size.width,
@@ -4978,7 +4960,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
                 [files componentsJoinedByString:@", "],
                 path.username, path.hostname, path.path];
     }
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = text;
     [alert addButtonWithTitle:@"OK"];
     [alert addButtonWithTitle:@"Cancel"];
@@ -5071,7 +5053,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     iTermTextExtractor *extractor = [iTermTextExtractor textExtractorWithDataSource:_dataSource];
 
     switch (type) {
-        case 0: // visible range
+        case 0: { // visible range
             visibleRect = [[self enclosingScrollView] documentVisibleRect];
             // Starting from which line?
             lineOffset = visibleRect.origin.y / _lineHeight;
@@ -5095,6 +5077,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
                                                   coords:nil
                                        deduplicateDECDHL:YES]];
             break;
+        }
         case 1: // text selection
             [self printContent:[self selectedAttributedTextWithPad:NO]];
             break;
@@ -5114,17 +5097,18 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     // print it.
     NSRect frame = [[self enclosingScrollView] documentVisibleRect];
     NSTextView *tempView =
-        [[[NSTextView alloc] initWithFrame:frame] autorelease];
+        [[NSTextView alloc] initWithFrame:frame];
 
     iTermPrintAccessoryViewController *accessory = nil;
     NSAttributedString *attributedString;
     if ([content isKindOfClass:[NSAttributedString class]]) {
         attributedString = content;
-        accessory = [[[iTermPrintAccessoryViewController alloc] initWithNibName:@"iTermPrintAccessoryViewController"
-                                                                         bundle:[NSBundle bundleForClass:self.class]] autorelease];
+        accessory = [[iTermPrintAccessoryViewController alloc] initWithNibName:@"iTermPrintAccessoryViewController"
+                                                                         bundle:[NSBundle bundleForClass:self.class]];
+        __weak iTermPrintAccessoryViewController *weakAccessory = accessory;
         accessory.userDidChangeSetting = ^() {
             NSAttributedString *theAttributedString = nil;
-            if (accessory.blackAndWhite) {
+            if (weakAccessory.blackAndWhite) {
                 theAttributedString = [attributedString attributedStringByRemovingColor];
             } else {
                 theAttributedString = attributedString;
@@ -5136,8 +5120,8 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
             @{ NSBackgroundColorAttributeName: [NSColor textBackgroundColor],
                NSForegroundColorAttributeName: [NSColor textColor],
                NSFontAttributeName: _fontTable.asciiFont.font ?: [NSFont userFixedPitchFontOfSize:0] };
-        attributedString = [[[NSAttributedString alloc] initWithString:content
-                                                            attributes:attributes] autorelease];
+        attributedString = [[NSAttributedString alloc] initWithString:content
+                                                            attributes:attributes];
     }
     [[tempView textStorage] setAttributedString:attributedString];
 
@@ -5177,11 +5161,11 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     DLog(@"setMarkedText%@ selectedRange%@ replacementRange:%@",
          aString, NSStringFromRange(selRange), NSStringFromRange(replacementRange));
     if ([aString isKindOfClass:[NSAttributedString class]]) {
-        _drawingHelper.markedText = [[[NSAttributedString alloc] initWithString:[aString string]
-                                                                     attributes:[self markedTextAttributes]] autorelease];
+        _drawingHelper.markedText = [[NSAttributedString alloc] initWithString:[aString string]
+                                                                     attributes:[self markedTextAttributes]];
     } else {
-        _drawingHelper.markedText = [[[NSAttributedString alloc] initWithString:aString
-                                                                     attributes:[self markedTextAttributes]] autorelease];
+        _drawingHelper.markedText = [[NSAttributedString alloc] initWithString:aString
+                                                                     attributes:[self markedTextAttributes]];
     }
     _drawingHelper.inputMethodMarkedRange = NSMakeRange(0, [_drawingHelper.markedText length]);
     _drawingHelper.inputMethodSelectedRange = selRange;
@@ -5384,7 +5368,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     // Fall back to reading from the terminal screen buffer. This is needed for
     // Voice Control, which queries text near the cursor to decide whether to
     // insert spaces between dictation chunks.
-    NSMutableString *result = [[[self screenTextInNSRange:proposedRange] mutableCopy] autorelease];
+    NSMutableString *result = [[self screenTextInNSRange:proposedRange] mutableCopy];
     if (!result) {
         if (actualRange) {
             *actualRange = NSMakeRange(NSNotFound, 0);
@@ -5408,7 +5392,7 @@ static NSString *iTermStringForEventPhase(NSEventPhase eventPhase) {
     if (actualRange) {
         *actualRange = NSMakeRange(proposedRange.location, result.length);
     }
-    return [[[NSAttributedString alloc] initWithString:result] autorelease];
+    return [[NSAttributedString alloc] initWithString:result];
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)thePoint {
@@ -5837,10 +5821,11 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (void)createFindCursorWindowWithFireworks:(BOOL)forceFireworks {
     [self scrollRectToVisible:[self cursorFrame]];
-    self.findCursorWindow = [[[NSWindow alloc] initWithContentRect:NSZeroRect
+    self.findCursorWindow = [[NSWindow alloc] initWithContentRect:NSZeroRect
                                                          styleMask:NSWindowStyleMaskBorderless
                                                            backing:NSBackingStoreBuffered
-                                                             defer:YES] autorelease];
+                                                             defer:YES];
+    _findCursorWindow.releasedWhenClosed = NO;
     [_findCursorWindow setLevel:NSFloatingWindowLevel];
     NSRect screenFrame = [self cursorScreenFrame];
     [_findCursorWindow setFrame:screenFrame display:YES];
@@ -5897,9 +5882,9 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (void)endFindCursor {
     [NSAnimationContext beginGrouping];
-    NSWindow *theWindow = [_findCursorWindow retain];
+    NSWindow *theWindow = _findCursorWindow;
     [[NSAnimationContext currentContext] setCompletionHandler:^{
-        [theWindow close];  // This sends release to the window
+        [theWindow close];
     }];
     [[_findCursorWindow animator] setAlphaValue:0];
     [NSAnimationContext endGrouping];
@@ -5911,8 +5896,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (void)setFindCursorView:(iTermFindCursorView *)view {
-    [_findCursorView autorelease];
-    _findCursorView = [view retain];
+    _findCursorView = view;
 }
 
 - (void)showFireworks {
@@ -5972,7 +5956,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         iTermPromise<NSString *> *promise = [self recordSelection:selection];
         [promise onQueue:dispatch_get_main_queue() then:^(NSString * _Nonnull value) {
             DLog(@"Update scope variables for selection");
-            [_delegate textViewSelectionDidChangeToTruncatedString:value];
+            [self.delegate textViewSelectionDidChangeToTruncatedString:value];
         }];
     } else {
         [_delegate textViewSelectionDidChangeToTruncatedString:@""];
@@ -6458,12 +6442,12 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
             !VT100GridAbsCoordEquals([self absCoordForButton:_buttons[i]], place.coord) ||
             ![_buttons[i] matchesMark:place.mark]) {
             if (place.mark.copyBlockID) {
-                iTermTerminalButton *button = [[[iTermTerminalCopyButton alloc] initWithID:place.id
+                iTermTerminalButton *button = [[iTermTerminalCopyButton alloc] initWithID:place.id
                                                                                    blockID:place.mark.copyBlockID
                                                                                       mark:place.mark
                                                                                       absY:nil
-                                                                                   tooltip:@"Copy Block to clipboard"] autorelease];
-                NSString *blockID = [[place.mark.copyBlockID copy] autorelease];
+                                                                                   tooltip:@"Copy Block to clipboard"];
+                NSString *blockID = [place.mark.copyBlockID copy];
 
                 button.action = ^(NSPoint locationInWindow) {
                     [weakSelf copyBlock:blockID
@@ -6472,12 +6456,12 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
                 };
                 [updated addObject:button];
             } else if (place.mark.code) {
-                iTermTerminalButton *button = [[[iTermTerminalCustomButton alloc] initWithID:place.id
+                iTermTerminalButton *button = [[iTermTerminalCustomButton alloc] initWithID:place.id
                                                                                         code:place.mark.code
                                                                                         icon:place.mark.icon
                                                                                         mark:place.mark
                                                                                         absY:nil
-                                                                                       valid:place.mark.valid] autorelease];
+                                                                                       valid:place.mark.valid];
                 const int code = place.mark.code;
 
                 button.action = ^(NSPoint locationInWindow) {
@@ -6485,8 +6469,8 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
                 };
                 [updated addObject:button];
             } else if (place.mark.channelUID) {
-                iTermTerminalButton *button = [[[iTermTerminalRevealChannelButton alloc] initWithPlace:place] autorelease];
-                NSString *uid = [[place.mark.channelUID copy] autorelease];
+                iTermTerminalButton *button = [[iTermTerminalRevealChannelButton alloc] initWithPlace:place];
+                NSString *uid = [place.mark.channelUID copy];
                 button.action = ^(NSPoint locationInWindow) {
                     [weakSelf revealChannelWithUID:uid];
                 };
@@ -6511,8 +6495,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
         [updated addObjectsFromArray:[self commandButtonsForMark:mark line:markLine shouldFloat:NO offByOne:YES]];
     }
 
-    [_buttons autorelease];
-    _buttons = [updated retain];
+    _buttons = updated;
     return _buttons;
 }
 
@@ -6601,12 +6584,12 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (void)popCommandCopyMenuAt:(NSPoint)locationInWindow for:(id<VT100ScreenMarkReading>)mark {
-    if (![[mark retain] autorelease]) {
+    if (!mark) {
         return;
     }
     NSString *command = mark.fullCommand;
 
-    iTermSimpleContextMenu *menu = [[[iTermSimpleContextMenu alloc] init] autorelease];
+    iTermSimpleContextMenu *menu = [[iTermSimpleContextMenu alloc] init];
     if (command.length) {
         __weak __typeof(self) weakSelf = self;
         [menu addItemWithTitle:@"Copy Command" action:^{
@@ -6635,7 +6618,7 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (iTermSelection *)selectionForCommandAndOutputOfMark:(id<VT100ScreenMarkReading>)mark {
     const VT100GridAbsCoordRange absRange = [self.delegate textViewCoordRangeForCommandAndOutputAtMark:mark];
-    iTermSelection *selection = [[[iTermSelection alloc] init] autorelease];
+    iTermSelection *selection = [[iTermSelection alloc] init];
     selection.delegate = self;
     [selection beginSelectionAtAbsCoord:absRange.start
                                    mode:kiTermSelectionModeLine
@@ -6663,16 +6646,16 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 - (void)popShareMenuAt:(NSPoint)locationInWindow 
                absLine:(long long)absLine
                forMark:(id<VT100ScreenMarkReading>)mark {
-    if (![[mark retain] autorelease]) {
+    if (!mark) {
         return;
     }
 
     iTermCommandShareMenuProvider *provider =
-    [[[iTermCommandShareMenuProvider alloc] initWithMark:mark
+    [[iTermCommandShareMenuProvider alloc] initWithMark:mark
                                          promisedContent:[self promisedAttributedStringForCommandAndOutputOfMark:mark]
                                   defaultBackgroundColor:[self defaultBackgroundColor]
                                               commandURL:[self commandURLForMark:mark
-                                                                         absLine:absLine]] autorelease];
+                                                                         absLine:absLine]];
     [provider popWithLocationInWindow:locationInWindow view:self];
 }
 
@@ -7621,13 +7604,12 @@ static NSString *iTermStringFromRange(NSRange range) {
             return VT100GridCoordMake(-1, -1);
         } else if (pathMark) {
             __weak __typeof(self) weakSelf = self;
-            [_singleClickTimer release];
             _singleClickTimer = nil;
-            _singleClickTimer = [[NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval]
+            _singleClickTimer = [NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval]
                                                                    repeats:NO
                                                                      block:^(NSTimer * _Nonnull timer) {
                 [weakSelf openPathMark:pathMark];
-            }] retain];
+            }];
         } else if (foldMarkOnLine) {
             DLog(@"mouseUp: click on folded line, unfolding");
             [self unfoldMark:foldMarkOnLine];
@@ -7645,13 +7627,11 @@ static NSString *iTermStringFromRange(NSRange range) {
 }
 
 - (void)openPathMark:(id<iTermPathMarkReading>)pathMark {
-    [_singleClickTimer release];
     _singleClickTimer = nil;
     [self.delegate textViewUserDidClickPathMark:pathMark];
 }
 
 - (void)mouseHandlerCancelSingleClick:(PTYMouseHandler *)sender {
-    [_singleClickTimer release];
     _singleClickTimer = nil;
     [self.delegate textViewCancelSingleClick];
 }
@@ -7955,7 +7935,7 @@ allowDragBeforeMouseDown:(BOOL)allowDragBeforeMouseDown
             }
             data = downOrLeft ? [_dataSource.terminalOutput keyArrowRight:flags] : [_dataSource.terminalOutput keyArrowLeft:flags];
         }
-        return [[[NSString alloc] initWithData:data encoding:NSISOLatin1StringEncoding] autorelease];
+        return [[NSString alloc] initWithData:data encoding:NSISOLatin1StringEncoding];
     } else {
         *forceLatin1 = NO;
         if (!vertical) {

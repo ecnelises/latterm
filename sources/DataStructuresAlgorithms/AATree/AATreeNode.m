@@ -41,7 +41,7 @@
 - (void) addKeyToArray:(NSMutableArray *)anArray {
 
 	[left addKeyToArray:anArray];
-	[anArray addObject:[[key copy] autorelease]];
+	[anArray addObject:[key copy]];
 	[right addKeyToArray:anArray];
 }
 
@@ -49,8 +49,8 @@
 - (id) copyWithZone:(NSZone *)zone {
 
 	AATreeNode *copy = [[AATreeNode alloc] initWithData:data boundToKey:key];
-	copy.left = [[left copy] autorelease];
-	copy.right = [[right copy] autorelease];
+	copy.left = [left copy];
+	copy.right = [right copy];
 	copy.level = level;
 	return copy;
 }
@@ -63,7 +63,7 @@
 	NSMutableString *pre = [[NSMutableString alloc] init];
 	for (int i=0; i<indent; i++) [pre appendString:@"   "];
 	NSLog(@"%@%@-%@(%i)", pre, key, data, level);
-	[pre release];
+
 
 	if (left) [left printWithIndent:(indent+1)];
 }
@@ -84,7 +84,7 @@
         [pre appendString:@"   "];
     }
     [parts addObject:[NSString stringWithFormat:@"%@%@- (%i)\n%@", pre, key, level, dataFormatter([pre stringByAppendingString:@" |-"], data)]];
-    [pre release];
+
 
     if (left) {
         NSString *s = [left stringWithIndent:(indent+1) dataFormatter:dataFormatter];
@@ -101,8 +101,8 @@
         if ((newValue || self.right) && newValue == self.right) {
             NSLog(@"Setting left equal to right");
         }
-        [left autorelease];
-        left = [newValue retain];
+
+        left = newValue;
     }
 }
 
@@ -118,8 +118,7 @@
             NSLog(@"Setting right equal to left");
         }
 
-        [right autorelease];
-        right = [newValue retain];
+        right = newValue;
     }
 }
 
@@ -129,17 +128,5 @@
     }
 }
 #endif
-
-- (void) dealloc
-{
-	[left release];
-	[right release];
-	[data release];
-	[key release];
-    data = nil;
-    key = nil;
-	[super dealloc];
-}
-
 
 @end

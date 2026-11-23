@@ -10,7 +10,6 @@
 void CVectorReleaseObjects(const CVector *vector) {
     const int n = CVectorCount(vector);
     for (int i = 0; i < n; i++) {
-        __unsafe_unretained id obj = CVectorGet(vector, i);
-        [obj release];
+        (void)CFBridgingRelease(CVectorGet(vector, i));
     }
 }

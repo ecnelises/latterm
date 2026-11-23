@@ -23,7 +23,7 @@ typedef NS_ENUM(NSInteger, PTYNoteViewTipEdge) {
 @end
 
 @interface PTYNoteView : NSView<NSGestureRecognizerDelegate> {
-    PTYNoteViewController *noteViewController_;  // weak
+    __weak PTYNoteViewController *noteViewController_;
     BOOL dragRight_;
     BOOL dragBottom_;
     NSPoint dragOrigin_;
@@ -31,12 +31,12 @@ typedef NS_ENUM(NSInteger, PTYNoteViewTipEdge) {
     NSPoint point_;
     NSView *contentView_;
     PTYNoteViewTipEdge tipEdge_;
-    id<PTYNoteViewDelegate> delegate_;
+    __weak id<PTYNoteViewDelegate> delegate_;
     NSButton *killButton_;
     NSColor *backgroundColor_;
 }
 
-@property(nonatomic, assign) id<PTYNoteViewDelegate> delegate;
+@property(nonatomic, weak) id<PTYNoteViewDelegate> delegate;
 
 // Location of arrow relative to top-left corner of this view.
 @property(nonatomic, assign) NSPoint point;

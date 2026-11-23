@@ -30,7 +30,7 @@
 - (instancetype)initWithShortcut:(iTermShortcut *)shortcut {
     self = [super init];
     if (self) {
-        _shortcut = [shortcut retain];
+        _shortcut = shortcut;
         _weakSessions = [[NSMutableArray alloc] init];
         _hotKey = [[iTermCarbonHotKeyController sharedInstance] registerShortcut:shortcut
                                                                           target:self
@@ -42,9 +42,6 @@
 
 - (void)dealloc {
     assert(!_hotKey);
-    [_weakSessions release];
-    [_shortcut release];
-    [super dealloc];
 }
 
 - (void)unregister {
@@ -113,11 +110,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [_registrations release];
-    [super dealloc];
-}
-
 - (iTermSessionHotkeyRegistration *)registrationForSession:(id<iTermHotKeyNavigableSession>)session index:(NSUInteger *)index {
     for (iTermSessionHotkeyRegistration *registration in _registrations) {
         *index = [registration indexOfSession:session];
@@ -147,7 +139,7 @@
     if (shortcut) {
         iTermSessionHotkeyRegistration *registration = [self registrationForShortcut:shortcut];
         if (!registration) {
-            registration = [[[iTermSessionHotkeyRegistration alloc] initWithShortcut:shortcut] autorelease];
+            registration = [[iTermSessionHotkeyRegistration alloc] initWithShortcut:shortcut];
             [_registrations addObject:registration];
         }
         [registration.weakSessions addObject:session.weakSelf];

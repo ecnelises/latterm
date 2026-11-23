@@ -221,17 +221,22 @@ static const double kFloatingPointTolerance = 0.00001;
 }
 
 - (void)testBasicPasteString {
-    [_helper pasteString:kHelloWorld
-                  slowly:NO
-        escapeShellChars:NO
-                isUpload:NO
-         allowBracketing:YES
-            tabTransform:kTabTransformNone
-            spacesPerTab:0];
-    [self runTimer];
-    XCTAssert([_writeBuffer isEqualToString:kHelloWorld]);
-    XCTAssert(_helper.duration == 0);
-    XCTAssert([[[[PasteboardHistory sharedInstance] entries][0] mainValue] isEqualToString:kHelloWorld]);
+    [iTermSelectorSwizzler swizzleSelector:@selector(saveToPasteHistoryWhenSecureInputEnabled)
+                                 fromClass:iTermAdvancedSettingsModel.class
+                                 withBlock:^BOOL { return YES; }
+                                  forBlock:^{
+            [_helper pasteString:kHelloWorld
+                          slowly:NO
+                escapeShellChars:NO
+                        isUpload:NO
+                 allowBracketing:YES
+                    tabTransform:kTabTransformNone
+                    spacesPerTab:0];
+            [self runTimer];
+            XCTAssert([_writeBuffer isEqualToString:kHelloWorld]);
+            XCTAssert(_helper.duration == 0);
+            XCTAssert([[[[PasteboardHistory sharedInstance] entries][0] mainValue] isEqualToString:kHelloWorld]);
+    }];
 }
 
 - (void)testDefaultFlagsOnPasteString {
@@ -414,18 +419,23 @@ static const double kFloatingPointTolerance = 0.00001;
 }
 
 - (void)testBracketingOnPasteString {
-    _shouldBracket = YES;
-    [_helper pasteString:kHelloWorld
-                  slowly:NO
-        escapeShellChars:NO
-                isUpload:NO
-         allowBracketing:YES
-            tabTransform:kTabTransformNone
-            spacesPerTab:0];
-    [self runTimer];
-    NSString *expected = @"\x1b[200~Hello World\x1b[201~";
-    XCTAssert([_writeBuffer isEqualToString:expected]);
-    XCTAssert([[[[PasteboardHistory sharedInstance] entries][0] mainValue] isEqualToString:kHelloWorld]);
+    [iTermSelectorSwizzler swizzleSelector:@selector(saveToPasteHistoryWhenSecureInputEnabled)
+                                 fromClass:iTermAdvancedSettingsModel.class
+                                 withBlock:^BOOL { return YES; }
+                                  forBlock:^{
+            _shouldBracket = YES;
+            [_helper pasteString:kHelloWorld
+                          slowly:NO
+                escapeShellChars:NO
+                        isUpload:NO
+                 allowBracketing:YES
+                    tabTransform:kTabTransformNone
+                    spacesPerTab:0];
+            [self runTimer];
+            NSString *expected = @"\x1b[200~Hello World\x1b[201~";
+            XCTAssert([_writeBuffer isEqualToString:expected]);
+            XCTAssert([[[[PasteboardHistory sharedInstance] entries][0] mainValue] isEqualToString:kHelloWorld]);
+    }];
 }
 
 // You still get a close bracket even if you change your mind about wanting it unless the whole paste
@@ -502,28 +512,33 @@ static const double kFloatingPointTolerance = 0.00001;
 }
 
 - (void)testPasteQueued {
-    NSString *test1 = [@"1" stringRepeatedTimes:2000];
-    [_helper pasteString:test1
-                  slowly:NO
-        escapeShellChars:NO
-                isUpload:NO
-         allowBracketing:YES
-            tabTransform:kTabTransformNone
-            spacesPerTab:0];
-    NSString *test2 = [@"2" stringRepeatedTimes:2000];
-    [_helper pasteString:test2
-                  slowly:NO
-        escapeShellChars:NO
-                isUpload:NO
-         allowBracketing:YES
-            tabTransform:kTabTransformNone
-            spacesPerTab:0];
-    [self runTimer];
-    XCTAssert([_writeBuffer isEqualToString:[test1 stringByAppendingString:test2]]);
-    NSTimeInterval expectedDuration = 4 * 0.01;
-    XCTAssert(fabs(_helper.duration - expectedDuration) < kFloatingPointTolerance);
-    XCTAssert([[[[PasteboardHistory sharedInstance] entries][0] mainValue] isEqualToString:test1]);
-    XCTAssert([[[[PasteboardHistory sharedInstance] entries][1] mainValue] isEqualToString:test2]);
+    [iTermSelectorSwizzler swizzleSelector:@selector(saveToPasteHistoryWhenSecureInputEnabled)
+                                 fromClass:iTermAdvancedSettingsModel.class
+                                 withBlock:^BOOL { return YES; }
+                                  forBlock:^{
+            NSString *test1 = [@"1" stringRepeatedTimes:2000];
+            [_helper pasteString:test1
+                          slowly:NO
+                escapeShellChars:NO
+                        isUpload:NO
+                 allowBracketing:YES
+                    tabTransform:kTabTransformNone
+                    spacesPerTab:0];
+            NSString *test2 = [@"2" stringRepeatedTimes:2000];
+            [_helper pasteString:test2
+                          slowly:NO
+                escapeShellChars:NO
+                        isUpload:NO
+                 allowBracketing:YES
+                    tabTransform:kTabTransformNone
+                    spacesPerTab:0];
+            [self runTimer];
+            XCTAssert([_writeBuffer isEqualToString:[test1 stringByAppendingString:test2]]);
+            NSTimeInterval expectedDuration = 4 * 0.01;
+            XCTAssert(fabs(_helper.duration - expectedDuration) < kFloatingPointTolerance);
+            XCTAssert([[[[PasteboardHistory sharedInstance] entries][0] mainValue] isEqualToString:test1]);
+            XCTAssert([[[[PasteboardHistory sharedInstance] entries][1] mainValue] isEqualToString:test2]);
+    }];
 }
 
 - (void)testQueuedKeystrokeAndPaste {

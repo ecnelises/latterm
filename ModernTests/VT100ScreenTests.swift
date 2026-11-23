@@ -52,6 +52,18 @@ class VT100ScreenTests: XCTestCase {
         return screen;
     }
 
+    func testRejectedReplayArchiveKeepsTheCurrentBufferAndDecoder() throws {
+        let recorder = try XCTUnwrap(DVR(bufferCapacity: 4096))
+        let before = try XCTUnwrap(recorder.dictionaryValue as NSDictionary?)
+        let decoder = try XCTUnwrap(recorder.getDecoder())
+        XCTAssertFalse(recorder.canClear)
+        XCTAssertFalse(recorder.load(["version": 4, "capacity": 2048, "buffer": [:]]))
+        XCTAssertEqual(recorder.dictionaryValue as NSDictionary?, before)
+        XCTAssertFalse(recorder.canClear)
+        recorder.release(decoder)
+        XCTAssertTrue(recorder.canClear)
+    }
+
     func testResizeNotes() {
         // Put a note on the primary grid, switch to alt, resize width, swap back to primary. Note should
         // still be there.

@@ -46,22 +46,12 @@
 - (instancetype)initWithBufferCapacity:(int)bytes {
     self = [super init];
     if (self) {
-        buffer_ = [DVRBuffer alloc];
-        [buffer_ initWithBufferCapacity:bytes];
+        buffer_ = [[DVRBuffer alloc] initWithBufferCapacity:bytes];
         capacity_ = bytes;
         decoders_ = [[NSMutableArray alloc] init];
-        encoder_ = [DVREncoder alloc];
-        [encoder_ initWithBuffer:buffer_];
+        encoder_ = [[DVREncoder alloc] initWithBuffer:buffer_];
     }
     return self;
-}
-
-- (void)dealloc
-{
-    [decoders_ release];
-    [encoder_ release];
-    [buffer_ release];
-    [super dealloc];
 }
 
 - (long long)lengthForMetadata:(NSArray<id<DVREncodable>> *)metadata {
@@ -114,9 +104,7 @@
     if (![self canClear]) {
         return;
     }
-    [buffer_ autorelease];
     buffer_ = [[DVRBuffer alloc] initWithBufferCapacity:capacity_];
-    [encoder_ autorelease];
     encoder_ = [[DVREncoder alloc] initWithBuffer:buffer_];
 }
 
@@ -124,7 +112,6 @@
 {
     DVRDecoder* decoder = [[DVRDecoder alloc] initWithBuffer:buffer_];
     [decoders_ addObject:decoder];
-    [decoder release];
     return decoder;
 }
 
@@ -168,7 +155,7 @@
     if (from == self.firstTimeStamp && to == self.lastTimeStamp) {
         dvr = self;
     } else {
-        dvr = [[self copyWithFramesFrom:from to:to] autorelease];
+        dvr = [self copyWithFramesFrom:from to:to];
     }
     return @{ @"version": @4,
               @"capacity": @(dvr->capacity_),
@@ -186,7 +173,7 @@
         return NO;
     }
     int capacity = [dict[@"capacity"] intValue];
-    if (capacity == 0) {
+    if (capacity <= 0) {
         return NO;
     }
     NSDictionary *bufferDict = dict[@"buffer"];
@@ -194,22 +181,14 @@
         return NO;
     }
 
-    [buffer_ release];
-    buffer_ = [DVRBuffer alloc];
-    [buffer_ initWithBufferCapacity:capacity];
-    capacity_ = capacity;
-
-    [decoders_ release];
-    decoders_ = [[NSMutableArray alloc] init];
-
-    [encoder_ release];
-    encoder_ = [DVREncoder alloc];
-    [encoder_ initWithBuffer:buffer_];
-
-    if (![buffer_ loadFromDictionary:bufferDict
-                             version:version.intValue]) {
+    DVRBuffer *replacement = [[DVRBuffer alloc] initWithBufferCapacity:capacity];
+    if (![replacement loadFromDictionary:bufferDict version:version.intValue]) {
         return NO;
     }
+    buffer_ = replacement;
+    capacity_ = capacity;
+    decoders_ = [[NSMutableArray alloc] init];
+    encoder_ = [[DVREncoder alloc] initWithBuffer:replacement];
     readOnly_ = YES;
     return YES;
 }

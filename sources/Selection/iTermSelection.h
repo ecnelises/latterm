@@ -101,7 +101,7 @@ typedef NS_ENUM(NSInteger, iTermSelectionMode) {
 // Represents multiple discontiguous regions of selected text.
 @interface iTermSelection : NSObject <NSCopying>
 
-@property(nullable, nonatomic, assign) id<iTermSelectionDelegate> delegate;
+@property(nullable, nonatomic, weak) id<iTermSelectionDelegate> delegate;
 
 // If set, the selection is currently being extended.
 @property(nonatomic, readonly) BOOL extending;

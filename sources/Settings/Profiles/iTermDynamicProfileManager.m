@@ -25,13 +25,12 @@
 #import "NSMutableDictionary+Profile.h"
 #import "NSWorkspace+iTerm.h"
 #import "ProfileModel.h"
-#import "SCEvents.h"
 
 @interface iTermAlertAccessoryButtonUnfucker: NSView
 - (instancetype)initWithButton:(NSButton *)button;
 @end
 
-@interface iTermDynamicProfileManager () <SCEventListenerProtocol>
+@interface iTermDynamicProfileManager ()
 @end
 
 @interface iTermFilesAndFolders: NSObject
@@ -67,7 +66,7 @@
 @end
 
 @implementation iTermDynamicProfileManager {
-    SCEvents *_events;
+    DynamicProfileFolderMonitor *_folderMonitor;
     NSMutableDictionary<NSString *, NSString *> *_guidToPathMap;
     NSInteger _pendingErrors;
     iTermFilesAndFolders *_paths;
@@ -96,9 +95,6 @@
           return nil;
       }
       _pendingChanges = [NSMutableSet set];
-      _events = [[SCEvents alloc] init];
-      _events.notificationLatency = [iTermAdvancedSettingsModel dynamicProfilesNotificationLatency];
-      _events.delegate = self;
       _paths = self.pathsToWatch;
       RLog(@"Watching files: %@, folders: %@", _paths.files, _paths.folders);
       [self startWatching];
@@ -109,8 +105,12 @@
 }
 
 - (void)startWatching {
-    [_events startWatchingPaths:_paths.folders.allObjects];
     __weak __typeof(self) weakSelf = self;
+    _folderMonitor = [[DynamicProfileFolderMonitor alloc] initWithPaths:_paths.folders.allObjects
+                                                                latency:[iTermAdvancedSettingsModel dynamicProfilesNotificationLatency]
+                                                                changed:^{
+        [weakSelf somethingChanged];
+    }];
     _tokens = [_paths.files.allObjects mapWithBlock:^id(NSString *file) {
         return [[NSFileManager defaultManager] monitorFile:file block:^(long flags) {
             [weakSelf somethingChanged];
@@ -119,7 +119,7 @@
 }
 
 - (void)stopWatching {
-    [_events stopWatchingPaths];
+    _folderMonitor = nil;
     for (id token in _tokens) {
         [[NSFileManager defaultManager] stopMonitoringFileWithToken:token];
     }
@@ -889,12 +889,6 @@ static id iTermDynamicProfileByRemovingNulls(id object) {
     MutableProfile *modifiedProfile = [profile mutableCopy];
     modifiedProfile[KEY_DYNAMIC_PROFILE_REWRITABLE] = @YES;
     [self writeModifiedProfile:modifiedProfile toFile:filename];
-}
-
-#pragma mark - SCEventListenerProtocol
-
-- (void)pathWatcher:(SCEvents *)pathWatcher eventOccurred:(SCEvent *)event {
-    [self somethingChanged];
 }
 
 @end

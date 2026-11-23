@@ -35,6 +35,7 @@
 @protocol PTYWindow;
 
 // The key used for a window's arrangement in encoding restorable state.
+extern NSString *const iTermWindowStateKeyGUID;
 extern NSString *const kTerminalWindowStateRestorationWindowArrangementKey;
 extern NSString *const iTermWindowDocumentedEditedDidChange;
 

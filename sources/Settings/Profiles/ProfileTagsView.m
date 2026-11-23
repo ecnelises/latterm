@@ -78,12 +78,6 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_scrollView release];
-    [_tableView release];
-    [_tagsColumn release];
-    [_headerView release];
-    [_cache release];
-    [super dealloc];
 }
 
 #pragma mark - NSTableViewDelegate

@@ -72,19 +72,12 @@ static long long now(void)
 - (instancetype)initWithBuffer:(DVRBuffer *)buffer {
     self = [super init];
     if (self) {
-        buffer_ = [buffer retain];
+        buffer_ = buffer;
         lastFrame_ = nil;
         count_ = 0;
         haveReservation_ = NO;
     }
     return self;
-}
-
-- (void)dealloc
-{
-    [lastFrame_ release];
-    [buffer_ release];
-    [super dealloc];
 }
 
 - (NSString *)stringForFrameLines:(NSArray *)lines width:(int)width height:(int)height
@@ -171,7 +164,7 @@ static long long now(void)
 }
 
 - (NSMutableData *)combinedFrameLines:(NSArray *)frameLines {
-    NSMutableData *data = [[[NSMutableData alloc] init] autorelease];
+    NSMutableData *data = [NSMutableData data];
     for (NSData *line in frameLines) {
         [data appendData:line];
     }
@@ -180,8 +173,7 @@ static long long now(void)
 
 // Save a key frame into DVRBuffer.
 - (void)_appendKeyFrame:(NSArray *)frameLines length:(int)length metadata:(NSArray<id<DVREncodable>> *)metadata info:(DVRFrameInfo*)info {
-    [lastFrame_ release];
-    lastFrame_ = [[self combinedFrameLines:frameLines] retain];
+    lastFrame_ = [self combinedFrameLines:frameLines];
     assert(lastFrame_.length == length);
     char* scratch = [buffer_ scratch];
     memcpy(scratch, [lastFrame_ mutableBytes], length);

@@ -35,10 +35,6 @@ const double kFindCursorHoleRadius = 30;
 
 @implementation iTermFindCursorViewSpotlightImpl
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-    return NSAllocateObject([self class], 0, zone);
-}
-
 - (instancetype)initWithFrame:(NSRect)frameRect {
     self = [super initWithFrame:frameRect];
 
@@ -56,7 +52,6 @@ const double kFindCursorHoleRadius = 30;
                                                  2 * (self.cursorPosition.y / self.frame.size.height - 0.5));
     NSRect rect = NSMakeRect(0, 0, self.frame.size.width, self.frame.size.height);
     [grad drawInRect:rect relativeCenterPosition:relativeCursorPosition];
-    [grad release];
 
     double x = self.cursorPosition.x;
     double y = self.cursorPosition.y;
@@ -80,15 +75,6 @@ const double kFindCursorHoleRadius = 30;
 @end
 @implementation iTermFindCursorViewArrowImpl {
     CALayer *_arrowLayer;
-}
-
-+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-    return NSAllocateObject([self class], 0, zone);
-}
-
-- (void)dealloc {
-    [_arrowLayer release];
-    [super dealloc];
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
@@ -140,21 +126,12 @@ const double kFindCursorHoleRadius = 30;
     CAEmitterLayer *_emitterLayer;
 }
 
-+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-    return NSAllocateObject([self class], 0, zone);
-}
-
-- (void)dealloc {
-    [_emitterLayer release];
-    [super dealloc];
-}
-
 - (instancetype)initWithFrame:(NSRect)frameRect {
     self = [super initWithFrame:frameRect];
 
     if (self) {
         [self setWantsLayer:YES];
-        _emitterLayer = [[CAEmitterLayer layer] retain];
+        _emitterLayer = [CAEmitterLayer layer];
         _emitterLayer.emitterPosition = CGPointMake(self.bounds.size.width/2, self.bounds.size.height*(.75));
         _emitterLayer.renderMode = kCAEmitterLayerAdditive;
         _emitterLayer.emitterShape = kCAEmitterLayerPoint;
@@ -171,7 +148,7 @@ const double kFindCursorHoleRadius = 30;
     [super setCursorPosition:cursorPosition];
     _emitterLayer.emitterPosition = cursorPosition;
 
-    CAShapeLayer *mask = [[[CAShapeLayer alloc] init] autorelease];
+    CAShapeLayer *mask = [[CAShapeLayer alloc] init];
 
     NSBezierPath *outerPath = [NSBezierPath bezierPath];
     outerPath.windingRule = NSWindingRuleEvenOdd;
@@ -260,8 +237,10 @@ const double kFindCursorHoleRadius = 30;
 }
 
 + (instancetype)allocWithZone:(struct _NSZone *)zone {
-    if ([NSDate isAprilFools] && [[NSView class] instancesRespondToSelector:@selector(allowsVibrancy)]) {
-        // 10.10+ users get spiffy views on 4/1
+    if (self != iTermFindCursorView.class) {
+        return [super allocWithZone:zone];
+    }
+    if ([NSDate isAprilFools]) {
         static int i;
         if (i++ % 2) {
             return [iTermFindCursorViewArrowImpl alloc];

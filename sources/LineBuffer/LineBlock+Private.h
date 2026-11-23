@@ -8,12 +8,21 @@
 #import "LineBlock.h"
 
 @class LineBlockMetadataArray;
-@class iTermLegacyAtomicMutableArrayOfWeakObjects;
 @protocol iTermLineBlockMutationCertificate;
 @class iTermCharacterBuffer;
 @class iTermWeakBox<T>;
 
 NS_ASSUME_NONNULL_BEGIN
+
+// The Objective-C++ storage engine only needs this view of the Swift client list.
+@protocol LineBlockClientList <NSObject>
+@property(nonatomic, readonly) NSInteger count;
+@property(nonatomic, readonly) NSArray *strongObjects;
+- (void)prune;
+- (void)addObject:(id)object NS_SWIFT_NAME(append(_:));
+- (void)removeAllObjects NS_SWIFT_NAME(removeAll());
+- (void)removeObjectsPassingTest:(BOOL (NS_NOESCAPE ^)(id _Nullable))predicate NS_SWIFT_NAME(removeObjects(passingTest:));
+@end
 
 @interface LineBlock() {
     int _startOffset;  // Index of the first non-dropped screen_char_t in _rawBuffer.
@@ -178,7 +187,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Use -modifyWithBlock: to get a iTermLineBlockMutationCertificate which allows mutation safely because
 // you can't get a certificate without copying (if needed).
 @property(nonatomic, nullable) LineBlock *owner;  // nil if I am an owner. This is the line block that is responsible for freeing malloced data.
-@property(nonatomic) iTermLegacyAtomicMutableArrayOfWeakObjects *clients;  // Copy-on write instances that still exist and have me as the owner.
+@property(nonatomic) id<LineBlockClientList> clients;  // Copy-on write instances that still exist and have me as the owner.
 @property(nonatomic, readwrite) NSInteger generation;
 @property(nonatomic, readwrite) int64_t mutationCounter;
 @property(atomic, readwrite) BOOL hasBeenCopied;

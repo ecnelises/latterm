@@ -272,16 +272,18 @@ final class iTermSessionNameControllerFormattingTests: XCTestCase {
     /// reevaluation belongs to the main-queue hop.
     func testTitleReadDuringPublishDoesNotNestAnEvaluation() {
         let delegate = Delegate()
-        delegate.uniqueIdentifier = iTermSessionNameControllerSystemTitleUniqueIdentifier
         let controller = iTermSessionNameController()
         // -setNeedsUpdate below evaluates synchronously while the reevaluation
-        // flagged by the registration is still pending, so this read would find
+        // requested by the previous update is still pending, so this read would find
         // -updateIfNeeded willing to evaluate again.
         delegate.onNameWillChange = { [unowned controller] in
             _ = controller.presentationSessionTitle
         }
         controller.delegate = delegate
-        controller.perform(NSSelectorFromString("didRegisterSessionTitleFunc:"), with: nil)
+        // Leave a reevaluation queued, then switch providers so the next
+        // synchronous pass must publish a different base name.
+        controller.setNeedsUpdate()
+        delegate.uniqueIdentifier = iTermSessionNameControllerSystemTitleUniqueIdentifier
 
         let presentationCountBefore = delegate.publishedPresentationNames.count
         let nameCountBefore = delegate.publishedNames.count
@@ -320,18 +322,13 @@ final class iTermSessionNameControllerFormattingTests: XCTestCase {
     /// exactly one publish is the synchronous pass under test.
     func testSynchronousPublishDoesNotStartANestedEvaluation() {
         let delegate = Delegate()
-        delegate.uniqueIdentifier = iTermSessionNameControllerSystemTitleUniqueIdentifier
         let controller = iTermSessionNameController()
         controller.delegate = delegate
 
-        // Drop the cache and flag a reevaluation without spinning the runloop: this
-        // is what the controller does when a title provider registers. The next
-        // synchronous pass therefore sees a changed result and takes its publish
-        // arm with a reevaluation still pending. Call the handler on this one
-        // controller rather than posting iTermAPIDidRegisterSessionTitleFunction:
-        // every live name controller observes that with object:nil, and a
-        // broadcast would reset controllers belonging to other tests.
-        controller.perform(NSSelectorFromString("didRegisterSessionTitleFunc:"), with: nil)
+        // Leave a reevaluation queued, then switch providers so the next
+        // synchronous pass must publish a different base name.
+        controller.setNeedsUpdate()
+        delegate.uniqueIdentifier = iTermSessionNameControllerSystemTitleUniqueIdentifier
 
         let presentationCountBefore = delegate.publishedPresentationNames.count
         let nameCountBefore = delegate.publishedNames.count

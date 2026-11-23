@@ -28,7 +28,7 @@
 }
 
 + (instancetype)token {
-    return [[[VT100Token alloc] init] autorelease];
+    return [[VT100Token alloc] init];
 }
 
 + (instancetype)newTokenForControlCharacter:(unsigned char)controlCharacter {
@@ -91,26 +91,17 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
     asciiData->screenChars = screenChars;
 }
 
-
 - (void)dealloc {
     if (_csi) {
         free(_csi);
     }
 
-    [_string release];
-    [_kvpKey release];
-    [_kvpValue release];
-    [_savedData release];
     if (_crlfs.elements != nil) {
         CTVectorDestroy(&_crlfs);
     }
-    [_subtokens release];
-    [_asyncStringConversion release];
 
     iTermAsciiDataFree(&_asciiData);
     iTermPreconvertedStringDataFree(&_preconvertedStringData);
-
-    [super dealloc];
 }
 
 - (NSString *)codeName {
@@ -345,7 +336,7 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
                 @(VT100_LITERAL):                   @"VT100_LITERAL",
                 @(VT100_GANG):                      @"VT100_GANG",
         };
-        [map retain];
+
     });
     NSString *name = map[@(type)];
     if (name) {
@@ -375,7 +366,7 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
     }
     if (type == SSH_OUTPUT) {
         [params appendFormat:@" ssh-output=“%@” info=%@",
-         [[[NSString alloc] initWithData:_savedData encoding:NSUTF8StringEncoding] autorelease],
+         [[NSString alloc] initWithData:_savedData encoding:NSUTF8StringEncoding],
          SSHInfoDescription(self.sshInfo)];
     }
     if (_savedData.length > 0) {
@@ -432,9 +423,9 @@ void iTermAsciiDataSet(AsciiData *asciiData, const char *bytes, int length, Scre
             return [anObject stringForAsciiData];
         }] componentsJoinedByString:@""];
     }
-    return [[[NSString alloc] initWithBytes:_asciiData.buffer
+    return [[NSString alloc] initWithBytes:_asciiData.buffer
                                      length:_asciiData.length
-                                   encoding:NSASCIIStringEncoding] autorelease];
+                                   encoding:NSASCIIStringEncoding];
 }
 
 - (ScreenChars *)screenChars {

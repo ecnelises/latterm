@@ -16,7 +16,6 @@ extern "C" {
 #import "iTermCharacterBuffer.h"
 #import "iTermCoreSearch.h"
 #import "iTermExternalAttributeIndex.h"
-#import "iTermLegacyAtomicMutableArrayOfWeakObjects.h"
 #import "iTermMalloc.h"
 #import "iTermMetadata.h"
 #import "iTermWeakBox.h"
@@ -425,7 +424,7 @@ NS_INLINE void iTermLineBlockDidMutateInPlace(__unsafe_unretained LineBlock *lin
 
         // Remove myself from the owner's client list to ensure its list of clients doesn't
         // get too big. Do it asynchronously to avoid reentrant -[LineBlock dealloc] calls
-        // since iTermLegacyAtomicMutableArrayOfWeakObjects's methods are not reentrant.
+        // since the client list is not reentrant.
         [owner.clients prune];
     });
     return NO;
@@ -2965,10 +2964,6 @@ crossBlockResultCount:(NSInteger *)crossBlockResultCount {
         std::lock_guard<std::recursive_mutex> lock(gLineBlockMutex);
         return self.clients.count;
     }
-}
-
-- (void)initializeClients {
-    self.clients = [[iTermLegacyAtomicMutableArrayOfWeakObjects alloc] init];
 }
 
 - (BOOL)hasOwner {

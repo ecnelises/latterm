@@ -22,7 +22,6 @@
 @class PTYSession;
 @class TerminalTabBarView;
 @class TabColorPickerState;
-@class iTermPromptOnCloseReason;
 @class iTermSessionFactory;
 @class iTermToolbeltView;
 @protocol iTermLargeContentProvider;
@@ -135,7 +134,7 @@ extern NSString *const iTermDidCreateTerminalWindowNotification;
 // specified profile, or the arrangement is defective in specifying details of the hotkey window.
 + (PseudoTerminal *)bareTerminalWithArrangement:(NSDictionary *)arrangement
                        forceOpeningHotKeyWindow:(BOOL)force
-                                      restoring:(BOOL)restoring;
+                                      restoring:(BOOL)restoring NS_SWIFT_NAME(bareTerminal(arrangement:forceOpeningHotKeyWindow:restoring:));
 
 // Returns a new terminal window restored from an arrangement, with
 // tabs/sessions also restored. May return nil.
@@ -254,7 +253,6 @@ extern NSString *const iTermDidCreateTerminalWindowNotification;
 - (void)irAdvance:(int)dir;
 
 // Does any session want to be prompted for closing?
-- (iTermPromptOnCloseReason *)promptOnCloseReason;
 
 // Accessor for toolbelt view.
 - (iTermToolbeltView *)toolbelt;
@@ -336,6 +334,7 @@ extern NSString *const iTermDidCreateTerminalWindowNotification;
 - (void)setBroadcastingSessions:(NSArray<NSArray<PTYSession *> *> *)domains;
 
 // Change split selection mode for all sessions in this window.
+- (void)saveTmuxWindowOrigins;
 - (void)setSplitSelectionMode:(BOOL)mode excludingSession:(PTYSession *)session move:(BOOL)move;
 
 // Use this if it might be a tmux window. The completion block will always be called eventually.

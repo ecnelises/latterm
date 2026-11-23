@@ -24,6 +24,20 @@ final class TerminalTabContainerTests: XCTestCase {
         return item
     }
 
+    func testDetachRebindsTheTabAndItsSessionToTheNewWindow() throws {
+        let fixture = TerminalWindowTestFixture()
+        defer { fixture.close() }
+        let session = fixture.addTab()
+        let tab = try XCTUnwrap(session.delegate as? PTYTab)
+        let destination = try XCTUnwrap(fixture.terminal.moveTabToDetachedWindow(tab))
+        defer { destination.window?.close() }
+        XCTAssertEqual(fixture.terminal.tabs()?.count, 1)
+        XCTAssertTrue(destination.tabs()?.first === tab)
+        let item = try XCTUnwrap(tab.tabViewItem)
+        XCTAssertTrue(destination.tabView()?.tabViewItems.first === item)
+        XCTAssertTrue(destination.currentSession() === session)
+    }
+
     func testReorderAndTransferPreserveTabAndCellIdentity() throws {
         let bar = makeBar()
         let other = makeBar()

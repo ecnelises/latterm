@@ -51,12 +51,13 @@
 @class iTermSessionToolbarItem;
 @class PTYSession;
 @class iTermSessionNoteModel;
-@class SplitSelectionView;
 @class SessionTitleView;
 
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const SessionViewWasSelectedForInspectionNotification;
+extern NSPasteboardType const iTermMovePaneDragType;
+extern NSNotificationName const iTermSessionDidChangeTabNotification;
 
 @protocol iTermSessionViewDelegate<iTermFindDriverDelegate, iTermLegacyViewDelegate, NSObject>
 
@@ -93,8 +94,6 @@ extern NSString *const SessionViewWasSelectedForInspectionNotification;
 - (NSDragOperation)sessionViewDraggingEntered:(id<NSDraggingInfo>)sender;
 - (void)sessionViewDraggingExited:(id<NSDraggingInfo>)sender;
 
-// Would the current drop target split this view?
-- (BOOL)sessionViewShouldSplitSelectionAfterDragUpdate:(id<NSDraggingInfo>)sender;
 
 // Perform a drag into this view.
 - (BOOL)sessionViewPerformDragOperation:(id<NSDraggingInfo>)sender;
@@ -189,7 +188,7 @@ typedef NS_ENUM(NSUInteger, iTermSessionViewFindDriver) {
     iTermSessionViewFindDriverPermanentStatusBar  // The find component is always in the status bar
 };
 
-@interface SessionView : NSView <SessionTitleViewDelegate>
+@interface SessionView : NSView <SessionTitleViewDelegate, NSDraggingSource>
 // Unique per-process id of view, used for ordering them in PTYTab.
 @property(nonatomic, assign) int viewId;
 

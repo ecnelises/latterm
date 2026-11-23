@@ -29,6 +29,17 @@
 @end
 
 @implementation iTermGraphDatabaseState
+@synthesize db = _db;
+
+- (id<iTermDatabase>)db {
+    [self check];
+    return _db;
+}
+
+- (void)setDb:(id<iTermDatabase>)db {
+    [self check];
+    _db = db;
+}
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue database:(id<iTermDatabase>)db {
     self = [super initWithQueue:queue];

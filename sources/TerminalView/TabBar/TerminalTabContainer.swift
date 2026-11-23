@@ -112,6 +112,12 @@ private final class TabDropMarker: NSView {
         if let item, let source, source.isPinned(for: item) {
             return min(index, boundary)
         }
+        if let pane = MovePaneController.sharedInstance().session, let view = pane.view,
+           sender.draggingSource as? SessionView === view,
+           let tab = pane.delegate as? PTYTab, tab.isPinned, tab.sessions()?.count == 1,
+           let tabs = bar.tabView, tab.tabViewItem?.tabView === tabs {
+            return min(index, boundary)
+        }
         return max(index, boundary)
     }
 
@@ -128,7 +134,7 @@ private final class TabDropMarker: NSView {
             }
         } else {
             guard sender.draggingSource != nil,
-                  sender.draggingPasteboard.types?.contains(NSPasteboard.PasteboardType(iTermMovePaneDragType)) == true,
+                  sender.draggingPasteboard.types?.contains(.iTermMovePaneDragType) == true,
                   bar.delegate?.tabView?(tabs, shouldAcceptDragFromSender: sender) == true,
                   bar.delegate?.tabView?(tabs, draggingEnteredTabBarForSender: sender) != [] else { return [] }
         }

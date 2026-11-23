@@ -44,13 +44,13 @@
 + (iTermCursor *)cursorOfType:(ITermCursorType)theType {
     switch (theType) {
         case CURSOR_UNDERLINE:
-            return [[[iTermUnderlineCursor alloc] init] autorelease];
+            return [[iTermUnderlineCursor alloc] init];
 
         case CURSOR_VERTICAL:
-            return [[[iTermVerticalCursor alloc] init] autorelease];
+            return [[iTermVerticalCursor alloc] init];
 
         case CURSOR_BOX:
-            return [[[iTermBoxCursor alloc] init] autorelease];
+            return [[iTermBoxCursor alloc] init];
 
         default:
             return nil;
@@ -58,7 +58,7 @@
 }
 
 + (instancetype)itermCopyModeCursorInSelectionState:(BOOL)selecting {
-    iTermCopyModeCursor *cursor = [[[iTermCopyModeCursor alloc] init] autorelease];
+    iTermCopyModeCursor *cursor = [[iTermCopyModeCursor alloc] init];
     cursor.selecting = selecting;
     return cursor;
 }
@@ -217,7 +217,7 @@
 
     const CGFloat r = self.selecting ? 2 : 1;
     NSBezierPath *path;
-    path = [[[NSBezierPath alloc] init] autorelease];
+    path = [[NSBezierPath alloc] init];
     [path it_moveToPoint:NSMakePoint(NSMinX(cursorRect), NSMinY(cursorRect)) virtualOffset:virtualOffset];
     [path it_lineToPoint:NSMakePoint(NSMidX(cursorRect) - r, NSMaxY(cursorRect)) virtualOffset:virtualOffset];
     [path it_lineToPoint:NSMakePoint(NSMidX(cursorRect) - r, NSMaxY(rect)) virtualOffset:virtualOffset];
@@ -240,11 +240,6 @@
 
 @implementation iTermBoxCursor {
     iTermSmartCursorColor *_smartCursorColor;
-}
-
-- (void)dealloc {
-    [_smartCursorColor release];
-    [super dealloc];
 }
 
 - (BOOL)isSolidRectangleWithFocused:(BOOL)focused {

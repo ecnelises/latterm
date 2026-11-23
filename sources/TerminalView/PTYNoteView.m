@@ -40,7 +40,7 @@ const CGFloat kDragAreaSize = 5;
 - (instancetype)initWithFrame:(NSRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        backgroundColor_ = [[self defaultBackgroundColor] retain];
+        backgroundColor_ = [self defaultBackgroundColor];
         killButton_ = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, kButtonSize, kButtonSize)];
         [killButton_ setButtonType:NSButtonTypeMomentaryPushIn];
         [killButton_ setTarget:self];
@@ -50,7 +50,6 @@ const CGFloat kDragAreaSize = 5;
         [killButton_ setTitle:@""];
         [self addSubview:killButton_];
         [self updateKillButtonImage];
-        [killButton_ release];
     }
     return self;
 }
@@ -62,12 +61,6 @@ const CGFloat kDragAreaSize = 5;
     NSColor *tintColor = self.effectiveAppearance.it_isDark ? [NSColor whiteColor] : [NSColor blackColor];
     closeImage = [closeImage it_imageWithTintColor:tintColor];
     [killButton_ setImage:closeImage];
-}
-
-- (void)dealloc {
-    [contentView_ release];
-    [backgroundColor_ release];
-    [super dealloc];
 }
 
 - (NSColor *)defaultBackgroundColor {
@@ -230,7 +223,7 @@ static NSRect FlipRect(NSRect rect, CGFloat height) {
                                            inset:inset
                                    pointerLength:pointerLength
                                        tipOnEdge:tipEdge];
-    NSBezierPath *path = [[[NSBezierPath alloc] init] autorelease];
+    NSBezierPath *path = [[NSBezierPath alloc] init];
 
     // start on the left edge
     NSPoint p = [self trailingCornerOfRoundedRect:bubbleFrame radius:radius dx:-1 dy:0];
@@ -334,8 +327,7 @@ static NSRect FlipRect(NSRect rect, CGFloat height) {
 
 - (void)viewDidChangeEffectiveAppearance {
     [super viewDidChangeEffectiveAppearance];
-    [backgroundColor_ release];
-    backgroundColor_ = [[self defaultBackgroundColor] retain];
+    backgroundColor_ = [self defaultBackgroundColor];
     [self updateKillButtonImage];
     [self setNeedsDisplay:YES];
 }
@@ -489,8 +481,7 @@ static NSRect FlipRect(NSRect rect, CGFloat height) {
 
 - (void)setContentView:(NSView *)contentView {
     [contentView_ removeFromSuperview];
-    [contentView_ autorelease];
-    contentView_ = [contentView retain];
+    contentView_ = contentView;
     [self addSubview:contentView_];
     [self layoutSubviews];
 }

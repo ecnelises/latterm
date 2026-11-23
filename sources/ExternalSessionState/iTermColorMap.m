@@ -13,7 +13,6 @@
 #import "ITAddressBookMgr.h"
 #import "NSColor+iTerm.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermColorVectorCache.h"
 #import <simd/simd.h>
 
 // This value plus 0...255 are accepted.
