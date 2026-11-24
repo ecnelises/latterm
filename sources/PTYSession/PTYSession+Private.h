@@ -42,8 +42,6 @@
 iTermAutomaticProfileSwitcherDelegate,
 iTermBackgroundDrawingHelperDelegate,
 iTermBadgeLabelDelegate,
-iTermComposerManagerDelegate,
-iTermConductorDelegate,
 iTermCoprocessDelegate,
 iTermCopyModeHandlerDelegate,
 iTermFilterDestination,
@@ -54,7 +52,6 @@ iTermLogging,
 iTermMetaFrustrationDetector,
 iTermModernKeyMapperDelegate,
 iTermModifyOtherKeysMapperDelegate,
-iTermNaggingControllerDelegate,
 iTermObject,
 iTermPasteboardReporterDelegate,
 iTermSessionDirectoryTrackerDelegate,
@@ -63,7 +60,6 @@ iTermSessionViewDelegate,
 PSMPUAFontProvider,
 iTermShortcutNavigationModeHandlerDelegate,
 iTermStandardKeyMapperDelegate,
-iTermStatusBarViewControllerDelegate,
 iTermTailFindControllerDelegate,
 iTermTermkeyKeyMapperDelegate,
 iTermTmuxControllerSession,
@@ -89,7 +85,6 @@ iTermUpdateCadenceControllerDelegate> {
 @property(nonatomic) NSTimeInterval lastResize;
 @property(atomic, assign) PTYSessionTmuxMode tmuxMode;
 @property(nonatomic, readonly) NSString *lastDirectory;
-@property(nonatomic, readonly) NSString *lastLocalDirectory;
 @property(nonatomic, readonly) BOOL lastLocalDirectoryWasPushed;  // was lastLocalDirectory from shell integration?
 @property(nonatomic, readonly) id<VT100RemoteHostReading> lastRemoteHost;  // last remote host at time of setting current directory
 @property(nonatomic, strong) iTermSessionDirectoryTracker *directoryTracker;

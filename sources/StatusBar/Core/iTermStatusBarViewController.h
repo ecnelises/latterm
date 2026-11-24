@@ -21,21 +21,21 @@ NS_ASSUME_NONNULL_BEGIN
 @class iTermVariableScope;
 
 @protocol iTermStatusBarViewControllerDelegate<NSObject>
-- (NSColor *)statusBarDefaultTextColor;
+- (nullable NSColor *)statusBarDefaultTextColor;
 - (nullable NSColor *)statusBarSeparatorColor;
 // Color for the separator line drawn between the status bar and the terminal
 // content. nil means use the system separator color (matches the workgroup
 // toolbar in non-minimal themes).
 - (nullable NSColor *)statusBarEdgeSeparatorColor;
-- (NSColor *)statusBarBackgroundColor;
-- (NSColor *)statusBarTerminalBackgroundColor;
-- (NSFont *)statusBarTerminalFont;
+- (nullable NSColor *)statusBarBackgroundColor;
+- (nullable NSColor *)statusBarTerminalBackgroundColor;
+- (nullable NSFont *)statusBarTerminalFont;
 - (void)statusBarWriteString:(NSString *)string;
 - (void)statusBarDidUpdate;
 - (void)statusBarSetLayout:(iTermStatusBarLayout *)layout;
 - (void)statusBarOpenPreferencesToComponent:(nullable id<iTermStatusBarComponent>)component;
 - (void)statusBarDisable;
-- (void)statusBarPerformAction:(iTermAction *)action;
+- (void)statusBarPerformAction:(id)action;  // iTermAction *
 - (void)statusBarEditActions;
 - (void)statusBarEditSnippets;
 - (void)statusBarResignFirstResponder;
@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)statusBarRevealComposer;
 - (iTermActivityInfo)statusBarActivityInfo;
 - (void)statusBarSetFilter:(NSString * _Nullable)query;
-- (id<ProcessInfoProvider>)statusBarProcessInfoProvider;
+- (nullable id<ProcessInfoProvider>)statusBarProcessInfoProvider;
 - (iTermFindDriver * _Nullable)statusBarFindDriver;
 
 @end

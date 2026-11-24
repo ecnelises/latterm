@@ -181,7 +181,7 @@
     }
     NSNumber *number = [[iTermUserDefaults userDefaults] objectForKey:kRestoreIconAndWindowNameOnHostChangeUserDefaultsKey];
     if (number.boolValue) {
-        [self naggingControllerRestoreIconNameTo:iconName windowName:windowName];
+        [self.swiftState.naggingCoordinator naggingControllerRestoreIconNameTo:iconName windowName:windowName];
     } else if (!number) {
         [self offerToRestoreIconName:iconName windowName:windowName];
     }

@@ -18,9 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 @class iTermSuggestionRequest;
 
 @protocol iTermComposerManagerDelegate<NSObject>
-- (iTermStatusBarViewController *)composerManagerStatusBarViewController:(iTermComposerManager *)composerManager;
+- (nullable iTermStatusBarViewController *)composerManagerStatusBarViewController:(iTermComposerManager *)composerManager;
 - (iTermVariableScope *)composerManagerScope:(iTermComposerManager *)composerManager;
-- (NSView *)composerManagerContainerView:(iTermComposerManager *)composerManager;
+- (nullable NSView *)composerManagerContainerView:(iTermComposerManager *)composerManager;
 - (void)composerManagerDidRemoveTemporaryStatusBarComponent:(iTermComposerManager *)composerManager;
 - (void)composerManager:(iTermComposerManager *)composerManager
             sendCommand:(NSString *)command;
@@ -34,14 +34,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)composerManagerWillDismissMinimalView:(iTermComposerManager *)composerManager;
 - (void)composerManagerDidDisplayMinimalView:(iTermComposerManager *)composerManager;
 - (NSAppearance *_Nullable)composerManagerAppearance:(iTermComposerManager *)composerManager;
-- (id<VT100RemoteHostReading>)composerManagerRemoteHost:(iTermComposerManager *)composerManager;
+- (nullable id<VT100RemoteHostReading>)composerManagerRemoteHost:(iTermComposerManager *)composerManager;
 - (NSString *_Nullable)composerManagerWorkingDirectory:(iTermComposerManager *)composerManager;
 - (NSString *)composerManagerShell:(iTermComposerManager *)composerManager;
 - (NSString *)composerManagerUName:(iTermComposerManager *)composerManager;
 - (TmuxController * _Nullable)composerManagerTmuxController:(iTermComposerManager *)composerManager;
-- (NSFont *)composerManagerFont:(iTermComposerManager *)composerManager;
-- (NSColor *)composerManagerTextColor:(iTermComposerManager *)composerManager;
-- (NSColor *)composerManagerCursorColor:(iTermComposerManager *)composerManager;
+- (nullable NSFont *)composerManagerFont:(iTermComposerManager *)composerManager;
+- (nullable NSColor *)composerManagerTextColor:(iTermComposerManager *)composerManager;
+- (nullable NSColor *)composerManagerCursorColor:(iTermComposerManager *)composerManager;
 - (void)composerManager:(iTermComposerManager *)composerManager
 minimalFrameDidChangeTo:(NSRect)newFrame;
 - (NSRect)composerManager:(iTermComposerManager *)composerManager
@@ -59,19 +59,19 @@ minimalFrameDidChangeTo:(NSRect)newFrame;
  desiredHeightDidChange:(CGFloat)desiredHeight;
 - (void)composerManagerAutoComposerTextDidChange:(iTermComposerManager *)composerManager;
 - (void)composerManagerClear:(iTermComposerManager *)composerManager;
-- (id<iTermSyntaxHighlighting>)composerManager:(iTermComposerManager *)composerManager
+- (nullable id<iTermSyntaxHighlighting>)composerManager:(iTermComposerManager *)composerManager
           syntaxHighlighterForAttributedString:(NSMutableAttributedString *)attributedString;
 - (void)composerManagerDidBecomeFirstResponder:(iTermComposerManager *)composerManager;
 - (BOOL)composerManagerShouldFetchSuggestions:(iTermComposerManager *)composerManager
-                                      forHost:(id<VT100RemoteHostReading>)remoteHost
-                               tmuxController:(TmuxController *)tmuxController;
+                                      forHost:(nullable id<VT100RemoteHostReading>)remoteHost
+                               tmuxController:(nullable TmuxController *)tmuxController;
 - (void)composerManager:(iTermComposerManager *)composerManager
        fetchSuggestions:(iTermSuggestionRequest *)request
           byUserRequest:(BOOL)byUserRequest;
 - (NSString * _Nullable)composerManager:(iTermComposerManager *)composerManager
              valueOfEnvironmentVariable:(NSString *)name;
 - (BOOL)composerManagerHandleKeyDown:(NSEvent *)event;
-- (NSResponder *)composerManagerNextResponder;
+- (nullable NSResponder *)composerManagerNextResponder;
 - (BOOL)composerManagerShouldForwardCopy:(iTermComposerManager *)composerManager;
 - (void)composerManager:(iTermComposerManager *)composerManager
         forwardMenuItem:(NSMenuItem *)menuItem;

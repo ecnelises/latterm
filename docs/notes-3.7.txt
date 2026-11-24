@@ -15,6 +15,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Extract PTYSession nagging, composer, status
+  bar, and SSH conductor coordinators into Swift
+  with unit tests.
 - Extract PTYSession paste, Metal renderer, and
   tmux gateway coordinators into Swift modules
   with unit-tested policy and state machines.

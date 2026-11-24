@@ -1,6 +1,7 @@
 // Implements the model class for a terminal session.
 
 #import "DVR.h"
+#import "iTermActivityInfo.h"
 #import "iTermEchoProbe.h"
 #import "iTermEncoderAdapter.h"
 #import "iTermFindDriver.h"
@@ -63,6 +64,8 @@ extern NSString *const PTYSessionArrangementOptionsLargeContentProvider;
 // restored contents. Used for code-review/diff workgroup peers so a dead
 // peer leaves its last output on screen instead of spawning a stray shell.
 extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
+extern NSString *const PTYSessionDidRepairSavedArrangement;
+extern NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger;
 
 @protocol ExternalSearchResultsController;
 @class FakeWindow;
@@ -72,7 +75,9 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class iTermAutomaticProfileSwitcher;
 @class iTermAutomaticProfileSwitchingSession;
 @class iTermChannelClient;
+@class iTermComposerManager;
 @class iTermConductor;
+@class iTermConductorRecovery;
 @protocol iTermContentSubscriber;
 @class iTermEchoProbe;
 @class iTermExpect;
@@ -111,6 +116,7 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @protocol iTermSessionScope;
 @class SessionView;
 @class TriggerController;
+@protocol iTermTriggersDataSource;
 @class iTermSessionNoteModel;
 @class iTermSessionToolbarItem;
 @class TmuxGateway;
@@ -740,6 +746,13 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 @property(nonatomic, readonly, nullable) TmuxGateway *sessionTmuxGateway;
 @property(nonatomic, readonly, nullable) NSFileHandle *tmuxClientWritePipe;
 @property(nonatomic, readonly) VT100GridSize savedGridSize;
+@property(nonatomic, readonly, strong) iTermComposerManager *composerManager;
+@property(nonatomic, readonly, nullable) iTermComposerManager *existingComposerManager;
+@property(nonatomic, readonly, nullable) NSString *lastLocalDirectory;
+@property(nonatomic, readonly) iTermActivityInfo activityInfo;
+@property(nonatomic, readonly) NSSet<NSString *> *overriddenProfileFields;
+@property(nonatomic, readonly) id<iTermTriggersDataSource> triggersDataSource;
+@property(nonatomic, assign) BOOL sshProfileStateActive;
 #pragma mark - methods
 
 + (BOOL)arrangement:(NSDictionary *)arrangement
@@ -1181,6 +1194,41 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (void)unpauseTmux;
 - (void)pauseTmux;
 - (void)injectData:(NSData *)data;
+- (void)replaceTerminatedShellWithNewInstance;
+- (void)abortFileUpload;
+- (void)screenSetWindowTitle:(NSString *)title;
+- (void)screenSetIconName:(NSString *)theName;
+- (void)enqueueComposerCommand:(NSString *)command;
+- (NSString *)bestGuessAtUserShellWithPath:(BOOL)withPath;
+- (NSString *)bestGuessAtUName;
+- (void)logCookedComposerCommand:(NSString *)trimmedCommand;
+- (void)openAdvancedPasteWithText:(NSString *)text escaping:(iTermSendTextEscaping)escaping;
+- (void)forwardComposerMenuItem:(NSMenuItem *)menuItem;
+- (void)findSlowCompletionsWithPrefix:(NSString *)prefix
+                        inDirectories:(NSArray<NSString *> *)directories
+                     workingDirectory:(nullable NSString *)workingDirectory
+                             maxCount:(NSInteger)maxCount
+                           executable:(BOOL)executable
+                           completion:(void (^)(NSArray<NSString *> *))completion;
+- (void)openPreferencesPanel:(PreferencePanel *)panel
+                 profileGuid:(nullable NSString *)guid
+         componentIdentifier:(nullable NSString *)identifier;
+- (void)invalidateStatusBar;
+- (void)applyActionObject:(id)action;
+- (ProfileModel *)profileModel;
++ (void)reportFunctionCallError:(NSError *)error
+                  forInvocation:(NSString *)invocation
+                         origin:(NSString *)origin
+                         window:(nullable NSWindow *)window;
+- (void)sendInitialText;
+- (void)unhookSSHConductor;
+- (void)updateVariablesFromConductor;
+- (nullable iTermSSHReconnectionInfo *)popPendingSSHJump;
+- (NSArray<iTermSSHReconnectionInfo *> *)remainingPendingSSHJumps;
+- (void)replaceSSHConductorWith:(nullable iTermConductor *)newConductor
+           removeChannelClients:(BOOL)removeChannelClients;
+- (void)flushSSHWriteQueue;
+- (void)clearSSHWriteQueue;
 
 // Call this when a session moves to a different tab or window to update the session ID.
 - (void)didMoveSession;

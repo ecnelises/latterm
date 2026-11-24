@@ -193,7 +193,7 @@
 static const NSInteger kMinimumUnicodeVersion = 8;
 static const NSInteger kMaximumUnicodeVersion = 9;
 
-static NSString *const PTYSessionDidRepairSavedArrangement = @"PTYSessionDidRepairSavedArrangement";
+NSString *const PTYSessionDidRepairSavedArrangement = @"PTYSessionDidRepairSavedArrangement";
 
 NSString *const PTYSessionCreatedNotification = @"PTYSessionCreatedNotification";
 NSString *const PTYSessionTerminatedNotification = @"PTYSessionTerminatedNotification";
@@ -659,17 +659,9 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     BOOL _promptStateAllowsAutoComposer;
     NSArray<ScreenCharArray *> *_desiredComposerPrompt;
 
-    iTermLocalFileChecker *_localFileChecker;
     BOOL _needsComposerColorUpdate;
 
-    // Run this when the composer connects.
-    void (^_pendingConductor)(PTYSession *);
-
     NSMutableArray<PTYSessionHostState *> *_hostStack;
-    NSDictionary *_originatingArrangement;
-    NSString *_originatingArrangementName;
-    NSInteger _canChangeProfileInArrangementGeneration;
-    BOOL _canChangeProfileInArrangement;
     BOOL _xtermMouseReportingEverAllowed;
     NSMutableArray<iTermTmuxOptionMonitor *> *_userTmuxOptionMonitors;
     iTermExpectation *_turdDetector;
@@ -850,7 +842,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         _sshState = iTermSSHStateNone;
         _hostStack = [[NSMutableArray alloc] init];
         [iTermCPUUtilization instanceForSessionID:_guid];
-        _canChangeProfileInArrangementGeneration = -1;
         _channelClients = [[NSMutableArray alloc] init];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(coprocessChanged)
@@ -1059,7 +1050,7 @@ ITERM_WEAKLY_REFERENCEABLE
     _statusBarViewController.delegate = nil;
 
     _statusBarViewController = donorSession->_statusBarViewController;
-    _statusBarViewController.delegate = self;
+    _statusBarViewController.delegate = _swiftState.statusBarCoordinator;
 
     [_view takeStatusBarViewFrom:donorSession.view];
     donorSession->_statusBarViewController = nil;
@@ -1509,8 +1500,8 @@ ITERM_WEAKLY_REFERENCEABLE
 
     [aSession.nameController setNeedsUpdate];
     [aSession.nameController updateIfNeeded];
-    aSession->_originatingArrangement = [arrangement copy];
-    aSession->_originatingArrangementName = [arrangementName copy];
+    [aSession->_swiftState.naggingCoordinator setOriginatingArrangement:[arrangement copy]
+                                                                   name:[arrangementName copy]];
 }
 
 - (void)didFinishRestoration {
@@ -1784,7 +1775,8 @@ ITERM_WEAKLY_REFERENCEABLE
             }
             NSString *conductor = [NSString castFrom:arrangement[SESSION_ARRANGEMENT_CONDUCTOR]];
             if (conductor) {
-                aSession->_conductor = [iTermConductor newConductorWithJSON:conductor delegate:aSession];
+                aSession->_conductor = [iTermConductor newConductorWithJSON:conductor
+                                                                   delegate:aSession->_swiftState.sshCoordinator];
                 aSession->_shell.sshIntegrationActive = YES;
             }
             if (aSession->_conductor) {
@@ -5301,7 +5293,7 @@ ITERM_WEAKLY_REFERENCEABLE
                     _statusBarViewController =
                     [[iTermStatusBarViewController alloc] initWithLayout:newLayout
                                                                    scope:self.variablesScope];
-                    _statusBarViewController.delegate = self;
+                    _statusBarViewController.delegate = _swiftState.statusBarCoordinator;
                 } else {
                     _statusBarViewController.delegate = nil;
                     _statusBarViewController = nil;
@@ -6913,7 +6905,7 @@ ITERM_WEAKLY_REFERENCEABLE
 }
 
 static NSString *const PTYSessionComposerPrefixUserDataKeyPrompt = @"prompt";
-static NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger = @"detected by trigger";
+NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger = @"detected by trigger";
 
 - (NSMutableAttributedString *)kernedAttributedStringForScreenChars:(NSArray<ScreenCharArray *> *)promptText
                                         elideDefaultBackgroundColor:(BOOL)elideDefaultBackgroundColor {
@@ -7497,7 +7489,7 @@ DLog(args); \
 - (iTermComposerManager *)composerManager {
     if (!_composerManager) {
         _composerManager = [[iTermComposerManager alloc] init];
-        _composerManager.delegate = self;
+        _composerManager.delegate = _swiftState.composerCoordinator;
         [_composerManager setPreferredOffsetFromTop:[iTermProfilePreferences doubleForKey:KEY_COMPOSER_TOP_OFFSET
                                                                                 inProfile:self.profile]];
     }
@@ -15351,7 +15343,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
     // Ask nagging controller - it handles user defaults and showing the nag
     if ([self.naggingController shouldResetKeyReportingMode]) {
-        [self naggingControllerResetKeyReportingMode];
+        [_swiftState.naggingCoordinator naggingControllerResetKeyReportingMode];
     }
 }
 
@@ -15408,7 +15400,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 - (iTermNaggingController *)naggingController {
     if (!_naggingController) {
         _naggingController = [[iTermNaggingController alloc] init];
-        _naggingController.delegate = self;
+        _naggingController.delegate = _swiftState.naggingCoordinator;
     }
     return _naggingController;
 }
@@ -17027,196 +17019,132 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [_textview renderRange:range type:type filename:filename forceWide:forceWide];
 }
 
+- (BOOL)sshProfileStateActive {
+    return _sshState == iTermSSHStateProfile;
+}
+
+- (void)setSshProfileStateActive:(BOOL)active {
+    _sshState = active ? iTermSSHStateProfile : iTermSSHStateNone;
+}
+
+- (iTermSSHReconnectionInfo *)popPendingSSHJump {
+    if (!_pendingJumps.count) {
+        return nil;
+    }
+    iTermSSHReconnectionInfo *jump = _pendingJumps[0];
+    [_pendingJumps removeObjectAtIndex:0];
+    return jump;
+}
+
+- (NSArray<iTermSSHReconnectionInfo *> *)remainingPendingSSHJumps {
+    return _pendingJumps ?: @[];
+}
+
+- (void)replaceSSHConductorWith:(iTermConductor *)newConductor
+           removeChannelClients:(BOOL)removeChannelClients {
+    iTermConductor *previousConductor = _conductor;
+    if (previousConductor) {
+        if (removeChannelClients) {
+            [self removeChannelClientsForConductor:previousConductor];
+        }
+        previousConductor.delegate = nil;
+        CFAutorelease(CFBridgingRetain(previousConductor));
+    }
+    _conductor = newConductor;
+    _conductor.delegate = _swiftState.sshCoordinator;
+    _shell.sshIntegrationActive = (_conductor != nil);
+}
+
+- (void)flushSSHWriteQueue {
+    [self writeData:_sshWriteQueue];
+    _sshWriteQueue = nil;
+}
+
+- (void)clearSSHWriteQueue {
+    [_sshWriteQueue setLength:0];
+}
+
 - (void)screenDidHookSSHConductorWithToken:(NSString *)token
                                   uniqueID:(NSString *)uniqueID
                                   boolArgs:(NSString *)boolArgs
                                    sshargs:(NSString *)sshargs
                                      dcsID:(NSString * _Nonnull)dcsID
                                 savedState:(NSDictionary *)savedState {
-    BOOL localOrigin = NO;
-    if ([[iTermSecretServer instance] check:token]) {
-        localOrigin = YES;
-    }
-
-    NSString *directory = nil;
-    if (_sshState == iTermSSHStateProfile && !_conductor) {
-        // Currently launching the session that has ssh instead of login shell.
-        directory = self.environment[@"PWD"];
-    }
-    if (_pendingJumps.count) {
-        directory = _pendingJumps[0].initialDirectory;
-        [_pendingJumps removeObjectAtIndex:0];
-    }
-    iTermConductor *previousConductor = _conductor;
-    NSDictionary *dict = [NSDictionary castFrom:[iTermProfilePreferences objectForKey:KEY_SSH_CONFIG inProfile:self.profile]];
-    iTermSSHConfiguration *config = [[iTermSSHConfiguration alloc] initWithDictionary:dict];
-    _conductor = [[iTermConductor alloc] init:sshargs
-                                     boolArgs:boolArgs
-                                        dcsID:dcsID
-                               clientUniqueID:uniqueID
-                                   varsToSend:localOrigin ? [self.screen exfiltratedEnvironmentVariables:config.environmentVariablesToCopy] : @{}
-                                   clientVars:[self.screen exfiltratedEnvironmentVariables:nil] ?: @{}
-                             initialDirectory:directory
-                                       parent:previousConductor];
-    _shell.sshIntegrationActive = YES;
-    _conductor.terminalConfiguration = savedState;
-    if (localOrigin) {
-        for (iTermTuple<NSString *, NSString *> *tuple in config.filesToCopy) {
-            [_conductor addPath:tuple.firstObject destination:tuple.secondObject];
-        }
-    }
-    _sshState = iTermSSHStateNone;
-    _conductor.delegate = self;
-    NSArray<iTermSSHReconnectionInfo *> *jumps = _pendingJumps;
-    if (!previousConductor && jumps.count) {
-        [_conductor startJumpingTo:jumps];
-    } else if (previousConductor.subsequentJumps.count) {
-        [_conductor startJumpingTo:previousConductor.subsequentJumps];
-        [previousConductor childDidBeginJumping];
-    } else {
-        [_conductor start];
-    }
-    [self updateVariablesFromConductor];
+    [_swiftState.sshCoordinator handleHookSSHConductorWithToken:token
+                                                       uniqueID:uniqueID
+                                                       boolArgs:boolArgs
+                                                        sshargs:sshargs
+                                                          dcsID:dcsID
+                                                     savedState:savedState];
 }
 
 - (void)screenDidReadSSHConductorLine:(NSString *)string depth:(int)depth {
-    [_conductor handleLine:string depth:depth];
+    [_swiftState.sshCoordinator handleReadSSHConductorLine:string depth:depth];
 }
 
 - (void)screenDidUnhookSSHConductor {
-    [_conductor handleUnhook];
-    [self writeData:_sshWriteQueue];
-    _sshWriteQueue = nil;
+    [_swiftState.sshCoordinator handleUnhookSSHConductor];
 }
 
 - (void)unhookSSHConductor {
-    RLog(@"Unhook %@", _conductor);
-    [self conductorWillDie];
-    NSDictionary *config = _conductor.terminalConfiguration;
-    if (config) {
-        [_screen restoreSavedState:config];
-    }
-    iTermConductor *previousConductor = _conductor;
-    if (previousConductor) {
-        [self removeChannelClientsForConductor:previousConductor];
-        previousConductor.delegate = nil;
-        CFAutorelease(CFBridgingRetain(previousConductor));
-    }
-    _conductor = previousConductor.parent;
-    _conductor.delegate = self;
-    [self updateVariablesFromConductor];
-    _shell.sshIntegrationActive = _conductor != nil;
+    [_swiftState.sshCoordinator unhookSSHConductor];
 }
 
 - (void)screenDidBeginSSHConductorCommandWithIdentifier:(NSString *)identifier
                                                   depth:(int)depth {
-    [_conductor handleCommandBeginWithIdentifier:identifier depth:depth];
+    [_swiftState.sshCoordinator handleBeginSSHConductorCommandWithIdentifier:identifier depth:depth];
 }
 
 - (void)screenDidEndSSHConductorCommandWithIdentifier:(NSString *)identifier
                                                  type:(NSString *)type
                                                status:(uint8_t)status
                                                 depth:(int)depth {
-    [_conductor handleCommandEndWithIdentifier:identifier
-                                          type:type
-                                        status:status
-                                         depth:depth];
+    [_swiftState.sshCoordinator handleEndSSHConductorCommandWithIdentifier:identifier
+                                                                      type:type
+                                                                    status:status
+                                                                     depth:depth];
 }
 
 - (void)screenHandleSSHSideChannelOutput:(NSString *)string
                                      pid:(int32_t)pid
                                  channel:(uint8_t)channel
                                    depth:(int)depth {
-    [_conductor handleSideChannelOutput:string pid:pid channel:channel depth:depth];
+    [_swiftState.sshCoordinator handleSSHSideChannelOutput:string pid:pid channel:channel depth:depth];
 }
 
 - (void)screenDidReadRawSSHData:(NSData *)data {
-    if (!_conductor) {
-        DLog(@"Read raw ssh data but there is no conductor");
-        return;
-    }
-    if (_shell.coprocess) {
-        DLog(@"Read raw SSH data, passing it on to the coprocess: %@", data);
-        DLog(@"tty -> coprocess: %@ (%@)", data.it_hexEncoded, data.shortDebugString);
-        [_shell writeToCoprocess:data];
-    } else {
-        DLog(@"Read raw ssh data but the shell has no coprocess");
-    }
+    [_swiftState.sshCoordinator handleReadRawSSHData:data];
 }
 
 - (void)screenDidTerminateSSHProcess:(int)pid code:(int)code depth:(int)depth {
-    [_conductor handleTerminatePID:pid withCode:code depth:depth];
+    [_swiftState.sshCoordinator handleTerminateSSHProcess:pid code:code depth:depth];
 }
 
 - (void)screenHandleIT2:(NSString *)string depth:(int)depth {
 }
 
 - (NSInteger)screenEndSSH:(NSString *)uniqueID {
-    DLog(@"%@", uniqueID);
-    if (![_conductor ancestryContainsClientUniqueID:uniqueID]) {
-        DLog(@"Ancestry does not contain this unique ID");
-        return 0;
-    }
-    BOOL found = NO;
-    NSInteger count = 0;
-    while (_conductor != nil && !found) {
-        found = [_conductor.clientUniqueID isEqual:uniqueID];
-        count += 1;
-        [self unhookSSHConductor];
-    }
-    return count;
+    return [_swiftState.sshCoordinator handleEndSSH:uniqueID];
 }
 
 - (NSString *)screenSSHLocation {
-    return _conductor.sshIdentity.compactDescription;
+    return [_swiftState.sshCoordinator sshLocation];
 }
 
 - (void)screenBeginFramerRecovery:(int)parentDepth {
-    if (parentDepth < 0) {
-        while (_conductor) {
-            [self unhookSSHConductor];
-        }
-    }
-    iTermConductor *previousConductor = _conductor;
-    _conductor = [[iTermConductor alloc] init:@""
-                                     boolArgs:@""
-                                        dcsID:@""
-                               clientUniqueID:@""
-                                   varsToSend:@{}
-                                   clientVars:@{}
-                             initialDirectory:nil
-                                       parent:previousConductor];
-    [self updateVariablesFromConductor];
-    _conductor.delegate = self;
-    [_conductor startRecovery];
-    _shell.sshIntegrationActive = _conductor != nil;
+    [_swiftState.sshCoordinator handleBeginFramerRecovery:parentDepth];
 }
 
 - (iTermConductorRecovery *)screenHandleFramerRecoveryString:(NSString * _Nonnull)string {
-    iTermConductorRecovery *recovery = [_conductor handleRecoveryLine:string];
-    if (!recovery) {
-        return nil;
-    }
-    iTermConductor *previousConductor = _conductor;
-    if (previousConductor) {
-        previousConductor.delegate = nil;
-        CFAutorelease(CFBridgingRetain(previousConductor));
-    }
-    _conductor = [[iTermConductor alloc] initWithRecovery:recovery];
-    _conductor.delegate = self;
-    _shell.sshIntegrationActive = _conductor != nil;
-    [self updateVariablesFromConductor];
-    return recovery;
+    return [_swiftState.sshCoordinator handleFramerRecoveryString:string];
 }
 
-// This is the final step of recovery. We need to reset the internal state of the conductors since
-// some tokens may have been dropped during recovery.
 - (void)screenDidResynchronizeSSH {
-    [_conductor didResynchronize];
+    [_swiftState.sshCoordinator handleResynchronizeSSH];
 }
 
 - (void)screenFramerRecoveryDidFinish {
-    [_conductor recoveryDidFinish];
+    [_swiftState.sshCoordinator handleFramerRecoveryDidFinish];
 }
 
 - (void)screenEnsureDefaultMode {
@@ -18132,7 +18060,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 - (void)directoryTracker:(iTermSessionDirectoryTracker *)tracker
    didChangeLocalDirectory:(NSString *)directory {
     if (directory) {
-        _localFileChecker.workingDirectory = directory;
+        [_swiftState.composerCoordinator updateLocalFileCheckerWorkingDirectory:directory];
     }
 }
 
@@ -18370,157 +18298,42 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return self.effectiveBlend;
 }
 
-#pragma mark - iTermStatusBarViewControllerDelegate
+#pragma mark - Status Bar Coordinator Bridges
 
 - (NSColor *)textColorForStatusBar {
-    return [[iTermTheme sharedInstance] statusBarTextColorForEffectiveAppearance:_view.effectiveAppearance
-                                                                     marginColor:_textview.colorForMargins
-                                                                        colorMap:_screen.colorMap
-                                                                        tabStyle:[self.view.window.ptyWindow it_tabStyle]
-                                                                   mainAndActive:(self.view.window.isMainWindow && NSApp.isActive)];
-}
-
-- (BOOL)statusBarHasDarkBackground {
-    if (self.view.window.ptyWindow.it_terminalWindowUseMinimalStyle) {
-        NSColor *color = self.view.window.ptyWindow.it_terminalWindowDecorationControlColor;
-        return [color isDark];
-    }
-    // This is called early in the appearance change process and subviews of the contentview aren't
-    // up to date yet.
-    return self.view.window.contentView.effectiveAppearance.it_isDark;
-}
-
-- (BOOL)statusBarRevealComposer {
-    [self.composerManager revealMinimal];
-    return NO;
-}
-
-- (NSColor *)statusBarDefaultTextColor {
-    return [self textColorForStatusBar];
-}
-
-- (NSColor *)statusBarSeparatorColor {
-    if (self.view.window.ptyWindow.it_terminalWindowUseMinimalStyle) {
-        return nil;
-    }
-    NSColor *color = _statusBarViewController.layout.advancedConfiguration.separatorColor;
-    if (color) {
-        return color;
-    }
-
-    const CGFloat alpha = 0.25;
-    NSAppearance *appearance = nil;
-    switch ((iTermPreferencesTabStyle)[iTermPreferences intForKey:kPreferenceKeyTabStyle]) {
-        case TAB_STYLE_DARK:
-        case TAB_STYLE_DARK_HIGH_CONTRAST:
-            appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-            break;
-        case TAB_STYLE_LIGHT:
-        case TAB_STYLE_LIGHT_HIGH_CONTRAST:
-            appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
-            break;
-        case TAB_STYLE_AUTOMATIC:
-        case TAB_STYLE_COMPACT:
-        case TAB_STYLE_MINIMAL:  // shouldn't happen
-            appearance = [NSApp effectiveAppearance];
-            break;
-    }
-    return [[[self textColorForStatusBar] it_colorWithAppearance:appearance] colorWithAlphaComponent:alpha];
-}
-
-- (NSColor *)statusBarBackgroundColor {
-    return _statusBarViewController.layout.advancedConfiguration.backgroundColor;
-}
-
-- (nullable NSColor *)statusBarEdgeSeparatorColor {
-    return [[iTermTheme sharedInstance] statusBarEdgeSeparatorColorForTabStyle:[self.view.window.ptyWindow it_tabStyle]];
+    return [_swiftState.statusBarCoordinator textColorForStatusBar];
 }
 
 - (void)updateStatusBarStyle {
-    [_statusBarViewController updateColors];
-    [self invalidateStatusBar];
+    [_swiftState.statusBarCoordinator updateStatusBarStyle];
 }
 
-- (NSFont *)statusBarTerminalFont {
-    return _textview.fontTable.asciiFont.font;
+- (iTermActivityInfo)activityInfo {
+    return _activityInfo;
 }
 
-- (NSColor *)statusBarTerminalBackgroundColor {
-    return [self effectiveProcessedBackgroundColor];
+- (NSSet<NSString *> *)overriddenProfileFields {
+    return _overriddenFields;
 }
 
-- (id<ProcessInfoProvider>)statusBarProcessInfoProvider {
-    return self.processInfoProvider;
+- (id<iTermTriggersDataSource>)triggersDataSource {
+    return self;
 }
 
-- (iTermFindDriver *)statusBarFindDriver {
-    // Always use this session's find driver. For synthetic sessions (instant replay or filtering),
-    // the synthetic session has taken ownership of the status bar view controller.
-    [self.view createFindDriverIfNeeded];
-    return self.view.findDriver;
-}
-
-- (void)statusBarWriteString:(NSString *)string {
-    [self writeTask:string];
-}
-
-- (void)statusBarDidUpdate {
-    [_view updateFindDriver];
-}
-
-- (void)statusBarOpenPreferencesToComponent:(nullable id<iTermStatusBarComponent>)component {
-    PreferencePanel *panel;
-    NSString *guid;
-    if (self.isDivorced && ([_overriddenFields containsObject:KEY_STATUS_BAR_LAYOUT] ||
-                            [_overriddenFields containsObject:KEY_SHOW_STATUS_BAR])) {
-        panel = [PreferencePanel sessionsInstance];
-        guid = _profile[KEY_GUID];
-    } else {
-        panel = [PreferencePanel sharedInstance];
-        guid = _originalProfile[KEY_GUID];
-    }
+- (void)openPreferencesPanel:(PreferencePanel *)panel
+                 profileGuid:(NSString *)guid
+         componentIdentifier:(NSString *)identifier {
     [panel openToProfileWithGuid:guid
-  andEditComponentWithIdentifier:component.statusBarComponentIdentifier
+  andEditComponentWithIdentifier:identifier
                             tmux:self.isTmuxClient
                            scope:self.variablesScope];
     [panel.window makeKeyAndOrderFront:nil];
 }
 
-- (void)statusBarDisable {
-    if (self.isDivorced) {
-        [self setSessionSpecificProfileValues:@{ KEY_SHOW_STATUS_BAR: @NO }];
-    } else {
-        [iTermProfilePreferences setBool:NO
-                                  forKey:KEY_SHOW_STATUS_BAR
-                               inProfile:self.profile
-                                   model:[ProfileModel sharedInstance]];
-    }
-    [[NSNotificationCenter defaultCenter] postNotificationName:kSessionProfileDidChange
-                                                        object:_profile[KEY_GUID]];
-}
-
-- (BOOL)statusBarCanDragWindow {
-    const BOOL inTitleBar = self.view.statusBarIsInPaneTitleBar;
-    if (inTitleBar) {
-        return [self.delegate sessionShouldDragWindowByPaneTitleBar:self];
-    }
-    return YES;
-}
-
-- (iTermActivityInfo)statusBarActivityInfo {
-    return _activityInfo;
-}
-
-- (void)statusBarSetFilter:(NSString *)query {
-    PTYSession *synthetic = [self.delegate sessionSyntheticSessionFor:self];
-    if (synthetic) {
-        [synthetic statusBarSetFilter:query];
-        return;
-    }
-    if (query) {
-        [self.delegate session:self setFilter:query];
-    } else {
-        [self stopFiltering];
+- (void)applyActionObject:(id)action {
+    iTermAction *typedAction = [iTermAction castFrom:action];
+    if (typedAction) {
+        [self applyAction:typedAction];
     }
 }
 
@@ -18541,47 +18354,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (ProfileModel *)profileModel {
-    if (self.isDivorced && [_overriddenFields containsObject:KEY_STATUS_BAR_LAYOUT]) {
-        return [ProfileModel sessionsInstance];
-    } else {
-        return [ProfileModel sharedInstance];
-    }
-}
-
-- (void)statusBarSetLayout:(nonnull iTermStatusBarLayout *)layout {
-    [iTermProfilePreferences setObject:[layout dictionaryValue]
-                                forKey:KEY_STATUS_BAR_LAYOUT
-                             inProfile:self.originalProfile
-                                 model:[self profileModel]];
-}
-
-- (void)statusBarPerformAction:(iTermAction *)action {
-    [self applyAction:action];
-}
-
-- (void)statusBarEditActions {
-    [self.delegate sessionEditActions];
-}
-
-- (void)statusBarEditSnippets {
-    [self.delegate sessionEditSnippets];
-}
-
-- (void)statusBarResignFirstResponder {
-    [_textview.window makeFirstResponder:self.mainResponder];
-}
-
-- (void)statusBarReportScriptingError:(NSError *)error
-                        forInvocation:(NSString *)invocation
-                               origin:(NSString *)origin {
-    [PTYSession reportFunctionCallError:error
-                          forInvocation:invocation
-                                 origin:origin
-                                 window:self.delegate.realParentWindow.window];
-}
-
-- (id<iTermTriggersDataSource>)statusBarTriggersDataSource {
-    return self;
+    return [_swiftState.statusBarCoordinator profileModel];
 }
 
 #pragma mark - iTermMetaFrustrationDetectorDelegate
@@ -19083,125 +18856,9 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 
-#pragma mark - iTermNaggingControllerDelegate
+#pragma mark - Nagging & Composer Coordinator Bridges
 
-- (BOOL)naggingControllerCanShowMessageWithIdentifier:(NSString *)identifier {
-    return ![self hasAnnouncementWithIdentifier:identifier];
-}
-
-- (void)naggingControllerShowMarkdownMessage:(NSString *)message
-                                  isQuestion:(BOOL)isQuestion
-                                   important:(BOOL)important
-                                  identifier:(NSString *)identifier
-                                     options:(NSArray<NSString *> *)options
-                                  completion:(void (^)(int))completion {
-    iTermAnnouncementViewController *announcement =
-    [iTermAnnouncementViewController announcementWithMarkdownTitle:message
-                                                     style:isQuestion ? iTermAnnouncementViewStyleQuestion : iTermAnnouncementViewStyleWarning
-                                               withActions:options
-                                                completion:^(int selection) {
-        completion(selection);
-    }];
-    if (!important) {
-        announcement.dismissOnKeyDown = YES;
-    }
-    [self queueAnnouncement:announcement identifier:identifier];
-}
-
-- (void)naggingControllerShowMessage:(NSString *)message
-                          isQuestion:(BOOL)isQuestion
-                           important:(BOOL)important
-                          identifier:(NSString *)identifier
-                             options:(NSArray<NSString *> *)options
-                          completion:(void (^)(int))completion {
-    iTermAnnouncementViewController *announcement =
-    [iTermAnnouncementViewController announcementWithTitle:message
-                                                     style:isQuestion ? iTermAnnouncementViewStyleQuestion : iTermAnnouncementViewStyleWarning
-                                               withActions:options
-                                                completion:^(int selection) {
-        completion(selection);
-    }];
-    if (!important) {
-        announcement.dismissOnKeyDown = YES;
-    }
-    [self queueAnnouncement:announcement identifier:identifier];
-}
-
-- (void)naggingControllerRepairSavedArrangement:(NSString *)savedArrangementName
-                            missingProfileNamed:(NSString *)missingProfileName
-                                           guid:(NSString *)guid {
-    Profile *similarlyNamedProfile = [[ProfileModel sharedInstance] bookmarkWithName:missingProfileName];
-    [[iTermController sharedInstance] repairSavedArrangementNamed:savedArrangementName
-                                             replacingMissingGUID:guid
-                                                         withGUID:similarlyNamedProfile[KEY_GUID]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:PTYSessionDidRepairSavedArrangement
-                                                        object:guid
-                                                      userInfo:@{ @"new profile": similarlyNamedProfile }];
-}
-
-- (void)naggingControllerRemoveMessageWithIdentifier:(NSString *)identifier {
-    [self dismissAnnouncementWithIdentifier:identifier];
-    [self removeAnnouncementWithIdentifier:identifier];
-}
-
-- (void)naggingControllerSetProfileProperties:(NSDictionary *)dict {
-    [self setSessionSpecificProfileValues:dict];
-}
-
-- (BOOL)naggingControllerAnnouncementWouldObscureCursorForText:(NSString *)text {
-    const CGFloat announcementHeight = [iTermAnnouncementView estimatedHeightForWidth:_view.frame.size.width
-                                                                                 text:text];
-    const CGFloat cellHeight = [_textview lineHeight];
-    const int linesObscuredByAnnouncement = (int)ceil(announcementHeight / cellHeight);
-    return _screen.cursorY <= linesObscuredByAnnouncement;
-}
-
-- (void)naggingControllerPrettyPrintJSON {
-    iTermSelectionReplacement *replacement = [self.textview.replacementPayloadsForSelection objectPassingTest:^BOOL(iTermSelectionReplacement *candidate, NSUInteger index, BOOL *stop) {
-        return candidate.kind == iTermSelectionReplacementKindJson;
-    }];
-    if (replacement) {
-        [self.textview replaceSelectionWith:replacement];
-        [iTermWarning showWarningWithTitle:@"You can find this feature under Edit > Replace Selection > Replace with Pretty-Printed JSON if you want to use it again."
-                                   actions:@[ @"OK" ]
-                                 accessory:nil
-                                identifier:nil
-                               silenceable:kiTermWarningTypePersistent
-                                   heading:@"Done!"
-                                    window:self.view.window];
-    } else {
-        [iTermWarning showWarningWithTitle:@"Looks like the selection changed and is no longer a valid JSON object.\nYou can find this feature under Edit > Replace Selection > Replace with Pretty-Printed JSON if you want to try again."
-                                   actions:@[ @"OK" ]
-                                identifier:nil
-                               silenceable:kiTermWarningTypePersistent
-                                    window:self.view.window];
-    }
-}
-
-- (NSWindow * _Nullable)naggingControllerWindow {
-    return self.view.window;
-}
-
-- (void)naggingControllerRestart {
-    if (self.workgroupSessionMode == iTermWorkgroupSessionModeCodeReview &&
-        self.codeReviewRawCommand) {
-        // Code-review sessions re-show the prompt overlay so the user
-        // can edit the prompt before the program is rerun.
-        [self reloadCodeReviewPromptOverlay];
-        return;
-    }
-    [self replaceTerminatedShellWithNewInstance];
-}
-
-- (void)naggingControllerAbortDownload {
-    [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal,
-                                             VT100ScreenMutableState *mutableState,
-                                             id<VT100ScreenDelegate> delegate) {
-        [terminal stopReceivingFile];
-    }];
-}
-
-- (void)naggingControllerAbortUpload {
+- (void)abortFileUpload {
     if (!self.upload) {
         return;
     }
@@ -19210,282 +18867,49 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     self.upload = nil;
 }
 
-- (void)naggingControllerSetBackgroundImageToFileWithName:(NSString *)filename {
-    [self setSessionSpecificProfileValues:@{ KEY_BACKGROUND_IMAGE_LOCATION: filename.length ? filename : [NSNull null] }];
-}
-
-- (void)naggingControllerDisableMouseReportingPermanently:(BOOL)permanently {
-    [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal,
-                                             VT100ScreenMutableState *mutableState,
-                                             id<VT100ScreenDelegate> delegate) {
-        if (permanently) {
-            if (self.isDivorced) {
-                [self setSessionSpecificProfileValues:@{ KEY_XTERM_MOUSE_REPORTING: @NO}];
-            } else {
-                [iTermProfilePreferences setBool:NO
-                                          forKey:KEY_XTERM_MOUSE_REPORTING
-                                       inProfile:self.profile
-                                           model:[ProfileModel sharedInstance]];
-                [[NSNotificationCenter defaultCenter] postNotificationName:kSessionProfileDidChange
-                                                                    object:self.profile[KEY_GUID]];
-            }
-        }
-        [terminal setMouseMode:MOUSE_REPORTING_NONE];
-    }];
-}
-
-- (void)naggingControllerDisableBracketedPasteMode {
-    [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal,
-                                             VT100ScreenMutableState *mutableState,
-                                             id<VT100ScreenDelegate> delegate) {
-        terminal.bracketedPasteMode = NO;
-    }];
-}
-
-- (void)naggingControllerResetKeyReportingMode {
-    // Dispatch to avoid reentrant performBlockWithJoinedThreads when this runs from a side effect.
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self->_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal,
-                                                       VT100ScreenMutableState *mutableState,
-                                                       id<VT100ScreenDelegate> delegate) {
-            [terminal resetKeyReportingModeLocally];
-        }];
-    });
-}
-
-- (void)naggingControllerRestoreIconNameTo:(NSString *)iconName windowName:(NSString *)windowName {
-    [self screenSetWindowTitle:windowName];
-    [self screenSetIconName:iconName];
-}
-
-- (void)naggingControllerCloseSession {
-    [_delegate closeSession:self];
-}
-
-- (void)naggingControllerRepairInitialWorkingDirectoryOfSessionWithGUID:(NSString *)guid
-                                                  inArrangementWithName:(NSString *)arrangementName {
-    NSOpenPanel* panel = [NSOpenPanel openPanel];
-    panel.canChooseFiles = NO;
-    panel.canChooseDirectories = YES;
-    panel.allowsMultipleSelection = NO;
-
-    if ([panel runModal] != NSModalResponseOK) {
-        return;
-    }
-    if (!panel.directoryURL.path) {
-        return;
-    }
-    [[iTermController sharedInstance] repairSavedArrangementNamed:arrangementName
-                        replaceInitialDirectoryForSessionWithGUID:guid
-                                                             with:panel.directoryURL.path];
-}
-
-- (void)naggingControllerDisableTriggersInInteractiveApps {
-    NSDictionary *update = @{ KEY_ENABLE_TRIGGERS_IN_INTERACTIVE_APPS: @NO };
-    if (self.isDivorced) {
-        [self setSessionSpecificProfileValues:update];
-        [[iTermNotificationController sharedInstance] notify:NSLocalizedString(@"Session Updated", @"User notification")
-                                             withDescription:NSLocalizedString(@"Triggers disabled in interactive apps. You can change this in Edit Session > Advanced.", @"User notification")];
-        return;
-    }
-
-    [iTermProfilePreferences setObjectsFromDictionary:update inProfile:self.profile model:[ProfileModel sharedInstance]];
-    [[iTermNotificationController sharedInstance] notify:NSLocalizedString(@"Profile Updated", @"User notification")
-                                         withDescription:NSLocalizedString(@"Triggers disabled in interactive apps. You can change this in Settings > Profiles > Advanced.", @"User notification")];
-}
-
-- (void)naggingControllerAssignProfileToSession:(NSString *)arrangementName guid:(NSString *)guid {
-    [self changeProfileInArrangementNamed:arrangementName guid:guid completion:^(Profile *profile) {}];
-}
-
-- (void)changeProfileInArrangementNamed:(NSString *)arrangementName
-                                   guid:(NSString *)guid
-                             completion:(void (^)(Profile *))completion {
-    NSAlert *alert = [[NSAlert alloc] init];
-    [alert setMessageText:@"Select a profile to use for this session. Your selection will be saved back to the arrangement."];
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Cancel"];
-
-    ProfileListView *profiles = [[ProfileListView alloc] initWithFrame:NSMakeRect(0, 0, 300, 300)
-                                                                  model:[ProfileModel sharedInstance]
-                                                                   font:nil];
-    [profiles disableArrowHandler];
-
-    alert.accessoryView = profiles;
-
-    __weak __typeof(self) weakSelf = self;
-    [alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse button) {
-        if (button == NSAlertFirstButtonReturn) {
-            [weakSelf reallyChangeProfileInArrangement:arrangementName
-                                                  guid:guid
-                                              profiles:profiles
-                                            completion:completion];
-        } else {
-            completion(nil);
-        }
-    }];
-}
-
-- (void)reallyChangeProfileInArrangement:(NSString *)arrangementName
-                                    guid:(NSString *)guid
-                                profiles:(ProfileListView *)profiles
-                              completion:(void (^)(Profile *))completion {
-    Profile *profile = [[ProfileModel sharedInstance] bookmarkWithGuid:profiles.selectedGuid];
-    if (profile) {
-        [self setProfileInArrangement:arrangementName
-                             withGUID:guid
-                            toProfile:profile];
-    }
-    completion(profile);
-}
-
 - (BOOL)canChangeProfileInArrangement {
-    if (_originatingArrangementName == nil) {
-        return NO;
-    }
-    NSString *guid = _originatingArrangement[SESSION_ARRANGEMENT_GUID];
-    if (guid == nil) {
-        return NO;
-    }
-    NSArray *windowArrangements = [WindowArrangements arrangementWithName:_originatingArrangementName];
-    if (windowArrangements.count == 0) {
-        return NO;
-    }
-    if (_canChangeProfileInArrangementGeneration == [WindowArrangements generation]) {
-        return _canChangeProfileInArrangement;
-    }
-    BOOL found = NO;
-    for (NSDictionary *windowArrangement in windowArrangements) {
-        found = [PseudoTerminal arrangement:windowArrangement passesTest:^BOOL(NSDictionary *candidate) {
-            return [candidate[SESSION_ARRANGEMENT_GUID] isEqual:guid];
-        }];
-        if (found) {
-            break;
-        }
-    }
-    _canChangeProfileInArrangementGeneration = [WindowArrangements generation];
-    _canChangeProfileInArrangement = found;
-    return found;
+    return [_swiftState.naggingCoordinator canChangeProfileInArrangement];
 }
 
 - (void)changeProfileInArrangement {
-    if (![self canChangeProfileInArrangement]) {
-        return;
-    }
-    __weak __typeof(self) weakSelf = self;
-    [self changeProfileInArrangementNamed:_originatingArrangementName
-                                     guid:_originatingArrangement[SESSION_ARRANGEMENT_GUID]
-                               completion:^(NSDictionary *profile) {
-        if (profile) {
-            [weakSelf setProfile:profile preservingName:YES];
-        }
-    }];
+    [_swiftState.naggingCoordinator changeProfileInArrangement];
 }
 
-- (void)setProfileInArrangement:(NSString *)arrangementName withGUID:(NSString *)guid toProfile:(Profile *)profile {
-    NSArray *windowArrangements = [WindowArrangements arrangementWithName:arrangementName];
-    NSArray *modifiedArrangements = [windowArrangements mapWithBlock:^id _Nullable(NSDictionary *arrangement) {
-        return [PseudoTerminal modifiedArrangement:arrangement mutator:^NSDictionary *(NSDictionary *sessionArrangement) {
-            if ([sessionArrangement[SESSION_ARRANGEMENT_GUID] isEqual:guid]) {
-                NSMutableDictionary *fixed = [sessionArrangement mutableCopy];
-                fixed[SESSION_ARRANGEMENT_BOOKMARK] = [profile copy];
-                return fixed;
-            } else {
-                return sessionArrangement;
-            }
-        }];
-    }];
-    [WindowArrangements setArrangement:modifiedArrangements withName:arrangementName];
+- (iTermComposerManager *)existingComposerManager {
+    return _composerManager;
 }
 
-#pragma mark - iTermComposerManagerDelegate
-
-- (iTermStatusBarViewController *)composerManagerStatusBarViewController:(iTermComposerManager *)composerManager {
-    return _statusBarViewController;
+- (void)enqueueComposerCommand:(NSString *)command {
+    [_commandQueue addObject:[command copy]];
 }
 
-- (iTermVariableScope *)composerManagerScope:(iTermComposerManager *)composerManager {
-    return self.variablesScope;
+- (void)logCookedComposerCommand:(NSString *)trimmedCommand {
+    [self logCooked:[trimmedCommand dataUsingEncoding:_screen.terminalEncoding]
+         foreground:(screen_char_t){0}
+         background:(screen_char_t){0}
+           atPrompt:NO];
 }
 
-- (NSView *)composerManagerContainerView:(iTermComposerManager *)composerManager {
-    return _view;
+- (void)forwardComposerMenuItem:(NSMenuItem *)menuItem {
+    [_textview it_performNonObjectReturningSelector:menuItem.action withObject:menuItem];
 }
 
-- (void)composerManager:(iTermComposerManager *)composerManager minimalFrameDidChangeTo:(NSRect)newFrame {
-    [_textview requestDelegateRedraw];
-    DLog(@"Composer frame changed to %@", NSStringFromRect(newFrame));
-}
-
-- (NSRect)composerManager:(iTermComposerManager *)composerManager
-    frameForDesiredHeight:(CGFloat)desiredHeight
-            previousFrame:(NSRect)previousFrame
-   preferredOffsetFromTop:(CGFloat)preferredOffsetFromTop {
-    NSRect newFrame = previousFrame;
-    newFrame.origin.y = _view.frame.size.height;
-
-    newFrame.origin.y += newFrame.size.height;
-    const CGFloat maxWidth = _view.bounds.size.width - newFrame.origin.x * 2;
-    const CGFloat vmargin = [iTermPreferences topBottomMargins];
-    const NSSize paneSize = self.view.frame.size;
-    CGFloat y = 0;
-    CGFloat width = 0;
-    CGFloat height = 0;
-
-    if (composerManager.isAutoComposer) {
-        // Place at bottom, but leave excess space below it so it abuts the terminal view.
-        width = maxWidth;
-        int lineAbove = _screen.currentGrid.cursor.y + 1;
-        id<VT100ScreenMarkReading> mark = _screen.lastPromptMark;
-        if (mark.promptRange.start.y >= 0) {
-            lineAbove = mark.promptRange.start.y - _screen.totalScrollbackOverflow - _screen.numberOfScrollbackLines;
-            lineAbove = MAX(1, lineAbove);
-        }
-        const int actualLinesAboveComposer = MAX(1, _screen.height - lineAbove);
-        const CGFloat lineHeight = _textview.lineHeight;
-        const int desiredLines = ceil(desiredHeight / lineHeight);
-        const int linesOfHeight = MIN(actualLinesAboveComposer, desiredLines);
-        const int gridOffsetInRows = _screen.height - linesOfHeight;
-        const CGFloat titleBarHeight = (_view.showTitle ? SessionView.titleHeight : 0);
-        height = (linesOfHeight + 0.5) * lineHeight;
-        const CGFloat gridOffsetInPoints = gridOffsetInRows * lineHeight;
-        const CGFloat top = vmargin + titleBarHeight + gridOffsetInPoints;
-        y = MAX(0, paneSize.height - top - height);
-
-        DLog(@"width=%@ actualLinesFree=%@ gridOffsetInRows=%@ lineHeight=%@ titleBarHeight=%@ height=%@ gridOffsetInPoints=%@ top=%@ y=%@",
-             @(width), @(actualLinesAboveComposer), @(gridOffsetInRows), @(lineHeight), @(titleBarHeight), @(height), @(gridOffsetInPoints), @(top), @(y));
-    } else {
-        // Place at top. Includes decoration so a minimum width must be enforced.
-        y = MAX(0, paneSize.height - desiredHeight - preferredOffsetFromTop);
-        width = MAX(217, maxWidth);
-        height = desiredHeight;
-        CGFloat overage = (y + height) - NSHeight(_view.frame);
-        if (overage > 0) {
-            y = MAX(0, y - overage);
-            overage = (y + height) - NSHeight(_view.frame);
-            if (overage > 0) {
-                desiredHeight -= overage;
-                desiredHeight = MAX(20, desiredHeight);
-            }
-        }
-    }
-    newFrame = NSMakeRect(newFrame.origin.x,
-                          y,
-                          width,
-                          height);
-    return newFrame;
-}
-
-- (void)composerManagerAutoComposerTextDidChange:(iTermComposerManager *)composerManager {
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager desiredHeightDidChange:(CGFloat)desiredHeight {
-    DLog(@"Desired height changed to %@", @(desiredHeight));
-    [self sync];
+- (void)findSlowCompletionsWithPrefix:(NSString *)prefix
+                        inDirectories:(NSArray<NSString *> *)directories
+                     workingDirectory:(NSString *)workingDirectory
+                             maxCount:(NSInteger)maxCount
+                           executable:(BOOL)executable
+                           completion:(void (^)(NSArray<NSString *> *))completion {
+    [[iTermSlowOperationGateway sharedInstance] findCompletionsWithPrefix:prefix
+                                                            inDirectories:directories
+                                                                      pwd:workingDirectory
+                                                                 maxCount:maxCount
+                                                               executable:executable
+                                                               completion:completion];
 }
 
 - (BOOL)haveAutoComposer {
-    return _composerManager.dropDownComposerViewIsVisible && _composerManager.isAutoComposer;
+    return [_swiftState.composerCoordinator haveAutoComposer];
 }
 
 - (void)screenWillSynchronize {
@@ -19552,324 +18976,12 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     }
 }
 
-- (CGFloat)composerManagerLineHeight:(iTermComposerManager *)composerManager {
-    return _textview.lineHeight;
-}
-
-- (void)composerManagerClear:(iTermComposerManager *)composerManager {
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [mutableState clearForComposer];
-    }];
-}
-
-- (void)composerManagerOpenHistory:(iTermComposerManager *)composerManager
-                            prefix:(nonnull NSString *)prefix
-                         forSearch:(BOOL)forSearch {
-}
-
-- (void)composerManagerShowCompletions:(NSArray<NSString *> *)completions {
-
-}
-
-- (void)composerManagerDidRemoveTemporaryStatusBarComponent:(iTermComposerManager *)composerManager {
-    [_pasteHelper temporaryRightStatusBarComponentDidBecomeAvailable];
-    [_textview.window makeFirstResponder:self.mainResponder];
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager enqueueCommand:(NSString *)command {
-    if (self.currentCommand != nil && self.currentCommand.length == 0) {
-        // At shell prompt
-        [self sendCommand:command];
-        return;
-    }
-    // Send when next mark is received.
-    [_commandQueue addObject:[command copy]];
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager sendCommand:(NSString *)command {
-    [self sendCommand:command];
-}
-
-- (BOOL)composerManagerHandleKeyDown:(NSEvent *)event {
-    iTermKeystroke *keystroke = [iTermKeystroke withEvent:event];
-    iTermKeyBindingAction *action = [iTermKeyMappings actionForKeystroke:keystroke
-                                                             keyMappings:self.profile[KEY_KEYBOARD_MAP]];
-
-    if (!action) {
-        return NO;
-    }
-    if (action.sendsText || keystroke.isNavigation) {
-        // Prevent natural text editing preset from interfering with composer navigation.
-        return NO;
-    }
-    DLog(@"PTYSession keyDown action=%@", action);
-    // A special action was bound to this key combination.
-    [self performKeyBindingAction:action event:event];
-
-    DLog(@"Special handler: KEY BINDING ACTION");
-    return YES;
-}
-
-- (NSResponder *)composerManagerNextResponder {
-    return _textview;
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager
-        forwardMenuItem:(NSMenuItem *)menuItem {
-    [_textview it_performNonObjectReturningSelector:menuItem.action withObject:menuItem];
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager
-preferredOffsetFromTopDidChange:(CGFloat)offset {
-    if (_divorced) {
-        // Try to set it in the original profile.
-        if (!_originalProfile) {
-            return;
-        }
-        ProfileModel *model = [ProfileModel sharedInstance];
-        if ([model bookmarkWithGuid:_originalProfile[KEY_GUID]] == nil) {
-            return;
-        }
-        [iTermProfilePreferences setObject:@(offset)
-                                    forKey:KEY_COMPOSER_TOP_OFFSET
-                                 inProfile:_originalProfile
-                                     model:model];
-        return;
-
-    }
-    [iTermProfilePreferences setObject:@(offset)
-                                forKey:KEY_COMPOSER_TOP_OFFSET
-                             inProfile:self.profile
-                                 model:self.profileModel];
-}
-
-- (BOOL)composerManagerShouldForwardCopy:(iTermComposerManager *)composerManager {
-    if (![self haveAutoComposer]) {
-        return NO;
-    }
-    return _textview.canCopy;
-}
-
-- (id<iTermSyntaxHighlighting>)composerManager:(iTermComposerManager *)composerManager
-          syntaxHighlighterForAttributedString:(NSMutableAttributedString *)attributedString {
-    // fontTable is non-optional in Swift. If _textview is nil, ObjC nil messaging
-    // returns nil which would be stored as null in the Swift field, crashing later.
-    if (!_textview) {
-        return nil;
-    }
-    return [[iTermSyntaxHighlighter alloc] init:attributedString
-                                        colorMap:_screen.colorMap
-                                        fontTable:_textview.fontTable
-                                     fileChecker:[self fileChecker]];
-}
-
-- (void)composerManagerDidBecomeFirstResponder:(iTermComposerManager *)composerManager {
-    DLog(@"composerManagerDidBecomeFirstResponder");
-}
-
-- (BOOL)composerManagerShouldFetchSuggestions:(iTermComposerManager *)composerManager
-                                      forHost:(id<VT100RemoteHostReading>)remoteHost
-                               tmuxController:(TmuxController *)tmuxController {
-    if (remoteHost.isRemoteHost) {
-        // Don't try to complete filenames if not on localhost unless we can ask the conductor.
-        return [_conductor framing];
-    }
-    if (tmuxController) {
-        // I haven't implemented this on tmux because it's probably gonna be slow and knowing the
-        // working directory is rare.
-        return NO;
-    }
-    return YES;
-}
-
-- (NSString * _Nullable)composerManager:(iTermComposerManager *)composerManager
-             valueOfEnvironmentVariable:(NSString *)name {
-    // This is implicitly only for remote hosts.
-    if ([_conductor framing]) {
-        return _conductor.environmentVariables[name];
-    }
-    return nil;
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager
-       fetchSuggestions:(iTermSuggestionRequest *)request
-          byUserRequest:(BOOL)byUserRequest {
-    if ([_conductor framing]) {
-        [_conductor fetchSuggestions:request suggestionOnly:byUserRequest];
-        return;
-    }
-    [[iTermSlowOperationGateway sharedInstance] findCompletionsWithPrefix:request.prefix
-                                                            inDirectories:request.directories
-                                                                      pwd:request.workingDirectory
-                                                                 maxCount:request.limit
-                                                               executable:request.executable
-                                                               completion:^(NSArray<NSString *> * _Nonnull completions) {
-        NSArray<iTermCompletionItem *> *fileItems = [completions mapWithBlock:^id _Nullable(NSString *filename) {
-            return [[iTermCompletionItem alloc] initWithValue:filename
-                                                        detail:[request.prefix stringByAppendingString:filename]
-                                                          kind:iTermCompletionItemKindFile];
-        }];
-        request.completion(!byUserRequest, fileItems);
-    }];
-}
-
-- (iTermFileChecker *)fileChecker {
-    if (_conductor.canCheckFiles) {
-        return _conductor.fileChecker;
-    }
-    if (!_localFileChecker) {
-        _localFileChecker = [[iTermLocalFileChecker alloc] initWithShell:[self bestGuessAtUserShellWithPath:YES]];
-        if (self.lastLocalDirectory) {
-            _localFileChecker.workingDirectory = self.lastLocalDirectory;
-        }
-    }
-    return _localFileChecker;
-}
-
 - (void)sendCommand:(NSString *)command {
-    __weak __typeof(self) weakSelf = self;
-    if ([self haveAutoComposer]) {
-        if (_composerManager.haveShellProvidedText) {
-            // Send ^U first to erase what's already there.
-            // TODO: This may wreak havoc if the shell decides to redraw itself.
-            command = [[NSString stringWithLongCharacter:'U' - '@'] stringByAppendingString:command];
-        }
-        if ([iTermAdvancedSettingsModel smartLoggingWithAutoComposer]) {
-            NSString *trimmedCommand = [command stringByTrimmingTrailingCharactersFromCharacterSet:[NSCharacterSet newlineCharacterSet]];
-            [self logCooked:[trimmedCommand dataUsingEncoding:_screen.terminalEncoding]
-                 foreground:(screen_char_t){0}
-                 background:(screen_char_t){0} atPrompt:NO];
-        }
-
-        const BOOL detectedByTrigger = [_composerManager.prefixUserData[PTYSessionComposerPrefixUserDataKeyDetectedByTrigger] boolValue];
-        [_composerManager setPrefix:nil userData:nil];
-        [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-            DLog(@"willSendCommand:%@", command);
-            const VT100GridAbsCoord start =
-            VT100GridAbsCoordMake(mutableState.currentGrid.cursor.x,
-                                  mutableState.currentGrid.cursor.y + mutableState.numberOfScrollbackLines + mutableState.cumulativeScrollbackOverflow);
-            [mutableState composerWillSendCommand:command
-                                       startingAt:start];
-            if (detectedByTrigger) {
-                [mutableState didSendCommand];
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [weakSelf reallySendCommand:command];
-            });
-        }];
-        DLog(@"Dismiss composer and request redraw");
-        [_composerManager dismissAnimated:NO];
-        [_textview requestDelegateRedraw];
-        return;
-    }
-    [self reallySendCommand:command];
-}
-
-- (void)reallySendCommand:(NSString *)command {
-    DLog(@"reallySendCommand: %@", command);
-    [self writeTask:command];
-    [_screen userDidPressReturn];
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager
-    sendToAdvancedPaste:(NSString *)command {
-    [self openAdvancedPasteWithText:command escaping:iTermSendTextEscapingNone];
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager
-            sendControl:(NSString *)control {
-    [self writeTask:control];
-}
-
-- (BOOL)composerManager:(iTermComposerManager *)composerManager wantsKeyEquivalent:(NSEvent *)event {
-    const NSEventModifierFlags mask = (NSEventModifierFlagOption |
-                                       NSEventModifierFlagCommand |
-                                       NSEventModifierFlagShift |
-                                       NSEventModifierFlagControl);
-    const NSEventModifierFlags cmdShift = (NSEventModifierFlagCommand | NSEventModifierFlagShift);
-    if ((event.modifierFlags & mask) == cmdShift) {
-        // Shortcut for mark navigation.
-        if (event.keyCode == kVK_UpArrow) {
-            [[self.delegate realParentWindow] previousMark:nil];
-            return YES;
-        } else if (event.keyCode == kVK_DownArrow) {
-            [[self.delegate realParentWindow] nextMark:nil];
-            return YES;
-        }
-    }
-    return NO;
-}
-
-- (void)composerManager:(iTermComposerManager *)composerManager performFindPanelAction:(id)sender {
-    [_textview performFindPanelAction:sender];
-}
-
-- (void)composerManagerWillDismissMinimalView:(iTermComposerManager *)composerManager {
-    [_textview.window makeFirstResponder:self.mainResponder];
-    _composerManager.isSeparatorVisible = NO;
-}
-
-- (void)composerManagerDidDisplayMinimalView:(iTermComposerManager *)composerManager {
-    [self updateAutoComposerSeparatorVisibility];
+    [_swiftState.composerCoordinator sendCommand:command];
 }
 
 - (void)updateAutoComposerSeparatorVisibility {
-    _composerManager.isSeparatorVisible = [self shouldShowAutoComposerSeparator];
-    _composerManager.separatorColor = [iTermTextDrawingHelper colorForLineStyleMark:iTermMarkIndicatorTypeSuccess
-                                                                    backgroundColor:[_screen.colorMap colorForKey:kColorMapBackground]];
-}
-
-- (BOOL)shouldShowAutoComposerSeparator {
-    return self.haveAutoComposer;
-}
-
-- (void)composerManagerDidDismissMinimalView:(iTermComposerManager *)composerManager {
-    _view.composerHeight = 0;
-    [_localFileChecker reset];
-    [_conductor.fileChecker reset];
-}
-
-- (NSAppearance *)composerManagerAppearance:(iTermComposerManager *)composerManager {
-    NSColor *color = [_screen.colorMap colorForKey:kColorMapBackground];
-    if ([color isDark]) {
-        return [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-    }
-    return [NSAppearance appearanceNamed:NSAppearanceNameAqua];
-}
-
-- (id<VT100RemoteHostReading>)composerManagerRemoteHost:(iTermComposerManager *)composerManager {
-    return [self currentHost];
-}
-
-- (NSString * _Nullable)composerManagerWorkingDirectory:(iTermComposerManager *)composerManager {
-    return [self.variablesScope path];
-}
-
-- (NSString *)composerManagerShell:(iTermComposerManager *)composerManager {
-    return [self bestGuessAtUserShellWithPath:NO];
-}
-
-- (NSString *)composerManagerUName:(iTermComposerManager *)composerManager {
-    return [self bestGuessAtUName];
-}
-
-- (TmuxController *)composerManagerTmuxController:(iTermComposerManager *)composerManager {
-    if (!self.isTmuxClient) {
-        return nil;
-    }
-    return self.tmuxController;
-}
-
-- (NSFont *)composerManagerFont:(iTermComposerManager *)composerManager {
-    return self.textview.fontTable.asciiFont.font;
-}
-
-- (NSColor *)composerManagerTextColor:(iTermComposerManager *)composerManager {
-    return [self.textview.colorMap colorForKey:kColorMapForeground];
-}
-
-- (NSColor *)composerManagerCursorColor:(iTermComposerManager *)composerManager {
-    return [self.textview.colorMap colorForKey:kColorMapCursor];
+    [_swiftState.composerCoordinator updateAutoComposerSeparatorVisibility];
 }
 
 #pragma mark - iTermIntervalTreeObserver
@@ -20299,103 +19411,8 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     [self queueAnnouncement:announcement identifier:[[NSUUID UUID] UUIDString]];
 }
 
-#pragma mark - iTermConductorDelegate
-
-- (void)conductorWriteString:(NSString *)string {
-    DLog(@"Conductor write: %@", string);
-    [self writeTaskNoBroadcast:string];
-}
-
-- (void)conductorSendInitialText {
-    [self sendInitialText];
-    if (_pendingConductor) {
-        void (^pendingComposer)(PTYSession *) = _pendingConductor;
-        _pendingConductor = nil;
-        pendingComposer(self);
-    }
-}
-
-- (void)conductorWillDie {
-    RLog(@"conductorWillDie");
-    iTermPublisher<NSNumber *> *replacement = _conductor.parent.cpuUtilizationPublisher;
-    if (!replacement) {
-        replacement = [iTermLocalCPUUtilizationPublisher sharedInstance];
-    }
-    [[iTermCPUUtilization instanceForSessionID:_guid] setPublisher:replacement];
-}
-
-- (void)conductorDidUnhook {
-    [self conductorWillDie];
-}
-
-- (void)conductorAbortWithReason:(NSString *)reason {
-    XLog(@"conductor aborted: %@", reason);
-    [self conductorWillDie];
-
-    NSString *location = _conductor.parent.sshIdentity.compactDescription;
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [mutableState appendStringAtCursor:@"An error occurred while setting up the SSH environment:"];
-        [mutableState appendCarriageReturnLineFeed];
-        [mutableState appendStringAtCursor:reason];
-        [mutableState appendCarriageReturnLineFeed];
-        NSString *message = [mutableState sshEndBannerTerminatingCount:1 newLocation:location];
-        [mutableState appendBannerMessage:message];
-    }];
-    [self unhookSSHConductor];
-}
-
-- (void)conductorQuit {
-    RLog(@"conductorQuit");
-    [self conductorWillDie];
-    NSString *identity = _conductor.sshIdentity.description;
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [mutableState appendBannerMessage:[NSString stringWithFormat:@"Disconnected from %@", identity]];
-    }];
-    [self unhookSSHConductor];
-    [_sshWriteQueue setLength:0];
-}
-
-- (void)conductorStateDidChange {
-    DLog(@"conductorDidExfiltrateState");
-    [self updateVariablesFromConductor];
-}
-
 - (void)updateVariablesFromConductor {
-    _shell.sshIntegrationActive = _conductor != nil;
-    if (!_conductor) {
-        self.variablesScope.homeDirectory = NSHomeDirectory();
-        self.variablesScope.sshIntegrationLevel = 0;
-        self.variablesScope.shell = [self bestGuessAtUserShellWithPath:NO];
-        self.variablesScope.uname = [self bestGuessAtUName];
-        return;
-    }
-    const NSInteger level = _conductor.framing ? 2 : 1;
-    self.variablesScope.sshIntegrationLevel = level;
-    switch (level) {
-        case 0: {
-            const BOOL onLocalhost = (self.currentHost == nil || self.currentHost.isLocalhost);
-            if (onLocalhost) {
-                self.variablesScope.homeDirectory = NSHomeDirectory();
-                break;
-            }
-            // SSHed without integration
-            self.variablesScope.homeDirectory = nil;
-            self.variablesScope.shell = nil;
-            self.variablesScope.uname = nil;
-            break;
-        }
-        case 1:
-            // Definitely ssh'ed, but no way to get this info.
-            self.variablesScope.homeDirectory = nil;
-            self.variablesScope.shell = nil;
-            self.variablesScope.uname = nil;
-            break;
-        case 2:
-            self.variablesScope.homeDirectory = _conductor.homeDirectory;
-            self.variablesScope.shell = _conductor.shell;
-            self.variablesScope.uname = _conductor.uname;
-            break;
-    }
+    [_swiftState.sshCoordinator updateVariablesFromConductor];
 }
 
 - (iTermSessionTabStatus *)tabStatus {

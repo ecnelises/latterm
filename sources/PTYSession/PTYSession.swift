@@ -135,12 +135,20 @@ class PTYSessionSwiftState: NSObject {
     @objc let pasteCoordinator: PTYSessionPasteCoordinator
     @objc let metalCoordinator: PTYSessionMetalCoordinator
     @objc let tmuxState: PTYSessionTmuxState
+    @objc let naggingCoordinator: PTYSessionNaggingCoordinator
+    @objc let composerCoordinator: PTYSessionComposerCoordinator
+    @objc let statusBarCoordinator: PTYSessionStatusBarCoordinator
+    @objc let sshCoordinator: PTYSessionSSHCoordinator
 
     @objc(initWithSession:)
     init(session: PTYSession) {
         self.pasteCoordinator = PTYSessionPasteCoordinator(session: session)
         self.metalCoordinator = PTYSessionMetalCoordinator(session: session)
         self.tmuxState = PTYSessionTmuxState()
+        self.naggingCoordinator = PTYSessionNaggingCoordinator(session: session)
+        self.composerCoordinator = PTYSessionComposerCoordinator(session: session)
+        self.statusBarCoordinator = PTYSessionStatusBarCoordinator(session: session)
+        self.sshCoordinator = PTYSessionSSHCoordinator(session: session)
         super.init()
     }
 }
