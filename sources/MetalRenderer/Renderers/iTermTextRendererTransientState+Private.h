@@ -1,4 +1,3 @@
-
 //
 //  iTermTextRendererTransientStatePrivate.h
 //  iTerm2
@@ -7,6 +6,7 @@
 //
 
 #import "iTermASCIITexture.h"
+#import "iTermTextRendererTransientState.h"
 #import "iTermTexturePageCollection.h"
 
 @interface iTermTextRendererTransientState ()
@@ -14,7 +14,7 @@
 @property (nonatomic, readonly) NSData *piuData;
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) iTermASCIITextureGroup *asciiTextureGroup;
-@property (nonatomic) iTermTexturePageCollectionSharedPointer *texturePageCollectionSharedPointer;
+@property (nonatomic, strong) iTermTexturePageCollection *texturePageCollection;
 @property (nonatomic) NSInteger numberOfCells;
 @property (nonatomic) CGSize asciiOffset;
 
@@ -31,4 +31,3 @@
                                  BOOL emoji))block;
 
 @end
-

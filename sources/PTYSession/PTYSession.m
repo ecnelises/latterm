@@ -340,10 +340,6 @@ static const NSTimeInterval kAntiIdleGracePeriod = 0.1;
 static const NSUInteger kMaxCommands = 100;
 static const CGFloat PTYSessionMaximumMetalViewSize = 16384;
 
-// This one cannot be suppressed.
-static NSString *const kTwoCoprocessesCanNotRunAtOnceAnnouncementIdentifier =
-    @"NoSyncTwoCoprocessesCanNotRunAtOnceAnnouncmentIdentifier";
-
 NSString *const PTYSessionArrangementOptionsForDuplication = @"PTYSessionArrangementOptionsForDuplication";
 NSString *const PTYSessionArrangementOptionsUnlimitedHistory = @"PTYSessionArrangementOptionsUnlimitedHistory";
 NSString *const PTYSessionArrangementOptionsArchive = @"PTYSessionArrangementOptionsArchive";
@@ -19848,40 +19844,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     return self;
 }
 
-#pragma mark - iTermTriggersDataSource
-
-- (NSInteger)numberOfTriggers {
-    return _config.triggerProfileDicts.count;
-}
-
-- (NSArray<NSString *> *)triggerNames {
-    return [_config.triggerProfileDicts mapWithBlock:^id(NSDictionary *dict) {
-        Trigger *trigger = [Trigger triggerFromUntrustedDict:dict];
-        if (!trigger) {
-            return nil;
-        }
-        return [NSString stringWithFormat:@"%@ — %@", [[[trigger class] title] stringByRemovingSuffix:@"…"], trigger.regex];
-    }];
-}
-
-- (NSIndexSet *)enabledTriggerIndexes {
-    return [_config.triggerProfileDicts it_indexSetWithObjectsPassingTest:^BOOL(NSDictionary *triggerDict) {
-        return ![triggerDict[kTriggerDisabledKey] boolValue];
-    }];
-}
-
-- (void)addTrigger {
-    [self openAddTriggerViewControllerWithText:_textview.selectedText ?: @""];
-}
-
-- (void)editTriggers {
-    [self openTriggersViewController];
-}
-
-- (void)toggleTriggerAtIndex:(NSInteger)index {
-    [self toggleTriggerEnabledAtIndex:index];
-}
-
 #pragma mark - iTermMetaFrustrationDetectorDelegate
 
 - (void)metaFrustrationDetectorDidDetectFrustrationForLeftOption {
@@ -21409,38 +21371,6 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     [_textview drawRect:dirtyRect inView:legacyView];
 }
 
-#pragma mark - TriggerDelegate
-
-- (void)triggerChanged:(TriggerController *)triggerController newValue:(NSArray *)value {
-    [[triggerController.window undoManager] registerUndoWithTarget:self
-                                                          selector:@selector(setTriggersValue:)
-                                                            object:self.profile[KEY_TRIGGERS]];
-    [[triggerController.window undoManager] setActionName:@"Edit Triggers"];
-    [self setSessionSpecificProfileValues:@{ KEY_TRIGGERS: value }];
-    triggerController.guid = self.profile[KEY_GUID];
-}
-
-- (void)setTriggersValue:(NSArray *)value {
-    [self setSessionSpecificProfileValues:@{ KEY_TRIGGERS: value }];
-    _triggerWindowController.guid = self.profile[KEY_GUID];
-    [_triggerWindowController profileDidChange];
-}
-
-- (void)triggerSetUseInterpolatedStrings:(BOOL)useInterpolatedStrings {
-    [self setSessionSpecificProfileValues:@{ KEY_TRIGGERS_USE_INTERPOLATED_STRINGS: @(useInterpolatedStrings) }];
-    _triggerWindowController.guid = self.profile[KEY_GUID];
-}
-
-- (void)triggersCloseSheet {
-    [self closeTriggerWindowController];
-}
-
-- (void)triggersCopyToProfile {
-    [ProfileModel updateSharedProfileWithGUID:self.profile[KEY_ORIGINAL_GUID]
-                                    newValues:@{ KEY_TRIGGERS: self.profile[KEY_TRIGGERS] ?: @[],
-                                                 KEY_TRIGGERS_USE_INTERPOLATED_STRINGS: self.profile[KEY_TRIGGERS_USE_INTERPOLATED_STRINGS] ?: @NO }];
-}
-
 #pragma mark - iTermFilterDestination
 
 - (void)filterDestinationAppendScreenCharArray:(ScreenCharArray *)sca {
@@ -21534,13 +21464,18 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     [_composerManager setPrefix:prompt userData:[_composerManager prefixUserData]];
 }
 
-#pragma mark - iTermTriggerSideEffectExecutor
+#pragma mark - Triggers Bridge
 
-- (void)triggerSessionSetBufferInput:(BOOL)shouldBuffer {
-    if (_buffering == shouldBuffer) {
-        return;
-    }
-    [self toggleBufferInput];
+- (BOOL)buffering {
+    return _buffering;
+}
+
+- (NSArray<NSDictionary *> *)triggerProfileDicts {
+    return _config.triggerProfileDicts;
+}
+
+- (TriggerController *)triggerWindowController {
+    return _triggerWindowController;
 }
 
 - (void)toggleBufferInput {
@@ -21551,253 +21486,81 @@ getOptionKeyBehaviorLeft:(iTermOptionKeyBehavior *)left
     }
 }
 
+#pragma mark - iTermTriggerSideEffectExecutor
+
+- (void)triggerSessionSetBufferInput:(BOOL)shouldBuffer {
+    [self swift_triggerSessionSetBufferInput:shouldBuffer];
+}
+
 - (void)triggerSideEffectShowAlertWithMessage:(NSString *)message
                                     rateLimit:(iTermRateLimitedUpdate *)rateLimit
                                       disable:(void (^)(void))disable {
-    [iTermGCD assertMainQueueSafe];
-    __weak __typeof(self) weakSelf = self;
-    // Dispatch because it's not safe to start a runloop in a side-effect.
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf reallyShowTriggerAlertWithMessage:message
-                                          rateLimit:rateLimit
-                                            disable:disable];
-    });
+    [self swift_triggerSideEffectShowAlertWithMessage:message rateLimit:rateLimit disable:disable];
 }
 
-- (void)reallyShowTriggerAlertWithMessage:(NSString *)message
-                                rateLimit:(iTermRateLimitedUpdate *)rateLimit
-                                  disable:(void (^)(void))disable {
-    __weak __typeof(self) weakSelf = self;
-    [rateLimit performRateLimitedBlock:^{
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = message ?: @"";
-        [alert addButtonWithTitle:@"OK"];
-        [alert addButtonWithTitle:@"Show Session"];
-        [alert addButtonWithTitle:@"Disable This Alert"];
-        switch ([alert runModal]) {
-            case NSAlertFirstButtonReturn:
-                break;
-
-            case NSAlertSecondButtonReturn: {
-                [weakSelf reveal];
-                break;
-            }
-
-            case NSAlertThirdButtonReturn:
-                disable();
-                break;
-
-            default:
-                break;
-        }
-    }];
-}
-
-- (void)triggerSideEffectLaunchCoprocessWithCommand:(NSString * _Nonnull)command
-                                         identifier:(NSString * _Nullable)identifier
+- (void)triggerSideEffectLaunchCoprocessWithCommand:(NSString *)command
+                                         identifier:(NSString *)identifier
                                              silent:(BOOL)silent
-                                       triggerTitle:(NSString * _Nonnull)triggerName {
-    [iTermGCD assertMainQueueSafe];
-    [self launchCoprocessWithCommand:command identifier:identifier silent:silent triggerTitle:triggerName];
+                                       triggerTitle:(NSString *)triggerTitle {
+    [self swift_triggerSideEffectLaunchCoprocessWithCommand:command
+                                                 identifier:identifier
+                                                     silent:silent
+                                               triggerTitle:triggerTitle];
 }
 
-- (void)launchCoprocessWithCommand:(NSString * _Nonnull)command
-                        identifier:(NSString * _Nullable)identifier
-                            silent:(BOOL)silent
-                      triggerTitle:(NSString * _Nonnull)triggerName {
-    if (self.hasCoprocess) {
-        if (identifier && [[iTermUserDefaults userDefaults] boolForKey:identifier]) {
-            return;
-        }
-        NSString *message = [NSString stringWithFormat:@"%@: Can't run two coprocesses at once.", triggerName];
-        NSArray<NSString *> *actions = identifier ? @[ @"Silence Warning" ] : @[];
-        iTermAnnouncementViewController *announcement =
-        [iTermAnnouncementViewController announcementWithTitle:message
-                                                         style:iTermAnnouncementViewStyleWarning
-                                                   withActions:actions
-                                                    completion:^(int selection) {
-            if (!identifier) {
-                return;
-            }
-            switch (selection) {
-                case 0:
-                    [[iTermUserDefaults userDefaults] setBool:YES
-                                                            forKey:identifier];
-                    break;
-            }
-        }];
-        [self queueAnnouncement:announcement
-                     identifier:kTwoCoprocessesCanNotRunAtOnceAnnouncementIdentifier];
-    } else if (command) {
-        if (silent) {
-            [self launchSilentCoprocessWithCommand:command];
-        } else {
-            [self launchCoprocessWithCommand:command];
-        }
-    }
+- (void)triggerSideEffectPostUserNotificationWithMessage:(NSString *)message {
+    [self swift_triggerSideEffectPostUserNotificationWithMessage:message];
 }
 
-- (void)triggerSideEffectPostUserNotificationWithMessage:(NSString * _Nonnull)message {
-    [iTermGCD assertMainQueueSafe];
-    iTermNotificationController *notificationController = [iTermNotificationController sharedInstance];
-    NSString *triggerDescription = [NSString stringWithFormat:@"A trigger fired in session “%@” in tab #%d.",
-                                    [[self name] removingHTMLFromTabTitleIfNeeded],
-                                    self.delegate.tabNumber];
-    [notificationController notify:message
-                   withDescription:triggerDescription
-                       windowIndex:[self screenWindowIndex]
-                          tabIndex:[self screenTabIndex]
-                         viewIndex:[self screenViewIndex]];
-}
-
-// Scroll so that `absLine` is the last visible onscreen.
 - (void)triggerSideEffectStopScrollingAtLine:(long long)absLine {
-    [iTermGCD assertMainQueueSafe];
-    const long long line = absLine - _screen.totalScrollbackOverflow;
-    if (line < 0) {
-        return;
-    }
-    const int height = MAX(1, _screen.height);
-    const int top = MAX(0, line - height + 1);
-    if (_screen.numberOfLines < line) {
-        return;
-    }
-    [_textview scrollLineNumberRangeIntoView:VT100GridRangeMake(top, height)];
-    [[self.view.scrollview ptyVerticalScroller] setUserScroll:YES];
+    [self swift_triggerSideEffectStopScrollingAtLine:absLine];
 }
 
-- (void)triggerSideEffectOpenPasswordManagerToAccountName:(NSString * _Nullable)accountName {
-    [iTermGCD assertMainQueueSafe];
-    // Dispatch because you can't have a runloop in a side-effect and the password manager is a bunch of modal UI - why take chances?
-    dispatch_async(dispatch_get_main_queue(), ^{
-        iTermApplicationDelegate *itad = [iTermApplication.sharedApplication delegate];
-        [itad openPasswordManagerToAccountName:accountName
-                                         inSession:self];
-    });
+- (void)triggerSideEffectOpenPasswordManagerToAccountName:(NSString *)accountName {
+    [self swift_triggerSideEffectOpenPasswordManagerToAccountName:accountName];
 }
 
-- (void)triggerSideEffectRunBackgroundCommand:(NSString *)command pool:(iTermBackgroundCommandRunnerPool *)pool {
-    [iTermGCD assertMainQueueSafe];
-    iTermBackgroundCommandRunner *runner = [pool requestBackgroundCommandRunnerWithTerminationBlock:nil];
-    runner.command = command;
-    runner.title = @"Run Command Trigger";
-    runner.notificationTitle = @"Run Command Trigger Failed";
-    runner.shell = self.userShell;
-    [runner run];
+- (void)triggerSideEffectRunBackgroundCommand:(NSString *)command
+                                         pool:(iTermBackgroundCommandRunnerPool *)pool {
+    [self swift_triggerSideEffectRunBackgroundCommand:command pool:pool];
 }
 
-- (void)triggerWriteTextWithoutBroadcasting:(NSString * _Nonnull)text {
-    [self writeTaskNoBroadcast:text];
+- (void)triggerWriteTextWithoutBroadcasting:(NSString *)text {
+    [self swift_triggerWriteTextWithoutBroadcasting:text];
 }
 
 - (iTermVariableScope *)triggerSideEffectVariableScope {
-    [iTermGCD assertMainQueueSafe];
-    return self.variablesScope;
+    return [self swift_triggerSideEffectVariableScope];
 }
 
-- (void)triggerSideEffectSetTitle:(NSString * _Nonnull)newName {
-    [iTermGCD assertMainQueueSafe];
-    [self.variablesScope setValuesFromDictionary:@{ iTermVariableKeySessionTriggerName: newName,
-                                                    iTermVariableKeySessionAutoNameFormat: newName }];
-    if (newName.length > 0) {
-        [self enableSessionNameTitleComponentIfPossible];
-    }
+- (void)triggerSideEffectSetTitle:(NSString *)newName {
+    [self swift_triggerSideEffectSetTitle:newName];
 }
 
-- (void)triggerSideEffectEnterWorkgroupWithIdentifier:(NSString * _Nonnull)workgroupUniqueIdentifier {
-    [iTermGCD assertMainQueueSafe];
-    // No-op if this session is already in a workgroup. The
-    // controller's enter would otherwise replace a different active
-    // workgroup with this one, which causes churn when the user
-    // has multiple triggers (each fires on its own match) and would
-    // also disagree with the Workgroups menu's behavior of disabling
-    // itself for sessions that are already in a workgroup. The user
-    // must exit the current workgroup first.
-    if (self.workgroupInstance != nil) {
-        return;
-    }
-    // No-op while this session is being restored into a workgroup. The
-    // coordinator will rebuild the peer group (adopting the saved
-    // members); letting the trigger fire here on a replayed/reattached
-    // shell would race it and spawn a duplicate workgroup.
-    // iTermWorkgroupController.enter has the same guard, but this copy
-    // samples the flag NOW, before the dispatch_async below: by the
-    // deferred tick the coordinator may have finished and cleared the
-    // flag, and enter's check would no longer recognize the replayed
-    // trigger as restoration-raced.
-    if ([iTermWorkgroupRestoration isRestoringWithGuid:self.guid]) {
-        return;
-    }
-    // Defer to the next main-runloop tick. We're inside a screen
-    // side-effect right now, and workgroup entry spawns splits/tabs
-    // which call performBlockWithJoinedThreads — that asserts we're
-    // NOT currently performing a side effect. Yielding to the next
-    // tick gets us outside the side-effect critical section.
-    NSString *identifier = [workgroupUniqueIdentifier copy];
-    __weak __typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf || strongSelf.workgroupInstance != nil) {
-            return;
-        }
-        [iTermWorkgroupController.instance enterWithWorkgroupUniqueIdentifier:identifier
-                                                                           on:strongSelf];
-    });
+- (void)triggerSideEffectEnterWorkgroupWithIdentifier:(NSString *)workgroupUniqueIdentifier {
+    [self swift_triggerSideEffectEnterWorkgroupWithIdentifier:workgroupUniqueIdentifier];
 }
 
 - (void)triggerSideEffectExitWorkgroupLeaderOnly:(BOOL)leaderOnly {
-    [iTermGCD assertMainQueueSafe];
-    // No-op if not in a workgroup. When leaderOnly is set (the claude-code
-    // installer sets it on its "Job Ended: claude" Exit Workgroup trigger),
-    // only the workgroup leader (main session) may exit. Peers inherit the
-    // leader's profile and thus this trigger; their own claude ending or
-    // reloading must not tear down the whole workgroup. A leaderOnly=NO
-    // trigger (e.g. one a user added by hand) keeps the legacy behavior of
-    // exiting from whichever session it fired on.
-    //
-    // Same dispatch_async deferral as the enter side: we're inside a screen
-    // side-effect, and the teardown path can call into PTYTab/PseudoTerminal
-    // which trip the "not currently performing a side effect" assert.
-    if (self.workgroupInstance == nil) {
-        return;
-    }
-    if (leaderOnly && self.workgroupInstance.mainSession != self) {
-        return;
-    }
-    __weak __typeof(self) weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __strong __typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf || strongSelf.workgroupInstance == nil) {
-            return;
-        }
-        if (leaderOnly && strongSelf.workgroupInstance.mainSession != strongSelf) {
-            return;
-        }
-        [iTermWorkgroupController.instance exitOn:strongSelf];
-    });
+    [self swift_triggerSideEffectExitWorkgroupLeaderOnly:leaderOnly];
 }
 
-- (void)triggerSideEffectInvokeFunctionCall:(NSString * _Nonnull)invocation
-                              withVariables:(NSDictionary * _Nonnull)temporaryVariables
-                                   captures:(NSArray<NSString *> * _Nonnull)captureStringArray
-                                    trigger:(Trigger * _Nonnull)trigger {
-    [iTermGCD assertMainQueueSafe];
-    iTermVariableScope *scope =
-    [self.variablesScope variableScopeByAddingBackreferences:captureStringArray
-                                                       owner:trigger];
-    [scope setValuesFromDictionary:temporaryVariables];
-    [self invokeFunctionCall:invocation scope:scope origin:@"Trigger"];
+- (void)triggerSideEffectInvokeFunctionCall:(NSString *)invocation
+                              withVariables:(NSDictionary *)temporaryVariables
+                                   captures:(NSArray<NSString *> *)captureStringArray
+                                    trigger:(Trigger *)trigger {
+    [self swift_triggerSideEffectInvokeFunctionCall:invocation
+                                      withVariables:temporaryVariables
+                                           captures:captureStringArray
+                                            trigger:trigger];
 }
 
-- (void)triggerSideEffectSetValue:(id _Nullable)value
-                 forVariableNamed:(NSString * _Nonnull)name {
-    [iTermGCD assertMainQueueSafe];
-    [self.genericScope setValue:value forVariableNamed:name];
+- (void)triggerSideEffectSetValue:(id)value forVariableNamed:(NSString *)name {
+    [self swift_triggerSideEffectSetValue:value forVariableNamed:name];
 }
 
 - (void)triggerSideEffectCurrentDirectoryDidChange:(NSString *)newPath {
-    [iTermGCD assertMainQueueSafe];
-    [self didUpdateCurrentDirectory:newPath];
+    [self swift_triggerSideEffectCurrentDirectoryDidChange:newPath];
 }
 
 #pragma mark - iTermPasteboardReporterDelegate

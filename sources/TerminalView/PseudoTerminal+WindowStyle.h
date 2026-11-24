@@ -44,6 +44,7 @@ iTermWindowType iTermWindowTypeNormalized(iTermWindowType windowType);
 - (void)windowWillExitFullScreenImpl:(NSNotification *)notification;
 - (void)windowDidExitFullScreenImpl:(NSNotification *)notification;
 - (void)windowDidFailToEnterFullScreenImpl:(NSWindow *)window;
+- (void)updateTitlebarSeparatorStyle;
 - (void)updateWindowType;
 - (void)clearForceFrame;
 - (NSWindowStyleMask)styleMask;

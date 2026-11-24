@@ -396,6 +396,9 @@ typedef NS_ENUM(int, iTermShouldHaveTitleSeparator) {
 
     NSSize _previousScreenSize;
     CGFloat _previousScreenScaleFactor;
+    int _previousScreenNumber;
+    CGFloat _previousScreenSafeAreaTop;
+    BOOL _pendingFullScreenDisplayRefresh;
 
     NSTimeInterval _creationTime;
 
@@ -4900,6 +4903,21 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         _backingScaleFactor = self.window.backingScaleFactor;
         [self.currentTab bounceMetal];
     }
+    if (self.lionFullScreen || self.fullScreen) {
+        NSScreen *screen = self.window.screen;
+        const int screenNumber = self.ptyWindow.screenNumber;
+        const NSSize screenSize = screen.frame.size;
+        const CGFloat scaleFactor = screen.backingScaleFactor;
+        const CGFloat safeAreaTop = screen.safeAreaInsets.top;
+        const BOOL metricsChanged = (screenNumber != _previousScreenNumber ||
+                                     !NSEqualSizes(screenSize, _previousScreenSize) ||
+                                     scaleFactor != _previousScreenScaleFactor ||
+                                     safeAreaTop != _previousScreenSafeAreaTop);
+        if (metricsChanged || (self.lionFullScreen && _contentView.tabBarControlOnLoan)) {
+            [self recordCurrentScreenMetrics];
+            [self scheduleFullScreenLayoutRefreshAfterDisplayChangeIfNeeded];
+        }
+    }
     if ([iTermAdvancedSettingsModel chaseAnchoredScreen]) {
         const int anchoredScreenNumber = [_windowPositioner getAnchoredScreenNumber];
         if (_windowPositioner.isAnchoredToScreen && anchoredScreenNumber >= 0 && anchoredScreenNumber < NSScreen.screens.count) {
@@ -5651,10 +5669,19 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
         [session.textview requestDelegateRedraw];
         [session didChangeScreen:self.window.backingScaleFactor];
     }
-    const NSSize screenSize = self.window.screen.frame.size;
-    const CGFloat scaleFactor = self.window.screen.backingScaleFactor;
-    if (!NSEqualSizes(screenSize, _previousScreenSize) ||
-        scaleFactor != _previousScreenScaleFactor) {
+    NSScreen *screen = self.window.screen;
+    const int screenNumber = self.ptyWindow.screenNumber;
+    const NSSize screenSize = screen.frame.size;
+    const CGFloat scaleFactor = screen.backingScaleFactor;
+    const CGFloat safeAreaTop = screen.safeAreaInsets.top;
+    const BOOL screenGeometryChanged = (!NSEqualSizes(screenSize, _previousScreenSize) ||
+                                        scaleFactor != _previousScreenScaleFactor);
+    const BOOL displayChanged = ((_previousScreenNumber != 0 && screenNumber != _previousScreenNumber) ||
+                                 screenGeometryChanged ||
+                                 safeAreaTop != _previousScreenSafeAreaTop);
+    _previousScreenNumber = screenNumber;
+    _previousScreenSafeAreaTop = safeAreaTop;
+    if (screenGeometryChanged) {
         RLog(@"Screen changed size %@->%@ scale %@->%@ so bounce metal",
              NSStringFromSize(_previousScreenSize),
              NSStringFromSize(screenSize),
@@ -5668,12 +5695,61 @@ hidingToolbeltShouldResizeWindow:(BOOL)hidingToolbeltShouldResizeWindow
             [tab bounceMetal];
         }
     }
+    if (displayChanged) {
+        [self scheduleFullScreenLayoutRefreshAfterDisplayChangeIfNeeded];
+    }
     [self.contentView enumerateHierarchy:^(NSView *view) {
         if ([view respondsToSelector:@selector(enclosingWindowDidMoveToScreen:)]) {
             [(id<iTermViewScreenNotificationHandling>)view enclosingWindowDidMoveToScreen:self.window.screen];
         }
     }];
     RLog(@"Returning from windowDidChangeScreen:.");
+}
+
+- (void)recordCurrentScreenMetrics {
+    NSScreen *screen = self.window.screen;
+    _previousScreenNumber = self.ptyWindow.screenNumber;
+    _previousScreenSize = screen ? screen.frame.size : NSZeroSize;
+    _previousScreenScaleFactor = screen ? screen.backingScaleFactor : 0;
+    _previousScreenSafeAreaTop = screen ? screen.safeAreaInsets.top : 0;
+}
+
+- (void)scheduleFullScreenLayoutRefreshAfterDisplayChangeIfNeeded {
+    if ((!self.lionFullScreen && !self.fullScreen) ||
+        togglingLionFullScreen_ ||
+        exitingLionFullscreen_ ||
+        togglingFullScreen_ ||
+        _pendingFullScreenDisplayRefresh) {
+        return;
+    }
+    _pendingFullScreenDisplayRefresh = YES;
+    __weak __typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [weakSelf performFullScreenLayoutRefreshAfterDisplayChange];
+    });
+}
+
+- (void)performFullScreenLayoutRefreshAfterDisplayChange {
+    _pendingFullScreenDisplayRefresh = NO;
+    if (togglingLionFullScreen_ || exitingLionFullscreen_ || togglingFullScreen_) {
+        return;
+    }
+    if (self.lionFullScreen) {
+        [self updateTitlebarSeparatorStyle];
+        [self updateTabBarControlIsTitlebarAccessory];
+        if (_titlebarAccessoryNanny.viewControllers.count > 0) {
+            [_titlebarAccessoryNanny forceReaddAll];
+            [self updateTabBarControlIsTitlebarAccessory];
+        }
+        [self.contentView layoutSubviews];
+        [self.contentView.tabBarControl setNeedsUpdate:YES];
+        [self.contentView.tabBarControl setNeedsDisplay:YES];
+        [self fitTabsToWindow];
+        [self updateTabColors];
+    } else if (self.fullScreen) {
+        [self.contentView layoutSubviews];
+        [self fitTabsToWindow];
+    }
 }
 
 - (NSArray *)screenConfiguration {

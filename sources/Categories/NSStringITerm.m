@@ -37,7 +37,7 @@
 #import "iTermSwiftyStringParser.h"
 #import "iTermTuple.h"
 #import "iTermVariableScope.h"
-#import "PorterStemmer/objc/PorterStemmer.h"
+#import "iTerm2SharedARC-Swift.h"
 #import "NSArray+iTerm.h"
 #import "NSAttributedString+PSM.h"
 #import "NSData+iTerm.h"
@@ -3085,7 +3085,7 @@ static NSDictionary<NSString *, NSNumber *> *iTermKittyDiacriticIndex(void) {
         return @"";
     }
     NSString *normalized = [self it_normalized];
-    return [PorterStemmer stemFromString:normalized];
+    return [iTermWordStemmer stemString:normalized];
 }
 
 - (ScreenCharArray *)asScreenCharArray {

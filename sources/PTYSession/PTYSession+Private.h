@@ -71,9 +71,7 @@ iTermStatusBarViewControllerDelegate,
 iTermTailFindControllerDelegate,
 iTermTermkeyKeyMapperDelegate,
 iTermTmuxControllerSession,
-iTermTriggersDataSource,
-iTermUpdateCadenceControllerDelegate,
-TriggerDelegate> {
+iTermUpdateCadenceControllerDelegate> {
     // Changes are made in the main thread to this and it periodically copied to the mutation thread.
     iTermExpect *_expect;
 

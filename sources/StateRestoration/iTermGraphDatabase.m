@@ -8,7 +8,6 @@
 #import "iTermGraphDatabase.h"
 
 #import "DebugLogging.h"
-#import "FMDatabase.h"
 #import "NSArray+iTerm.h"
 #import "NSData+iTerm.h"
 #import "NSObject+iTerm.h"
@@ -99,7 +98,7 @@
     [_thread dispatchAsync:^(iTermGraphDatabaseState *state) {
         // PRAGMA returns a result set, so we must use executeQuery. The statement only
         // runs when the result set is stepped, so call next before closing it.
-        FMResultSet *rs = [state.db executeQuery:@"pragma wal_checkpoint"];
+        id<iTermDatabaseResultSet> rs = [state.db executeQuery:@"pragma wal_checkpoint"];
         [rs next];
         [rs close];
         [state.db executeUpdate:@"vacuum"];
@@ -493,7 +492,7 @@
 - (BOOL)createTables:(iTermGraphDatabaseState *)state {
     // PRAGMA returns a result set, so we must use executeQuery. executeQuery only prepares the
     // statement; it does not run until the result set is stepped, so call next before closing.
-    FMResultSet *rs = [state.db executeQuery:@"PRAGMA journal_mode=WAL"];
+    id<iTermDatabaseResultSet> rs = [state.db executeQuery:@"PRAGMA journal_mode=WAL"];
     if (![rs next]) {
         DLog(@"Failed to set journal_mode=WAL");
     }
@@ -624,7 +623,7 @@
         // Select generation and check for large_data presence, but do NOT load large_data itself.
         // This avoids loading large blobs into memory during initial load.
         // Row format: [key, identifier, parent, rowid, data, generation, has_large_data]
-        FMResultSet *rs = [state.db executeQuery:
+        id<iTermDatabaseResultSet> rs = [state.db executeQuery:
             @"SELECT key, identifier, parent, rowid, data, generation, "
             @"(large_data IS NOT NULL) as has_large_data FROM Node"];
         while ([rs next]) {
@@ -680,7 +679,7 @@
             RLog(@"Database is nil, cannot load large data for rowid %@", rowid);
             return;
         }
-        FMResultSet *rs = [state.db executeQuery:@"SELECT large_data FROM Node WHERE rowid = ?", rowid];
+        id<iTermDatabaseResultSet> rs = [state.db executeQuery:@"SELECT large_data FROM Node WHERE rowid = ?", rowid];
         if ([rs next]) {
             NSData *data = [rs dataForColumn:@"large_data"];
             if (data.length > 0) {

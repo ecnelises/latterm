@@ -7,7 +7,6 @@
 
 #import "iTermEditSnippetWindowController.h"
 #import "NSStringITerm.h"
-#import "iTerm2SharedARC-Swift.h"
 
 // Return key equivalents are managed as default buttons by AppKit. Handle
 // Command-Return on the panel so editing text cannot clear the save shortcut.
@@ -33,18 +32,18 @@
 @end
 
 @implementation iTermEditSnippetWindowController {
-    IBOutlet NSTextField *_titleView;
-    IBOutlet NSTextView *_valueView;
-    IBOutlet NSPopUpButton *_escapingButton;
-    IBOutlet NSTokenField *_tokenView;
-    IBOutlet NSTextField *_titleLabel;
-    IBOutlet NSTextField *_tagsLabel;
-    IBOutlet NSTextField *_valueLabel;
-    IBOutlet NSTextField *_tagsHelp;
-    IBOutlet NSButton *_helpButton;
-    IBOutlet NSButton *_saveButton;
-    IBOutlet NSButton *_cancelButton;
-    IBOutlet NSScrollView *_valueScrollView;
+    NSTextField *_titleView;
+    NSTextView *_valueView;
+    NSPopUpButton *_escapingButton;
+    NSTokenField *_tokenView;
+    NSTextField *_titleLabel;
+    NSTextField *_tagsLabel;
+    NSTextField *_valueLabel;
+    NSTextField *_tagsHelp;
+    NSButton *_helpButton;
+    NSButton *_saveButton;
+    NSButton *_cancelButton;
+    NSScrollView *_valueScrollView;
     NSTextField *_escapingLabel;
     NSString *_title;
     NSString *_value;
@@ -56,7 +55,7 @@
 
 - (instancetype)initWithSnippet:(iTermSnippet *)snippet
                      completion:(void (^)(iTermSnippet * _Nullable snippet))completion {
-    self = [super initWithWindowNibPath:[iTermSettingsLocalization nibPath:NSStringFromClass(self.class)] owner:self];
+    self = [super initWithWindow:nil];
     if (self) {
         if (snippet) {
             _title = snippet.title;
@@ -94,6 +93,119 @@
                                        version:[iTermSnippet currentVersion]];
 }
 
+- (NSNibName)windowNibName {
+    return @"iTermEditSnippetWindowController";
+}
+
+- (void)loadWindow {
+    iTermSnippetEditorPanel *panel = [[iTermSnippetEditorPanel alloc]
+        initWithContentRect:NSMakeRect(0, 0, 640, 520)
+                  styleMask:(NSWindowStyleMaskTitled | NSWindowStyleMaskResizable | NSWindowStyleMaskDocModalWindow)
+                    backing:NSBackingStoreBuffered
+                      defer:NO];
+    panel.title = NSLocalizedString(@"Edit Snippet", @"Window title for snippet editor");
+    panel.hidesOnDeactivate = YES;
+    panel.releasedWhenClosed = NO;
+    panel.delegate = self;
+    panel.autorecalculatesKeyViewLoop = NO;
+
+    NSView *contentView = panel.contentView;
+
+    _titleLabel = [NSTextField labelWithString:NSLocalizedString(@"Title:", @"Snippet editor field")];
+    [contentView addSubview:_titleLabel];
+
+    _titleView = [[NSTextField alloc] initWithFrame:NSZeroRect];
+    _titleView.editable = YES;
+    _titleView.selectable = YES;
+    _titleView.bezeled = YES;
+    _titleView.bezelStyle = NSTextFieldSquareBezel;
+    _titleView.drawsBackground = YES;
+    _titleView.font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+    _titleView.focusRingType = NSFocusRingTypeNone;
+    _titleView.lineBreakMode = NSLineBreakByClipping;
+    _titleView.cell.scrollable = YES;
+    [contentView addSubview:_titleView];
+
+    _tagsLabel = [NSTextField labelWithString:NSLocalizedString(@"Tags:", @"Snippet editor field")];
+    [contentView addSubview:_tagsLabel];
+
+    _tokenView = [[NSTokenField alloc] initWithFrame:NSZeroRect];
+    _tokenView.editable = YES;
+    _tokenView.selectable = YES;
+    _tokenView.bezeled = YES;
+    _tokenView.bezelStyle = NSTextFieldSquareBezel;
+    _tokenView.drawsBackground = YES;
+    _tokenView.font = [NSFont systemFontOfSize:[NSFont systemFontSize]];
+    _tokenView.focusRingType = NSFocusRingTypeNone;
+    [contentView addSubview:_tokenView];
+
+    _tagsHelp = [NSTextField labelWithString:NSLocalizedString(@"Use / in tag names to create folders in Edit > Snippets menu", @"Snippet editor tags hint")];
+    [contentView addSubview:_tagsHelp];
+
+    _valueLabel = [NSTextField labelWithString:NSLocalizedString(@"Value:", @"Snippet editor field")];
+    [contentView addSubview:_valueLabel];
+
+    _valueScrollView = [[NSScrollView alloc] initWithFrame:NSZeroRect];
+    _valueScrollView.borderType = NSLineBorder;
+    _valueScrollView.hasVerticalScroller = YES;
+    _valueScrollView.hasHorizontalScroller = NO;
+    _valueScrollView.autohidesScrollers = YES;
+
+    _valueView = [[NSTextView alloc] initWithFrame:NSMakeRect(0, 0, 592, 220)];
+    _valueView.importsGraphics = NO;
+    _valueView.richText = NO;
+    _valueView.allowsUndo = YES;
+    _valueView.textColor = NSColor.textColor;
+    _valueView.backgroundColor = NSColor.textBackgroundColor;
+    _valueView.insertionPointColor = NSColor.textColor;
+    _valueView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    _valueScrollView.documentView = _valueView;
+    [contentView addSubview:_valueScrollView];
+
+    _escapingLabel = [NSTextField labelWithString:NSLocalizedString(@"Escaping:", @"Snippet editor field")];
+    [contentView addSubview:_escapingLabel];
+
+    _escapingButton = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
+    NSMenu *escapingMenu = _escapingButton.menu;
+    NSMenuItem *cStyleItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"C-Style Backslash Escaping", @"Snippet escaping option")
+                                                        action:nil
+                                                 keyEquivalent:@""];
+    cStyleItem.tag = iTermSendTextEscapingCommon;
+    [escapingMenu addItem:cStyleItem];
+
+    NSMenuItem *literalItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Unescaped Literal Text", @"Snippet escaping option")
+                                                         action:nil
+                                                  keyEquivalent:@""];
+    literalItem.tag = iTermSendTextEscapingNone;
+    [escapingMenu addItem:literalItem];
+
+    [escapingMenu addItem:[NSMenuItem separatorItem]];
+
+    NSMenuItem *legacyItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Backward Compatibility Escaping", @"Snippet escaping option")
+                                                        action:nil
+                                                 keyEquivalent:@""];
+    legacyItem.tag = iTermSendTextEscapingCompatibility;
+    [escapingMenu addItem:legacyItem];
+    [contentView addSubview:_escapingButton];
+
+    _helpButton = [NSButton buttonWithTitle:@"" target:self action:@selector(help:)];
+    _helpButton.bezelStyle = NSBezelStyleHelpButton;
+    [contentView addSubview:_helpButton];
+
+    _cancelButton = [NSButton buttonWithTitle:NSLocalizedString(@"Cancel", @"Snippet editor action")
+                                       target:self
+                                       action:@selector(cancel:)];
+    _cancelButton.keyEquivalent = @"\033";
+    [contentView addSubview:_cancelButton];
+
+    _saveButton = [NSButton buttonWithTitle:NSLocalizedString(@"Save", @"Snippet editor action")
+                                     target:self
+                                     action:@selector(ok:)];
+    [contentView addSubview:_saveButton];
+
+    self.window = panel;
+}
+
 - (void)windowDidLoad {
     [super windowDidLoad];
     _titleView.stringValue = _title;
@@ -117,8 +229,6 @@
     _tokenView.delegate = self;
 
     [_escapingButton selectItemWithTag:_escaping];
-    _escapingLabel = [NSTextField labelWithString:NSLocalizedString(@"Escaping:", @"Snippet editor field")];
-    [self.window.contentView addSubview:_escapingLabel];
     for (NSTextField *label in @[_titleLabel, _tagsLabel, _valueLabel, _escapingLabel]) {
         label.font = [NSFont systemFontOfSize:12 weight:NSFontWeightSemibold];
         label.alignment = NSTextAlignmentLeft;
@@ -128,7 +238,6 @@
     _tagsHelp.cell.wraps = YES;
     _tagsHelp.cell.usesSingleLineMode = NO;
     _tagsHelp.lineBreakMode = NSLineBreakByWordWrapping;
-    _saveButton.title = NSLocalizedString(@"Save", @"Snippet editor action");
     self.window.defaultButtonCell = nil;
     _saveButton.keyEquivalentModifierMask = NSEventModifierFlagCommand;
     _saveButton.keyEquivalent = @"\n";

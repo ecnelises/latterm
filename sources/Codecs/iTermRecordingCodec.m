@@ -13,7 +13,6 @@
 #import "iTermSessionLauncher.h"
 #import "iTermWarning.h"
 #import "NSData+iTerm.h"
-#import "NSData+GZIP.h"
 #import "NSObject+iTerm.h"
 #import "PTYSession.h"
 #import "PseudoTerminal.h"

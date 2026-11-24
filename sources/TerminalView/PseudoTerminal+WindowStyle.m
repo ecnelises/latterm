@@ -823,6 +823,7 @@ iTermWindowType iTermWindowTypeNormalized(iTermWindowType windowType) {
     lionFullScreen_ = YES;
     [self updateTitlebarSeparatorStyle];
     [self updateTabBarControlIsTitlebarAccessory];
+    [self recordCurrentScreenMetrics];
     [self didChangeAnyFullScreen];
     [self.contentView.tabBarControl setFlashing:YES];
     [self.contentView updateToolbeltForWindow:self.window];

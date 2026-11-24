@@ -5,63 +5,52 @@
 //  Created by George Nachman on 12/22/17.
 //
 
+#import <Metal/Metal.h>
+#import <stdlib.h>
 #import "GlyphKey.h"
 #import "iTermTexturePage.h"
-#import <Metal/Metal.h>
 
-namespace iTerm2 {
-    enum dontcare2 {
-        glyphEntryMagic = 0xfeedb0b0
-    };
+NS_ASSUME_NONNULL_BEGIN
 
-    struct GlyphEntry : TexturePageOwner {
-        unsigned int _magic;
+typedef struct {
+    int part;
+    iTermGlyphKey key;
+    __unsafe_unretained iTermTexturePage *page;
+    int index;
+    BOOL isEmoji;
+    MTLOrigin origin;
+} iTermGlyphEntry;
 
-        GlyphEntry(int part,
-                   GlyphKey key,
-                   TexturePage *page,
-                   int index,
-                   bool is_emoji) :
-        _magic(glyphEntryMagic),
-        _part(part),
-        _key(key),
-        _page(page),
-        _index(index),
-        _is_emoji(is_emoji),
-        _origin([_page->get_texture_array() offsetForIndex:_index]) {
-            page->retain(this);
-        }
+typedef struct {
+    iTermGlyphEntry *_Nullable entries;
+    size_t count;
+    size_t capacity;
+} iTermGlyphEntryList;
 
-        virtual ~GlyphEntry() {
-            assert_valid();
-            _magic = 0;
-            _page->release(this);
-        }
-
-        void assert_valid() const {
-            assert(_magic == glyphEntryMagic);
-        }
-
-        const MTLOrigin &get_origin() const {
-            return _origin;
-        }
-
-        virtual bool texture_page_owner_is_glyph_entry() {
-            return true;
-        }
-
-        NSString *description() const {
-            return [NSString stringWithFormat:@"<iTerm2::GlyphEntry: %p part=%@ key=%@ page=%p index=%@ emoji=%@>",
-                    this, @(_part), _key.description(), _page, @(_index), @(_is_emoji)];
-        }
-        int _part;
-        GlyphKey _key;
-        TexturePage *_page;
-        int _index;
-        bool _is_emoji;
-
-    private:
-        MTLOrigin _origin;
-    };
+NS_INLINE iTermGlyphEntryList *iTermGlyphEntryListCreate(size_t initialCapacity) {
+    iTermGlyphEntryList *list = (iTermGlyphEntryList *)calloc(1, sizeof(iTermGlyphEntryList));
+    if (initialCapacity > 0) {
+        list->entries = (iTermGlyphEntry *)malloc(initialCapacity * sizeof(iTermGlyphEntry));
+        list->capacity = initialCapacity;
+    }
+    return list;
 }
 
+NS_INLINE void iTermGlyphEntryListDestroy(iTermGlyphEntryList * _Nullable list) {
+    if (!list) {
+        return;
+    }
+    free(list->entries);
+    free(list);
+}
+
+NS_INLINE void iTermGlyphEntryListAppend(iTermGlyphEntryList *list, iTermGlyphEntry entry) {
+    if (list->count == list->capacity) {
+        const size_t newCapacity = list->capacity > 0 ? list->capacity * 2 : 4;
+        list->entries = (iTermGlyphEntry *)realloc(list->entries, newCapacity * sizeof(iTermGlyphEntry));
+        list->capacity = newCapacity;
+    }
+    list->entries[list->count++] = entry;
+}
+
+NS_ASSUME_NONNULL_END

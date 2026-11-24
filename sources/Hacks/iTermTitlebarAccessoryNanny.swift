@@ -254,6 +254,12 @@ class iTermTitlebarAccessoryNanny: NSObject {
             }
         }
         for vc in toReadd {
+            if let pending = pendingUpdates[ObjectIdentifier(vc)] {
+                vc.view.frame = pending.1
+                if safe {
+                    setMinHeight(vc, to: pending.0)
+                }
+            }
             window.addTitlebarAccessoryViewController(vc)
         }
     }

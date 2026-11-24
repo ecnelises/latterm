@@ -107,6 +107,7 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class iTermQuickLookController;
 @protocol iTermSessionScope;
 @class SessionView;
+@class TriggerController;
 @class iTermSessionNoteModel;
 @class iTermSessionToolbarItem;
 @class TmuxHistory;
@@ -1188,6 +1189,22 @@ backgroundColor:(nullable NSColor *)backgroundColor;
                     origin:(NSString *)origin;
 - (void)setParentScope:(nullable iTermVariableScope *)parentScope;
 - (void)setOrAppendComposerString:(nullable NSString *)string;
+
+#pragma mark - Triggers
+
+@property (nonatomic, readonly) BOOL buffering;
+@property (nonatomic, readonly, nullable) NSArray<NSDictionary *> *triggerProfileDicts;
+@property (nonatomic, readonly, nullable) TriggerController *triggerWindowController;
+
+- (void)toggleBufferInput;
+- (void)openAddTriggerViewControllerWithText:(NSString *)text;
+- (void)openTriggersViewController;
+- (void)closeTriggerWindowController;
+- (void)enableSessionNameTitleComponentIfPossible;
+- (void)didUpdateCurrentDirectory:(NSString *)newPath;
+- (int)screenWindowIndex;
+- (int)screenTabIndex;
+- (int)screenViewIndex;
 
 @end
 

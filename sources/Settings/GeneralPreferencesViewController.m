@@ -476,7 +476,7 @@ enum {
         [weakSelf updateAdvancedGPUEnabled];
     };
 
-    _advancedGPUWindowController = [[iTermAdvancedGPUSettingsWindowController alloc] initWithWindowNibName:@"iTermAdvancedGPUSettingsWindowController"];
+    _advancedGPUWindowController = [[iTermAdvancedGPUSettingsWindowController alloc] init];
     [_advancedGPUWindowController.window orderOut:nil];
     _advancedGPUWindowController.viewController.disableWhenDisconnected.target = self;
     _advancedGPUWindowController.viewController.disableWhenDisconnected.action = @selector(settingChanged:);

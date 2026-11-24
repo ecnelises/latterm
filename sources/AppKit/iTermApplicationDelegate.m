@@ -34,7 +34,6 @@
 #import "NSAppearance+iTerm.h"
 #import "NSApplication+iTerm.h"
 #import "NSArray+iTerm.h"
-#import "NSData+GZIP.h"
 #import "NSFileManager+iTerm.h"
 #import "NSFont+iTerm.h"
 #import "NSObject+iTerm.h"

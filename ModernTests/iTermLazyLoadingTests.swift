@@ -850,7 +850,7 @@ class iTermLegacyDatabaseTests: XCTestCase {
             withArgumentsIn: ["", "", 0, rootData, 1, NSNull()]
         )
         XCTAssertTrue(success)
-        let rootRowid = db.lastInsertRowId
+        let rootRowid = db.lastInsertRowId()?.int64Value ?? 0
 
         // Insert legacy-style child (data in data column)
         let legacyPod: [String: Any] = ["legacy": true, "content": "in data column"]
@@ -928,7 +928,7 @@ class iTermLegacyDatabaseTests: XCTestCase {
             withArgumentsIn: ["", "", 0, legacyData]
         )
         XCTAssertTrue(success)
-        let legacyRowid = db.lastInsertRowId
+        let legacyRowid = db.lastInsertRowId()?.int64Value ?? 0
 
         // Migrate to v2
         success = db.executeUpdate("ALTER TABLE Node ADD COLUMN generation INTEGER DEFAULT 0", withArgumentsIn: [])

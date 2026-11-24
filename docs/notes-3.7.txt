@@ -15,6 +15,22 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Retire ThirdParty fmdb, NSURL-IDN, and BTree
+  in favor of direct sqlite3, native Punycode,
+  and an order-statistic B-tree; convert all
+  remaining Objective-C++ files to pure
+  Objective-C; replace the GPU settings,
+  parameter panel, and snippet editor XIBs with
+  programmatic AppKit layouts.
+- Retire ThirdParty GZIP, PorterStemmer,
+  SSKeychain, and unordered_dense in favor of
+  native zlib, NaturalLanguage lemmatization,
+  Security Keychain APIs, and C hash tables;
+  convert LineBlock from Objective-C++ to
+  Objective-C.
+- Fix a white strip at the top of fullscreen
+  windows with native titlebar tabs after
+  switching displays.
 - Convert PTYSession and all remaining core
   application Objective-C sources to ARC.
 - Move the cursor on the first Shift-arrow press

@@ -9,13 +9,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class FMResultSet;
-
 @protocol iTermDatabaseResultSet<NSObject>
 - (BOOL)next;
 - (void)close;
 - (NSString * _Nullable)stringForColumn:(NSString *)columnName;
 - (long long)longLongIntForColumn:(NSString *)columnName;
+- (int)intForColumn:(NSString *)columnName;
+- (BOOL)boolForColumn:(NSString *)columnName;
 - (NSData * _Nullable)dataForColumn:(NSString *)columnName;
 - (NSDate * _Nullable)dateForColumn:(NSString *)columnName;
 @end
@@ -53,6 +53,7 @@ withNonOptionalArguments:(NSArray *)arguments
 @end
 
 @interface iTermSqliteDatabaseImpl: NSObject<iTermDatabase>
++ (instancetype)inMemoryDatabase;
 - (instancetype)initWithURL:(NSURL *)url lockName:(NSString * _Nullable)lockName;
 - (instancetype)initWithURL:(NSURL *)url;
 - (instancetype)init NS_UNAVAILABLE;

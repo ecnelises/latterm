@@ -55,7 +55,7 @@ import Foundation
 class LegacyDatabaseBuilder {
 
     /// Schema version 0: Original schema (key, identifier, parent, data)
-    static func createV0Schema(in db: FMDatabase) -> Bool {
+    static func createV0Schema(in db: iTermSqliteDatabaseImpl) -> Bool {
         return db.executeUpdate(
             "CREATE TABLE IF NOT EXISTS Node (key TEXT NOT NULL, identifier TEXT NOT NULL, parent INTEGER NOT NULL, data BLOB)",
             withArgumentsIn: []
@@ -63,7 +63,7 @@ class LegacyDatabaseBuilder {
     }
 
     /// Schema version 1: Has both generation and large_data columns (current schema)
-    static func createV1Schema(in db: FMDatabase) -> Bool {
+    static func createV1Schema(in db: iTermSqliteDatabaseImpl) -> Bool {
         guard createV0Schema(in: db) else { return false }
         guard db.executeUpdate(
             "ALTER TABLE Node ADD COLUMN generation INTEGER DEFAULT 0",
@@ -78,7 +78,7 @@ class LegacyDatabaseBuilder {
     /// Insert a node using legacy encoding (all data in `data` column)
     @discardableResult
     static func insertLegacyNode(
-        db: FMDatabase,
+        db: iTermSqliteDatabaseImpl,
         key: String,
         identifier: String,
         parent: Int64,
@@ -89,13 +89,13 @@ class LegacyDatabaseBuilder {
             "INSERT INTO Node (key, identifier, parent, data, generation) VALUES (?, ?, ?, ?, ?)",
             withArgumentsIn: [key, identifier, parent, data, generation]
         )
-        return success ? db.lastInsertRowId : nil
+        return success ? db.lastInsertRowId()?.int64Value : nil
     }
 
     /// Insert a node with large data in the large_data column (current schema)
     @discardableResult
     static func insertNodeWithLargeData(
-        db: FMDatabase,
+        db: iTermSqliteDatabaseImpl,
         key: String,
         identifier: String,
         parent: Int64,
@@ -107,7 +107,7 @@ class LegacyDatabaseBuilder {
             "INSERT INTO Node (key, identifier, parent, data, generation, large_data) VALUES (?, ?, ?, ?, ?, ?)",
             withArgumentsIn: [key, identifier, parent, smallData, generation, largeData as Any]
         )
-        return success ? db.lastInsertRowId : nil
+        return success ? db.lastInsertRowId()?.int64Value : nil
     }
 
     /// Create test POD data suitable for serialization
@@ -194,35 +194,51 @@ extension iTermEncoderGraphRecord {
     }
 }
 
+// MARK: - iTermSqliteDatabaseImpl Test Helpers
+
+extension iTermSqliteDatabaseImpl {
+    func executeUpdate(_ sql: String, withArgumentsIn args: [Any?]) -> Bool {
+        do {
+            try (self as iTermDatabase).executeUpdate(sql, withArguments: args)
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    func executeQuery(_ sql: String, withArgumentsIn args: [Any?]) -> iTermDatabaseResultSet? {
+        return try? (self as iTermDatabase).executeQuery(sql, withArguments: args)
+    }
+}
+
 // MARK: - In-Memory Database Helper
 
 /// Helper for creating in-memory databases for testing
 class InMemoryDatabaseHelper {
 
-    /// Create an FMDatabase backed by an in-memory SQLite database
-    static func createInMemoryDatabase() -> FMDatabase {
-        // ":memory:" creates an in-memory database
-        let db = FMDatabase(path: ":memory:")
+    /// Create an iTermSqliteDatabaseImpl backed by an in-memory SQLite database
+    static func createInMemoryDatabase() -> iTermSqliteDatabaseImpl {
+        let db = iTermSqliteDatabaseImpl.inMemoryDatabase()
         _ = db.open()
         return db
     }
 
     /// Create an in-memory database with v1 schema (current)
-    static func createInMemoryDatabaseWithCurrentSchema() -> FMDatabase {
+    static func createInMemoryDatabaseWithCurrentSchema() -> iTermSqliteDatabaseImpl {
         let db = createInMemoryDatabase()
         _ = LegacyDatabaseBuilder.createV1Schema(in: db)
         return db
     }
 
     /// Create an in-memory database with v0 schema (original, for migration tests)
-    static func createInMemoryDatabaseWithV0Schema() -> FMDatabase {
+    static func createInMemoryDatabaseWithV0Schema() -> iTermSqliteDatabaseImpl {
         let db = createInMemoryDatabase()
         _ = LegacyDatabaseBuilder.createV0Schema(in: db)
         return db
     }
 
     /// Check if a column exists in the Node table
-    static func columnExists(_ columnName: String, in db: FMDatabase) -> Bool {
+    static func columnExists(_ columnName: String, in db: iTermSqliteDatabaseImpl) -> Bool {
         guard let rs = db.executeQuery("PRAGMA table_info(Node)", withArgumentsIn: []) else {
             return false
         }

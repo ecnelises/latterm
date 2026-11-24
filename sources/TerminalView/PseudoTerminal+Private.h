@@ -145,6 +145,8 @@ extern NSString *const TERMINAL_ARRANGEMENT_LAYOUT_LOCKED;
 - (void)updateUseMetalInAllTabs;
 - (void)updateWindowMenu;
 - (void)notifyTmuxOfWindowResize;
+- (void)recordCurrentScreenMetrics;
+- (void)scheduleFullScreenLayoutRefreshAfterDisplayChangeIfNeeded;
 - (BOOL)shouldRevealStandardWindowButtons;
 - (void)hideStandardWindowButtonsAndTitlebarAccessories;
 - (NSArray *)screenConfiguration;

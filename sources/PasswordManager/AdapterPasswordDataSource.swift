@@ -415,19 +415,19 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
     }
 
     private func persistCredentialsToKeychain(_ password: String) {
-        _ = SSKeychain.setPassword(password,
-                                   forService: keychainCredentialServiceName,
-                                   account: identifier)
+        try? KeychainService.setPassword(password,
+                                         forService: keychainCredentialServiceName,
+                                         account: identifier)
     }
 
     private func loadPersistedCredentials() -> String? {
-        return try? SSKeychain.password(forService: keychainCredentialServiceName,
-                                        account: identifier)
+        return try? KeychainService.password(forService: keychainCredentialServiceName,
+                                             account: identifier)
     }
 
     private func deletePersistedCredentials() {
-        _ = SSKeychain.deletePassword(forService: keychainCredentialServiceName,
-                                      account: identifier)
+        try? KeychainService.deletePassword(forService: keychainCredentialServiceName,
+                                            account: identifier)
     }
 
     private func hydratePersistedCredentialsIfNeeded() {
@@ -448,7 +448,7 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
         guard let fields = handshakeInfo?.settingsFields else { return nil }
         guard let field = fields.first(where: { $0.key == key }) else { return nil }
         if field.persistInKeychain {
-            return try? SSKeychain.password(forService: keychainCredentialServiceName, account: key)
+            return try? KeychainService.password(forService: keychainCredentialServiceName, account: key)
         } else {
             return iTermUserDefaults.userDefaults().string(forKey: "AdapterSetting_\(identifier)_\(key)")
         }
@@ -460,9 +460,9 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if field.persistInKeychain {
             if trimmed.isEmpty {
-                _ = SSKeychain.deletePassword(forService: keychainCredentialServiceName, account: key)
+                try? KeychainService.deletePassword(forService: keychainCredentialServiceName, account: key)
             } else {
-                _ = SSKeychain.setPassword(trimmed, forService: keychainCredentialServiceName, account: key)
+                try? KeychainService.setPassword(trimmed, forService: keychainCredentialServiceName, account: key)
             }
         } else {
             if trimmed.isEmpty {
@@ -477,7 +477,7 @@ class AdapterPasswordDataSource: CommandLinePasswordDataSource {
         guard let fields = handshakeInfo?.settingsFields else { return }
         for field in fields {
             if field.persistInKeychain {
-                _ = SSKeychain.deletePassword(forService: keychainCredentialServiceName, account: field.key)
+                try? KeychainService.deletePassword(forService: keychainCredentialServiceName, account: field.key)
             } else {
                 iTermUserDefaults.userDefaults().removeObject(forKey: "AdapterSetting_\(identifier)_\(field.key)")
             }

@@ -107,4 +107,59 @@ final class TitlebarAccessoryNannyTests: XCTestCase {
 
         XCTAssertTrue(window.titlebarAccessoryViewControllers.contains(vc))
     }
+
+    func testForceReaddAllPreservesPendingFrameAndMinHeight() throws {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 200),
+                              styleMask: [.titled, .miniaturizable],
+                              backing: .buffered,
+                              defer: true)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        let titledController = NSWindowController(window: window)
+        let titledNanny = iTermTitlebarAccessoryNanny()
+        titledNanny.windowController = titledController
+
+        let vc = makeAccessory()
+        try ObjCTry { titledNanny.add(viewController: vc) }
+        let requestedFrame = NSRect(x: 0, y: 0, width: 320, height: 34)
+        _ = titledNanny.updateMinHeight(viewController: vc, minHeight: 34, frame: requestedFrame)
+
+        // Simulate AppKit resetting the accessory frame and minHeight before re-add.
+        vc.view.frame = NSRect(x: 0, y: 0, width: 10, height: 10)
+        vc.fullScreenMinHeight = 0
+
+        try ObjCTry { titledNanny.forceReaddAll() }
+
+        XCTAssertTrue(window.titlebarAccessoryViewControllers.contains(vc))
+        XCTAssertEqual(vc.view.frame, requestedFrame)
+        XCTAssertEqual(vc.fullScreenMinHeight, 34)
+    }
+
+    func testForceReaddAllRespectsProbationWhileEnteringFullScreen() throws {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 200),
+                              styleMask: [.titled, .miniaturizable],
+                              backing: .buffered,
+                              defer: true)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        let titledController = NSWindowController(window: window)
+        let titledNanny = iTermTitlebarAccessoryNanny()
+        titledNanny.windowController = titledController
+
+        let vc = makeAccessory()
+        try ObjCTry { titledNanny.add(viewController: vc) }
+        XCTAssertEqual(vc.fullScreenMinHeight, titledNanny.defaultHeight)
+
+        titledNanny.enteringFullScreen = true
+        let requestedFrame = NSRect(x: 0, y: 0, width: 320, height: 28)
+        _ = titledNanny.updateMinHeight(viewController: vc, minHeight: 0, frame: requestedFrame)
+        let minHeightBeforeReadd = vc.fullScreenMinHeight
+        vc.view.frame = NSRect(x: 0, y: 0, width: 10, height: minHeightBeforeReadd)
+
+        try ObjCTry { titledNanny.forceReaddAll() }
+
+        XCTAssertEqual(vc.view.frame, requestedFrame)
+        XCTAssertEqual(vc.fullScreenMinHeight, minHeightBeforeReadd)
+        XCTAssertNotEqual(vc.fullScreenMinHeight, 0)
+    }
 }

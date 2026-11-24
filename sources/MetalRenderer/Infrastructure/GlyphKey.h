@@ -6,124 +6,124 @@
 //
 
 #import <Foundation/Foundation.h>
-#include <functional>
+#import <stdint.h>
+#import <string.h>
 #import "iTermMetalGlyphKey.h"
 #import "NSFont+iTerm.h"
 
-namespace iTerm2 {
-    template <class T>
-    inline void hash_combine(std::size_t& seed, const T& v) {
-        std::hash<T> hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+NS_ASSUME_NONNULL_BEGIN
+
+typedef struct {
+    iTermMetalGlyphKey repr;
+    size_t hash;
+} iTermGlyphKey;
+
+NS_INLINE void iTermGlyphKeyHashCombine(size_t *seed, uint64_t value) {
+    uint64_t x = value;
+    x ^= x >> 30;
+    x *= 0xbf58476d1ce4e5b9ULL;
+    x ^= x >> 27;
+    x *= 0x94d049bb133111ebULL;
+    x ^= x >> 31;
+    *seed ^= (size_t)x + (size_t)0x9e3779b9 + (*seed << 6) + (*seed >> 2);
+}
+
+NS_INLINE uint64_t iTermGlyphKeyDoubleBits(double value) {
+    if (value == 0.0) {
+        value = 0.0;
+    }
+    uint64_t bits = 0;
+    memcpy(&bits, &value, sizeof(bits));
+    return bits;
+}
+
+NS_INLINE size_t iTermGlyphKeyComputeHash(const iTermMetalGlyphKey *repr) {
+    size_t seed = 0;
+
+    iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->type);
+    iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->thinStrokes);
+    iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->typeface);
+    iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->lineAttribute);
+    switch (repr->type) {
+        case iTermMetalGlyphTypeRegular:
+            // No need to include _repr.drawable because we just skip those glyphs.
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.regular.code);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.regular.combiningSuccessor);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.regular.isComplex);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.regular.boxDrawing);
+            break;
+
+        case iTermMetalGlyphTypeDecomposed:
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.decomposed.fontID);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.decomposed.glyphNumber);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.decomposed.fakeBold);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.decomposed.fakeItalic);
+            iTermGlyphKeyHashCombine(&seed, (uint64_t)repr->payload.decomposed.antiAlias);
+            iTermGlyphKeyHashCombine(&seed, iTermGlyphKeyDoubleBits(repr->payload.decomposed.position.x));
+            iTermGlyphKeyHashCombine(&seed, iTermGlyphKeyDoubleBits(repr->payload.decomposed.position.y));
+            break;
     }
 
-    class GlyphKey {
-    private:
-        iTermMetalGlyphKey _repr;
-        std::size_t _hash;
-
-    public:
-        explicit GlyphKey(const iTermMetalGlyphKey *repr) : _repr(*repr) {
-            _hash = compute_hash();
-        }
-        GlyphKey() : _hash(0) { }
-
-        // Copy constructor
-        GlyphKey(const GlyphKey &other) {
-            _repr = other._repr;
-            _hash = other._hash;
-        }
-
-        inline bool operator==(const GlyphKey &other) const {
-            if (_repr.type != other._repr.type ||
-                _repr.typeface != other._repr.typeface ||
-                _repr.thinStrokes != other._repr.thinStrokes ||
-                _repr.lineAttribute != other._repr.lineAttribute) {
-                return false;
-            }
-
-            switch (_repr.type) {
-                case iTermMetalGlyphTypeRegular:
-                    return (_repr.payload.regular.code == other._repr.payload.regular.code &&
-                            _repr.payload.regular.combiningSuccessor == other._repr.payload.regular.combiningSuccessor &&
-                            _repr.payload.regular.isComplex == other._repr.payload.regular.isComplex &&
-                            _repr.payload.regular.boxDrawing == other._repr.payload.regular.boxDrawing);
-                case iTermMetalGlyphTypeDecomposed:
-                    return (_repr.payload.decomposed.fontID == other._repr.payload.decomposed.fontID &&
-                            _repr.payload.decomposed.fakeBold == other._repr.payload.decomposed.fakeBold &&
-                            _repr.payload.decomposed.fakeItalic == other._repr.payload.decomposed.fakeItalic &&
-                            _repr.payload.decomposed.antiAlias == other._repr.payload.decomposed.antiAlias &&
-                            _repr.payload.decomposed.glyphNumber == other._repr.payload.decomposed.glyphNumber &&
-                            NSEqualPoints(_repr.payload.decomposed.position,
-                                          other._repr.payload.decomposed.position));
-            }
-        }
-
-        inline std::size_t get_hash() const {
-            return _hash;
-        }
-
-        NSString *description() const {
-            switch (_repr.type) {
-                case iTermMetalGlyphTypeRegular:
-                    return [NSString stringWithFormat:@"[GlyphKey regular: code=%@ combiningSuccessor=%@ complex=%@ boxdrawing=%@ thinStrokes=%@ drawable=%@ typeface=%@]",
-                            @(_repr.payload.regular.code),
-                            @(_repr.payload.regular.combiningSuccessor),
-                            @(_repr.payload.regular.isComplex),
-                            @(_repr.payload.regular.boxDrawing),
-                            @(_repr.thinStrokes),
-                            @(_repr.payload.regular.drawable),
-                            iTermGlyphTypefaceString(&_repr)];
-                case iTermMetalGlyphTypeDecomposed:
-                    return [NSString stringWithFormat:@"[GlyphKey decomposed: font=%@ fakeBold=%@ fakeItalic=%@ glyph=%@ thinStrokes=%@ typeface=%@]",
-                            [NSFont it_fontWithMetalID:_repr.payload.decomposed.fontID],
-                            @(_repr.payload.decomposed.fakeBold),
-                            @(_repr.payload.decomposed.fakeItalic),
-                            @(_repr.payload.decomposed.glyphNumber),
-                            @(_repr.thinStrokes),
-                            iTermGlyphTypefaceString(&_repr)];
-            }
-        }
-
-    private:
-        inline std::size_t compute_hash() const {
-            std::size_t seed = 0;
-
-            hash_combine(seed, _repr.type);
-            hash_combine(seed, _repr.thinStrokes);
-            hash_combine(seed, _repr.typeface);
-            hash_combine(seed, _repr.lineAttribute);
-            switch (_repr.type) {
-                case iTermMetalGlyphTypeRegular:
-                    // No need to include _repr.drawable because we just skip those glyphs.
-                    hash_combine(seed, _repr.payload.regular.code);
-                    hash_combine(seed, _repr.payload.regular.combiningSuccessor);
-                    hash_combine(seed, _repr.payload.regular.isComplex);
-                    hash_combine(seed, _repr.payload.regular.boxDrawing);
-                    break;
-
-                case iTermMetalGlyphTypeDecomposed:
-                    hash_combine(seed, _repr.payload.decomposed.fontID);
-                    hash_combine(seed, _repr.payload.decomposed.glyphNumber);
-                    hash_combine(seed, _repr.payload.decomposed.fakeBold);
-                    hash_combine(seed, _repr.payload.decomposed.fakeItalic);
-                    hash_combine(seed, _repr.payload.decomposed.antiAlias);
-                    hash_combine(seed, _repr.payload.decomposed.position.x);
-                    hash_combine(seed, _repr.payload.decomposed.position.y);
-                    break;
-            }
-
-            return seed;
-        }
-    };
+    return seed;
 }
 
-namespace std {
-    template <>
-    struct hash<iTerm2::GlyphKey> {
-        std::size_t operator()(const iTerm2::GlyphKey& glyphKey) const {
-            return glyphKey.get_hash();
-        }
-    };
+NS_INLINE iTermGlyphKey iTermGlyphKeyMake(const iTermMetalGlyphKey *repr) {
+    iTermGlyphKey key;
+    key.repr = *repr;
+    key.hash = iTermGlyphKeyComputeHash(repr);
+    return key;
 }
 
+NS_INLINE BOOL iTermGlyphKeyEquals(iTermGlyphKey a, iTermGlyphKey b) {
+    if (a.hash != b.hash) {
+        return NO;
+    }
+    if (a.repr.type != b.repr.type ||
+        a.repr.typeface != b.repr.typeface ||
+        a.repr.thinStrokes != b.repr.thinStrokes ||
+        a.repr.lineAttribute != b.repr.lineAttribute) {
+        return NO;
+    }
+
+    switch (a.repr.type) {
+        case iTermMetalGlyphTypeRegular:
+            return (a.repr.payload.regular.code == b.repr.payload.regular.code &&
+                    a.repr.payload.regular.combiningSuccessor == b.repr.payload.regular.combiningSuccessor &&
+                    a.repr.payload.regular.isComplex == b.repr.payload.regular.isComplex &&
+                    a.repr.payload.regular.boxDrawing == b.repr.payload.regular.boxDrawing);
+        case iTermMetalGlyphTypeDecomposed:
+            return (a.repr.payload.decomposed.fontID == b.repr.payload.decomposed.fontID &&
+                    a.repr.payload.decomposed.fakeBold == b.repr.payload.decomposed.fakeBold &&
+                    a.repr.payload.decomposed.fakeItalic == b.repr.payload.decomposed.fakeItalic &&
+                    a.repr.payload.decomposed.antiAlias == b.repr.payload.decomposed.antiAlias &&
+                    a.repr.payload.decomposed.glyphNumber == b.repr.payload.decomposed.glyphNumber &&
+                    NSEqualPoints(a.repr.payload.decomposed.position,
+                                  b.repr.payload.decomposed.position));
+    }
+    return NO;
+}
+
+NS_INLINE NSString *iTermGlyphKeyDescription(const iTermGlyphKey *key) {
+    switch (key->repr.type) {
+        case iTermMetalGlyphTypeRegular:
+            return [NSString stringWithFormat:@"[GlyphKey regular: code=%@ combiningSuccessor=%@ complex=%@ boxdrawing=%@ thinStrokes=%@ drawable=%@ typeface=%@]",
+                    @(key->repr.payload.regular.code),
+                    @(key->repr.payload.regular.combiningSuccessor),
+                    @(key->repr.payload.regular.isComplex),
+                    @(key->repr.payload.regular.boxDrawing),
+                    @(key->repr.thinStrokes),
+                    @(key->repr.payload.regular.drawable),
+                    iTermGlyphTypefaceString(&key->repr)];
+        case iTermMetalGlyphTypeDecomposed:
+            return [NSString stringWithFormat:@"[GlyphKey decomposed: font=%@ fakeBold=%@ fakeItalic=%@ glyph=%@ thinStrokes=%@ typeface=%@]",
+                    [NSFont it_fontWithMetalID:key->repr.payload.decomposed.fontID],
+                    @(key->repr.payload.decomposed.fakeBold),
+                    @(key->repr.payload.decomposed.fakeItalic),
+                    @(key->repr.payload.decomposed.glyphNumber),
+                    @(key->repr.thinStrokes),
+                    iTermGlyphTypefaceString(&key->repr)];
+    }
+    return @"[GlyphKey unknown]";
+}
+
+NS_ASSUME_NONNULL_END

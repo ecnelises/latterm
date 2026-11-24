@@ -5,91 +5,94 @@
 //  Created by George Nachman on 12/19/17.
 //
 
-#import <vector>
+#import <Foundation/Foundation.h>
+#import <stdlib.h>
+#import <string.h>
+#import "iTermTextRendererCommon.h"
 
-namespace iTerm2 {
-    // A PIUArray is an array of arrays of PIU structs. This avoids giant allocations.
-    // It is append-only.
-    template<class T>
-    class PIUArray {
-    public:
-        // Maximum number of PIUs in one segment.
-        const static size_t DEFAULT_CAPACITY = 1024;
+NS_ASSUME_NONNULL_BEGIN
 
-        PIUArray() : _capacity(DEFAULT_CAPACITY), _size(0) {
-            _arrays.resize(1);
-            _arrays.back().reserve(_capacity);
-        }
+// Maximum number of PIUs in one segment by default.
+static const size_t iTermPIUArrayDefaultCapacity = 1024;
 
-        explicit PIUArray(size_t capacity) : _capacity(capacity), _size(0) {
-            _arrays.resize(1);
-            _arrays.back().reserve(_capacity);
-        }
+// Append-only segmented array of iTermTextPIU structs to avoid huge contiguous allocations.
+typedef struct {
+    size_t capacity;
+    size_t size;
+    size_t segmentCount;
+    size_t segmentCapacity;
+    iTermTextPIU *_Nullable *_Nullable segments;
+    size_t *_Nullable segmentSizes;
+} iTermTextPIUArray;
 
-        // Move constructor - O(1) transfer of ownership
-        PIUArray(PIUArray&& other) noexcept
-            : _capacity(other._capacity), _size(other._size), _arrays(std::move(other._arrays)) {
-            other._size = 0;
-        }
-
-        // Move assignment - O(1) transfer of ownership
-        PIUArray& operator=(PIUArray&& other) noexcept {
-            if (this != &other) {
-                _capacity = other._capacity;
-                _size = other._size;
-                _arrays = std::move(other._arrays);
-                other._size = 0;
-            }
-            return *this;
-        }
-
-        // Delete copy operations to prevent accidental copies
-        PIUArray(const PIUArray&) = delete;
-        PIUArray& operator=(const PIUArray&) = delete;
-
-        T *get_next() {
-            if (_arrays.back().size() == _capacity) {
-                _arrays.resize(_arrays.size() + 1);
-                _arrays.back().reserve(_capacity);
-            }
-
-            std::vector<T> &array = _arrays.back();
-            array.resize(array.size() + 1);
-            _size++;
-            return &array.back();
-        }
-
-        T &get(const size_t &segment, const size_t &index) {
-            return _arrays[segment][index];
-        }
-
-        T &get(const size_t &index) {
-            return _arrays[index / _capacity][index % _capacity];
-        }
-
-        void push_back(const T &piu) {
-            memmove(get_next(), &piu, sizeof(piu));
-        }
-
-        size_t get_number_of_segments() const {
-            return _arrays.size();
-        }
-
-        const T *start_of_segment(const size_t segment) const {
-            return &_arrays[segment][0];
-        }
-
-        size_t size_of_segment(const size_t segment) const {
-            return _arrays[segment].size();
-        }
-
-        const size_t &size() const {
-            return _size;
-        }
-
-    private:
-        size_t _capacity;
-        size_t _size;
-        std::vector<std::vector<T>> _arrays;
-    };
+NS_INLINE void iTermTextPIUArrayInit(iTermTextPIUArray *array, size_t capacity) {
+    memset(array, 0, sizeof(*array));
+    array->capacity = capacity > 0 ? capacity : iTermPIUArrayDefaultCapacity;
 }
+
+NS_INLINE void iTermTextPIUArrayDestroy(iTermTextPIUArray *array) {
+    for (size_t i = 0; i < array->segmentCount; i++) {
+        free(array->segments[i]);
+    }
+    free(array->segments);
+    free(array->segmentSizes);
+    memset(array, 0, sizeof(*array));
+}
+
+NS_INLINE void iTermTextPIUArrayMove(iTermTextPIUArray *dest, iTermTextPIUArray *src) {
+    *dest = *src;
+    memset(src, 0, sizeof(*src));
+}
+
+NS_INLINE void iTermTextPIUArrayAppendSegment(iTermTextPIUArray *array) {
+    if (array->capacity == 0) {
+        array->capacity = iTermPIUArrayDefaultCapacity;
+    }
+    if (array->segmentCount == array->segmentCapacity) {
+        const size_t newCap = array->segmentCapacity > 0 ? array->segmentCapacity * 2 : 4;
+        array->segments = (iTermTextPIU **)realloc(array->segments, newCap * sizeof(iTermTextPIU *));
+        array->segmentSizes = (size_t *)realloc(array->segmentSizes, newCap * sizeof(size_t));
+        array->segmentCapacity = newCap;
+    }
+    iTermTextPIU *segment = (iTermTextPIU *)malloc(array->capacity * sizeof(iTermTextPIU));
+    array->segments[array->segmentCount] = segment;
+    array->segmentSizes[array->segmentCount] = 0;
+    array->segmentCount += 1;
+}
+
+NS_INLINE iTermTextPIU *iTermTextPIUArrayGetNext(iTermTextPIUArray *array) {
+    if (array->segmentCount == 0 ||
+        array->segmentSizes[array->segmentCount - 1] == array->capacity) {
+        iTermTextPIUArrayAppendSegment(array);
+    }
+    const size_t last = array->segmentCount - 1;
+    const size_t idx = array->segmentSizes[last]++;
+    array->size += 1;
+    return &array->segments[last][idx];
+}
+
+NS_INLINE iTermTextPIU *iTermTextPIUArrayGet(const iTermTextPIUArray *array, size_t index) {
+    return &array->segments[index / array->capacity][index % array->capacity];
+}
+
+NS_INLINE void iTermTextPIUArrayPushBack(iTermTextPIUArray *array, const iTermTextPIU *piu) {
+    memcpy(iTermTextPIUArrayGetNext(array), piu, sizeof(*piu));
+}
+
+NS_INLINE size_t iTermTextPIUArraySegmentCount(const iTermTextPIUArray *array) {
+    return array->segmentCount;
+}
+
+NS_INLINE const iTermTextPIU *iTermTextPIUArraySegmentStart(const iTermTextPIUArray *array, size_t segment) {
+    return array->segments[segment];
+}
+
+NS_INLINE size_t iTermTextPIUArraySegmentSize(const iTermTextPIUArray *array, size_t segment) {
+    return array->segmentSizes[segment];
+}
+
+NS_INLINE size_t iTermTextPIUArraySize(const iTermTextPIUArray *array) {
+    return array->size;
+}
+
+NS_ASSUME_NONNULL_END

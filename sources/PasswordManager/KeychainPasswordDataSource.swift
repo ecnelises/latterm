@@ -89,38 +89,38 @@ fileprivate class ModernKeychainAccount: NSObject, PasswordManagerAccount {
     }
 
     private func password() throws -> String {
-        return try SSKeychain.password(forService: serviceName,
-                                       account: keychainAccountName,
-                                       label: accountName)
+        return try KeychainService.password(forService: serviceName,
+                                            account: keychainAccountName,
+                                            label: accountName)
     }
 
     private func set(password: String) throws {
         if defective {
             // Add a well-formed entry
             let correctKeychainAccountName = userName.isEmpty ? accountName : accountName + accountNameUserNameSeparator + userName
-            try SSKeychain.setPassword(password,
-                                       forService: serviceName,
-                                       account: correctKeychainAccountName,
-                                       label: accountName)
+            try KeychainService.setPassword(password,
+                                            forService: serviceName,
+                                            account: correctKeychainAccountName,
+                                            label: accountName)
             // Delete the defective entry
-            try SSKeychain.deletePassword(forService: serviceName,
-                                          account: keychainAccountName,
-                                          label: accountName)
+            try KeychainService.deletePassword(forService: serviceName,
+                                               account: keychainAccountName,
+                                               label: accountName)
             // Update internal state to be non-defective.
             keychainAccountName = correctKeychainAccountName
             defective = false
         } else {
-            try SSKeychain.setPassword(password,
-                                       forService: serviceName,
-                                       account: keychainAccountName,
-                                       label: accountName)
+            try KeychainService.setPassword(password,
+                                            forService: serviceName,
+                                            account: keychainAccountName,
+                                            label: accountName)
         }
     }
 
     private func delete() throws {
-        try SSKeychain.deletePassword(forService: serviceName,
-                                      account: keychainAccountName,
-                                      label: accountName)
+        try KeychainService.deletePassword(forService: serviceName,
+                                           account: keychainAccountName,
+                                           label: accountName)
     }
 
     func matches(filter: String) -> Bool {
@@ -192,21 +192,19 @@ fileprivate class LegacyKeychainAccount: NSObject, PasswordManagerAccount {
     }
 
     private func password() throws -> String {
-        return try SSKeychain.password(forService: serviceName,
-                                       account: keychainAccountName)
+        return try KeychainService.password(forService: serviceName,
+                                            account: keychainAccountName)
     }
 
     private func set(password: String) throws {
-        try SSKeychain.setPassword(password,
-                                   forService: serviceName,
-                                   account: keychainAccountName,
-                                   error: ())
+        try KeychainService.setPassword(password,
+                                        forService: serviceName,
+                                        account: keychainAccountName)
     }
 
     private func delete() throws {
-        try SSKeychain.deletePassword(forService: serviceName,
-                                      account: keychainAccountName,
-                                      error: ())
+        try KeychainService.deletePassword(forService: serviceName,
+                                           account: keychainAccountName)
     }
 
     func matches(filter: String) -> Bool {
@@ -254,9 +252,7 @@ class KeychainPasswordDataSource: NSObject, PasswordManagerDataSource {
     }
 
     private var accounts: [PasswordManagerAccount] {
-        guard let dicts = SSKeychain.accounts(forService: serviceName) as? [NSDictionary] else {
-            return []
-        }
+        let dicts = KeychainService.accounts(forService: serviceName)
         return dicts.compactMap {
             LegacyKeychainAccount(serviceName: serviceName, $0) ?? ModernKeychainAccount(serviceName: serviceName, $0)
         }

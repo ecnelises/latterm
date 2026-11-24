@@ -11,7 +11,7 @@
 #import "DebugLogging.h"
 #import "NSArray+iTerm.h"
 #import "NSStringITerm.h"
-#import "NSURL+IDN.h"
+#import "iTerm2SharedARC-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

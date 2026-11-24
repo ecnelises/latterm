@@ -483,7 +483,7 @@ NS_ASSUME_NONNULL_BEGIN
         NSString *lastLetters = [name substringFromIndex:1];
         name = [[firstLetter uppercaseString] stringByAppendingString:lastLetters];
     }
-    _parameterPanelWindowController = [[iTermParameterPanelWindowController alloc] initWithWindowNibName:@"iTermParameterPanelWindowController"];
+    _parameterPanelWindowController = [[iTermParameterPanelWindowController alloc] init];
     [_parameterPanelWindowController window];
     [_parameterPanelWindowController.parameterName setStringValue:[NSString stringWithFormat:@"“%@”:", name]];
     [_parameterPanelWindowController.parameterValue setStringValue:@""];
