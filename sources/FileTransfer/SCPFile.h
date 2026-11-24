@@ -14,4 +14,6 @@
 @property(nonatomic, retain) SCPPath *path;
 @property(atomic, copy) NSString *localPath;
 
+- (void)setLocalPath:(NSString *)localPath;
+
 @end

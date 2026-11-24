@@ -132,6 +132,17 @@ class PTYSessionSwiftState: NSObject {
     // before the sheet finishes.
     var activeAddClippingPanel: AddClippingPanel?
 
+    @objc let pasteCoordinator: PTYSessionPasteCoordinator
+    @objc let metalCoordinator: PTYSessionMetalCoordinator
+    @objc let tmuxState: PTYSessionTmuxState
+
+    @objc(initWithSession:)
+    init(session: PTYSession) {
+        self.pasteCoordinator = PTYSessionPasteCoordinator(session: session)
+        self.metalCoordinator = PTYSessionMetalCoordinator(session: session)
+        self.tmuxState = PTYSessionTmuxState()
+        super.init()
+    }
 }
 
 extension PTYSession {

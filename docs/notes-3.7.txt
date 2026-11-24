@@ -15,6 +15,9 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Extract PTYSession paste, Metal renderer, and
+  tmux gateway coordinators into Swift modules
+  with unit-tested policy and state machines.
 - Retire ThirdParty fmdb, NSURL-IDN, and BTree
   in favor of direct sqlite3, native Punycode,
   and an order-statistic B-tree; convert all

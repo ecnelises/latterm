@@ -79,12 +79,14 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class iTermImageWrapper;
 @class iTermKeyBindingAction;
 @class iTermNaggingController;
+@class iTermPasteHelper;
 @class iTermPathCompletionHelper;
 @class iTermSSHReconnectionInfo;
 @class iTermSessionTabStatus;
 @class iTermSessionModeHandler;
 @class iTermStatusBarViewController;
 @class iTermSwiftyStringGraph;
+@class iTermUpdateCadenceController;
 @class iTermVariableReference;
 @class iTermVariables;
 @class iTermVariableScope;
@@ -97,6 +99,7 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class PreferencePanel;
 @protocol ProcessInfoProvider;
 @class PTYSession;
+@class SCPPath;
 @class SSHIdentity;
 @protocol VT100RemoteHostReading;
 @class VT100Screen;
@@ -110,6 +113,7 @@ extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 @class TriggerController;
 @class iTermSessionNoteModel;
 @class iTermSessionToolbarItem;
+@class TmuxGateway;
 @class TmuxHistory;
 
 typedef NS_ENUM(NSInteger, SplitSelectionMode) {
@@ -728,6 +732,14 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 @property(nonatomic, readonly, retain) iTermNaggingController *naggingController;
 @property(nonatomic, readonly, strong) PTYSessionSwiftState *swiftState;
+@property(nonatomic, retain, nullable) iTermPasteHelper *pasteHelper;
+@property(nonatomic, readonly, strong) iTermUpdateCadenceController *cadenceController;
+@property(nonatomic, assign) BOOL textViewWrapperUseMetal;
+@property(nonatomic, readonly) CGFloat effectiveBlend;
+@property(nonatomic, readonly) BOOL metalDriverCapturingDebugInfo;
+@property(nonatomic, readonly, nullable) TmuxGateway *sessionTmuxGateway;
+@property(nonatomic, readonly, nullable) NSFileHandle *tmuxClientWritePipe;
+@property(nonatomic, readonly) VT100GridSize savedGridSize;
 #pragma mark - methods
 
 + (BOOL)arrangement:(NSDictionary *)arrangement
@@ -1054,6 +1066,8 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 - (void)queueAnnouncement:(iTermAnnouncementViewController *)announcement
                identifier:(NSString *)identifier;
+- (void)removeAnnouncementWithIdentifier:(NSString *)identifier;
+- (nullable iTermAnnouncementViewController *)announcementWithIdentifier:(NSString *)identifier;
 
 - (BOOL)encodeArrangementWithContents:(BOOL)includeContents
                               encoder:(id<iTermEncoderAdapter>)encoder;
@@ -1131,6 +1145,41 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 - (BOOL)willEnableMetal;
 - (BOOL)metalAllowed:(out nullable iTermMetalUnavailableReason *)reason;
+- (void)applyMetalEnabledToView:(BOOL)useMetal;
+- (void)updateWrapperAlphaForMetalEnabled:(BOOL)useMetal;
+- (void)drawMetalFrameAsynchronouslyWithCompletion:(void (^)(BOOL ok))completion;
+- (NSRect)asciiBoundingRectForScale:(CGFloat)scale
+                            context:(CGContextRef)context;
+- (void)configureMetalDriverWithCellSize:(CGSize)cellSize
+                  cellSizeWithoutSpacing:(CGSize)cellSizeWithoutSpacing
+                               glyphSize:(CGSize)glyphSize
+                                gridSize:(VT100GridSize)gridSize
+                             asciiOffset:(CGSize)asciiOffset
+                                   scale:(CGFloat)scale
+                                 context:(CGContextRef)context
+                    legacyScrollbarWidth:(unsigned int)legacyScrollbarWidth
+                        rightExtraPoints:(CGFloat)rightExtraPoints
+                  panelReservationPoints:(CGFloat)panelReservationPoints;
+- (void)uploadFiles:(NSArray<NSString *> *)localFilenames toPath:(SCPPath *)destinationPath;
+- (void)setSessionTmuxMode:(PTYSessionTmuxMode)tmuxMode;
+- (void)setSessionTmuxPaused:(BOOL)paused;
+- (void)setTmuxPaneKeyModeString:(nullable NSString *)paneKeyMode;
+- (void)hideSession;
+- (BOOL)unzoomIfPossible;
+- (void)revealProfileSettingWithKey:(NSString *)key;
+- (void)logRawTmuxDataIfEnabled:(NSData *)data;
+- (void)tearDownTmuxGatewayConnection;
+- (void)writeTaskForTmuxGateway:(NSString *)string;
+- (void)printTmuxMessage:(NSString *)message;
+- (void)printTmuxCommandOutputToScreen:(NSString *)response;
+- (void)kickOffTmuxForRestoration:(BOOL)restoration;
+- (void)setTmuxState:(NSDictionary *)state;
+- (void)handleTmuxData:(NSData *)data;
+- (void)askToMirrorTmuxPasteBuffer;
+- (void)setTmuxPaused:(BOOL)paused allowAutomaticUnpause:(BOOL)allowAutomaticUnpause;
+- (void)showTmuxPausedAnnouncement:(BOOL)notification;
+- (void)unpauseTmux;
+- (void)pauseTmux;
 - (void)injectData:(NSData *)data;
 
 // Call this when a session moves to a different tab or window to update the session ID.

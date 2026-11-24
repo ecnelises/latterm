@@ -138,7 +138,11 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
     ITBetaAssert(self.delegate != nil, @"Nil delegate");
-    ITBetaAssert(self.delegate.metalGlueContext != nil, @"Nil metal glue context");
+    CGContextRef _Nullable context = self.delegate.metalGlueContext;
+    ITBetaAssert(context != nil, @"Nil metal glue context");
+    if (!context) {
+        return nil;
+    }
     if ([iTermAdvancedSettingsModel metalRowOutputCacheEnabled]) {
         // The per-row cache keys grid rows on the per-line generation, which is not
         // advanced unless tracking is on (it is off by default so idle sessions
@@ -150,7 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [[iTermMetalPerFrameState alloc] initWithTextView:self.textView
                                                       screen:self.screen
                                                         glue:self
-                                                     context:self.delegate.metalGlueContext
+                                                     context:context
                                          doubleWidthContext:self.delegate.metalGlueContextDoubleWidth
                                      attributedStringBuilder:attributedStringBuilder
                                               rowOutputCache:_rowOutputCache];
@@ -223,7 +227,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[ [NSURL fileURLWithPath:filename] ]];
 }
 
-- (iTermImageWrapper *)backgroundImage {
+- (nullable iTermImageWrapper *)backgroundImage {
     return [self.delegate metalGlueBackgroundImage];
 }
 

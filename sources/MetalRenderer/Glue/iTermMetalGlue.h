@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "iTermMetalDriver.h"
+#import "iTermMetalGlueDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,16 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class iTermTextDrawingHelper;
 @class VT100Screen;
 @class PTYTextView;
-
-@protocol iTermMetalGlueDelegate<NSObject>
-- (void)metalGlueDidDrawFrameAndNeedsRedraw:(BOOL)redrawAsap;
-- (CGContextRef)metalGlueContext;
-- (CGContextRef)metalGlueContextDoubleWidth;
-- (iTermImageWrapper *)metalGlueBackgroundImage;
-- (iTermBackgroundImageMode)metalGlueBackgroundImageMode;
-- (CGFloat)metalGlueBackgroundImageBlend;
-
-@end
 
 @interface iTermMetalGlue : NSObject<iTermMetalDriverDataSource>
 

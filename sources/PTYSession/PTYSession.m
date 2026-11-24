@@ -329,8 +329,6 @@ static NSString *kTmuxFontChanged = @"kTmuxFontChanged";
 // default color from the tmux profile; this tab should have no color."
 static NSString *const iTermTmuxTabColorNone = @"none";
 
-static NSString *PTYSessionAnnouncementIdentifierTmuxPaused = @"tmuxPaused";
-
 // Grace period to avoid failing to write anti-idle code when timer runs just before when the code
 // should be sent.
 static const NSTimeInterval kAntiIdleGracePeriod = 0.1;
@@ -478,13 +476,10 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     iTermTailFindController *_tailFindController;
 
     TmuxGateway *_tmuxGateway;
-    BOOL _haveKickedOffTmux;
-    BOOL _tmuxSecureLogging;
     // The tmux rename-window command is only sent when the name field resigns first responder.
     // This tracks if a tmux client's name has changed but the tmux server has not been informed yet.
     BOOL _tmuxTitleOutOfSync;
     PTYSessionTmuxMode _tmuxMode;
-    BOOL _tmuxWindowClosingByClientRequest;
     // This is the write end of a pipe for tmux clients. The read end is in TaskNotifier.
     NSFileHandle *_tmuxClientWritePipe;
     NSInteger _requestAttentionId;  // Last request-attention identifier
@@ -554,9 +549,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 
     id<VT100RemoteHostReading> _currentHost;
 
-    // Used by auto-hide. We can't auto hide the tmux gateway session until at least one window has been opened.
-    BOOL _hideAfterTmuxWindowOpens;
-
     BOOL _useAdaptiveFrameRate;
     NSInteger _adaptiveFrameRateThroughputThreshold;
 
@@ -572,10 +564,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     iTermMetalGlue *_metalGlue;
 
     int _updateCount;
-    BOOL _metalFrameChangePending;
-    int _nextMetalDisabledToken;
-    NSMutableSet *_metalDisabledTokens;
-    BOOL _metalDeviceChanging;
 
     iTermVariables *_userVariables;
     iTermSwiftyString *_badgeSwiftyString;
@@ -605,9 +593,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     iTermGraphicSource *_graphicSource;
     iTermVariableReference *_jobPidRef;
     iTermCacheableImage *_customIcon;
-    CGContextRef _metalContext;
-    CGContextRef _metalContextDoubleWidth;  // 2x size, created on demand for DECDWL/DECDHL
-    BOOL _errorCreatingMetalContext;
 
     id<iTermKeyMapper> _keyMapper;
     iTermKeyMappingMode _keyMappingMode;
@@ -631,9 +616,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     iTermProcessInfo *_lastProcessInfo;
     iTermLoggingHelper *_logging;
     iTermNaggingController *_naggingController;
-    BOOL _tmuxTTLHasThresholds;
-    NSTimeInterval _tmuxTTLLowerThreshold;
-    NSTimeInterval _tmuxTTLUpperThreshold;
     // If nonnil, gives the GUID of the session from the arrangement that created it. Often this
     // will differ from its real GUID. It only serves to find the session in the arrangement to
     // make repairs.
@@ -752,8 +734,9 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         _lastOutputIgnoringOutputAfterResizing = _lastInput;
         _lastUpdate = _lastInput;
         _lastScreenContentsChangeTime = [NSDate it_timeSinceBoot];
+        _swiftState = [[PTYSessionSwiftState alloc] initWithSession:self];
         _pasteHelper = [[iTermPasteHelper alloc] init];
-        _pasteHelper.delegate = self;
+        _pasteHelper.delegate = _swiftState.pasteCoordinator;
 
         // Allocate screen, shell, and terminal objects
         _shell = [[PTYTask alloc] init];
@@ -820,7 +803,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
             return newValue;
         };
 
-        _tmuxSecureLogging = NO;
         assert(_screen.syncDistributor != nil);
         _lastOrCurrentlyRunningCommandAbsRange = VT100GridAbsCoordRangeMake(-1, -1, -1, -1);
         _activityCounter = @0;
@@ -833,12 +815,11 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         _cadenceController = [[iTermUpdateCadenceController alloc] init];
         _cadenceController.delegate = self;
 
-        _metalDisabledTokens = [[NSMutableSet alloc] init];
         _statusChangedAbsLine = -1;
         _nameController = [[iTermSessionNameController alloc] init];
         _nameController.delegate = self;
         _metalGlue = [[iTermMetalGlue alloc] init];
-        _metalGlue.delegate = self;
+        _metalGlue.delegate = _swiftState.metalCoordinator;
         _metalGlue.screen = _screen;
         _metaFrustrationDetector = [[iTermMetaFrustrationDetector alloc] init];
         _metaFrustrationDetector.delegate = self;
@@ -871,7 +852,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         [iTermCPUUtilization instanceForSessionID:_guid];
         _canChangeProfileInArrangementGeneration = -1;
         _channelClients = [[NSMutableArray alloc] init];
-        _swiftState = [[PTYSessionSwiftState alloc] init];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(coprocessChanged)
                                                      name:kCoprocessStatusChangeNotification
@@ -1007,7 +987,8 @@ ITERM_WEAKLY_REFERENCEABLE
     [_tailFindController stopTailFind];  // This frees the substring in the tail find context, if needed.
     _shell.delegate = nil;
     _pasteHelper.delegate = nil;
-    _nonTextPasteHelper.delegate = nil;
+    _metalGlue.delegate = nil;
+    [_swiftState.pasteCoordinator detach];
     [_antiIdleTimer invalidate];
     [_download stop];
     [_download endOfData];
@@ -1019,12 +1000,6 @@ ITERM_WEAKLY_REFERENCEABLE
     [_tmuxForegroundJobMonitor invalidate];
     [_paneIndexMonitor invalidate];
     [_paneKeyModeMonitor invalidate];
-    if (_metalContext) {
-        CGContextRelease(_metalContext);
-    }
-    if (_metalContextDoubleWidth) {
-        CGContextRelease(_metalContextDoubleWidth);
-    }
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
     if (_dvrDecoder) {
@@ -3294,7 +3269,7 @@ ITERM_WEAKLY_REFERENCEABLE
                      !_synthetic &&
                      ![[iTermController sharedInstance] applicationIsQuitting]);
     self.tmuxMode = TMUX_NONE;
-    _hideAfterTmuxWindowOpens = NO;
+    _swiftState.tmuxState.hideAfterTmuxWindowOpens = NO;
     _tmuxController = nil;
     [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxClientName];
     [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxPaneTitle];
@@ -4029,7 +4004,7 @@ ITERM_WEAKLY_REFERENCEABLE
 
         case iTermSessionEndActionRestart:
         case iTermSessionEndActionDefault:
-            if ((_tmuxWindowClosingByClientRequest ||
+            if ((_swiftState.tmuxState.tmuxWindowClosingByClientRequest ||
                  [self.naggingController tmuxWindowsShouldCloseAfterDetach]) &&
                 [_delegate sessionShouldAutoClose:self]) {
                 [_delegate softCloseSession:self];
@@ -6567,7 +6542,7 @@ ITERM_WEAKLY_REFERENCEABLE
 - (void)updateDisplayBecause:(NSString *)reason {
     DLog(@"updateDisplayBecause:%@ %@", reason, _cadenceController);
     _updateCount++;
-    if (_useMetal && _updateCount % 10 == 0) {
+    if (self.useMetal && _updateCount % 10 == 0) {
         iTermPreciseTimerSaveLog([NSString stringWithFormat:@"%@: updateDisplay interval", _view.driver.identifier],
                                  _cadenceController.histogram.stringValue);
     }
@@ -7068,7 +7043,7 @@ static NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger = @"
 }
 
 - (void)metalClipViewWillScroll:(NSNotification *)notification {
-    if (_useMetal && notification.object == _textview.enclosingScrollView.contentView) {
+    if (self.useMetal && notification.object == _textview.enclosingScrollView.contentView) {
         [_textview shiftTrackingChildWindows];
     }
 }
@@ -7994,396 +7969,29 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 #pragma mark - Metal Support
 
-#pragma mark iTermMetalGlueDelegate
-
-- (iTermImageWrapper *)metalGlueBackgroundImage {
-    if ([iTermPreferences perPaneBackgroundImage]) {
-        return _backgroundImage;
-    } else {
-        return [self.delegate sessionBackgroundImage];
-    }
+- (iTermUpdateCadenceController *)cadenceController {
+    return _cadenceController;
 }
 
-- (iTermBackgroundImageMode)metalGlueBackgroundImageMode {
-    if ([iTermPreferences perPaneBackgroundImage]) {
-        return _backgroundImageMode;
-    } else {
-        return [self.delegate sessionBackgroundImageMode];
-    }
+- (BOOL)textViewWrapperUseMetal {
+    return _wrapper.useMetal;
 }
 
-- (CGFloat)metalGlueBackgroundImageBlend {
-    return [self effectiveBlend];
+- (void)setTextViewWrapperUseMetal:(BOOL)textViewWrapperUseMetal {
+    _wrapper.useMetal = textViewWrapperUseMetal;
 }
 
-- (void)metalGlueDidDrawFrameAndNeedsRedraw:(BOOL)redrawAsap {
-    if (_view.useMetal) {
-        if (redrawAsap) {
-            [_textview requestDelegateRedraw];
-        }
-    }
+- (BOOL)metalDriverCapturingDebugInfo {
+    return _view.driver.captureDebugInfoForNextFrame;
 }
 
-- (CGContextRef)metalGlueContext {
-    return _metalContext;
-}
-
-- (CGContextRef)metalGlueContextDoubleWidth {
-    return _metalContextDoubleWidth;
-}
-
-+ (CGColorSpaceRef)metalColorSpace {
-    static dispatch_once_t onceToken;
-    static CGColorSpaceRef colorSpace;
-    dispatch_once(&onceToken, ^{
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-        ITAssertWithMessage(colorSpace, @"Colorspace is %@", colorSpace);
-    });
-    return colorSpace;
-}
-
-+ (CGContextRef)onePixelContext {
-    static CGContextRef context;
-    if (context == NULL) {
-        context = CGBitmapContextCreate(NULL,
-                                        1,
-                                        1,
-                                        8,
-                                        1 * 4,
-                                        [self metalColorSpace],
-                                        CGBitmapInfoMake(kCGImageAlphaPremultipliedFirst, kCGImageComponentInteger, kCGImageByteOrder32Host, kCGImagePixelFormatPacked));
+- (void)applyMetalEnabledToView:(BOOL)useMetal {
+    [_view setUseMetal:useMetal dataSource:_metalGlue];
+    if (!useMetal) {
+        _textview.suppressDrawing = NO;
+        [_view setSuppressLegacyDrawing:NO];
+        [self updateWrapperAlphaForMetalEnabled:NO];
     }
-    return context;
-}
-
-- (void)setMetalContextSize:(CGSize)size {
-    DLog(@"%@", self);
-    if (!self.textview.window) {
-        DLog(@"No window");
-        CGContextRelease(_metalContext);
-        _metalContext = NULL;
-        return;
-    }
-
-    const CGFloat scale = self.textview.window.backingScaleFactor;
-    const int radius = (iTermTextureMapMaxCharacterParts / 2) * 2 + 1;
-    CGSize scaledSize = CGSizeMake(size.width * scale * radius, size.height * scale * radius);
-    if (_metalContext) {
-        if (CGSizeEqualToSize(scaledSize, CGSizeMake(CGBitmapContextGetWidth(_metalContext),
-                                                     CGBitmapContextGetHeight(_metalContext)))) {
-            DLog(@"No size change");
-            return;
-        }
-        CGContextRelease(_metalContext);
-        _metalContext = NULL;
-    }
-    if (_metalContextDoubleWidth) {
-        CGContextRelease(_metalContextDoubleWidth);
-        _metalContextDoubleWidth = NULL;
-    }
-    DLog(@"allocate new metal context of size %@", NSStringFromSize(scaledSize));
-    const CGBitmapInfo bitmapInfo = CGBitmapInfoMake(kCGImageAlphaPremultipliedFirst,
-                                                     kCGImageComponentInteger,
-                                                     kCGImageByteOrder32Host,
-                                                     kCGImagePixelFormatPacked);
-    _metalContext = CGBitmapContextCreate(NULL,
-                                          scaledSize.width,
-                                          scaledSize.height,
-                                          8,
-                                          scaledSize.width * 4,
-                                          [PTYSession metalColorSpace],
-                                          bitmapInfo);
-    CGContextClearRect(_metalContext, CGRectMake(0, 0, scaledSize.width, scaledSize.height));
-
-    // Double-width context uses a larger radius for overflow room.
-    const int dwMaxParts = iTermTextureMapMaxCharacterParts * 2 + 1;
-    CGSize dwSize = CGSizeMake(size.width * scale * dwMaxParts,
-                               size.height * scale * dwMaxParts);
-    _metalContextDoubleWidth = CGBitmapContextCreate(NULL,
-                                                      dwSize.width,
-                                                      dwSize.height,
-                                                      8,
-                                                      dwSize.width * 4,
-                                                      [PTYSession metalColorSpace],
-                                                      bitmapInfo);
-    memset(CGBitmapContextGetData(_metalContextDoubleWidth), 0,
-           CGBitmapContextGetBytesPerRow(_metalContextDoubleWidth) * (size_t)dwSize.height);
-}
-
-- (BOOL)metalAllowed {
-    return [self metalAllowed:nil];
-}
-
-- (BOOL)usingIntegratedGPU {
-    if (_view.metalView.device != nil) {
-        const BOOL result = _view.metalView.device.isLowPower;
-        DLog(@"usingIntegratedGPU=%@", @(result));
-        return result;
-    }
-    for (PseudoTerminal *term in [[iTermController sharedInstance] terminals]) {
-        for (PTYSession *session in term.allSessions) {
-            if (session.view.metalView.device != nil) {
-                const BOOL result = session.view.metalView.device.isLowPower;
-                DLog(@"Found another session %p with a metal device, usingIntegratedGPU=%@", session, @(result));
-                return result;
-            }
-        }
-    }
-
-    DLog(@"Check if the system has an integrated GPU");
-    static BOOL haveIntegrated;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
-        haveIntegrated = NO;
-        for (id<MTLDevice> device in devices) {
-            if (device.isLowPower) {
-                haveIntegrated = YES;
-                break;
-            }
-        }
-    });
-    DLog(@"No sessions using GPU. Return %@.", @(haveIntegrated));
-    return haveIntegrated;
-}
-
-- (BOOL)metalAllowed:(out iTermMetalUnavailableReason *)reason {
-    static dispatch_once_t onceToken;
-    static BOOL machineSupportsMetal;
-    dispatch_once(&onceToken, ^{
-        NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
-        machineSupportsMetal = devices.count > 0;
-    });
-    if ([iTermPreferences boolForKey:kPreferenceKeyDisableInLowPowerMode] &&
-        [[iTermPowerManager sharedInstance] isLowPowerModeEnabled]) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonLowerPowerMode;
-        }
-        return NO;
-    }
-    if (!machineSupportsMetal) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonNoGPU;
-        }
-        return NO;
-    }
-    if (![iTermPreferences boolForKey:kPreferenceKeyUseMetal]) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonDisabled;
-        }
-        return NO;
-    }
-    if (!self.view.window) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonSessionHasNoWindow;
-        }
-        return NO;
-    }
-    if ([PTYSession onePixelContext] == nil) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonContextAllocationFailure;
-        }
-        return NO;
-    }
-    if (_metalDeviceChanging) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonInitializing;
-        }
-        return NO;
-    }
-    if (![self metalViewSizeIsLegal]) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonInvalidSize;
-        }
-        return NO;
-    }
-    if (!_textview) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonSessionInitializing;
-        }
-        return NO;
-    }
-    if (_textview.drawingHelper.showDropTargets) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonDropTargetsVisible;
-        }
-        return NO;
-    }
-    // Use window occlusion because of issue 9174 but only for integrated GPUs because of issue 9044.
-    if ([self usingIntegratedGPU] &&
-        [_delegate.realParentWindow.ptyWindow approximateFractionOccluded] > 0.5) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonWindowObscured;
-        }
-        return NO;
-    }
-#if ENABLE_FORCE_LEGACY_RENDERER_WITH_PTYTEXTVIEW_SUBVIEWS
-    if ([PTYNoteViewController anyNoteVisible] || _textview.contentNavigationShortcuts.count > 0) {
-        // When metal is enabled the note's superview (PTYTextView) has alphaValue=0 so it will not be visible.
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonAnnotations;
-        }
-        return NO;
-    }
-    if (_textview.hasPortholes) {
-        // When metal is enabled the note's superview (PTYTextView) has alphaValue=0 so it will not be visible.
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonPortholes;
-        }
-        return NO;
-    }
-#endif
-#if !ENABLE_TRANSPARENT_METAL_WINDOWS
-    if (_textview.transparencyAlpha < 1) {
-        if (reason) {
-            *reason = iTermMetalUnavailableReasonTransparency;
-        }
-        return NO;
-    }
-#endif
-    return YES;
-}
-
-- (BOOL)canProduceMetalFramecap {
-    DLog(@"useMetal=%@ view.metalView.alphaValue=%@ wrapper.useMetal=%@ textview.suppressDrawing=%@",
-         @(_useMetal),
-         @(_view.metalView.alphaValue == 1),
-         @(_wrapper.useMetal),
-         @(_textview.suppressDrawing));
-    return _useMetal && _view.metalView.alphaValue == 1 && _wrapper.useMetal && _textview.suppressDrawing;
-}
-
-- (BOOL)metalViewSizeIsLegal {
-    NSSize size = _view.frame.size;
-    // See "Maximum 2D texture width and height" in "Implementation Limits". Pick the smallest value
-    // among the "Mac" columns.
-    // https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
-    const CGFloat maxScale = 2;
-    return size.width > 0 && size.width < (PTYSessionMaximumMetalViewSize / maxScale) && size.height > 0 && size.height < (PTYSessionMaximumMetalViewSize / maxScale);
-}
-
-- (BOOL)idleForMetal {
-    return (!_cadenceController.isActive &&
-            !_view.verticalScroller.userScroll &&
-            !self.overrideGlobalDisableMetalWhenIdleSetting &&
-            !_view.driver.captureDebugInfoForNextFrame);
-}
-
-- (BOOL)willEnableMetal {
-    DLog(@"%@", self);
-    [self updateMetalDriver];
-    return _metalContext != nil;
-}
-
-- (void)setUseMetal:(BOOL)useMetal {
-    if (useMetal == _useMetal) {
-        return;
-    }
-    DLog(@"setUseMetal:%@ %@", @(useMetal), self);
-    _useMetal = useMetal;
-    // The metalview's alpha will initially be 0. Once it has drawn a frame we'll swap what is visible.
-    [self setUseMetal:useMetal dataSource:_metalGlue];
-    if (useMetal) {
-        [self updateMetalDriver];
-        // wrapper.useMetal becomes YES after the first frame is done drawing
-    } else {
-        _wrapper.useMetal = NO;
-        [_metalDisabledTokens removeAllObjects];
-        if (_metalContext) {
-            // If metal is re-enabled later, it must not use the same context.
-            // It's possible that a metal driver thread has survived this point
-            // and will continue to use the context.
-            CGContextRelease(_metalContext);
-            _metalContext = NULL;
-        }
-    }
-    [_textview requestDelegateRedraw];
-    [_cadenceController changeCadenceIfNeeded];
-
-    if (useMetal) {
-        [self renderTwoMetalFramesAndShowMetalView];
-    } else {
-        _view.metalView.enableSetNeedsDisplay = NO;
-    }
-}
-
-- (void)renderTwoMetalFramesAndShowMetalView {
-    // The first frame will be slow to draw. The second frame will be very
-    // recent to minimize jitter. For reasons I haven't understood yet it seems
-    // the first frame is sometimes transparent. I haven't seen that issue with
-    // the second frame yet.
-    [self renderMetalFramesAndShowMetalView:2];
-}
-
-- (void)renderMetalFramesAndShowMetalView:(NSInteger)count {
-    if (_useMetal) {
-        DLog(@"Begin async draw %@ for %@", @(count), self);
-        [_view.driver drawAsynchronouslyInView:_view.metalView completion:^(BOOL ok) {
-            if (!self->_useMetal || self->_exited) {
-                DLog(@"Finished async draw but metal off/exited for %@", self);
-                return;
-            }
-
-            if (!ok) {
-                DLog(@"Finished async draw NOT OK for %@", self);
-                // Wait 10ms to avoid burning CPU if it failed because it's slow to draw the first frame.
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self renderMetalFramesAndShowMetalView:count];
-                });
-                return;
-            }
-
-            if (count <= 1) {
-                DLog(@"Finished async draw ok for %@", self);
-                [self showMetalViewImmediately];
-            } else {
-                [self renderMetalFramesAndShowMetalView:count - 1];
-            }
-        }];
-    }
-}
-
-- (void)showMetalViewImmediately {
-    if (!_useMetal) {
-        DLog(@"Declining to show metal view immediately in %@ because useMetal is NO", self);
-        return;
-    }
-    if (_view.metalView.bounds.size.width == 0 || _view.metalView.bounds.size.height == 0) {
-        DLog(@"Declining to show metal view immediately in %@ because the view's size is %@", self, NSStringFromSize(_view.metalView.bounds.size));
-        return;
-    }
-    if (_textview == nil) {
-        DLog(@"Declining to show metal view immediately in %@ because the textview is nil", self);
-        return;
-    }
-    if (_textview.dataSource == nil) {
-        DLog(@"Declining to show metal view immediately in %@ because the textview's datasource is nil", self);
-        return;
-    }
-    if (_screen.width == 0 || _screen.height == 0) {
-        DLog(@"Declining to show metal view immediately in %@ because the screen's size is %@x%@. Screen is %@",
-             self, _textview.dataSource, @(_screen.width), @(_screen.height));
-        return;
-    }
-    [self reallyShowMetalViewImmediately];
-}
-
-- (void)reallyShowMetalViewImmediately {
-    DLog(@"reallyShowMetalViewImmediately");
-    [_view setNeedsDisplay:YES];
-    [self showMetalAndStopDrawingTextView];
-    _view.metalView.enableSetNeedsDisplay = YES;
-}
-
-- (void)showMetalAndStopDrawingTextView {
-    // If the legacy view had been visible, hide it. Hiding it before the
-    // first frame is drawn causes a flash of gray.
-    DLog(@"showMetalAndStopDrawingTextView");
-    _wrapper.useMetal = YES;
-    _textview.suppressDrawing = YES;
-    [_view setSuppressLegacyDrawing:YES];
-    [self updateWrapperAlphaForMetalEnabled:YES];
-    [self setMetalViewAlphaValue:1];
 }
 
 - (void)updateWrapperAlphaForMetalEnabled:(BOOL)useMetal {
@@ -8394,128 +8002,98 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
     }
 }
 
-- (void)setMetalViewAlphaValue:(CGFloat)alphaValue {
-    _view.metalView.alphaValue = alphaValue;
-    [_view didChangeMetalViewAlpha];
-    [self.delegate sessionDidChangeMetalViewAlphaValue:self to:alphaValue];
+- (void)drawMetalFrameAsynchronouslyWithCompletion:(void (^)(BOOL ok))completion {
+    [_view.driver drawAsynchronouslyInView:_view.metalView completion:completion];
 }
 
-- (void)setUseMetal:(BOOL)useMetal dataSource:(id<iTermMetalDriverDataSource>)dataSource {
-    [_view setUseMetal:useMetal dataSource:dataSource];
-    if (!useMetal) {
-        _textview.suppressDrawing = NO;
-        [_view setSuppressLegacyDrawing:NO];
-        [self updateWrapperAlphaForMetalEnabled:NO];
-    }
+- (NSRect)asciiBoundingRectForScale:(CGFloat)scale
+                            context:(CGContextRef)context {
+    return [iTermCharacterSource boundingRectForCharactersInRange:NSMakeRange(32, 127 - 32)
+                                                        fontTable:_textview.fontTable
+                                                            scale:scale
+                                                      useBoldFont:_textview.useBoldFont
+                                                    useItalicFont:_textview.useItalicFont
+                                                 usesNonAsciiFont:_textview.useNonAsciiFont
+                                                          context:context];
+}
+
+- (void)configureMetalDriverWithCellSize:(CGSize)cellSize
+                  cellSizeWithoutSpacing:(CGSize)cellSizeWithoutSpacing
+                               glyphSize:(CGSize)glyphSize
+                                gridSize:(VT100GridSize)gridSize
+                             asciiOffset:(CGSize)asciiOffset
+                                   scale:(CGFloat)scale
+                                 context:(CGContextRef)context
+                    legacyScrollbarWidth:(unsigned int)legacyScrollbarWidth
+                        rightExtraPoints:(CGFloat)rightExtraPoints
+                  panelReservationPoints:(CGFloat)panelReservationPoints {
+    [_view.driver setCellSize:cellSize
+       cellSizeWithoutSpacing:cellSizeWithoutSpacing
+                    glyphSize:glyphSize
+                     gridSize:gridSize
+                  asciiOffset:asciiOffset
+                        scale:scale
+                      context:context
+         legacyScrollbarWidth:legacyScrollbarWidth
+             rightExtraPoints:rightExtraPoints
+       panelReservationPoints:panelReservationPoints];
+}
+
+// Exposed for test compatibility (MetalLigaturePerFrameTests.m).
+- (CGContextRef)metalGlueContext {
+    return [_swiftState.metalCoordinator metalGlueContext];
+}
+
+- (CGContextRef)metalGlueContextDoubleWidth {
+    return [_swiftState.metalCoordinator metalGlueContextDoubleWidth];
+}
+
+- (iTermImageWrapper *)metalGlueBackgroundImage {
+    return [_swiftState.metalCoordinator metalGlueBackgroundImage];
+}
+
+- (iTermBackgroundImageMode)metalGlueBackgroundImageMode {
+    return [_swiftState.metalCoordinator metalGlueBackgroundImageMode];
+}
+
+- (CGFloat)metalGlueBackgroundImageBlend {
+    return [_swiftState.metalCoordinator metalGlueBackgroundImageBlend];
+}
+
+- (void)metalGlueDidDrawFrameAndNeedsRedraw:(BOOL)redrawAsap {
+    [_swiftState.metalCoordinator metalGlueDidDrawFrameAndNeedsRedraw:redrawAsap];
+}
+
+- (BOOL)metalAllowed {
+    return [self metalAllowed:nil];
+}
+
+- (BOOL)metalAllowed:(out iTermMetalUnavailableReason *)reason {
+    return [_swiftState.metalCoordinator metalAllowed:reason];
+}
+
+- (BOOL)canProduceMetalFramecap {
+    return [_swiftState.metalCoordinator canProduceMetalFramecap];
+}
+
+- (BOOL)idleForMetal {
+    return [_swiftState.metalCoordinator idleForMetal];
+}
+
+- (BOOL)willEnableMetal {
+    return [_swiftState.metalCoordinator willEnableMetal];
+}
+
+- (BOOL)useMetal {
+    return _swiftState.metalCoordinator.useMetal;
+}
+
+- (void)setUseMetal:(BOOL)useMetal {
+    [_swiftState.metalCoordinator setUseMetal:useMetal];
 }
 
 - (void)updateMetalDriver {
-    DLog(@"%@", self);
-    const CGSize cellSize = CGSizeMake(_textview.charWidth, _textview.lineHeight);
-    CGSize glyphSize;
-    const CGFloat scale = _view.window.backingScaleFactor ?: 1;
-    NSRect rect = [iTermCharacterSource boundingRectForCharactersInRange:NSMakeRange(32, 127-32)
-                                                               fontTable:_textview.fontTable
-                                                                   scale:scale
-                                                             useBoldFont:_textview.useBoldFont
-                                                           useItalicFont:_textview.useItalicFont
-                                                        usesNonAsciiFont:_textview.useNonAsciiFont
-                                                                 context:[PTYSession onePixelContext]];
-    DLog(@"Bounding rect for %@ is %@", _textview.fontTable.asciiFont, NSStringFromRect(rect));
-    // When the overage is below or to the right, increase extraGlyphSize.
-    // When it's above or to the left, increase asciiOffset.
-    // asciiOffset has no effect on the glyph size. For fonts that have pixels
-    // in negative X territory, we have to draw them into the texture with an
-    // offset to avoid clipping and then draw them into the framebuffer with
-    // the opposite offset so they end up in the right place (i.e., the same
-    // place as the legacy renderer).
-    CGSize asciiOffset = CGSizeZero;
-    CGSize extraGlyphSize = CGSizeZero;
-    if (rect.origin.y < 0) {
-        // Iosevka Light and CommitMono Nerd Font Mono are the only fonts I've found that need this.
-        // Each rides *very* low in its box. The lineheight that PTYFontInfo calculates is actually too small
-        // to contain the glyphs (it uses a weird algorithm that was discovered "organically").
-        // There are gobs of empty pixels at the top, so we shift all its ASCII glyphs a bit so they'll
-        // fit. Non-ASCII characters may take multiple parts and so can properly extend beyond their
-        // cell, so we only need to think about ASCII. In other words, this hack shifts the character up
-        // *in the texture* to make better use of space without using a larger glyph size.
-        //
-        // In a monochrome world, this is still necessary because even though glyph size and cell
-        // size are no longer required to be the same, part of the glyph will be drawn outside its
-        // bounds and get clipped in the texture.
-        extraGlyphSize.height = -floor(rect.origin.y * scale);
-    }
-    if (rect.origin.x < 0) {
-        // AnonymousPro has a similar problem (issue 8185), e.g. with "W".
-        // The monochrome code path assumes that glyphs are left-aligned in their glyphSize-sized
-        // chunk of the texture. Setting the asciiOffset here causes them to all be rendered a few
-        // pixels to the right so that this assumption will be true. The quad is then shifted left
-        // by a corresponding amount when rendering so it ends up drawn in the right place.
-        asciiOffset.width = -floor(rect.origin.x * scale);
-        extraGlyphSize.width = fabs(asciiOffset.width);
-    }
-    DLog(@"Ascii offset is %@", NSStringFromSize(asciiOffset));
-    DLog(@"Increase glyph size for monochrome");
-    glyphSize.width = round(1 + MAX(cellSize.width, NSMaxX(rect)));
-    glyphSize.height = round(1 + MAX(cellSize.height, NSMaxY(rect)));
-    glyphSize.width += extraGlyphSize.width * 2;
-    glyphSize.height += extraGlyphSize.height * 2;
-    DLog(@"cellSize=%@ glyphSize=%@", NSStringFromSize(cellSize), NSStringFromSize(glyphSize));
-    [self setMetalContextSize:glyphSize];
-    if (!_metalContext) {
-        DLog(@"%p Failed to allocate metal context. Disable metal and try again in 1 second.", self);
-        if (_errorCreatingMetalContext) {
-            DLog(@"Already have a retry queued.");
-            return;
-        }
-        _errorCreatingMetalContext = YES;
-        [self.delegate sessionUpdateMetalAllowed];
-        if (!_useMetal) {
-            DLog(@"Failed to create context for %@ but metal is not allowed", self);
-            return;
-        }
-        DLog(@"Failed to create context for %@. schedule retry", self);
-        __weak __typeof(self) weakSelf = self;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{
-            [weakSelf retryMetalAfterContextAllocationFailure];
-        });
-        return;
-    }
-    [_view.driver setCellSize:cellSize
-       cellSizeWithoutSpacing:CGSizeMake(_textview.charWidthWithoutSpacing, _textview.charHeightWithoutSpacing)
-                    glyphSize:glyphSize
-                     gridSize:_screen.currentGrid.size
-                  asciiOffset:asciiOffset
-                        scale:_view.window.screen.backingScaleFactor
-                      context:_metalContext
-         legacyScrollbarWidth:self.legacyScrollbarWidth
-             rightExtraPoints:_view.actualRightExtra
-       panelReservationPoints:_view.actualPanelReservation];
-}
-
-- (CGFloat)legacyScrollbarWidth {
-    if (_view.scrollview.scrollerStyle != NSScrollerStyleLegacy) {
-        return 0;
-    }
-    return NSWidth(_view.scrollview.bounds) - NSWidth(_view.scrollview.contentView.bounds);
-}
-
-- (void)retryMetalAfterContextAllocationFailure {
-    DLog(@"%p It's been one second since trying to allocate a metal context failed. Try again.", self);
-    if (!_errorCreatingMetalContext) {
-        DLog(@"Oddly, errorCreatingMetalContext is NO");
-        return;
-    }
-    DLog(@"%p reset error state", self);
-    _errorCreatingMetalContext = NO;
-    [self updateMetalDriver];
-    if (_metalContext) {
-        DLog(@"A metal context was allocated. Try to turn metal on for this tab.");
-        [self.delegate sessionUpdateMetalAllowed];
-    } else {
-        DLog(@"Failed to allocate context again. A retry should have been scheduled.");
-    }
+    [_swiftState.metalCoordinator updateMetalDriver];
 }
 
 #pragma mark - Password Management
@@ -9015,7 +8593,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         }
         profile = self.profile;
     }
-    _haveKickedOffTmux = NO;
+    _swiftState.tmuxState.haveKickedOffTmux = NO;
     _tmuxController = [[TmuxController alloc] initWithGateway:_tmuxGateway
                                                    clientName:preferredTmuxClientName
                                                       profile:profile
@@ -9067,7 +8645,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 
     if ([iTermPreferences boolForKey:kPreferenceKeyAutoHideTmuxClientSession]) {
         _tmuxController.initialWindowHint = self.view.window.frame;
-        _hideAfterTmuxWindowOpens = YES;
+        _swiftState.tmuxState.hideAfterTmuxWindowOpens = YES;
     }
 }
 
@@ -9437,25 +9015,54 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     return _currentHost;
 }
 
+#pragma mark - Tmux Swift Bridge Helpers
+
+- (TmuxGateway *)sessionTmuxGateway {
+    return _tmuxGateway;
+}
+
+- (NSFileHandle *)tmuxClientWritePipe {
+    return _tmuxClientWritePipe;
+}
+
+- (VT100GridSize)savedGridSize {
+    return _savedGridSize;
+}
+
+- (void)setSessionTmuxMode:(PTYSessionTmuxMode)tmuxMode {
+    self.tmuxMode = tmuxMode;
+}
+
+- (void)setSessionTmuxPaused:(BOOL)paused {
+    _tmuxPaused = paused;
+}
+
+- (void)logRawTmuxDataIfEnabled:(NSData *)data {
+    if (_logging.style == iTermLoggingStyleRaw) {
+        [_logging logData:data];
+    }
+}
+
+- (void)tearDownTmuxGatewayConnection {
+    if (_tmuxGateway) {
+        CFAutorelease(CFBridgingRetain(_tmuxGateway));
+    }
+    _tmuxGateway = nil;
+    _tmuxController = nil;
+}
+
+- (void)writeTaskForTmuxGateway:(NSString *)string {
+    [self writeTaskImpl:string encoding:NSUTF8StringEncoding forceEncoding:YES canBroadcast:NO reporting:NO];
+}
+
 #pragma mark tmux gateway delegate methods
-// TODO (also, capture and throw away keyboard input)
 
 - (NSString *)tmuxOwningSessionGUID {
-    return self.guid;
+    return [self swift_tmuxOwningSessionGUID];
 }
 
 - (void)tmuxDidOpenInitialWindows {
-    if (_hideAfterTmuxWindowOpens) {
-        _hideAfterTmuxWindowOpens = NO;
-        [self hideSession];
-
-        static NSString *const kAutoBurialKey = @"NoSyncAutoBurialReveal";
-        if (![[iTermUserDefaults userDefaults] boolForKey:kAutoBurialKey]) {
-            [[iTermNotificationController sharedInstance] notify:NSLocalizedString(@"Session Buried", @"User notification")
-                                                 withDescription:NSLocalizedString(@"It can be restored by detaching from tmux, or from the Session > Buried Sessions menu.", @"User notification")];
-            [[iTermUserDefaults userDefaults] setBool:YES forKey:kAutoBurialKey];
-        }
-    }
+    [self swift_tmuxDidOpenInitialWindows];
 }
 
 - (BOOL)tmuxUpdateLayoutForWindow:(int)windowId
@@ -9463,495 +9070,169 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                     visibleLayout:(NSString *)visibleLayout
                            zoomed:(NSNumber *)zoomed
                              only:(BOOL)only {
-    DLog(@"tmuxUpdateLayoutForWindow:%@ layout:%@ zoomed:%@ only:%@",
-         @(windowId), layout, zoomed, @(only));
-    PTYTab *tab = [_tmuxController window:windowId];
-    if (!tab) {
-        DLog(@"* NO TAB, DO NOTHING");
-        [_tmuxController didLearnLayout:layout forWindow:windowId];
-        return NO;
-    }
-    const BOOL result = [_tmuxController setLayoutInTab:tab
-                                               toLayout:layout
-                                          visibleLayout:visibleLayout
-                                                 zoomed:zoomed];
-    // Do this after the opener for any new panes has registered them.
-    [_tmuxController didLearnLayout:layout forWindow:windowId];
-    if (result && only) {
-        [_tmuxController adjustWindowSizeIfNeededForTabs:@[ tab ]];
-    }
-    return result;
+    return [self swift_tmuxUpdateLayoutForWindow:windowId
+                                           layout:layout
+                                    visibleLayout:visibleLayout
+                                           zoomed:zoomed
+                                             only:only];
 }
 
 - (void)tmuxWindowAddedWithId:(int)windowId {
-    if (![_tmuxController window:windowId]) {
-        [_tmuxController openWindowWithId:windowId
-                              intentional:NO
-                                  profile:[_tmuxController profileForWindow:self.delegate.tmuxWindow]];
-    }
-    [_tmuxController windowsChanged];
+    [self swift_tmuxWindowAddedWithId:windowId];
 }
 
-- (void)tmuxWindowClosedWithId:(int)windowId
-{
-    PTYTab *tab = [_tmuxController window:windowId];
-    if (tab) {
-        [[tab realParentWindow] removeTab:tab];
-    }
-    [_tmuxController windowsChanged];
+- (void)tmuxWindowClosedWithId:(int)windowId {
+    [self swift_tmuxWindowClosedWithId:windowId];
 }
 
 - (void)tmuxWindowRenamedWithId:(int)windowId to:(NSString *)newName {
-    PTYSession *representativeSession = [[_tmuxController sessionsInWindow:windowId] firstObject];
-    [representativeSession.delegate sessionDidChangeTmuxWindowNameTo:newName];
-    [_tmuxController windowWasRenamedWithId:windowId to:newName];
+    [self swift_tmuxWindowRenamedWithId:windowId to:newName];
 }
 
 - (void)tmuxInitialCommandDidCompleteSuccessfully {
-    // This kicks off a chain reaction that leads to windows being opened.
-    if (!_haveKickedOffTmux) {
-        // In tmux 1.9+ this happens before `tmuxSessionsChanged`.
-        [self kickOffTmuxForRestoration:NO];
-    }
+    [self swift_tmuxInitialCommandDidCompleteSuccessfully];
 }
 
-// When guessVersion finishes, if you have called openWindowsInitial, then windows will actually get
-// opened. Initial window opening is always blocked on establishing the server version.
 - (void)kickOffTmuxForRestoration:(BOOL)restoration {
-    if (restoration) {
-        [_tmuxGateway enableWritesAfterDelay];
-    }
-    _haveKickedOffTmux = YES;
-    // This must be first. See the note in -startTmuxMode:.
-    [_tmuxController sendPhonyCommand];
-    [_tmuxController ping];
-    [_tmuxController validateOptions];
-    [_tmuxController checkForUTF8];
-    [_tmuxController loadDefaultTerminal];
-    [_tmuxController loadKeyBindings];
-    [_tmuxController exitCopyMode];
-    [_tmuxController guessVersion];  // NOTE: This kicks off more stuff that depends on knowing the version number.
+    [self swift_kickOffTmuxForRestoration:restoration];
 }
 
 - (void)tmuxInitialCommandDidFailWithError:(NSString *)error {
-    [self printTmuxMessage:[NSString stringWithFormat:@"tmux failed with error: “%@”", error]];
+    [self swift_tmuxInitialCommandDidFailWithError:error];
 }
 
 - (void)tmuxPrintLine:(NSString *)line {
-    DLog(@"%@", line);
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [mutableState appendStringAtCursor:line];
-        [mutableState appendCarriageReturnLineFeed];
-    }];
+    [self swift_tmuxPrintLine:line];
 }
 
 - (void)tmuxGatewayDidTimeOutDuringInitialization:(BOOL)duringInitialization {
-    if (duringInitialization) {
-        // "Reveal Setting" is a one-time navigation action and shouldn't be remembered.
-        iTermWarning *warning = [[iTermWarning alloc] init];
-        warning.title = @"It's taking a long time for tmux to respond. If this is a old or funky system it might expect newline rather than carriage return to end commands. You can adjust the line terminator used by tmux integration in Settings.";
-        warning.actionLabels = @[ @"OK", @"Reveal Setting" ];
-        warning.identifier = @"NoSyncTmuxHung";
-        warning.warningType = kiTermWarningTypePermanentlySilenceable;
-        warning.heading = @"Slow tmux Response";
-        warning.doNotRememberLabels = @[ @"Reveal Setting" ];
-        const iTermWarningSelection selection = [warning runModal];
-        if (selection == 1) {
-            [self revealProfileSettingWithKey:KEY_TMUX_NEWLINE];
-        }
-        return;
-    }
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Force Detach?";
-    alert.informativeText = @"Tmux is not responding. Would you like to force detach?";
-    [alert addButtonWithTitle:@"Detach"];
-    [alert addButtonWithTitle:@"Cancel"];
-    NSWindow *window = self.view.window;
-    NSInteger button;
-    if (window) {
-        button = [alert runSheetModalForWindow:window];
-    } else {
-        button = [alert runModal];
-    }
-    if (button == NSAlertFirstButtonReturn) {
-        [_tmuxGateway forceDetach];
-    }
+    [self swift_tmuxGatewayDidTimeOutDuringInitialization:duringInitialization];
 }
 
 - (void)tmuxActiveWindowPaneDidChangeInWindow:(int)windowID toWindowPane:(int)paneID {
-    [_tmuxController activeWindowPaneDidChangeInWindow:windowID toWindowPane:paneID];
+    [self swift_tmuxActiveWindowPaneDidChangeInWindow:windowID toWindowPane:paneID];
 }
 
 - (void)tmuxSessionWindowDidChangeTo:(int)windowID {
-    [_tmuxController activeWindowDidChangeTo:windowID];
+    [self swift_tmuxSessionWindowDidChangeTo:windowID];
 }
 
 - (BOOL)tmuxGatewayShouldForceDetach {
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Force Detach?";
-    alert.informativeText = @"A previous detach request has not yet been honored. Force detach?";
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Cancel"];
-    NSWindow *window = self.view.window;
-    NSInteger button;
-    if (window) {
-        button = [alert runSheetModalForWindow:window];
-    } else {
-        button = [alert runModal];
-    }
-    return button == NSAlertFirstButtonReturn;
+    return [self swift_tmuxGatewayShouldForceDetach];
 }
 
 - (NSWindowController<iTermWindowController> *)tmuxGatewayWindow {
-    return _delegate.realParentWindow;
+    return [self swift_tmuxGatewayWindow];
 }
 
 - (void)tmuxHostDisconnected:(NSString *)dcsID {
-    _hideAfterTmuxWindowOpens = NO;
-
-    if ([iTermPreferences boolForKey:kPreferenceKeyAutoHideTmuxClientSession] &&
-        [[[iTermBuriedSessions sharedInstance] buriedSessions] containsObject:self]) {
-        // Do this before detaching because it may be the only tab in a hotkey window. If all the
-        // tabs close the window is destroyed and it breaks the reference from iTermProfileHotkey.
-        // See issue 7384.
-        [[iTermBuriedSessions sharedInstance] restoreSession:self];
-    }
-
-    [_tmuxController detach];
-    // Autorelease the gateway because it called this function so we can't free
-    // it immediately.
-    if (_tmuxGateway) {
-        CFAutorelease(CFBridgingRetain(_tmuxGateway));
-    }
-    _tmuxGateway = nil;
-    _tmuxController = nil;
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [mutableState appendStringAtCursor:@"Detached"];
-        [mutableState appendCarriageReturnLineFeed];
-        [terminal.parser forceUnhookDCS:dcsID];
-    }];
-    self.tmuxMode = TMUX_NONE;
-    [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxClientName];
-    [self.variablesScope setValue:nil forVariableNamed:iTermVariableKeySessionTmuxPaneTitle];
-    // Take the gateway decoration off now rather than a main-queue turn later.
-    [_nameController formattingDescriptorDidChange];
+    [self swift_tmuxHostDisconnected:dcsID];
 }
 
 - (void)tmuxCannotSendCharactersInSupplementaryPlanes:(NSString *)string windowPane:(int)windowPane {
-    PTYSession *session = [_tmuxController sessionForWindowPane:windowPane];
-    [session.naggingController tmuxSupplementaryPlaneErrorForCharacter:string];
+    [self swift_tmuxCannotSendCharactersInSupplementaryPlanes:string windowPane:windowPane];
 }
 
 - (void)tmuxSetSecureLogging:(BOOL)secureLogging {
-    _tmuxSecureLogging = secureLogging;
+    [self swift_tmuxSetSecureLogging:secureLogging];
 }
 
 - (void)tmuxServerMayOmitEndGuardBeforeExit:(BOOL)mayOmit {
-    DLog(@"%@: tmux server may omit end guard before exit: %@", self, @(mayOmit));
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [terminal.parser setTmuxServerMayOmitEndGuardBeforeExit:mayOmit];
-    }];
+    [self swift_tmuxServerMayOmitEndGuardBeforeExit:mayOmit];
 }
 
 - (void)tmuxWriteString:(NSString *)string {
-    if (_exited) {
-        return;
-    }
-    if (_tmuxSecureLogging) {
-        DLog(@"Write to tmux.");
-    } else {
-        DLog(@"Write to tmux: \"%@\"", string);
-    }
-    if (_tmuxGateway.tmuxLogging) {
-        [self printTmuxMessage:[@"> " stringByAppendingString:string]];
-    }
-    if (_conductor && !_exited) {
-        // Running tmux inside an ssh client takes this path
-        [_conductor sendKeys:[string dataUsingEncoding:NSUTF8StringEncoding]];
-    } else {
-        [self writeTaskImpl:string encoding:NSUTF8StringEncoding forceEncoding:YES canBroadcast:NO reporting:NO];
-    }
+    [self swift_tmuxWriteString:string];
 }
 
-+ (dispatch_queue_t)tmuxQueue {
-    static dispatch_queue_t tmuxQueue;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        tmuxQueue = dispatch_queue_create("com.iterm2.tmuxReadTask", 0);
-    });
-    return tmuxQueue;
-}
-
-// This is called on the main thread when %output is parsed.
 - (void)tmuxReadTask:(NSData *)data windowPane:(int)wp latency:(NSNumber *)latency {
-    if (latency) {
-        [_tmuxController setCurrentLatency:latency.doubleValue forPane:wp];
-    }
-    PTYSession *session = [_tmuxController sessionForWindowPane:wp];
-    if (session) {
-        [session handleTmuxData:data];
-    } else {
-        [_tmuxController didDropOutput:data forPane:wp];
-    }
+    [self swift_tmuxReadTask:data windowPane:wp latency:latency];
 }
 
 - (void)handleTmuxData:(NSData *)data {
-    if (_exited) {
-        return;
-    }
-    if (_logging.style == iTermLoggingStyleRaw) {
-        [_logging logData:data];
-    }
-
-    // Send the bytes from %output in to the write end of a pipe. The data will come out
-    // iTermTmuxJobManager.fd, which TaskRegister selects on. The purpose of this pipe is to
-    // let tmux provide backpressure to the pty. In the old days, this would call -threadedReadTask:
-    // on the tmux queue. threadedReadTask: is meant to be called on the TaskNotifier queue and it
-    // will block if there are too many tokens outstanding. That is an effective mechanism to
-    // provide backpressure. By dispatching onto the tmuxQueue, infinite data could be buffered by
-    // GCD, breaking the backpressure mechanism. It is unfortunate that all tmux data must make
-    // two passes through TaskNotifier (once as `%output blah blah` and a second time as `blah blah`)
-    // but the alternative is unbounded latency. We still do the write on tmuxQueue because we
-    // don't want to block the main queue. GCD can still buffer here, but it's OK because
-    // TaskNotifier has a chance to get its queue blocked when it reads the data. That limits the
-    // rate that this can write, since it can only write after a %output is read.
-    __weak NSFileHandle *handle = _tmuxClientWritePipe;
-    dispatch_async([[self class] tmuxQueue], ^{
-        @try {
-            [handle writeData:data];
-        } @catch (NSException *exception) {
-            DLog(@"%@ while writing to tmux pipe", exception);
-        }
-    });
+    [self swift_handleTmuxData:data];
 }
 
 - (void)tmuxSessionPasteDidChange:(NSString *)pasteBufferName {
-    if ([iTermPreferences boolForKey:kPreferenceKeyTmuxSyncClipboard]) {
-        [_tmuxController copyBufferToLocalPasteboard:pasteBufferName];
-    } else {
-        [[[[iTermController sharedInstance] currentTerminal] currentSession] askToMirrorTmuxPasteBuffer];
-    }
+    [self swift_tmuxSessionPasteDidChange:pasteBufferName];
 }
 
 - (void)askToMirrorTmuxPasteBuffer {
-    [_naggingController tmuxDidUpdatePasteBuffer];
-
-
-
+    [self swift_askToMirrorTmuxPasteBuffer];
 }
 
 - (void)tmuxWindowPaneDidPause:(int)wp notification:(BOOL)notification {
-    PTYSession *session = [_tmuxController sessionForWindowPane:wp];
-    [session setTmuxPaused:YES allowAutomaticUnpause:notification];
+    [self swift_tmuxWindowPaneDidPause:wp notification:notification];
 }
 
 - (void)tmuxClientSessionChanged:(NSString *)clientName {
-    DLog(@"Client session changed for %@", clientName);
-    [_tmuxController clientSessionChanged:clientName];
+    [self swift_tmuxClientSessionChanged:clientName];
 }
 
 - (void)tmuxClientDetached:(NSString *)clientName {
-    DLog(@"Client detached: %@", clientName);
-    [_tmuxController clientDetached:clientName];
+    [self swift_tmuxClientDetached:clientName];
 }
 
 - (void)setTmuxPaused:(BOOL)paused allowAutomaticUnpause:(BOOL)allowAutomaticUnpause {
-    if (_tmuxPaused == paused) {
-        return;
-    }
-    _tmuxPaused = paused;
-    if (paused) {
-        _tmuxTTLHasThresholds = NO;
-        [self.tmuxController didPausePane:self.tmuxPane];
-        if (allowAutomaticUnpause && [iTermPreferences boolForKey:kPreferenceKeyTmuxUnpauseAutomatically]) {
-            __weak __typeof(self) weakSelf = self;
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [weakSelf setTmuxPaused:NO allowAutomaticUnpause:YES];
-            });
-            return;
-        }
-        [self showTmuxPausedAnnouncement:allowAutomaticUnpause];
-    } else {
-        [self unpauseTmux];
-    }
+    [self swift_setTmuxPaused:paused allowAutomaticUnpause:allowAutomaticUnpause];
 }
 
 - (void)showTmuxPausedAnnouncement:(BOOL)notification {
-    NSString *title;
-    if (notification) {
-        title = @"tmux paused this session because too much output was buffered.";
-    } else {
-        title = @"Session paused.";
-    }
-
-    [self dismissAnnouncementWithIdentifier:PTYSessionAnnouncementIdentifierTmuxPaused];
-    __weak __typeof(self) weakSelf = self;
-    iTermAnnouncementViewController *announcement =
-    [iTermAnnouncementViewController announcementWithTitle:title
-                                                     style:iTermAnnouncementViewStyleWarning
-                                               withActions:@[ @"_Unpause", @"_Settings" ]
-                                                completion:^(int selection) {
-        switch (selection) {
-            case 0:
-                [weakSelf setTmuxPaused:NO allowAutomaticUnpause:YES];
-                break;
-            case 1:
-                [[PreferencePanel sharedInstance] openToPreferenceWithKey:kPreferenceKeyTmuxPauseModeAgeLimit];
-                [weakSelf showTmuxPausedAnnouncement:notification];
-                break;
-        }
-    }];
-    [self dismissAnnouncementWithIdentifier:PTYSessionAnnouncementIdentifierTmuxPaused];
-    [self removeAnnouncementWithIdentifier:PTYSessionAnnouncementIdentifierTmuxPaused];
-    [self queueAnnouncement:announcement identifier:PTYSessionAnnouncementIdentifierTmuxPaused];
+    [self swift_showTmuxPausedAnnouncement:notification];
 }
 
 - (void)setTmuxHistory:(TmuxHistory *)history
             altHistory:(TmuxHistory *)altHistory
                  state:(NSDictionary *)state {
-    __weak __typeof(self) weakSelf = self;
-    [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-        [weakSelf reallySetTmuxHistory:history
-                            altHistory:altHistory
-                                 state:state
-                              terminal:terminal
-                          mutableState:mutableState];
-    }];
-}
-
-- (void)reallySetTmuxHistory:(TmuxHistory *)history
-                  altHistory:(TmuxHistory *)altHistory
-                       state:(NSDictionary *)state
-                    terminal:(VT100Terminal *)terminal
-                mutableState:(VT100ScreenMutableState *)mutableState {
-    [terminal resetForTmuxUnpause];
-    [self clearScrollbackBuffer];
-    [mutableState setHistory:history];
-    [mutableState setAltScreen:altHistory.data];
-    [self setTmuxState:state];
-    _view.scrollview.ptyVerticalScroller.userScroll = NO;
+    [self swift_setTmuxHistory:history altHistory:altHistory state:state];
 }
 
 - (void)toggleTmuxPausePane {
-    if (_tmuxPaused) {
-        [self setTmuxPaused:NO allowAutomaticUnpause:YES];
-    } else {
-        [_tmuxController pausePanes:@[ @(self.tmuxPane) ]];
-    }
+    [self swift_toggleTmuxPausePane];
 }
 
 - (void)setTmuxState:(NSDictionary *)state {
-    [self setTmuxPaneKeyModeString:[NSString castFrom:state[kStateDictPaneKeyMode]]];
-    [_screen performBlockWithJoinedThreads:^(VT100Terminal *terminal,
-                                             VT100ScreenMutableState *mutableState,
-                                             id<VT100ScreenDelegate> delegate) {
-        mutableState.tmuxState = state;
-    }];
+    [self swift_setTmuxState:state];
 }
 
 - (void)unpauseTmux {
-    [self dismissAnnouncementWithIdentifier:PTYSessionAnnouncementIdentifierTmuxPaused];
-    [self unzoomIfPossible];
-    [_tmuxController unpausePanes:@[ @(self.tmuxPane) ]];
+    [self swift_unpauseTmux];
 }
 
 - (void)pauseTmux {
-    [_tmuxController pausePanes:@[ @(self.tmuxPane) ]];
+    [self swift_pauseTmux];
 }
 
 - (void)tmuxSessionChanged:(NSString *)sessionName sessionId:(int)sessionId {
-    [_tmuxController sessionChangedTo:sessionName sessionId:sessionId];
-    if (!_haveKickedOffTmux) {
-        // Tell the tmux controller we want to open initial windows after version guessing finishes.
-        [_tmuxController openWindowsInitial];
-        // In tmux 1.8, this happens before `tmuxInitialCommandDidCompleteSuccessfully`.
-        [self kickOffTmuxForRestoration:NO];
-    }
+    [self swift_tmuxSessionChanged:sessionName sessionId:sessionId];
 }
 
 - (void)tmuxSessionsChanged {
-    [_tmuxController sessionsChanged];
+    [self swift_tmuxSessionsChanged];
 }
 
-- (void)tmuxWindowsDidChange
-{
-    [_tmuxController windowsChanged];
+- (void)tmuxWindowsDidChange {
+    [self swift_tmuxWindowsDidChange];
 }
 
-- (void)tmuxSession:(int)sessionId renamed:(NSString *)newName
-{
-    [_tmuxController session:sessionId renamedTo:newName];
+- (void)tmuxSession:(int)sessionId renamed:(NSString *)newName {
+    [self swift_tmuxSession:sessionId renamed:newName];
 }
 
 - (VT100GridSize)tmuxClientSize {
-    if (!_delegate) {
-        DLog(@"No delegate so use saved grid size %@", VT100GridSizeDescription(_savedGridSize));
-        return _savedGridSize;
-    }
-    DLog(@"Get size from delegate %@, controller tmuxController %@, window %@", _delegate,
-         _tmuxController, @(self.delegate.tmuxWindow));
-    return [_delegate sessionTmuxSizeWithProfile:[_tmuxController profileForWindow:self.delegate.tmuxWindow]];
+    return [self swift_tmuxClientSize];
 }
 
 - (NSInteger)tmuxNumberOfLinesOfScrollbackHistory {
-    Profile *profile = [_tmuxController profileForWindow:self.delegate.tmuxWindow];
-    if ([iTermPreferences useTmuxProfile]) {
-        profile = [[ProfileModel sharedInstance] tmuxProfile];
-    }
-    if ([profile[KEY_UNLIMITED_SCROLLBACK] boolValue]) {
-        // 10M is close enough to infinity to be indistinguishable.
-        return 10 * 1000 * 1000;
-    } else {
-        return [profile[KEY_SCROLLBACK_LINES] integerValue];
-    }
+    return [self swift_tmuxNumberOfLinesOfScrollbackHistory];
 }
 
 - (void)tmuxDoubleAttachForSessionGUID:(NSString *)sessionGUID {
-    NSArray<NSString *> *actions = @[ @"OK", @"Reveal", @"Force Detach Other" ];
-    TmuxController *controller = [[TmuxControllerRegistry sharedInstance] tmuxControllerWithSessionGUID:sessionGUID];
-    if (!controller) {
-        actions = @[ @"OK" ];
-    }
-    const iTermWarningSelection selection =
-    [iTermWarning showWarningWithTitle:@"This instance of Latterm is already attached to this session"
-                               actions:actions
-                             accessory:nil
-                            identifier:@"AlreadyAttachedToTmuxSession"
-                           silenceable:kiTermWarningTypePersistent
-                               heading:@"Cannot Attach"
-                                window:self.view.window];
-    switch (selection) {
-        case kiTermWarningSelection0:
-            return;
-        case kiTermWarningSelection1:
-            break;
-        case kiTermWarningSelection2:
-            [controller.gateway forceDetach];
-            return;
-        default:
-            assert(NO);
-    }
-
-    PTYSession *aSession =
-    [[controller.clientSessions sortedArrayUsingComparator:^NSComparisonResult(PTYSession *s1, PTYSession *s2) {
-        return [s1.guid compare:s2.guid];
-    }] firstObject];
-
-    if (!aSession) {
-        aSession = [PTYSession castFrom:controller.gateway.delegate];
-    }
-    if (!aSession) {
-        iTermApplicationDelegate *delegate = [iTermApplication.sharedApplication delegate];
-        [delegate openDashboard:nil];
-        return;
-    }
-    [aSession reveal];
+    [self swift_tmuxDoubleAttachForSessionGUID:sessionGUID];
 }
 
 - (void)tmuxWillKillWindow:(NSNotification *)notification {
-    if ([self.delegate tmuxWindow] == [notification.object intValue]) {
-        _tmuxWindowClosingByClientRequest = YES;
-    }
+    [self swift_tmuxWillKillWindow:notification];
 }
 
 #pragma mark PTYTextViewDelegate
@@ -11594,18 +10875,8 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     }
 }
 
-- (iTermNonTextPasteHelper *)nonTextPasteHelper {
-    if (!_nonTextPasteHelper) {
-        _nonTextPasteHelper = [[iTermNonTextPasteHelper alloc] init];
-        _nonTextPasteHelper.delegate = self;
-    }
-    return _nonTextPasteHelper;
-}
-
 - (void)attemptNonTextPaste {
-    DLog(@"attemptNonTextPaste");
-    BOOL handled = [[self nonTextPasteHelper] pasteNonTextContent];
-    DLog(@"pasteNonTextContent returned %@", @(handled));
+    [_swiftState.pasteCoordinator attemptNonTextPaste];
 }
 
 // Show advanced paste window.
@@ -13617,38 +12888,8 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     [self launchCoprocessWithCommand:command mute:NO];
 }
 
-- (void)uploadFiles:(NSArray *)localFilenames toPath:(SCPPath *)destinationPath
-{
-    RLog(@"uploadFiles:%@ toPath:%@", RLogRedact(localFilenames, @(localFilenames.count)), RLogRedact(destinationPath.path, @(destinationPath.path.length)));
-
-    SCPFile *previous = nil;
-    for (NSString *file in localFilenames) {
-        SCPPath *path = [[SCPPath alloc] init];
-        path.hostname = destinationPath.hostname;
-        path.username = destinationPath.username;
-        NSString *filename = [file lastPathComponent];
-        path.path = [destinationPath.path stringByAppendingPathComponent:filename];
-        DLog(@"Will upload local:%@ to remote:%@", file, path.path);
-
-        iTermConductor *conductor = [self nonTextPasteConductor];
-        if ([conductor canTransferFilesTo:path]) {
-            // Each upload is independent; hand off every file in the batch.
-            DLog(@"Using conductor for upload");
-            [conductor uploadFile:file to:path];
-            continue;
-        }
-        DLog(@"Using SCPFile for upload");
-        SCPFile *scpFile = [[SCPFile alloc] init];
-        scpFile.path = path;
-        scpFile.localPath = file;
-        DLog(@"SCPFile localPath=%@ remotePath=%@", scpFile.localPath, scpFile.path.path);
-
-        if (previous) {
-            previous.successor = scpFile;
-        }
-        previous = scpFile;
-        [scpFile upload];
-    }
+- (void)uploadFiles:(NSArray *)localFilenames toPath:(SCPPath *)destinationPath {
+    [_swiftState.pasteCoordinator uploadFiles:localFilenames toPath:destinationPath];
 }
 
 - (BOOL)textViewCanUploadOverSSHIntegrationTo:(SCPPath *)path {
@@ -13796,39 +13037,11 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 #pragma mark - tmux Output
 
 - (void)printTmuxMessage:(NSString *)message {
-    DLog(@"%@", message);
-    if (_exited) {
-        return;
-    }
-    // Use mutateAsync because you get here from a side-effect.
-    [_screen mutateAsynchronously:^(VT100Terminal *terminal,
-                                    VT100ScreenMutableState *mutableState,
-                                    id<VT100ScreenDelegate> delegate) {
-        screen_char_t savedFgColor = [terminal foregroundColorCode];
-        screen_char_t savedBgColor = [terminal backgroundColorCode];
-        [terminal setForegroundColor:ALTSEM_DEFAULT
-                  alternateSemantics:YES];
-        [terminal setBackgroundColor:ALTSEM_DEFAULT
-                  alternateSemantics:YES];
-        [terminal updateDefaultChar];
-        mutableState.currentGrid.defaultChar = terminal.defaultChar;
-        [mutableState appendStringAtCursor:message];
-        [mutableState appendCarriageReturnLineFeed];
-        [terminal setForegroundColor:savedFgColor.foregroundColor
-                  alternateSemantics:savedFgColor.foregroundColorMode == ColorModeAlternate];
-        [terminal setBackgroundColor:savedBgColor.backgroundColor
-                  alternateSemantics:savedBgColor.backgroundColorMode == ColorModeAlternate];
-        [terminal updateDefaultChar];
-        mutableState.currentGrid.defaultChar = terminal.defaultChar;
-    }];
+    [self swift_printTmuxMessage:message];
 }
 
-- (void)printTmuxCommandOutputToScreen:(NSString *)response
-{
-    for (NSString *aLine in [response componentsSeparatedByString:@"\n"]) {
-        NSString *cleaned = [aLine stringByReplacingOccurrencesOfString:@"\r" withString:@""];
-        [self printTmuxMessage:cleaned];
-    }
+- (void)printTmuxCommandOutputToScreen:(NSString *)response {
+    [self swift_printTmuxCommandOutputToScreen:response];
 }
 
 #pragma mark - VT100ScreenDelegate
@@ -18079,376 +17292,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     [_textview keyDown:event];
 }
 
-#pragma mark - iTermPasteHelperDelegate
-
-- (void)pasteHelperWriteString:(NSString *)string {
-    if (_pasteHelper.pasteContext.bytesWritten == 0 &&
-        (_pasteHelper.pasteContext.pasteEvent.flags & kPasteFlagsBracket) &&
-        _screen.terminalBracketedPasteMode) {
-        DLog(@"Will write first chunk of bracketed paste: %@", string);
-        NSString *prefix = [_pasteHelper.pasteContext.pasteEvent.originalString it_substringToIndex:4];
-        [self watchForPasteBracketingOopsieWithPrefix:prefix
-                                             andWrite:string];
-    } else {
-        DLog(@"Writing regular chunk");
-        [self writeTask:string];
-    }
-}
-
-- (void)pasteHelperKeyDown:(NSEvent *)event {
-    [_textview keyDown:event];
-}
-
-- (BOOL)pasteHelperShouldBracket {
-    return _screen.terminalBracketedPasteMode;
-}
-
-- (NSStringEncoding)pasteHelperEncoding {
-    return _screen.terminalEncoding;
-}
-
-- (NSView *)pasteHelperViewForIndicator {
-    return _view;
-}
-
-- (iTermStatusBarViewController *)pasteHelperStatusBarViewController {
-    return _statusBarViewController;
-}
-
-- (BOOL)pasteHelperShouldWaitForPrompt {
-    if (!_screen.shouldExpectPromptMarks) {
-        DLog(@"Shell integration is not installed. We may never get a command prompt so waiting is not advisable.");
-        return NO;
-    }
-
-    DLog(@"currentCommand=%@", self.currentCommand);
-    // currentCommand is nil when executing a command. If you are at a shell prompt it is
-    // a nonnil string with the command that the user has typed so far (which could be an
-    // empty string). Return true if we are not at a shell prompt.
-    return self.currentCommand == nil;
-}
-
-- (BOOL)pasteHelperIsAtShellPrompt {
-    return [self currentCommand] != nil;
-}
-
-- (BOOL)pasteHelperCanWaitForPrompt {
-    return _screen.shouldExpectPromptMarks;
-}
-
-- (void)pasteHelperPasteViewVisibilityDidChange {
-    [self.delegate sessionUpdateMetalAllowed];
-}
-
-- (iTermVariableScope *)pasteHelperScope {
-    return self.variablesScope;
-}
-
-#pragma mark - iTermNonTextPasteHelperDelegate
-
-- (void)nonTextPasteHelper:(iTermNonTextPasteHelper *)sender pasteString:(NSString *)string {
-    [self pasteString:string];
-}
-
-- (NSWindow *)nonTextPasteHelperWindow:(iTermNonTextPasteHelper *)sender {
-    return self.view.window;
-}
-
-- (iTermNonTextPasteDestination)nonTextPasteHelperDestination:(iTermNonTextPasteHelper *)sender {
-    // Can upload if we have SSH integration (our own conductor or, in a tmux
-    // integration pane, the gateway's) in framing mode, or if shell integration
-    // detected we're on a remote host. Only the latter can be a wrong guess, and
-    // only when nothing proved it (see issue 13117). Either way there must be
-    // somewhere to upload to.
-    id<VT100RemoteHostReading> host = self.currentHost;
-    iTermConductor *conductor = [self nonTextPasteConductor];
-    SCPPath *destination = [self scpPathForCurrentRemoteHost];
-    DLog(@"nonTextPasteHelperDestination: conductor=%@ currentHost=%@ isLocalhost=%@ destination=%@",
-         conductor, host, @(host.isLocalhost), destination);
-    if (!destination) {
-        return iTermNonTextPasteDestinationLocal;
-    }
-    if (conductor) {
-        DLog(@"Can upload via conductor");
-        return iTermNonTextPasteDestinationVerifiedRemote;
-    }
-    // Without a conductor, a destination means shell integration reported a remote host.
-    return host.localityVerified ? iTermNonTextPasteDestinationVerifiedRemote : iTermNonTextPasteDestinationUnverifiedRemote;
-}
-
-// A control-mode pane has no conductor of its own. Its gateway owns the SSH
-// connection, but pasted input must still go to this pane.
-- (iTermConductor *)nonTextPasteConductor {
-    if (_conductor) {
-        return _conductor.framing ? _conductor : nil;
-    }
-    PTYSession *gateway = self.tmuxGatewaySession;
-    if (self.isTmuxClient && !_tmuxController.serverIsLocal && gateway != self) {
-        return [gateway nonTextPasteConductor];
-    }
-    return nil;
-}
-
-// Returns an SCPPath for the current remote host and working directory, or nil if not available.
-- (SCPPath *)scpPathForCurrentRemoteHost {
-    id<VT100RemoteHostReading> remoteHost = self.currentHost;
-    iTermConductor *conductor = [self nonTextPasteConductor];
-    DLog(@"scpPathForCurrentRemoteHost: remoteHost=%@", remoteHost);
-    // SSH integration knows the destination even before shell integration has
-    // reported a host or working directory (including inside ordinary tmux).
-    if (!remoteHost && conductor) {
-        SCPPath *path = [[SCPPath alloc] init];
-        path.hostname = conductor.sshIdentity.hostname;
-        path.username = conductor.sshIdentity.username;
-        path.path = conductor.homeDirectory;
-        return path.path.length ? path : nil;
-    }
-    if (!remoteHost || !remoteHost.username || !remoteHost.hostname) {
-        DLog(@"No remote host or missing username/hostname");
-        return nil;
-    }
-    if (remoteHost.isLocalhost) {
-        DLog(@"Is localhost, returning nil");
-        return nil;
-    }
-    NSString *workingDirectory = self.variablesScope.path;
-    SCPPath *identityPath = [[SCPPath alloc] init];
-    identityPath.hostname = remoteHost.hostname;
-    identityPath.username = remoteHost.username;
-    if (!workingDirectory.length && [conductor canTransferFilesTo:identityPath]) {
-        workingDirectory = conductor.homeDirectory;
-    }
-    if (!workingDirectory.length) {
-        DLog(@"No working directory");
-        return nil;
-    }
-    SCPPath *scpPath = [[SCPPath alloc] init];
-    scpPath.path = workingDirectory;
-    scpPath.hostname = remoteHost.hostname;
-    scpPath.username = remoteHost.username;
-    DLog(@"Returning scpPath: hostname=%@ username=%@ path=%@", scpPath.hostname, scpPath.username, scpPath.path);
-    return scpPath;
-}
-
-- (void)nonTextPasteHelper:(iTermNonTextPasteHelper *)sender uploadFiles:(NSArray<NSString *> *)paths {
-    DLog(@"nonTextPasteHelper:uploadFiles: paths=%@", paths);
-    for (NSString *path in paths) {
-        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil];
-        DLog(@"File %@ attributes: size=%@, type=%@", path, attrs[NSFileSize], attrs[NSFileType]);
-    }
-    SCPPath *scpPath = [self scpPathForCurrentRemoteHost];
-    if (!scpPath) {
-        DLog(@"No scpPath, aborting upload");
-        return;
-    }
-    [self uploadFiles:paths toPath:scpPath];
-}
-
-- (void)nonTextPasteHelper:(iTermNonTextPasteHelper *)sender uploadFileAndPastePath:(NSString *)localPath {
-    DLog(@"nonTextPasteHelper:uploadFileAndPastePath: localPath=%@", localPath);
-    [self uploadFilesAndPastePaths:@[ localPath ]];
-}
-
-- (void)nonTextPasteHelper:(iTermNonTextPasteHelper *)sender uploadFilesAndPastePaths:(NSArray<NSString *> *)localPaths {
-    [self uploadFilesAndPastePaths:localPaths];
-}
-
-- (void)uploadFilesAndPastePaths:(NSArray<NSString *> *)localPaths {
-    if (localPaths.count == 0) {
-        return;
-    }
-    if (_uploadAndPasteTransfers.count > 0) {
-        DLog(@"Upload already in progress, blocking new upload");
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Upload in Progress";
-        alert.informativeText = @"Please wait for the current upload to complete or cancel it before starting another.";
-        alert.alertStyle = NSAlertStyleWarning;
-        [alert addButtonWithTitle:@"OK"];
-        if (self.view.window) {
-            [alert beginSheetModalForWindow:self.view.window completionHandler:nil];
-        } else {
-            [alert runModal];
-        }
-        return;
-    }
-    SCPPath *scpPath = [self scpPathForCurrentRemoteHost];
-    if (!scpPath) {
-        DLog(@"No scpPath, aborting upload");
-        return;
-    }
-
-    NSString *label;
-    if (localPaths.count == 1) {
-        label = [localPaths.firstObject lastPathComponent];
-    } else {
-        label = [NSString localizedStringWithFormat:NSLocalizedStringWithDefaultValue(@"PTYSession.UploadingFileCount", nil, [NSBundle mainBundle], @"%ld files", @"Label on the upload progress indicator when several files are uploading at once; %ld is the number of files"), (long)localPaths.count];
-    }
-    __weak __typeof(self) weakSelf = self;
-    iTermConductor *conductor = [self nonTextPasteConductor];
-    [_view showUploadIndicatorWithFilename:label onCancel:^{
-        DLog(@"Upload cancelled by user");
-        [weakSelf cancelUploadAndPaste];
-    }];
-
-    _uploadAndPasteGeneration += 1;
-    const NSInteger generation = _uploadAndPasteGeneration;
-    _uploadAndPasteTransfers = [[NSMutableArray alloc] init];
-
-    // Slot per input, filled in on success and left as NSNull on failure, so the pasted order
-    // matches the order dropped no matter which upload finishes first and a failure simply leaves
-    // a gap rather than shifting the rest.
-    NSMutableArray *remotePaths = [NSMutableArray array];
-    for (NSUInteger i = 0; i < localPaths.count; i++) {
-        [remotePaths addObject:[NSNull null]];
-    }
-
-    // Finish only once every upload has reported and the loop below has started them all. Without
-    // the second condition a synchronous failure (an unreadable file reports before its upload
-    // call even returns) would finish the group while later files were still to be started.
-    __block NSInteger completed = 0;
-    __block BOOL allStarted = NO;
-    void (^finishIfDone)(void) = ^{
-        if (!allStarted || completed < (NSInteger)localPaths.count) {
-            return;
-        }
-        __strong __typeof(self) strongSelf = weakSelf;
-        if (!strongSelf || strongSelf->_uploadAndPasteGeneration != generation) {
-            return;
-        }
-        [strongSelf finishUploadAndPasteWithRemotePaths:remotePaths
-                                            destination:scpPath
-                                              conductor:conductor];
-    };
-
-    for (NSUInteger i = 0; i < localPaths.count; i++) {
-        const NSUInteger index = i;
-        TransferrableFile *transfer =
-            [self uploadFile:localPaths[i] toPath:scpPath completion:^(BOOL success, NSString *error, NSString *remotePath) {
-                DLog(@"Upload of %@ completed: success=%d error=%@ remotePath=%@", localPaths[index], success, error, remotePath);
-                __strong __typeof(self) strongSelf = weakSelf;
-                if (!strongSelf || strongSelf->_uploadAndPasteGeneration != generation) {
-                    DLog(@"Ignoring completion from a cancelled or superseded upload group");
-                    return;
-                }
-                if (success && remotePath.length > 0) {
-                    remotePaths[index] = remotePath;
-                }
-                completed += 1;
-                finishIfDone();
-            }];
-        if (transfer) {
-            [_uploadAndPasteTransfers addObject:transfer];
-        }
-    }
-    allStarted = YES;
-    finishIfDone();
-}
-
-// Pastes the paths of the uploads that succeeded. A file that failed contributes nothing: its
-// name would point at something that is not there, and the failure is already reported in the
-// file transfers window. Pasting nothing at all is the right outcome when every one failed.
-// Nothing is pasted if, while uploading, the session ended or moved to another host or ssh
-// connection, since the paths would name files that are not there.
-- (void)finishUploadAndPasteWithRemotePaths:(NSArray *)remotePaths
-                                destination:(SCPPath *)destination
-                                  conductor:(iTermConductor *)conductor {
-    _uploadAndPasteGeneration += 1;
-    _uploadAndPasteTransfers = nil;
-    [_view hideUploadIndicator];
-
-    if (self.exited || [self nonTextPasteConductor] != conductor) {
-        DLog(@"Session exited or its ssh connection changed during upload, so not pasting");
-        return;
-    }
-    SCPPath *currentPath = [self scpPathForCurrentRemoteHost];
-    const BOOL sameName = [currentPath.hostname isEqualToString:destination.hostname] &&
-        (currentPath.username == destination.username || [currentPath.username isEqualToString:destination.username]);
-    // The conductor knows every name its host goes by (the ssh alias, its HostName, and
-    // hostname -f), so different names can still be the same host, as when shell integration
-    // reports the full name mid-upload.
-    const BOOL sameConductorHost = (currentPath != nil &&
-                                    [conductor canTransferFilesTo:destination] &&
-                                    [conductor canTransferFilesTo:currentPath]);
-    if (!sameName && !sameConductorHost) {
-        DLog(@"Host changed during upload from %@ to %@, so not pasting", destination, currentPath);
-        return;
-    }
-
-    NSMutableArray<NSString *> *escaped = [NSMutableArray array];
-    for (id remotePath in remotePaths) {
-        NSString *path = [NSString castFrom:remotePath];
-        if (path.length == 0) {
-            continue;
-        }
-        [escaped addObject:[iTermNonTextPasteHelper escapedPathForPaste:path]];
-    }
-    if (escaped.count == 0) {
-        DLog(@"Every upload failed, so nothing to paste");
-        return;
-    }
-    NSString *string = [escaped componentsJoinedByString:@" "];
-    DLog(@"Pasting %@ escaped path(s)", @(escaped.count));
-    [self pasteString:string flags:0];
-}
-
-- (void)cancelUploadAndPaste {
-    if (_uploadAndPasteTransfers.count > 0) {
-        DLog(@"Cancelling %@ upload and paste transfer(s)", @(_uploadAndPasteTransfers.count));
-        // Bump first so completions provoked by -stop find their group gone and do not paste.
-        _uploadAndPasteGeneration += 1;
-        NSArray<TransferrableFile *> *transfers = [_uploadAndPasteTransfers copy];
-        _uploadAndPasteTransfers = nil;
-        for (TransferrableFile *transfer in transfers) {
-            [transfer stop];
-        }
-    }
-    [_view hideUploadIndicator];
-}
-
-// The completion reports where the file actually landed, which is not always the path computed
-// here: an upload over ssh integration never overwrites, so if the name is taken on the far host
-// it uploads as "name (2)" and records that. Pasting the requested path instead would name the
-// pre-existing file, which is a different file. -destination is the transfer's own answer once it
-// has finished, so ask it rather than predicting.
-- (TransferrableFile *)uploadFile:(NSString *)localPath toPath:(SCPPath *)destinationPath completion:(void (^)(BOOL success, NSString *error, NSString *remotePath))completion {
-    DLog(@"uploadFile:%@ toPath:%@ with completion", localPath, destinationPath.path);
-
-    NSString *filename = [localPath lastPathComponent];
-
-    SCPPath *path = [[SCPPath alloc] init];
-    path.hostname = destinationPath.hostname;
-    path.username = destinationPath.username;
-    path.path = [destinationPath.path stringByAppendingPathComponent:filename];
-    DLog(@"Will upload local:%@ to remote:%@", localPath, path.path);
-
-    // Assigned before any completion can run: the conductor finishes on a later turn of the run
-    // loop, and the SCPFile branch assigns before starting the upload. The one case that reports
-    // synchronously (an archive that could not be built) reports failure, where the path is unused.
-    __block __weak TransferrableFile *pendingTransfer = nil;
-    NSString *predictedPath = path.path;
-    void (^wrapper)(BOOL, NSString *) = ^(BOOL success, NSString *error) {
-        completion(success, error, pendingTransfer.destination ?: predictedPath);
-    };
-
-    iTermConductor *conductor = [self nonTextPasteConductor];
-    if ([conductor canTransferFilesTo:path]) {
-        DLog(@"Using conductor for upload with completion");
-        TransferrableFile *transfer = [conductor uploadFile:localPath to:path withCompletion:wrapper];
-        pendingTransfer = transfer;
-        return transfer;
-    }
-
-    DLog(@"Using SCPFile for upload with completion");
-    SCPFile *scpFile = [[SCPFile alloc] init];
-    scpFile.path = path;
-    scpFile.localPath = localPath;
-    scpFile.completionBlock = wrapper;
-    DLog(@"SCPFile localPath=%@ remotePath=%@", scpFile.localPath, scpFile.path.path);
-    pendingTransfer = scpFile;
-    [scpFile upload];
-    return scpFile;
-}
-
 #pragma mark - iTermAutomaticProfileSwitcherDelegate
 
 - (NSString *)automaticProfileSwitcherSessionName {
@@ -18699,8 +17542,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)textViewShowPasteOptionsForDroppedFiles:(NSArray<NSString *> *)filenames {
-    DLog(@"textViewShowPasteOptionsForDroppedFiles: %@", filenames);
-    [[self nonTextPasteHelper] showPasteOptionsForFiles:filenames];
+    [_swiftState.pasteCoordinator showPasteOptionsForDroppedFiles:filenames];
 }
 
 - (void)textViewUpdateTrackingAreas {
@@ -19061,16 +17903,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
     if (_inScreenshotMode && _view.window == nil) {
         [iTermScreenshotPanel closePanelForSession:self];
     }
-    // After a peer swap, the view may have had outstanding temporarilyDisableMetal
-    // tokens dropped while it had no window, leaving the metal view stuck at alpha=0.
-    // Now that we have a window again, render frames and show it.
-    if (_view.window != nil &&
-        _useMetal &&
-        _metalDisabledTokens.count == 0 &&
-        _view.metalView.alphaValue == 0) {
-        DLog(@"sessionViewDidChangeWindow: metal view alpha is 0 with no pending tokens; re-showing %@", self);
-        [self renderTwoMetalFramesAndShowMetalView];
-    }
+    [_swiftState.metalCoordinator sessionViewDidChangeWindowAfterMetalDriverUpdate];
 }
 
 - (void)sessionViewAnnouncementDidChange:(SessionView *)sessionView {
@@ -19078,112 +17911,19 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (id)temporarilyDisableMetal {
-    assert(_useMetal);
-    _wrapper.useMetal = NO;
-    _textview.suppressDrawing = NO;
-    [_view setSuppressLegacyDrawing:NO];
-    [self updateWrapperAlphaForMetalEnabled:NO];
-    [self setMetalViewAlphaValue:0];
-    id token = @(_nextMetalDisabledToken++);
-    [_metalDisabledTokens addObject:token];
-    DLog(@"temporarilyDisableMetal return new token=%@ %@", token, self);
-    return token;
+    return [_swiftState.metalCoordinator temporarilyDisableMetal];
 }
 
 - (void)drawFrameAndRemoveTemporarilyDisablementOfMetalForToken:(id)token {
-    DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal %@", token);
-    if (!_useMetal) {
-        DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal returning early because useMetal is off");
-        return;
-    }
-    if ([_metalDisabledTokens containsObject:token]) {
-        DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Found token %@", token);
-        if (_metalDisabledTokens.count > 1) {
-            [_metalDisabledTokens removeObject:token];
-            DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: There are still other tokens remaining: %@", _metalDisabledTokens);
-            return;
-        }
-    } else {
-        DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Bogus token %@", token);
-        return;
-    }
-
-    DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal beginning async draw");
-    [_view.driver drawAsynchronouslyInView:_view.metalView completion:^(BOOL ok) {
-        DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal drawAsynchronouslyInView finished wtih ok=%@", @(ok));
-        if (![self->_metalDisabledTokens containsObject:token]) {
-            DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Token %@ is gone, not proceeding.", token);
-            return;
-        }
-        if (!self->_view.window) {
-            // Drop the token instead of leaking it. We can't draw without a window, but a later
-            // sessionViewDidChangeWindow will re-show the metal view when it returns.
-            [self->_metalDisabledTokens removeObject:token];
-            DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Returning because the view has no window. Tokens are now %@", self->_metalDisabledTokens);
-            return;
-        }
-        if (!self->_useMetal) {
-            DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Returning because useMetal is off");
-            return;
-        }
-        if (!ok) {
-            DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Schedule drawFrameAndRemoveTemporarilyDisablementOfMetal to run after a spin of the mainloop");
-            if (!self->_delegate) {
-                [self setUseMetal:NO];
-                return;
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (![self->_metalDisabledTokens containsObject:token]) {
-                    DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: [after a spin of the runloop] Token %@ is gone, not proceeding.", token);
-                    return;
-                }
-                [self drawFrameAndRemoveTemporarilyDisablementOfMetalForToken:token];
-            });
-            return;
-        }
-
-        assert([self->_metalDisabledTokens containsObject:token]);
-        [self->_metalDisabledTokens removeObject:token];
-        DLog(@"drawFrameAndRemoveTemporarilyDisablementOfMetal: Remove temporarily disablement. Tokens are now %@", self->_metalDisabledTokens);
-        if (self->_metalDisabledTokens.count == 0 && self->_useMetal) {
-            [self reallyShowMetalViewImmediately];
-        }
-    }];
+    [_swiftState.metalCoordinator drawFrameAndRemoveTemporarilyDisablementOfMetalForToken:token];
 }
 
-
 - (void)sessionViewNeedsMetalFrameUpdate {
-    DLog(@"sessionViewNeedsMetalFrameUpdate %@", self);
-    if (_metalFrameChangePending) {
-        DLog(@"sessionViewNeedsMetalFrameUpdate frame change pending, return");
-        return;
-    }
-
-    _metalFrameChangePending = YES;
-    id token = [self temporarilyDisableMetal];
-    [self.textview requestDelegateRedraw];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        DLog(@"sessionViewNeedsMetalFrameUpdate %@ in dispatch_async", self);
-        self->_metalFrameChangePending = NO;
-        [self->_view reallyUpdateMetalViewFrame];
-        DLog(@"sessionViewNeedsMetalFrameUpdate will draw farme and remove disablement");
-        [self drawFrameAndRemoveTemporarilyDisablementOfMetalForToken:token];
-    });
+    [_swiftState.metalCoordinator sessionViewNeedsMetalFrameUpdate];
 }
 
 - (void)sessionViewRecreateMetalView {
-    if (_metalDeviceChanging) {
-        return;
-    }
-    DLog(@"sessionViewRecreateMetalView metalDeviceChanging<-YES");
-    _metalDeviceChanging = YES;
-    [self.textview requestDelegateRedraw];
-    [_delegate sessionUpdateMetalAllowed];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        self->_metalDeviceChanging = NO;
-        DLog(@"sessionViewRecreateMetalView metalDeviceChanging<-NO");
-        [self->_delegate sessionUpdateMetalAllowed];
-    });
+    [_swiftState.metalCoordinator sessionViewRecreateMetalView];
 }
 
 - (void)sessionViewUserScrollDidChange:(BOOL)userScroll {
@@ -21277,62 +20017,7 @@ preferredOffsetFromTopDidChange:(CGFloat)offset {
 #pragma mark - iTermTmuxControllerSession
 
 - (void)tmuxControllerSessionSetTTL:(NSTimeInterval)ttl redzone:(BOOL)redzone {
-    if (_tmuxPaused) {
-        return;
-    }
-    if (![iTermPreferences boolForKey:kPreferenceKeyTmuxWarnBeforePausing]) {
-        return;
-    }
-    if (_tmuxTTLHasThresholds) {
-        if (ttl > _tmuxTTLLowerThreshold && ttl < _tmuxTTLUpperThreshold) {
-            return;
-        }
-        if (ttl <= _tmuxTTLLowerThreshold) {
-            _tmuxTTLLowerThreshold = ttl - 1;
-            _tmuxTTLUpperThreshold = ttl + 1.5;
-        } else {
-            _tmuxTTLLowerThreshold = ttl - 1.5;
-            _tmuxTTLUpperThreshold = ttl + 1;
-        }
-    } else {
-        _tmuxTTLLowerThreshold = ttl - 1;
-        _tmuxTTLUpperThreshold = ttl + 1;
-        _tmuxTTLHasThresholds = YES;
-    }
-
-    NSTimeInterval rounded = round(ttl);
-    NSInteger safeTTL = 0;
-    if (rounded > NSIntegerMax || rounded != rounded) {
-        safeTTL = NSIntegerMax;
-    } else {
-        safeTTL = MAX(1, rounded);
-    }
-
-    if (!redzone) {
-        [self dismissAnnouncementWithIdentifier:PTYSessionAnnouncementIdentifierTmuxPaused];
-        return;
-    }
-    NSString *title = [NSString stringWithFormat:@"This session will pause in about %@ second%@ because it is buffering too much data.", @(safeTTL), safeTTL == 1 ? @"" : @"s"];
-    iTermAnnouncementViewController *announcement = [self announcementWithIdentifier:PTYSessionAnnouncementIdentifierTmuxPaused];
-    if (announcement) {
-        announcement.title = title;
-        [announcement.view setNeedsDisplay:YES];
-        [_view updateAnnouncementFrame];
-        return;
-    }
-    announcement =
-    [iTermAnnouncementViewController announcementWithTitle:title
-                                                     style:iTermAnnouncementViewStyleWarning
-                                               withActions:@[ @"_Pause Settings" ]
-                                                completion:^(int selection) {
-        switch (selection) {
-            case 0:
-                [[PreferencePanel sharedInstance] openToPreferenceWithKey:kPreferenceKeyTmuxPauseModeAgeLimit];
-                break;
-        }
-    }];
-    announcement.dismissOnKeyDown = YES;
-    [self queueAnnouncement:announcement identifier:PTYSessionAnnouncementIdentifierTmuxPaused];
+    [self swift_tmuxControllerSessionSetTTL:ttl redzone:redzone];
 }
 
 #pragma mark - iTermUniquelyIdentifiable

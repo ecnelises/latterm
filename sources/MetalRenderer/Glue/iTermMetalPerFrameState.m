@@ -174,7 +174,7 @@ typedef struct {
                           screen:(VT100Screen *)screen
                             glue:(id<iTermMetalPerFrameStateDelegate>)glue
                          context:(CGContextRef)context
-              doubleWidthContext:(CGContextRef)doubleWidthContext
+              doubleWidthContext:(nullable CGContextRef)doubleWidthContext
          attributedStringBuilder:(iTermAttributedStringBuilder *)attributedStringBuilder
                   rowOutputCache:(nullable iTermRowOutputCache *)rowOutputCache {
     assert([NSThread isMainThread]);

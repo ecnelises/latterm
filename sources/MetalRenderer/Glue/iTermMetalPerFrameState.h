@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Used to remember the last time the cursor moved to avoid drawing a blinked-out
 // cursor while it's moving.
 @property (nonatomic) NSTimeInterval lastTimeCursorMoved;
-@property (nonatomic, readonly) iTermImageWrapper *backgroundImage;
+@property (nullable, nonatomic, readonly) iTermImageWrapper *backgroundImage;
 @property (nonatomic, readonly) iTermBackgroundImageMode backroundImageMode;
 @property (nonatomic, readonly) CGFloat backgroundImageBlend;
 
@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
                           screen:(VT100Screen *)screen
                             glue:(id<iTermMetalPerFrameStateDelegate>)glue
                          context:(CGContextRef)context
-              doubleWidthContext:(CGContextRef)doubleWidthContext
+              doubleWidthContext:(nullable CGContextRef)doubleWidthContext
          attributedStringBuilder:(iTermAttributedStringBuilder *)attributedStringBuilder
                   rowOutputCache:(nullable iTermRowOutputCache *)rowOutputCache NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

@@ -37,7 +37,6 @@
 @class PTYSessionPublishRequest;
 @class iTermComposerManager;
 @class iTermConductor;
-@class iTermNonTextPasteHelper;
 
 @interface PTYSession () <
 iTermAutomaticProfileSwitcherDelegate,
@@ -53,13 +52,10 @@ iTermImmutableColorMapDelegate,
 iTermIntervalTreeObserver,
 iTermLogging,
 iTermMetaFrustrationDetector,
-iTermMetalGlueDelegate,
 iTermModernKeyMapperDelegate,
 iTermModifyOtherKeysMapperDelegate,
 iTermNaggingControllerDelegate,
-iTermNonTextPasteHelperDelegate,
 iTermObject,
-iTermPasteHelperDelegate,
 iTermPasteboardReporterDelegate,
 iTermSessionDirectoryTrackerDelegate,
 iTermSessionNameControllerDelegate,
@@ -79,9 +75,6 @@ iTermUpdateCadenceControllerDelegate> {
     NSMutableArray<PTYSessionPublishRequest *> *_pendingPublishRequests;
     iTermComposerManager *_composerManager;
     iTermAppSwitchingPreventionDetector *_appSwitchingPreventionDetector;
-    iTermNonTextPasteHelper *_nonTextPasteHelper;
-    NSMutableArray<TransferrableFile *> *_uploadAndPasteTransfers;
-    NSInteger _uploadAndPasteGeneration;
 }
 
 @property(nonatomic, retain) Interval *currentMarkOrNotePosition;
@@ -114,7 +107,6 @@ iTermUpdateCadenceControllerDelegate> {
 @property(nonatomic, copy) NSDictionary *substitutions;
 @property(nonatomic, copy) NSString *guid;
 @property(nonatomic, copy) NSString *stableID;
-@property(nonatomic, retain) iTermPasteHelper *pasteHelper;
 @property(nonatomic, copy) NSString *lastCommand;
 @property(nonatomic, retain) iTermExpectation *pasteBracketingOopsieExpectation;
 // Reference count for pending bracketed paste first-chunk writes. When > 0,
@@ -125,9 +117,6 @@ iTermUpdateCadenceControllerDelegate> {
 @property(nonatomic, strong) NSDate *lastFocusReportDate;
 @property(nonatomic) NSStringEncoding encoding;
 
-- (void)queueAnnouncement:(iTermAnnouncementViewController *)announcement
-               identifier:(NSString *)identifier;
-- (void)removeAnnouncementWithIdentifier:(NSString *)identifier;
 - (BOOL)haveAutoComposer;
 - (void)sendDataQueue;
 - (void)bracketedPasteDidExpect;
