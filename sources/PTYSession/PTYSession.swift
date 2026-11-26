@@ -139,6 +139,10 @@ class PTYSessionSwiftState: NSObject {
     @objc let composerCoordinator: PTYSessionComposerCoordinator
     @objc let statusBarCoordinator: PTYSessionStatusBarCoordinator
     @objc let sshCoordinator: PTYSessionSSHCoordinator
+    @objc let objectMethodsCoordinator: PTYSessionObjectMethodsCoordinator
+    @objc let inputModeCoordinator: PTYSessionInputModeCoordinator
+    @objc let profileAndLoggingCoordinator: PTYSessionProfileAndLoggingCoordinator
+    @objc let displayCoordinator: PTYSessionDisplayCoordinator
 
     @objc(initWithSession:)
     init(session: PTYSession) {
@@ -149,6 +153,10 @@ class PTYSessionSwiftState: NSObject {
         self.composerCoordinator = PTYSessionComposerCoordinator(session: session)
         self.statusBarCoordinator = PTYSessionStatusBarCoordinator(session: session)
         self.sshCoordinator = PTYSessionSSHCoordinator(session: session)
+        self.objectMethodsCoordinator = PTYSessionObjectMethodsCoordinator(session: session)
+        self.inputModeCoordinator = PTYSessionInputModeCoordinator(session: session)
+        self.profileAndLoggingCoordinator = PTYSessionProfileAndLoggingCoordinator(session: session)
+        self.displayCoordinator = PTYSessionDisplayCoordinator(session: session)
         super.init()
     }
 }

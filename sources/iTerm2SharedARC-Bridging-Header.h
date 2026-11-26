@@ -273,3 +273,11 @@
 #import "iTermURLActionFactory+Testing.h"
 
 #import "iTermShellArguments.h"
+#import "iTermStatusBarUnreadCountController.h"
+#import "iTermMetaFrustrationDetector.h"
+#import "iTermModifyOtherKeysMapper.h"
+#import "iTermSessionNameController.h"
+#import "iTermLoggingHelper.h"
+#import "Coprocess.h"
+#import "iTermBackgroundDrawingHelper.h"
+#import "iTermIntervalTreeObserver.h"

@@ -9,6 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(iTermMetaFrustrationDetectorDelegate)
 @protocol iTermMetaFrustrationDetector<NSObject>
 - (void)metaFrustrationDetectorDidDetectFrustrationForLeftOption;
 - (void)metaFrustrationDetectorDidDetectFrustrationForRightOption;

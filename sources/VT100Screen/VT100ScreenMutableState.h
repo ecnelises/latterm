@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)appendScreenChars:(const screen_char_t *)line
                       length:(int)length
-      externalAttributeIndex:(id<iTermExternalAttributeIndexReading>)externalAttributeIndex
+      externalAttributeIndex:(nullable id<iTermExternalAttributeIndexReading>)externalAttributeIndex
              continuation:(screen_char_t)continuation
                  rtlFound:(BOOL)rtlFound;
 
@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_BEGIN
 // appending so the append code can re-expand correctly.
 - (void)appendScreenChars:(const screen_char_t *)line
                    length:(int)length
-   externalAttributeIndex:(id<iTermExternalAttributeIndexReading>)externalAttributeIndex
+   externalAttributeIndex:(nullable id<iTermExternalAttributeIndexReading>)externalAttributeIndex
              continuation:(screen_char_t)continuation
                  rtlFound:(BOOL)rtlFound
             lineAttribute:(iTermLineAttribute)lineAttribute;

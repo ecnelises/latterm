@@ -750,6 +750,10 @@
 		E7A3100E2F00000100000001 /* PTYSessionComposerCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A3100D2F00000100000001 /* PTYSessionComposerCoordinator.swift */; };
 		E7A310102F00000100000001 /* PTYSessionStatusBarCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A3100F2F00000100000001 /* PTYSessionStatusBarCoordinator.swift */; };
 		E7A310122F00000100000001 /* PTYSessionSSHBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310112F00000100000001 /* PTYSessionSSHBridge.swift */; };
+		E7A310142F00000100000001 /* PTYSessionObjectMethodsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310132F00000100000001 /* PTYSessionObjectMethodsCoordinator.swift */; };
+		E7A310162F00000100000001 /* PTYSessionInputModeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310152F00000100000001 /* PTYSessionInputModeCoordinator.swift */; };
+		E7A310182F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310172F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift */; };
+		E7A3101A2F00000100000001 /* PTYSessionDisplayCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310192F00000100000001 /* PTYSessionDisplayCoordinator.swift */; };
 		A61E513B2F98971E00EB2B55 /* MiniPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513A2F98971E00EB2B55 /* MiniPasteView.xib */; };
 		A61E51442F98978000EB2B55 /* iTermTriggersPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E51422F98978000EB2B55 /* iTermTriggersPanel.xib */; };
 		A61E51462F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513E2F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib */; };
@@ -3695,6 +3699,10 @@
 		E7A3100D2F00000100000001 /* PTYSessionComposerCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionComposerCoordinator.swift; sourceTree = "<group>"; };
 		E7A3100F2F00000100000001 /* PTYSessionStatusBarCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionStatusBarCoordinator.swift; sourceTree = "<group>"; };
 		E7A310112F00000100000001 /* PTYSessionSSHBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionSSHBridge.swift; sourceTree = "<group>"; };
+		E7A310132F00000100000001 /* PTYSessionObjectMethodsCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionObjectMethodsCoordinator.swift; sourceTree = "<group>"; };
+		E7A310152F00000100000001 /* PTYSessionInputModeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionInputModeCoordinator.swift; sourceTree = "<group>"; };
+		E7A310172F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionProfileAndLoggingCoordinator.swift; sourceTree = "<group>"; };
+		E7A310192F00000100000001 /* PTYSessionDisplayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionDisplayCoordinator.swift; sourceTree = "<group>"; };
 		A61E513A2F98971E00EB2B55 /* MiniPasteView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MiniPasteView.xib; sourceTree = "<group>"; };
 		A61E513E2F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AdvancedWorkingDirectoryWindow.xib; sourceTree = "<group>"; };
 		A61E513F2F98978000EB2B55 /* BulkCopyProfilePreferences.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BulkCopyProfilePreferences.xib; sourceTree = "<group>"; };
@@ -8676,6 +8684,10 @@
 				E7A3100D2F00000100000001 /* PTYSessionComposerCoordinator.swift */,
 				E7A3100F2F00000100000001 /* PTYSessionStatusBarCoordinator.swift */,
 				E7A310112F00000100000001 /* PTYSessionSSHBridge.swift */,
+				E7A310132F00000100000001 /* PTYSessionObjectMethodsCoordinator.swift */,
+				E7A310152F00000100000001 /* PTYSessionInputModeCoordinator.swift */,
+				E7A310172F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift */,
+				E7A310192F00000100000001 /* PTYSessionDisplayCoordinator.swift */,
 				C0D000000000000000000011 /* iTermStableSessionID.swift */,
 				A6F718D5226704920053488E /* PTYSession+ARC.h */,
 				A6F718D6226704920053488E /* PTYSession+ARC.m */,
@@ -12117,6 +12129,10 @@
 				E7A3100E2F00000100000001 /* PTYSessionComposerCoordinator.swift in Sources */,
 				E7A310102F00000100000001 /* PTYSessionStatusBarCoordinator.swift in Sources */,
 				E7A310122F00000100000001 /* PTYSessionSSHBridge.swift in Sources */,
+				E7A310142F00000100000001 /* PTYSessionObjectMethodsCoordinator.swift in Sources */,
+				E7A310162F00000100000001 /* PTYSessionInputModeCoordinator.swift in Sources */,
+				E7A310182F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift in Sources */,
+				E7A3101A2F00000100000001 /* PTYSessionDisplayCoordinator.swift in Sources */,
 				C0D000000000000000000001 /* iTermStableSessionID.swift in Sources */,
 				04B0E3E8B43FEE49B8105CB7 /* iTermSubSelection+ExcludedSubranges.swift in Sources */,
 				A6A802E1226AD0D200BC70DC /* iTermSearchHistory.m in Sources */,

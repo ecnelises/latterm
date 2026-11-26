@@ -65,6 +65,7 @@ extern NSString *const PTYSessionArrangementOptionsLargeContentProvider;
 // peer leaves its last output on screen instead of spawning a stray shell.
 extern NSString *const PTYSessionArrangementOptionsInhibitRelaunch;
 extern NSString *const PTYSessionDidRepairSavedArrangement;
+extern NSString *const PTYSessionComposerPrefixUserDataKeyPrompt;
 extern NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger;
 
 @protocol ExternalSearchResultsController;
@@ -1302,6 +1303,36 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (int)screenWindowIndex;
 - (int)screenTabIndex;
 - (int)screenViewIndex;
+
+#pragma mark - Wave 3 Coordinator Bridges
+
+@property(nonatomic, readonly) iTermOptionKeyBehavior optionKey;
+@property(nonatomic, readonly) iTermOptionKeyBehavior rightOptionKey;
+@property(nonatomic, readonly) iTermBuckyBit leftControlKey;
+@property(nonatomic, readonly) iTermBuckyBit rightControlKey;
+@property(nonatomic, readonly) iTermBuckyBit leftCommandKey;
+@property(nonatomic, readonly) iTermBuckyBit rightCommandKey;
+@property(nonatomic, readonly) iTermBuckyBit functionKey;
+@property(nonatomic, readonly, copy, nullable) NSDictionary *sessionEnvironment;
+@property(nonatomic, readonly, nullable) iTermSessionTabStatus *existingTabStatus;
+@property(nonatomic, readonly, nullable) iTermImageWrapper *effectiveBackgroundImage;
+@property(nonatomic, readonly) iTermBackgroundImageMode effectiveBackgroundImageMode;
+@property(nonatomic, readonly) BOOL inLiveResize;
+@property(nonatomic, readonly) BOOL useAdaptiveFrameRateSetting;
+@property(nonatomic, readonly) NSInteger adaptiveFrameRateThroughputThreshold;
+@property(nonatomic, readonly) NSInteger estimatedThroughput;
+
+- (void)screenSendReportData:(NSData *)data;
+- (void)launchCoprocessWithCommand:(NSString *)command mute:(BOOL)mute;
+- (void)setProfile:(NSDictionary *)newProfile
+    preservingName:(BOOL)preserveName
+      adjustWindow:(BOOL)adjustWindow;
+- (void)withWindowAdjustmentDisabled:(void (^NS_NOESCAPE)(void))block;
+- (BOOL)haveAutoComposer;
+- (nullable NSMutableAttributedString *)kernedAttributedStringForScreenChars:(NSArray<ScreenCharArray *> *)promptText
+                                               elideDefaultBackgroundColor:(BOOL)elideDefaultBackgroundColor;
+- (void)setFilterProgress:(double)progress;
+- (void)clearTailFindController;
 
 @end
 

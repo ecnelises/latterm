@@ -39,31 +39,13 @@
 @class iTermConductor;
 
 @interface PTYSession () <
-iTermAutomaticProfileSwitcherDelegate,
-iTermBackgroundDrawingHelperDelegate,
 iTermBadgeLabelDelegate,
-iTermCoprocessDelegate,
-iTermCopyModeHandlerDelegate,
-iTermFilterDestination,
 iTermHotKeyNavigableSession,
 iTermImmutableColorMapDelegate,
-iTermIntervalTreeObserver,
-iTermLogging,
-iTermMetaFrustrationDetector,
-iTermModernKeyMapperDelegate,
-iTermModifyOtherKeysMapperDelegate,
 iTermObject,
-iTermPasteboardReporterDelegate,
-iTermSessionDirectoryTrackerDelegate,
-iTermSessionNameControllerDelegate,
 iTermSessionViewDelegate,
 PSMPUAFontProvider,
-iTermShortcutNavigationModeHandlerDelegate,
-iTermStandardKeyMapperDelegate,
-iTermTailFindControllerDelegate,
-iTermTermkeyKeyMapperDelegate,
-iTermTmuxControllerSession,
-iTermUpdateCadenceControllerDelegate> {
+iTermTmuxControllerSession> {
     // Changes are made in the main thread to this and it periodically copied to the mutation thread.
     iTermExpect *_expect;
 
@@ -112,7 +94,6 @@ iTermUpdateCadenceControllerDelegate> {
 @property(nonatomic, strong) NSDate *lastFocusReportDate;
 @property(nonatomic) NSStringEncoding encoding;
 
-- (BOOL)haveAutoComposer;
 - (void)sendDataQueue;
 - (void)bracketedPasteDidExpect;
 
