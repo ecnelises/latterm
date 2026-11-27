@@ -15,6 +15,19 @@
 
 @implementation iTermStatusBarKnobCheckboxViewController
 
+- (void)loadView {
+    NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 222, 14)];
+    view.autoresizesSubviews = NO;
+
+    NSButton *checkbox = [NSButton checkboxWithTitle:@"" target:nil action:nil];
+    checkbox.frame = NSMakeRect(-2, -2, 226, 18);
+    checkbox.state = NSControlStateValueOn;
+    [view addSubview:checkbox];
+
+    _checkbox = checkbox;
+    self.view = view;
+}
+
 - (NSNumber *)value {
     self.view.autoresizesSubviews = NO;
     return @(_checkbox.state == NSControlStateValueOn);

@@ -10,8 +10,8 @@ import BetterFontPicker
 
 @objc(iTermStatusBarKnobFontViewController)
 class StatusBarKnobFontViewController: NSViewController {
-    @IBOutlet private var affordance: BetterFontPicker.FontPickerCompositeView! = nil
-    @IBOutlet private var checkbox: NSButton! = nil
+    private var affordance: BetterFontPicker.FontPickerCompositeView!
+    private var checkbox: NSButton!
     private var font: NSFont? {
         get {
             if checkbox.state == .on {
@@ -31,15 +31,38 @@ class StatusBarKnobFontViewController: NSViewController {
         }
     }
 
+    convenience init() {
+        self.init(nibName: nil, bundle: nil)
+    }
+
     override init(nibName nibNameOrNil: NSNib.Name?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
+        it_fatalError("init(coder:) is not supported")
     }
 
-    @IBAction func checkboxChanged(_ sender: NSButton) {
+    override func loadView() {
+        let root = NSView(frame: NSRect(x: 0, y: 0, width: 702, height: 27))
+        root.autoresizesSubviews = false
+
+        let picker = BetterFontPicker.FontPickerCompositeView(frame: NSRect(x: 271, y: 0, width: 431, height: 25))
+        let button = NSButton(checkboxWithTitle: "", target: self, action: #selector(checkboxChanged(_:)))
+        button.frame = NSRect(x: 0, y: 5, width: 272, height: 16)
+        button.alignment = .right
+        button.state = .on
+
+        root.addSubview(picker)
+        root.addSubview(button)
+
+        affordance = picker
+        checkbox = button
+        view = root
+    }
+
+    @objc func checkboxChanged(_ sender: NSButton) {
         if checkbox.state == .on {
             affordance.isHidden = false
         } else {

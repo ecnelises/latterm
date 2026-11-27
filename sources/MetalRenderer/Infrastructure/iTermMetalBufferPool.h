@@ -38,6 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<MTLBuffer>)requestBufferFromContext:(iTermMetalBufferPoolContext *)context
                                 withBytes:(const void *)bytes
                            checkIfChanged:(BOOL)checkIfChanged;
+- (void)purge;
 
 @end
 
@@ -56,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<MTLBuffer>)requestBufferFromContext:(iTermMetalBufferPoolContext *)context
                                      size:(size_t)size
                                     bytes:(const void *)bytes;
-
+- (void)purge;
 
 @end
 

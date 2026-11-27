@@ -204,6 +204,131 @@ final class AppIconTests: XCTestCase {
         }
     }
 
+    @MainActor
+    func testBundleIconPersistenceLifecycle() throws {
+        let suiteName = "com.latterm.tests.appicon.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        var hasCustomIcon = false
+        var writable = true
+        var bundlePath = "/Applications/Latterm.app"
+        var calls: [(hasImage: Bool, path: String)] = []
+
+        func makePersistence(isRunningTests: Bool = false) -> AppIconBundlePersistence {
+            AppIconBundlePersistence(
+                bundlePath: bundlePath,
+                isRunningTests: isRunningTests,
+                isWritable: { _ in writable },
+                hasCustomIconFile: { _ in hasCustomIcon },
+                setIcon: { image, path in
+                    calls.append((hasImage: image != nil, path: path))
+                    hasCustomIcon = (image != nil)
+                    return true
+                }
+            )
+        }
+
+        let sampleIcon = LattermAppIconRenderer.makeIconImage(variant: .cobalt,
+                                                              channel: .stable,
+                                                              logicalSize: CGSize(width: 64, height: 64),
+                                                              pixelSizes: [64])
+
+        // 1. Default Light + Dark with no Icon\r performs zero disk writes.
+        XCTAssertFalse(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "glyph-hash|0",
+            lightVariant: .defaultLight,
+            darkVariant: .defaultDark,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        XCTAssertTrue(calls.isEmpty)
+
+        // 2. Selecting a custom icon writes the icon and records the signature.
+        XCTAssertTrue(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "cobalt|0",
+            lightVariant: .cobalt,
+            darkVariant: .defaultDark,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        XCTAssertEqual(calls.count, 1)
+        XCTAssertTrue(calls[0].hasImage)
+        XCTAssertEqual(defaults.string(forKey: LattermAppIconController.lastPersistedSignatureKey), "cobalt|0")
+        XCTAssertEqual(defaults.string(forKey: LattermAppIconController.lastPersistedBundlePathKey), bundlePath)
+
+        // 3. Re-applying the same custom icon when Icon\r exists does not rewrite.
+        XCTAssertFalse(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "cobalt|0",
+            lightVariant: .cobalt,
+            darkVariant: .defaultDark,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        XCTAssertEqual(calls.count, 1)
+
+        // 4. Re-applying after simulated app update (Icon\r missing) re-writes the icon.
+        hasCustomIcon = false
+        XCTAssertTrue(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "cobalt|0",
+            lightVariant: .cobalt,
+            darkVariant: .defaultDark,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        XCTAssertEqual(calls.count, 2)
+        XCTAssertTrue(calls[1].hasImage)
+
+        // 5. Switching back to default Light + Dark when Icon\r exists clears it.
+        XCTAssertTrue(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "glyph-hash|0",
+            lightVariant: .defaultLight,
+            darkVariant: .defaultDark,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        XCTAssertEqual(calls.count, 3)
+        XCTAssertFalse(calls[2].hasImage)
+        XCTAssertNil(defaults.string(forKey: LattermAppIconController.lastPersistedSignatureKey))
+        XCTAssertNil(defaults.string(forKey: LattermAppIconController.lastPersistedBundlePathKey))
+
+        // 6. Non-writable, non-.app, or test-host paths skip safely.
+        writable = false
+        XCTAssertFalse(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "flame|0",
+            lightVariant: .flame,
+            darkVariant: .flame,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        writable = true
+        bundlePath = "/tmp/NotAnApp"
+        XCTAssertFalse(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "flame|0",
+            lightVariant: .flame,
+            darkVariant: .flame,
+            persistence: makePersistence(),
+            defaults: defaults
+        ))
+        bundlePath = "/Applications/Latterm.app"
+        XCTAssertFalse(LattermAppIconController.persistBundleIconIfNeeded(
+            icon: sampleIcon,
+            signature: "flame|0",
+            lightVariant: .flame,
+            darkVariant: .flame,
+            persistence: makePersistence(isRunningTests: true),
+            defaults: defaults
+        ))
+        XCTAssertEqual(calls.count, 3)
+    }
+
     private func renderedPNGBytes(variant: AppIconVariant, channel: AppIconChannel) -> Data? {
         let image = LattermAppIconRenderer.makeIconImage(variant: variant,
                                                          channel: channel,

@@ -143,6 +143,11 @@ class PTYSessionSwiftState: NSObject {
     @objc let inputModeCoordinator: PTYSessionInputModeCoordinator
     @objc let profileAndLoggingCoordinator: PTYSessionProfileAndLoggingCoordinator
     @objc let displayCoordinator: PTYSessionDisplayCoordinator
+    @objc let echoProbeCoordinator: PTYSessionEchoProbeCoordinator
+    @objc let interactionCoordinator: PTYSessionInteractionCoordinator
+    @objc let announcementCoordinator: PTYSessionAnnouncementCoordinator
+    @objc let findCoordinator: PTYSessionFindCoordinator
+    @objc let viewBridgeCoordinator: PTYSessionViewBridgeCoordinator
 
     @objc(initWithSession:)
     init(session: PTYSession) {
@@ -157,6 +162,11 @@ class PTYSessionSwiftState: NSObject {
         self.inputModeCoordinator = PTYSessionInputModeCoordinator(session: session)
         self.profileAndLoggingCoordinator = PTYSessionProfileAndLoggingCoordinator(session: session)
         self.displayCoordinator = PTYSessionDisplayCoordinator(session: session)
+        self.echoProbeCoordinator = PTYSessionEchoProbeCoordinator(session: session)
+        self.interactionCoordinator = PTYSessionInteractionCoordinator(session: session)
+        self.announcementCoordinator = PTYSessionAnnouncementCoordinator(session: session)
+        self.findCoordinator = PTYSessionFindCoordinator(session: session)
+        self.viewBridgeCoordinator = PTYSessionViewBridgeCoordinator(session: session)
         super.init()
     }
 }
@@ -1511,4 +1521,39 @@ extension PTYSession {
 
     @objc static let clippingsDidChangeNotification =
         Notification.Name("iTermClippingsDidChange")
+}
+
+// MARK: - PTYSessionEchoProbeHost
+extension PTYSession: PTYSessionEchoProbeHost {
+    var echoProbeWindow: NSWindow? {
+        return view?.window
+    }
+
+    func echoProbeNoteUserInput() {
+        noteUserInput()
+    }
+
+    func echoProbeWriteString(_ string: String) {
+        writeTaskNoBroadcast(string)
+    }
+
+    func echoProbeWriteLatin1Data(_ data: Data) {
+        writeLatin1EncodedData(data, broadcastAllowed: false, reporting: false)
+    }
+
+    func echoProbeShowUnobtrusiveMessage(_ message: String, duration: TimeInterval) {
+        view?.showUnobtrusiveMessage(message, duration: duration)
+    }
+
+    func echoProbeIncrementDisableFocusReporting(_ delta: Int) {
+        incrementDisableFocusReporting(delta)
+    }
+
+    func echoProbeSendPassword() {
+        screen.sendPasswordInEchoProbe()
+    }
+
+    func echoProbeReset() {
+        screen.resetEchoProbe()
+    }
 }

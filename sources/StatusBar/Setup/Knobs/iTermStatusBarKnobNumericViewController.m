@@ -11,11 +11,47 @@
 #import "NSObject+iTerm.h"
 #import "NSStringITerm.h"
 
-@interface iTermStatusBarKnobNumericViewController ()<NSControlTextEditingDelegate>
+@interface iTermStatusBarKnobNumericViewController ()<NSTextFieldDelegate, NSControlTextEditingDelegate>
 
 @end
 
 @implementation iTermStatusBarKnobNumericViewController
+
+- (void)loadView {
+    NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 286, 27)];
+    view.autoresizesSubviews = NO;
+
+    NSTextField *label = [NSTextField labelWithString:@""];
+    label.frame = NSMakeRect(0, 6, 163, 17);
+    label.alignment = NSTextAlignmentRight;
+    label.lineBreakMode = NSLineBreakByClipping;
+    [view addSubview:label];
+
+    NSTextField *textField = [[NSTextField alloc] initWithFrame:NSMakeRect(169, 3, 96, 22)];
+    textField.bezeled = YES;
+    textField.bezelStyle = NSTextFieldSquareBezel;
+    textField.editable = YES;
+    textField.selectable = YES;
+    textField.drawsBackground = YES;
+    textField.cell.scrollable = YES;
+    textField.cell.wraps = NO;
+    textField.target = self;
+    textField.action = @selector(stepperAction:);
+    textField.delegate = self;
+    [view addSubview:textField];
+
+    NSStepper *stepper = [[NSStepper alloc] initWithFrame:NSMakeRect(270, 0, 19, 27)];
+    stepper.continuous = YES;
+    stepper.maxValue = 100;
+    stepper.target = self;
+    stepper.action = @selector(stepperAction:);
+    [view addSubview:stepper];
+
+    _label = label;
+    _textField = textField;
+    _stepper = stepper;
+    self.view = view;
+}
 
 - (void)viewDidLoad {
     self.view.autoresizesSubviews = NO;

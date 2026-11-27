@@ -20,6 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
       creationIdentifier:(id)creationIdentifier
                 creation:(NSDictionary<NSNumber *, iTermCharacterBitmap *> *(^)(char, iTermASCIITextureAttributes))creation;
 
+- (void)purgeCachesForMemoryPressure:(BOOL)critical;
+
 @end
 
 NS_ASSUME_NONNULL_END

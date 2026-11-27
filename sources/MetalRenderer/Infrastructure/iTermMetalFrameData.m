@@ -396,15 +396,17 @@ static NSInteger gNextFrameDataNumber;
         NSLog(@"%@", [tState.poolContext summaryStatisticsWithName:NSStringFromClass([tState class])]);
     }];
 #endif
-    [self mergeHistogram:_framePoolContext.histogram name:@"Global buffer sizes"];
-    [self mergeHistogram:_framePoolContext.textureHistogram name:@"Global texture sizes"];
-    [self mergeHistogram:_framePoolContext.wasteHistogram name:@"Global wasted space"];
-    [self.transientStates enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, __kindof iTermMetalRendererTransientState * _Nonnull tState, BOOL * _Nonnull stop) {
-        [self mergeHistogram:tState.poolContext.histogram name:[NSString stringWithFormat:@"%@: buffer sizes", NSStringFromClass(tState.class)]];
-        [self mergeHistogram:tState.poolContext.textureHistogram name:[NSString stringWithFormat:@"%@: texture sizes", NSStringFromClass(tState.class)]];
-        [self mergeHistogram:tState.poolContext.wasteHistogram name:[NSString stringWithFormat:@"%@: wasted space", NSStringFromClass(tState.class)]];
-    }];
-    iTermPreciseTimerSaveLog([NSString stringWithFormat:@"%@: Histograms", owner], [self histogramsString]);
+    if (gDebugLogging || [iTermAdvancedSettingsModel logDrawingPerformance]) {
+        [self mergeHistogram:_framePoolContext.histogram name:@"Global buffer sizes"];
+        [self mergeHistogram:_framePoolContext.textureHistogram name:@"Global texture sizes"];
+        [self mergeHistogram:_framePoolContext.wasteHistogram name:@"Global wasted space"];
+        [self.transientStates enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, __kindof iTermMetalRendererTransientState * _Nonnull tState, BOOL * _Nonnull stop) {
+            [self mergeHistogram:tState.poolContext.histogram name:[NSString stringWithFormat:@"%@: buffer sizes", NSStringFromClass(tState.class)]];
+            [self mergeHistogram:tState.poolContext.textureHistogram name:[NSString stringWithFormat:@"%@: texture sizes", NSStringFromClass(tState.class)]];
+            [self mergeHistogram:tState.poolContext.wasteHistogram name:[NSString stringWithFormat:@"%@: wasted space", NSStringFromClass(tState.class)]];
+        }];
+        iTermPreciseTimerSaveLog([NSString stringWithFormat:@"%@: Histograms", owner], [self histogramsString]);
+    }
 
     [self addStatsTo:aggregateStats];
 

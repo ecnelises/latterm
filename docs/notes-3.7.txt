@@ -15,6 +15,18 @@ to version 3.6.7 and duplicates some items in
 betas since then.
 
 Terminal-first fork changes:
+- Replace the five StatusBar knob XIBs with
+  programmatic AppKit views.
+- Persist custom app icons on the app bundle
+  across launches, and restore adaptive icons
+  when reverting to defaults.
+- Optimize Metal buffer pools, texture-page
+  pruning, and memory-pressure cache eviction.
+- Extract PTYSession announcements, find/filter,
+  and view-bridge coordinators into Swift with
+  unit tests.
+- Extract PTYSession echo probe and interaction
+  coordinators into Swift with unit tests.
 - Extract PTYSession input mode, object methods,
   profile/logging, and display coordinators into
   Swift with unit tests.

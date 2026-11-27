@@ -8,6 +8,7 @@
 #import "iTermMetalBufferPool.h"
 
 #import "DebugLogging.h"
+#import "iTermAdvancedSettingsModel.h"
 #import "iTermHistogram.h"
 #import "NSArray+iTerm.h"
 #import <Metal/Metal.h>
@@ -40,17 +41,42 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
 
 @implementation iTermMetalBufferPoolContext {
     NSMutableArray<iTermMetalBufferPoolContextEntry *> *_entries;
+    iTermHistogram *_histogram;
+    iTermHistogram *_textureHistogram;
+    iTermHistogram *_wasteHistogram;
+}
+
++ (BOOL)shouldRecordHistograms {
+    return gDebugLogging || [iTermAdvancedSettingsModel logDrawingPerformance];
 }
 
 - (instancetype)init {
     self = [super init];
     if (self) {
         _entries = [NSMutableArray array];
-        _histogram = [[iTermHistogram alloc] init];
-        _textureHistogram = [[iTermHistogram alloc] init];
-        _wasteHistogram = [[iTermHistogram alloc] init];
     }
     return self;
+}
+
+- (iTermHistogram *)histogram {
+    if (!_histogram) {
+        _histogram = [[iTermHistogram alloc] init];
+    }
+    return _histogram;
+}
+
+- (iTermHistogram *)textureHistogram {
+    if (!_textureHistogram) {
+        _textureHistogram = [[iTermHistogram alloc] init];
+    }
+    return _textureHistogram;
+}
+
+- (iTermHistogram *)wasteHistogram {
+    if (!_wasteHistogram) {
+        _wasteHistogram = [[iTermHistogram alloc] init];
+    }
+    return _wasteHistogram;
 }
 
 - (void)dealloc {
@@ -61,11 +87,15 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
 }
 
 - (void)didAddTextureOfSize:(double)size {
-    [_textureHistogram addValue:size];
+    if ([iTermMetalBufferPoolContext shouldRecordHistograms]) {
+        [self.textureHistogram addValue:size];
+    }
 }
 
 - (void)addBuffer:(id<MTLBuffer>)buffer pool:(id<iTermMetalBufferPool>)pool {
-    [_histogram addValue:buffer.length];
+    if ([iTermMetalBufferPoolContext shouldRecordHistograms]) {
+        [self.histogram addValue:buffer.length];
+    }
     iTermMetalBufferPoolContextEntry *entry = [[iTermMetalBufferPoolContextEntry alloc] init];
     entry.buffer = buffer;
     entry.pool = pool;
@@ -79,7 +109,9 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
 }
 
 - (void)addWastedSpace:(double)wastedSpace {
-    [_wasteHistogram addValue:wastedSpace];
+    if ([iTermMetalBufferPoolContext shouldRecordHistograms]) {
+        [self.wasteHistogram addValue:wastedSpace];
+    }
 }
 
 - (NSString *)summaryStatisticsWithName:(NSString *)name {
@@ -121,42 +153,32 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
     assert(context);
     @synchronized(self) {
         id<MTLBuffer> buffer;
-        id<MTLBuffer> bestMatch = [[[_buffers filteredArrayUsingBlock:^BOOL(id<MTLBuffer> buffer) {
-            return buffer.length > size;
-        }] minimumsWithComparator:^NSComparisonResult(id<MTLBuffer> a, id<MTLBuffer> b) {
-            return [@(a.length) compare:@(b.length)];
-        }] firstObject];
-        if (bestMatch != nil) {
-            [_buffers removeObject:bestMatch];
-            buffer = bestMatch;
+        const NSInteger index = [self insertionIndexForBufferOfSize:size];
+        if (index < (NSInteger)_buffers.count) {
+            buffer = _buffers[index];
+            [_buffers removeObjectAtIndex:index];
         } else {
             buffer = [_device newBufferWithLength:size options:MTLResourceStorageModeShared];
         }
         [context addBuffer:buffer pool:self];
         [context addWastedSpace:buffer.length - size];
+        _numberOutstanding++;
         return buffer;
     }
 }
 
 - (NSInteger)insertionIndexForBufferOfSize:(size_t)size {
-    return [_buffers indexOfObject:(id)@(MAX(0, size - 1))
-                     inSortedRange:NSMakeRange(0, _buffers.count)
-                           options:NSBinarySearchingInsertionIndex
-                   usingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
-                       NSNumber *size1;
-                       if ([obj1 isKindOfClass:[NSNumber class]]) {
-                           size1 = obj1;
-                       } else {
-                           size1 = @([(id<MTLBuffer>)obj1 length]);
-                       }
-                       NSNumber *size2;
-                       if ([obj2 isKindOfClass:[NSNumber class]]) {
-                           size2 = obj2;
-                       } else {
-                           size2 = @([(id<MTLBuffer>)obj2 length]);
-                       }
-                       return [size1 compare:size2];
-                   }];
+    NSUInteger lo = 0;
+    NSUInteger hi = _buffers.count;
+    while (lo < hi) {
+        const NSUInteger mid = lo + ((hi - lo) >> 1);
+        if (_buffers[mid].length < size) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    return (NSInteger)lo;
 }
 
 - (id<MTLBuffer>)requestBufferFromContext:(iTermMetalBufferPoolContext *)context
@@ -165,8 +187,8 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
     assert(context);
     @synchronized(self) {
         id<MTLBuffer> buffer;
-        NSInteger index = [self insertionIndexForBufferOfSize:size];
-        if (index < _buffers.count) {
+        const NSInteger index = [self insertionIndexForBufferOfSize:size];
+        if (index < (NSInteger)_buffers.count) {
             id<MTLBuffer> bestMatch = _buffers[index];
             [_buffers removeObjectAtIndex:index];
             buffer = bestMatch;
@@ -186,11 +208,20 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
 - (void)returnBuffer:(id<MTLBuffer>)buffer {
     @synchronized(self) {
         _numberOutstanding--;
+        if (_capacity == 0) {
+            return;
+        }
         if (_buffers.count == _capacity) {
             [_buffers removeObjectAtIndex:0];
         }
-        NSInteger index = [self insertionIndexForBufferOfSize:buffer.length];
+        const NSInteger index = [self insertionIndexForBufferOfSize:buffer.length];
         [_buffers insertObject:buffer atIndex:index];
+    }
+}
+
+- (void)purge {
+    @synchronized(self) {
+        [_buffers removeAllObjects];
     }
 }
 
@@ -264,7 +295,15 @@ static NSString *const iTermMetalBufferPoolContextStackKey = @"iTermMetalBufferP
 
 - (void)returnBuffer:(id<MTLBuffer>)buffer {
     @synchronized(self) {
-        [_buffers addObject:buffer];
+        if (buffer.length == _bufferSize) {
+            [_buffers addObject:buffer];
+        }
+    }
+}
+
+- (void)purge {
+    @synchronized(self) {
+        [_buffers removeAllObjects];
     }
 }
 

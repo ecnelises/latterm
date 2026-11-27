@@ -92,6 +92,7 @@ extern NSString *const PTYSessionComposerPrefixUserDataKeyDetectedByTrigger;
 @class iTermSessionModeHandler;
 @class iTermStatusBarViewController;
 @class iTermSwiftyStringGraph;
+@class iTermTailFindController;
 @class iTermUpdateCadenceController;
 @class iTermVariableReference;
 @class iTermVariables;
@@ -890,6 +891,11 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 
 - (void)updateViewBackgroundImage;
 - (void)invalidateBlend;
+- (BOOL)updateTTYSize;
+- (void)updateAutoComposerSeparatorVisibility;
+- (void)loadColorsFromProfile:(Profile *)aDict;
+- (NSRect)textViewCursorFrameInScreenCoords;
+- (iTermTailFindController *)tailFindController;
 - (void)setShowAlternateScreen:(BOOL)showAlternateScreen announce:(BOOL)announce;
 
 // PTYTextView
@@ -903,6 +909,7 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (void)pageUp:(nullable id)sender;
 - (void)pageDown:(nullable id)sender;
 - (void)paste:(nullable id)sender;
+- (void)insertText:(NSString *)string;
 - (void)pasteString:(NSString *)str flags:(PTYSessionPasteFlags)flags;
 // Paste `string` literally (no bracketing, no warnings), waiting `delay` seconds
 // after any in-progress paste drains before writing it. Used to submit a
@@ -1246,6 +1253,7 @@ backgroundColor:(nullable NSColor *)backgroundColor;
 - (BOOL)closeComposer;
 - (void)didChangeScreen:(CGFloat)scaleFactor;
 - (void)addContentSubscriber:(id<iTermContentSubscriber>)contentSubscriber;
+- (void)removeContentSubscriber:(id<iTermContentSubscriber>)contentSubscriber;
 - (void)didFinishRestoration;
 - (void)userInitiatedReset;
 - (void)resetForRelaunch;

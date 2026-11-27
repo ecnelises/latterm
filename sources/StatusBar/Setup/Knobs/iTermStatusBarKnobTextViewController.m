@@ -12,7 +12,7 @@
 #import "iTermFunctionCallTextFieldDelegate.h"
 #import "iTermVariableHistory.h"
 
-@interface iTermStatusBarKnobTextViewController ()
+@interface iTermStatusBarKnobTextViewController ()<NSTextFieldDelegate>
 
 @end
 
@@ -25,17 +25,44 @@
 }
 
 - (instancetype)init {
-    return [super init];
+    return [super initWithNibName:nil bundle:nil];
 }
 
 - (instancetype)initWithInvocationSuggester {
-    self = [super init];
+    self = [super initWithNibName:nil bundle:nil];
     if (self) {
         _suggester = [[iTermFunctionCallTextFieldDelegate alloc] initWithPathSource:[iTermVariableHistory pathSourceForContext:iTermVariablesSuggestionContextSession]
                                                                         passthrough:self
                                                                       functionsOnly:YES];
     }
     return self;
+}
+
+- (void)loadView {
+    NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 476, 22)];
+    view.autoresizesSubviews = NO;
+
+    NSTextField *label = [NSTextField labelWithString:@""];
+    label.frame = NSMakeRect(0, 3, 163, 17);
+    label.alignment = NSTextAlignmentRight;
+    label.lineBreakMode = NSLineBreakByClipping;
+    [view addSubview:label];
+
+    NSTextField *textField = [[NSTextField alloc] initWithFrame:NSMakeRect(169, 0, 307, 22)];
+    textField.bezeled = YES;
+    textField.bezelStyle = NSTextFieldSquareBezel;
+    textField.editable = YES;
+    textField.selectable = YES;
+    textField.drawsBackground = YES;
+    textField.continuous = YES;
+    textField.cell.scrollable = YES;
+    textField.cell.wraps = NO;
+    textField.delegate = self;
+    [view addSubview:textField];
+
+    _label = label;
+    _textField = textField;
+    self.view = view;
 }
 
 - (void)viewDidLoad {

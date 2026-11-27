@@ -754,6 +754,11 @@
 		E7A310162F00000100000001 /* PTYSessionInputModeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310152F00000100000001 /* PTYSessionInputModeCoordinator.swift */; };
 		E7A310182F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310172F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift */; };
 		E7A3101A2F00000100000001 /* PTYSessionDisplayCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310192F00000100000001 /* PTYSessionDisplayCoordinator.swift */; };
+		E7A3101C2F00000100000001 /* PTYSessionEchoProbeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A3101B2F00000100000001 /* PTYSessionEchoProbeCoordinator.swift */; };
+		E7A3101E2F00000100000001 /* PTYSessionInteractionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A3101D2F00000100000001 /* PTYSessionInteractionCoordinator.swift */; };
+		E7A310202F00000100000001 /* PTYSessionAnnouncementCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A3101F2F00000100000001 /* PTYSessionAnnouncementCoordinator.swift */; };
+		E7A310222F00000100000001 /* PTYSessionFindCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310212F00000100000001 /* PTYSessionFindCoordinator.swift */; };
+		E7A310242F00000100000001 /* PTYSessionViewBridgeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A310232F00000100000001 /* PTYSessionViewBridgeCoordinator.swift */; };
 		A61E513B2F98971E00EB2B55 /* MiniPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513A2F98971E00EB2B55 /* MiniPasteView.xib */; };
 		A61E51442F98978000EB2B55 /* iTermTriggersPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E51422F98978000EB2B55 /* iTermTriggersPanel.xib */; };
 		A61E51462F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = A61E513E2F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib */; };
@@ -1047,11 +1052,6 @@
 		A62A7B3B2F988B78007CAA0B /* iTermStatusBarKnobTextViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A7B2D2F988B78007CAA0B /* iTermStatusBarKnobTextViewController.h */; };
 		A62A7B3C2F988B78007CAA0B /* iTermStatusBarKnobCheckboxViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A7B272F988B78007CAA0B /* iTermStatusBarKnobCheckboxViewController.h */; };
 		A62A7B3D2F988B78007CAA0B /* iTermStatusBarComponentKnob.h in Headers */ = {isa = PBXBuildFile; fileRef = A62A7B232F988B78007CAA0B /* iTermStatusBarComponentKnob.h */; };
-		A62A7B482F988BAB007CAA0B /* iTermStatusBarKnobNumericViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B412F988BAB007CAA0B /* iTermStatusBarKnobNumericViewController.xib */; };
-		A62A7B492F988BAB007CAA0B /* iTermStatusBarKnobTextViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B422F988BAB007CAA0B /* iTermStatusBarKnobTextViewController.xib */; };
-		A62A7B4A2F988BAB007CAA0B /* iTermStatusBarKnobCheckboxViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B3E2F988BAB007CAA0B /* iTermStatusBarKnobCheckboxViewController.xib */; };
-		A62A7B4B2F988BAB007CAA0B /* iTermStatusBarKnobFontViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B402F988BAB007CAA0B /* iTermStatusBarKnobFontViewController.xib */; };
-		A62A7B4C2F988BAB007CAA0B /* iTermStatusBarKnobColorViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B3F2F988BAB007CAA0B /* iTermStatusBarKnobColorViewController.xib */; };
 		A62A7B5A2F9896A7007CAA0B /* iTermMinimalComposerViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B582F9896A7007CAA0B /* iTermMinimalComposerViewController.xib */; };
 		A62A7B5D2F9896D9007CAA0B /* MinimalPasteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = A62A7B5C2F9896D9007CAA0B /* MinimalPasteView.xib */; };
 		A62B36572D24C1A900FDF15E /* SetNamedMarkTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62B36562D24C1A600FDF15E /* SetNamedMarkTrigger.swift */; };
@@ -3703,6 +3703,11 @@
 		E7A310152F00000100000001 /* PTYSessionInputModeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionInputModeCoordinator.swift; sourceTree = "<group>"; };
 		E7A310172F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionProfileAndLoggingCoordinator.swift; sourceTree = "<group>"; };
 		E7A310192F00000100000001 /* PTYSessionDisplayCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionDisplayCoordinator.swift; sourceTree = "<group>"; };
+		E7A3101B2F00000100000001 /* PTYSessionEchoProbeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionEchoProbeCoordinator.swift; sourceTree = "<group>"; };
+		E7A3101D2F00000100000001 /* PTYSessionInteractionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionInteractionCoordinator.swift; sourceTree = "<group>"; };
+		E7A3101F2F00000100000001 /* PTYSessionAnnouncementCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionAnnouncementCoordinator.swift; sourceTree = "<group>"; };
+		E7A310212F00000100000001 /* PTYSessionFindCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionFindCoordinator.swift; sourceTree = "<group>"; };
+		E7A310232F00000100000001 /* PTYSessionViewBridgeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTYSessionViewBridgeCoordinator.swift; sourceTree = "<group>"; };
 		A61E513A2F98971E00EB2B55 /* MiniPasteView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MiniPasteView.xib; sourceTree = "<group>"; };
 		A61E513E2F98978000EB2B55 /* AdvancedWorkingDirectoryWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AdvancedWorkingDirectoryWindow.xib; sourceTree = "<group>"; };
 		A61E513F2F98978000EB2B55 /* BulkCopyProfilePreferences.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BulkCopyProfilePreferences.xib; sourceTree = "<group>"; };
@@ -3977,11 +3982,6 @@
 		A62A7B2D2F988B78007CAA0B /* iTermStatusBarKnobTextViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iTermStatusBarKnobTextViewController.h; sourceTree = "<group>"; };
 		A62A7B2E2F988B78007CAA0B /* iTermStatusBarKnobTextViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = iTermStatusBarKnobTextViewController.m; sourceTree = "<group>"; };
 		A62A7B2F2F988B78007CAA0B /* StatusBarKnobFontViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarKnobFontViewController.swift; sourceTree = "<group>"; };
-		A62A7B3E2F988BAB007CAA0B /* iTermStatusBarKnobCheckboxViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermStatusBarKnobCheckboxViewController.xib; sourceTree = "<group>"; };
-		A62A7B3F2F988BAB007CAA0B /* iTermStatusBarKnobColorViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermStatusBarKnobColorViewController.xib; sourceTree = "<group>"; };
-		A62A7B402F988BAB007CAA0B /* iTermStatusBarKnobFontViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermStatusBarKnobFontViewController.xib; sourceTree = "<group>"; };
-		A62A7B412F988BAB007CAA0B /* iTermStatusBarKnobNumericViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermStatusBarKnobNumericViewController.xib; sourceTree = "<group>"; };
-		A62A7B422F988BAB007CAA0B /* iTermStatusBarKnobTextViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermStatusBarKnobTextViewController.xib; sourceTree = "<group>"; };
 		A62A7B582F9896A7007CAA0B /* iTermMinimalComposerViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = iTermMinimalComposerViewController.xib; sourceTree = "<group>"; };
 		A62A7B5C2F9896D9007CAA0B /* MinimalPasteView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MinimalPasteView.xib; sourceTree = "<group>"; };
 		A62B36562D24C1A600FDF15E /* SetNamedMarkTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetNamedMarkTrigger.swift; sourceTree = "<group>"; };
@@ -7642,11 +7642,6 @@
 		A62A7B302F988B78007CAA0B /* Knobs */ = {
 			isa = PBXGroup;
 			children = (
-				A62A7B3E2F988BAB007CAA0B /* iTermStatusBarKnobCheckboxViewController.xib */,
-				A62A7B3F2F988BAB007CAA0B /* iTermStatusBarKnobColorViewController.xib */,
-				A62A7B402F988BAB007CAA0B /* iTermStatusBarKnobFontViewController.xib */,
-				A62A7B412F988BAB007CAA0B /* iTermStatusBarKnobNumericViewController.xib */,
-				A62A7B422F988BAB007CAA0B /* iTermStatusBarKnobTextViewController.xib */,
 				A62A7B232F988B78007CAA0B /* iTermStatusBarComponentKnob.h */,
 				A62A7B242F988B78007CAA0B /* iTermStatusBarComponentKnob.m */,
 				A62A7B252F988B78007CAA0B /* iTermStatusBarKnobActionViewController.h */,
@@ -8688,6 +8683,11 @@
 				E7A310152F00000100000001 /* PTYSessionInputModeCoordinator.swift */,
 				E7A310172F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift */,
 				E7A310192F00000100000001 /* PTYSessionDisplayCoordinator.swift */,
+				E7A3101B2F00000100000001 /* PTYSessionEchoProbeCoordinator.swift */,
+				E7A3101D2F00000100000001 /* PTYSessionInteractionCoordinator.swift */,
+				E7A3101F2F00000100000001 /* PTYSessionAnnouncementCoordinator.swift */,
+				E7A310212F00000100000001 /* PTYSessionFindCoordinator.swift */,
+				E7A310232F00000100000001 /* PTYSessionViewBridgeCoordinator.swift */,
 				C0D000000000000000000011 /* iTermStableSessionID.swift */,
 				A6F718D5226704920053488E /* PTYSession+ARC.h */,
 				A6F718D6226704920053488E /* PTYSession+ARC.m */,
@@ -10929,11 +10929,6 @@
 				A62A7A982F988AB7007CAA0B /* iTermTextPopoverViewController.xib in Resources */,
 				A659C9992DAF235C0036BA52 /* Channel@2x.png in Resources */,
 				A659C99A2DAF235C0036BA52 /* Channel.png in Resources */,
-				A62A7B482F988BAB007CAA0B /* iTermStatusBarKnobNumericViewController.xib in Resources */,
-				A62A7B492F988BAB007CAA0B /* iTermStatusBarKnobTextViewController.xib in Resources */,
-				A62A7B4A2F988BAB007CAA0B /* iTermStatusBarKnobCheckboxViewController.xib in Resources */,
-				A62A7B4B2F988BAB007CAA0B /* iTermStatusBarKnobFontViewController.xib in Resources */,
-				A62A7B4C2F988BAB007CAA0B /* iTermStatusBarKnobColorViewController.xib in Resources */,
 				A686A11D1C86AA930024C2DE /* DeadForDarkTheme.png in Resources */,
 				A6F370752DAB193900A0A59E /* folder.png in Resources */,
 				A6F370762DAB193900A0A59E /* folder@2x.png in Resources */,
@@ -12133,6 +12128,11 @@
 				E7A310162F00000100000001 /* PTYSessionInputModeCoordinator.swift in Sources */,
 				E7A310182F00000100000001 /* PTYSessionProfileAndLoggingCoordinator.swift in Sources */,
 				E7A3101A2F00000100000001 /* PTYSessionDisplayCoordinator.swift in Sources */,
+				E7A3101C2F00000100000001 /* PTYSessionEchoProbeCoordinator.swift in Sources */,
+				E7A3101E2F00000100000001 /* PTYSessionInteractionCoordinator.swift in Sources */,
+				E7A310202F00000100000001 /* PTYSessionAnnouncementCoordinator.swift in Sources */,
+				E7A310222F00000100000001 /* PTYSessionFindCoordinator.swift in Sources */,
+				E7A310242F00000100000001 /* PTYSessionViewBridgeCoordinator.swift in Sources */,
 				C0D000000000000000000001 /* iTermStableSessionID.swift in Sources */,
 				04B0E3E8B43FEE49B8105CB7 /* iTermSubSelection+ExcludedSubranges.swift in Sources */,
 				A6A802E1226AD0D200BC70DC /* iTermSearchHistory.m in Sources */,

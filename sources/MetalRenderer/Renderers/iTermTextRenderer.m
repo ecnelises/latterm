@@ -154,13 +154,11 @@ static const int iTermTextRendererMaximumNumberOfTexturePages = 4096;
 - (id<MTLBuffer>)quadOfSize:(CGSize)size
                 textureSize:(CGSize)textureSize
                 poolContext:(iTermMetalBufferPoolContext *)poolContext {
-    iTermTextRendererCachedQuad *entry = [[iTermTextRendererCachedQuad alloc] init];
-    entry.cellSize = size;
-    entry.textureSize = textureSize;
-    NSInteger index = [_quadCache indexOfObject:entry];
-    if (index != NSNotFound) {
-        id<MTLBuffer> quad = _quadCache[index].quad;
-        return quad;
+    for (iTermTextRendererCachedQuad *cached in _quadCache) {
+        if (CGSizeEqualToSize(cached.cellSize, size) &&
+            CGSizeEqualToSize(cached.textureSize, textureSize)) {
+            return cached.quad;
+        }
     }
 
     const float vw = (float)size.width;
@@ -179,6 +177,9 @@ static const int iTermTextRendererMaximumNumberOfTexturePages = 4096;
         { { 0,  vh + _verticalOffset }, { 0, h } },
         { { vw, vh + _verticalOffset }, { w, h } },
     };
+    iTermTextRendererCachedQuad *entry = [[iTermTextRendererCachedQuad alloc] init];
+    entry.cellSize = size;
+    entry.textureSize = textureSize;
     entry.quad = [_verticesPool requestBufferFromContext:poolContext
                                                withBytes:vertices
                                           checkIfChanged:YES];
@@ -364,6 +365,20 @@ static NSString *VertexFunctionName(BOOL underlined, BOOL emoji) {
         _asciiTextureGroup = replacement;
     }
     _asciiOffset = asciiOffset;
+}
+
+- (void)purgeCachesForMemoryPressure:(BOOL)critical {
+    [_emptyBuffers purge];
+    [_verticesPool purge];
+    [_dimensionsPool purge];
+    [_textInfoPool purge];
+    [_piuPool purge];
+    if (critical) {
+        [_texturePageCollection removeAll];
+        [_quadCache removeAllObjects];
+    } else {
+        [_texturePageCollection pruneToMaximumPages:iTermTextRendererMaximumNumberOfTexturePages / 8];
+    }
 }
 
 - (void)writeDebugInfoToFolder:(NSURL *)folder {

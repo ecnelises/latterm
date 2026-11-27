@@ -17,8 +17,26 @@
 @end
 
 @implementation iTermStatusBarKnobColorViewController {
-    IBOutlet CPKColorWell *_well;
+    CPKColorWell *_well;
     NSDictionary *_value;
+}
+
+- (void)loadView {
+    NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 113, 21)];
+    view.autoresizesSubviews = NO;
+
+    NSTextField *label = [NSTextField labelWithString:@""];
+    label.frame = NSMakeRect(-2, 2, 77, 17);
+    label.lineBreakMode = NSLineBreakByClipping;
+    [view addSubview:label];
+
+    CPKColorWell *well = [[CPKColorWell alloc] initWithFrame:NSMakeRect(81, 0, 32, 21)
+                                                  colorSpace:[NSColorSpace it_defaultColorSpace]];
+    [view addSubview:well];
+
+    _label = label;
+    _well = well;
+    self.view = view;
 }
 
 - (void)viewDidLoad {

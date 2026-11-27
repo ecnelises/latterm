@@ -322,21 +322,33 @@ static void iTermGlyphMapErase(iTermGlyphMap *map, iTermGlyphKey key) {
     return entry;
 }
 
+- (NSUInteger)pageCount {
+    return _allPages.count;
+}
+
 - (BOOL)isOverMaximumSize {
     return (int)_allPages.count > _maximumNumberOfPages;
 }
 
 - (void)pruneIfNeeded {
-    if (![self isOverMaximumSize]) {
+    [self pruneToMaximumPages:_maximumNumberOfPages];
+}
+
+- (void)pruneToMaximumPages:(int)maxPages {
+    if (maxPages <= 0) {
+        [self removeAll];
+        return;
+    }
+    if ((NSInteger)_allPages.count <= maxPages) {
         DLog(@"Not pruning");
         return;
     }
     ELog(@"Pruning. Have %@ pages. Each page stores up to %@ glyphs. Max pages is %@",
          @(_allPages.count),
          @(_pageCapacity),
-         @(_maximumNumberOfPages));
+         @(maxPages));
 
-    NSArray<iTermTexturePage *> *sortedPages = [_allPages sortedArrayUsingComparator:^NSComparisonResult(iTermTexturePage *a, iTermTexturePage *b) {
+    [_allPages sortUsingComparator:^NSComparisonResult(iTermTexturePage *a, iTermTexturePage *b) {
         if (a->_lastUsed < b->_lastUsed) {
             return NSOrderedAscending;
         }
@@ -346,9 +358,19 @@ static void iTermGlyphMapErase(iTermGlyphMap *map, iTermGlyphKey key) {
         return NSOrderedSame;
     }];
 
-    for (NSUInteger i = 0; [self isOverMaximumSize] && i < sortedPages.count; i++) {
-        [self internalPrune:sortedPages[i]];
+    const NSUInteger excess = _allPages.count - (NSUInteger)maxPages;
+    for (NSUInteger i = 0; i < excess; i++) {
+        iTermTexturePage *pageToPrune = _allPages[i];
+        if (pageToPrune == _openPage) {
+            _openPage = nil;
+        }
+        const iTermGlyphKey *keys = [pageToPrune glyphKeys];
+        const size_t keyCount = [pageToPrune glyphKeysCount];
+        for (size_t k = 0; k < keyCount; k++) {
+            iTermGlyphMapErase(&_pages, keys[k]);
+        }
     }
+    [_allPages removeObjectsInRange:NSMakeRange(0, excess)];
 }
 
 - (void)removeAll {

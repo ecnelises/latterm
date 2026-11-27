@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface iTermTexturePageCollection : NSObject
 
 @property (nonatomic, readonly) vector_uint2 cellSize;
+@property (nonatomic, readonly) NSUInteger pageCount;
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                       cellSize:(vector_uint2)cellSize
@@ -36,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Discard least-recently used texture pages.
 - (void)pruneIfNeeded;
+- (void)pruneToMaximumPages:(int)maxPages;
 - (void)removeAll;
 
 @end

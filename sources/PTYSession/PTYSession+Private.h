@@ -6,40 +6,20 @@
 //
 #import "PTYSession.h"
 
-#import "Coprocess.h"
 #import "PSMCachedTitle.h"
 #import "SessionView.h"
 #import "TerminalFile.h"
 #import "TmuxController.h"
-#import "Trigger.h"
 #import "iTerm2SharedARC-Swift.h"
-#import "iTermBackgroundDrawingHelper.h"
-#import "iTermBadgeLabel.h"
 #import "iTermColorMap.h"
 #import "iTermComposerManager.h"
 #import "iTermExpect.h"
-#import "iTermIntervalTreeObserver.h"
-#import "iTermLoggingHelper.h"
-#import "iTermMetaFrustrationDetector.h"
-#import "iTermMetalGlue.h"
-#import "iTermModifyOtherKeysMapper.h"
-#import "iTermNaggingController.h"
 #import "iTermObject.h"
-#import "iTermPasteHelper.h"
 #import "iTermSessionHotkeyController.h"
-#import "iTermSessionNameController.h"
-#import "iTermStandardKeyMapper.h"
-#import "iTermStatusBarViewController.h"
-#import "iTermTermkeyKeyMapper.h"
-#import "iTermUpdateCadenceController.h"
-#import "iTermWorkingDirectoryPoller.h"
 
 @class PTYSessionPublishRequest;
-@class iTermComposerManager;
-@class iTermConductor;
 
 @interface PTYSession () <
-iTermBadgeLabelDelegate,
 iTermHotKeyNavigableSession,
 iTermImmutableColorMapDelegate,
 iTermObject,
@@ -52,7 +32,6 @@ iTermTmuxControllerSession> {
     BOOL _havePendingPublish;
     NSMutableArray<PTYSessionPublishRequest *> *_pendingPublishRequests;
     iTermComposerManager *_composerManager;
-    iTermAppSwitchingPreventionDetector *_appSwitchingPreventionDetector;
 }
 
 @property(nonatomic, retain) Interval *currentMarkOrNotePosition;

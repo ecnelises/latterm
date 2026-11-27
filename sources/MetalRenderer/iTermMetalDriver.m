@@ -234,11 +234,33 @@ typedef struct {
         // think I should rewrite them in thread-safe Swift because they are nearly incomprehensible
         // in their current form.
         static dispatch_queue_t queue;
+        static NSHashTable<iTermMetalDriver *> *sMetalDrivers;
+        static dispatch_source_t sMemoryPressureSource;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            queue = dispatch_queue_create("com.iterm2.metalDriver", NULL);;
+            queue = dispatch_queue_create("com.iterm2.metalDriver", NULL);
+            sMetalDrivers = [NSHashTable weakObjectsHashTable];
+            sMemoryPressureSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_MEMORYPRESSURE,
+                                                           0,
+                                                           DISPATCH_MEMORYPRESSURE_WARN | DISPATCH_MEMORYPRESSURE_CRITICAL,
+                                                           queue);
+            dispatch_source_set_event_handler(sMemoryPressureSource, ^{
+                const unsigned long flags = dispatch_source_get_data(sMemoryPressureSource);
+                const BOOL critical = (flags & DISPATCH_MEMORYPRESSURE_CRITICAL) != 0;
+                for (iTermMetalDriver *driver in sMetalDrivers) {
+                    [driver handleMemoryPressureCritical:critical];
+                }
+            });
+            dispatch_resume(sMemoryPressureSource);
         });
         _queue = queue;
+        __weak __typeof(self) weakSelf = self;
+        dispatch_async(_queue, ^{
+            __strong __typeof(weakSelf) strongSelf = weakSelf;
+            if (strongSelf) {
+                [sMetalDrivers addObject:strongSelf];
+            }
+        });
 #endif
 #if ENABLE_UNFAMILIAR_TEXTURE_WORKAROUND
         _familiarTextures = [NSPointerArray weakObjectsPointerArray];
@@ -283,6 +305,10 @@ typedef struct {
 - (iTermMetalDriverMainThreadState *)mainThreadState {
     assert([NSThread isMainThread]);
     return &_mainThreadState;
+}
+
+- (void)handleMemoryPressureCritical:(BOOL)critical {
+    [_textRenderer purgeCachesForMemoryPressure:critical];
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification {

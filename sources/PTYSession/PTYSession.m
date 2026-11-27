@@ -359,9 +359,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     PTYSessionTurdTypeDEC2048
 };
 
-@interface PTYSession(AppSwitching)<iTermAppSwitchingPreventionDetectorDelegate>
-@end
-
 // Background-drawing delegate used when rendering a screenshot. It forwards to the
 // session but forces transparency off, so the saved/preview background image is opaque
 // (a screenshot has nothing behind it). This matches the tile branch, which also draws
@@ -514,9 +511,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     // If so, then the profile setting will be disregarded.
     BOOL _cursorGuideSettingHasChanged;
 
-    // Maps announcement identifiers to view controllers.
-    NSMutableDictionary *_announcements;
-
     // Moving average of time between bell rings
     MovingAverage *_bellRate;
     NSTimeInterval _lastBell;
@@ -597,7 +591,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
     id<iTermKeyMapper> _keyMapper;
     iTermKeyMappingMode _keyMappingMode;
 
-    NSString *_badgeFontName;
     iTermVariableScope *_variablesScope;
 
 
@@ -605,7 +598,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
 
     // When this is true, changing the font size does not cause the window size to change.
     BOOL _windowAdjustmentDisabled;
-    NSSize _badgeLabelSizeFraction;
 
     // To debug a problem where a session is divorced but its guid is not in the sessions instance profile model.
     NSString *_divorceDecree;
@@ -791,7 +783,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTurdType) {
         assert(_screen.syncDistributor != nil);
         _lastOrCurrentlyRunningCommandAbsRange = VT100GridAbsCoordRangeMake(-1, -1, -1, -1);
         _activityCounter = @0;
-        _announcements = [[NSMutableDictionary alloc] init];
         _commands = [[NSMutableArray alloc] init];
         _directoryTracker = [[iTermSessionDirectoryTracker alloc] initWithVariablesScope:self.variablesScope];
         _directoryTracker.delegate = _swiftState.profileAndLoggingCoordinator;
@@ -991,7 +982,7 @@ ITERM_WEAKLY_REFERENCEABLE
 
     _logging.rawLogger = nil;
     _logging.cookedLogger = nil;
-    [_asyncFilter cancel];
+    [_swiftState.findCoordinator cancelAsyncFilter];
 }
 
 - (NSString *)description {
@@ -5294,18 +5285,19 @@ ITERM_WEAKLY_REFERENCEABLE
             }
         }
     } else {
-        if (_statusBarViewController && _asyncFilter) {
+        if (_statusBarViewController && _swiftState.findCoordinator.hasActiveAsyncFilter) {
             [self stopFiltering];
         }
         _statusBarViewController = nil;
         [self invalidateStatusBar];
     }
     _tmuxStatusBarMonitor.active = [iTermProfilePreferences boolForKey:KEY_SHOW_STATUS_BAR inProfile:aDict];
-    _badgeFontName = [[iTermProfilePreferences stringForKey:KEY_BADGE_FONT inProfile:aDict] copy];
+    [_swiftState.interactionCoordinator
+        updateBadgeFontName:[iTermProfilePreferences stringForKey:KEY_BADGE_FONT inProfile:aDict]
+               sizeFraction:NSMakeSize([iTermProfilePreferences floatForKey:KEY_BADGE_MAX_WIDTH inProfile:aDict],
+                                       [iTermProfilePreferences floatForKey:KEY_BADGE_MAX_HEIGHT inProfile:aDict])];
 
     self.badgeFormat = [iTermProfilePreferences stringForKey:KEY_BADGE_FORMAT inProfile:aDict];
-    _badgeLabelSizeFraction = NSMakeSize([iTermProfilePreferences floatForKey:KEY_BADGE_MAX_WIDTH inProfile:aDict],
-                                         [iTermProfilePreferences floatForKey:KEY_BADGE_MAX_HEIGHT inProfile:aDict]);
 
     self.subtitleFormat = [iTermProfilePreferences stringForKey:KEY_SUBTITLE inProfile:aDict];
 
@@ -6202,11 +6194,12 @@ ITERM_WEAKLY_REFERENCEABLE
                          pendingJumps:(NSArray<iTermSSHReconnectionInfo *> *)pendingJumps
                               options:(NSDictionary *)options {
     DLog(@"Construct arrangement for session %@ with includeContents=%@", self, @(includeContents));
-    if (_filter.length && _liveSession != nil) {
+    NSString *activeFilter = _swiftState.findCoordinator.currentFilter;
+    if (activeFilter.length && _liveSession != nil) {
         DLog(@"Encode live session because this one is filtered.");
         const BOOL ok = [_liveSession encodeArrangementWithContents:includeContents encoder:result];
         if (ok && includeContents) {
-            result[SESSION_ARRANGEMENT_FILTER] = _filter;
+            result[SESSION_ARRANGEMENT_FILTER] = activeFilter;
         }
         return ok;
     }
@@ -7584,44 +7577,40 @@ DLog(args); \
 
 // Note that the caller is responsible for respecting swapFindNextPrevious
 - (void)searchNext {
-    [_view createFindDriverIfNeeded];
-    [_view.findDriver searchNext];
-    [self.tailFindController beginOneShotTailFind];
+    [_swiftState.findCoordinator searchNext];
 }
 
 // Note that the caller is responsible for respecting swapFindNextPrevious
 - (void)searchPrevious {
-    [_view createFindDriverIfNeeded];
-    [_view.findDriver searchPrevious];
-    [self.tailFindController beginOneShotTailFind];
+    [_swiftState.findCoordinator searchPrevious];
 }
 
 - (void)resetFindCursor {
-    [_textview resetFindCursor];
+    [_swiftState.findCoordinator resetFindCursor];
 }
 
 - (BOOL)findInProgress {
-    return [_textview findInProgress];
+    return [_swiftState.findCoordinator findInProgress];
 }
 
 - (BOOL)continueFind:(double *)progress range:(NSRange *)rangePtr {
-    return [_textview continueFind:progress range:rangePtr];
+    return [_swiftState.findCoordinator continueFind:progress range:rangePtr];
 }
 
 - (BOOL)growSelectionLeft {
-    return [_textview growSelectionLeft];
+    return [_swiftState.findCoordinator growSelectionLeft];
 }
 
 - (void)growSelectionRight {
-    [_textview growSelectionRight];
+    [_swiftState.findCoordinator growSelectionRight];
 }
 
 - (NSString *)selectedText {
-    return [_textview selectedText];
+    return [_swiftState.findCoordinator selectedText];
 }
 
 - (BOOL)canSearch {
-    return _textview != nil && _delegate && [_delegate realParentWindow];
+    return [_swiftState.findCoordinator canSearch];
 }
 
 - (void)findString:(NSString *)aString
@@ -7631,178 +7620,81 @@ DLog(args); \
 scrollToFirstResult:(BOOL)scrollToFirstResult
              force:(BOOL)force
 extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
-    DLog(@"self=%@ aString=%@", self, aString);
-
-    [_textview findString:aString
-         forwardDirection:direction
-                     mode:mode
-               withOffset:offset
-      scrollToFirstResult:scrollToFirstResult
-                    force:force
-  extendResultsAcrossSoftBoundaries:extendResultsAcrossSoftBoundaries];
+    [_swiftState.findCoordinator findString:aString
+                           forwardDirection:direction
+                                       mode:mode
+                                 withOffset:offset
+                        scrollToFirstResult:scrollToFirstResult
+                                      force:force
+          extendResultsAcrossSoftBoundaries:extendResultsAcrossSoftBoundaries];
 }
 
 - (NSString *)unpaddedSelectedText {
-    return [_textview selectedText];
+    return [_swiftState.findCoordinator unpaddedSelectedText];
 }
 
 - (void)copySelection {
-    return [_textview copySelectionAccordingToUserPreferences];
+    [_swiftState.findCoordinator copySelection];
 }
 
 - (void)takeFocus {
-    [[[_delegate realParentWindow] window] makeFirstResponder:self.mainResponder];
+    [_swiftState.findCoordinator findViewControllerMakeDocumentFirstResponder];
 }
 
 - (void)findViewControllerMakeDocumentFirstResponder {
-    [self takeFocus];
+    [_swiftState.findCoordinator findViewControllerMakeDocumentFirstResponder];
 }
 
 - (void)findViewControllerClearSearch {
-    DLog(@"begin");
-    [_textview clearHighlights:YES];
+    [_swiftState.findCoordinator findViewControllerClearSearch];
 }
 
 - (void)findViewControllerVisibilityDidChange:(id<iTermFindViewController>)sender {
-    [_delegate sessionUpdateMetalAllowed];
-    if (sender.driver.isVisible) {
-        return;
-    }
-    if (_view.findViewHasKeyboardFocus) {
-        [_view findViewDidHide];
-    }
+    [_swiftState.findCoordinator findViewControllerVisibilityDidChange:sender];
+}
+
+- (NSString *)filter {
+    return _swiftState.findCoordinator.currentFilter;
+}
+
+- (iTermAsyncFilter *)asyncFilter {
+    return _swiftState.findCoordinator.asyncFilter;
 }
 
 - (void)setFilter:(NSString *)filter {
-    _modeHandler.mode = iTermSessionModeDefault;
-    DLog(@"%@: setFilter:%@", self, filter);
-    // For synthetic sessions (instant replay or filtering), use this session's find driver
-    // because the synthetic session has taken ownership of the status bar view controller.
-    DLog(@"%@: Before updateFindDriver: findDriverType=%@, findDriver=%@", self, @(self.view.findDriverType), self.view.findDriver);
-    [self.view updateFindDriver];
-    DLog(@"%@: After updateFindDriver: findDriverType=%@, findDriver=%@", self, @(self.view.findDriverType), self.view.findDriver);
-    [self.view createFindDriverIfNeeded];
-    DLog(@"%@: After createFindDriverIfNeeded: findDriverType=%@, findDriver=%@", self, @(self.view.findDriverType), self.view.findDriver);
-    iTermFindDriver *findDriver = self.view.findDriver;
-    if (!findDriver) {
-        iTermStatusBarViewController *statusBarVC = _statusBarViewController;
-        DLog(@"%@: ERROR: No find driver available for filtering. findDriverType=%@, statusBarVC=%@, searchViewController=%@, filterViewController=%@, temporaryLeftComponent=%@",
-             self,
-             @(self.view.findDriverType),
-             statusBarVC,
-             statusBarVC.searchViewController,
-             statusBarVC.filterViewController,
-             statusBarVC.temporaryLeftComponent);
-        return;
-    }
-    DLog(@"%@: findDriver=%@, filterMode=%@", self, findDriver, @(findDriver.filterMode));
-    if ([filter isEqualToString:_filter] && _asyncFilter.mode == findDriver.filterMode) {
-        DLog(@"%@: Filter unchanged (filter='%@', mode=%@), returning early", self, _filter, @(_asyncFilter.mode));
-        return;
-    }
-    if (!filter) {
-        if (_asyncFilter) {
-            DLog(@"Nuke existing filter %@", _asyncFilter);
-            [_asyncFilter cancel];
-            [self.liveSession removeContentSubscriber:_asyncFilter];
-            _filter = nil;
-            _asyncFilter = nil;
-        }
-        return;
-    }
-
-    PTYSession *sourceSession = self.liveSession;
-    VT100Screen *source = sourceSession.screen;
-    [_asyncFilter cancel];
-    [self.liveSession removeContentSubscriber:_asyncFilter];
-    const BOOL replacingFilter = (_filter != nil);
-    assert(self.liveSession);
-
-    _filter = [filter copy];
-
-    iTermAsyncFilter *refining = _asyncFilter;
-
-    DLog(@"%@: Previous asyncFilter=%@, mode=%@. Current findDriver.filterMode=%@, isRegex=%@",
-         self,
-         refining,
-         @(refining.mode),
-         @(findDriver.filterMode),
-         @(iTermFilterModeIsRegularExpression(findDriver.filterMode)));
-    if (refining.mode != findDriver.filterMode ||
-        iTermFilterModeIsRegularExpression(findDriver.filterMode)) {
-        DLog(@"%@: Setting refining=nil because %@",
-             self,
-             (refining.mode != findDriver.filterMode) ? @"mode changed" : @"filterMode is regex");
-        refining = nil;
-    }
-
-    DLog(@"%@: Append lines from %@", self, self.liveSession);
-    __weak __typeof(self) weakSelf = self;
-    DLog(@"%@: Will create new async filter for query %@ refining %@", self, filter, refining.it_addressString);
-    _asyncFilter = [source newAsyncFilterWithDestination:_swiftState.displayCoordinator
-                                                   query:filter
-                                                    mode:findDriver.filterMode
-                                                refining:refining
-                                            absLineRange:sourceSession.textview.findOnPageHelper.absLineRange
-                                                progress:^(double progress) {
-        [weakSelf setFilterProgress:progress];
-    }];
-    [self.liveSession addContentSubscriber:_asyncFilter];
-    if (replacingFilter) {
-        DLog(@"%@: Clear buffer because there is a pre-existing filter (was '%@').", self, _filter);
-        // Discard any pending filter updates from the previous query since we're clearing the buffer
-        [_swiftState.displayCoordinator discardPendingFilterUpdates];
-        [self.screen performBlockWithJoinedThreads:^(VT100Terminal *terminal, VT100ScreenMutableState *mutableState, id<VT100ScreenDelegate> delegate) {
-            DLog(@"%@: Calling clearBufferWithoutTriggersSavingPrompt", self);
-            [mutableState clearBufferWithoutTriggersSavingPrompt:NO];
-        }];
-    }
-    [_asyncFilter start];
+    [_swiftState.findCoordinator setFilter:filter];
 }
 
 - (void)setFilterProgress:(double)progress {
-    _view.findDriver.filterProgress = progress;
-    _statusBarViewController.filterViewController.filterProgress = progress;
+    [_swiftState.findCoordinator setFilterProgress:progress];
 }
 
 - (void)findDriverBottomUpPerformFindPanelAction:(id)sender {
-    [_textview performFindPanelAction:sender];
+    [_swiftState.findCoordinator findDriverBottomUpPerformFindPanelAction:sender];
 }
 
 - (BOOL)findDriverBottomUpValidateMenuItem:(NSMenuItem *)menuItem {
-    return [_textview validateMenuItem:menuItem];
+    return [_swiftState.findCoordinator findDriverBottomUpValidateMenuItem:menuItem];
 }
 
 - (iTermSearchEngine *)findDriverSearchEngine {
-    return _screen.searchEngine;
+    return [_swiftState.findCoordinator findDriverSearchEngine];
 }
 
 - (void)findDriverFilterVisibilityDidChange:(BOOL)visible {
-    if (!visible) {
-        [_asyncFilter cancel];
-        [self.liveSession removeContentSubscriber:_asyncFilter];
-        if (_asyncFilter) {
-            CFAutorelease(CFBridgingRetain(_asyncFilter));
-        }
-        _asyncFilter = nil;
-        PTYSession *liveSession = self.liveSession;
-        [self.delegate session:self setFilter:nil];
-        [liveSession.view.findDriver close];
-    }
+    [_swiftState.findCoordinator findDriverFilterVisibilityDidChange:visible];
 }
 
-- (void)findDriverSetFilter:(NSString *)filter withSideEffects:(BOOL)withSideEffects{
-    if (withSideEffects) {
-        [self.delegate session:self setFilter:filter];
-    }
+- (void)findDriverSetFilter:(NSString *)filter withSideEffects:(BOOL)withSideEffects {
+    [_swiftState.findCoordinator findDriverSetFilter:filter withSideEffects:withSideEffects];
 }
 
 - (void)findViewControllerDidCeaseToBeMandatory:(id<iTermFindViewController>)sender {
-    [_view findViewDidHide];
+    [_swiftState.findCoordinator findViewControllerDidCeaseToBeMandatory:sender];
 }
 
 - (void)findDriverInvalidateFrame {
-    [_view findDriverInvalidateFrame];
+    [_swiftState.findCoordinator findDriverInvalidateFrame];
 }
 
 - (NSImage *)snapshot {
@@ -7936,11 +7828,11 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 }
 
 - (NSInteger)findDriverNumberOfSearchResults {
-    return _textview.findOnPageHelper.numberOfSearchResults;
+    return [_swiftState.findCoordinator findDriverNumberOfSearchResults];
 }
 
 - (NSInteger)findDriverCurrentIndex {
-    return _textview.findOnPageHelper.currentIndex;
+    return [_swiftState.findCoordinator findDriverCurrentIndex];
 }
 
 - (void)copyTextFromBlockWithID:(NSString *)blockID {
@@ -8089,7 +7981,9 @@ extendResultsAcrossSoftBoundaries:(BOOL)extendResultsAcrossSoftBoundaries {
 
 - (void)enterPassword:(NSString *)password {
     [self incrementDisableFocusReporting:1];
-    [_screen beginEchoProbeWithBackspace:[self backspaceData] password:password delegate:self];
+    [_screen beginEchoProbeWithBackspace:[self backspaceData]
+                                password:password
+                                delegate:_swiftState.echoProbeCoordinator];
 }
 
 - (NSImage *)dragImage
@@ -10228,7 +10122,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                      style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_OK" ]
                                                 completion:completion];
-    iTermAnnouncementViewController *existing = _announcements[identifier];
+    iTermAnnouncementViewController *existing = [_swiftState.announcementCoordinator announcementWithIdentifier:identifier];
     if (existing) {
         [self setCompletion:completion inAnnouncement:existing identifier:identifier];
     } else {
@@ -11838,11 +11732,11 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
 }
 
 - (BOOL)textViewIsZoomedIn {
-    return _liveSession && !_dvr && !_filter && !_inScreenshotMode;
+    return _liveSession && !_dvr && !_swiftState.findCoordinator.currentFilter && !_inScreenshotMode;
 }
 
 - (BOOL)textViewIsFiltered {
-    return _liveSession && _filter;
+    return _liveSession && _swiftState.findCoordinator.currentFilter;
 }
 
 - (BOOL)textViewIsInScreenshotMode {
@@ -13334,7 +13228,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                      style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Allow Once", @"_Open Settings", @"Don’t Show This Again" ]
                                                 completion:completion];
-    iTermAnnouncementViewController *existing = _announcements[identifier];
+    iTermAnnouncementViewController *existing = [_swiftState.announcementCoordinator announcementWithIdentifier:identifier];
     if (existing) {
         [self setCompletion:completion inAnnouncement:existing identifier:identifier];
     } else {
@@ -13372,7 +13266,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                      style:iTermAnnouncementViewStyleWarning
                                                withActions:@[ @"_Allow Once", @"_Open Settings", @"Don’t Show This Again" ]
                                                 completion:completion];
-    iTermAnnouncementViewController *existing = _announcements[identifier];
+    iTermAnnouncementViewController *existing = [_swiftState.announcementCoordinator announcementWithIdentifier:identifier];
     if (existing) {
         [self setCompletion:completion inAnnouncement:existing identifier:identifier];
     } else {
@@ -15577,14 +15471,6 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     return _stuckKeyReportingDetector;
 }
 
-- (iTermAppSwitchingPreventionDetector *)appSwitchingPreventionDetector {
-    if (!_appSwitchingPreventionDetector) {
-        _appSwitchingPreventionDetector = [[iTermAppSwitchingPreventionDetector alloc] init];
-        _appSwitchingPreventionDetector.delegate = self;
-    }
-    return _appSwitchingPreventionDetector;
-}
-
 - (void)screenDidExecuteCommand:(NSString *)command
                           absRange:(VT100GridAbsCoordRange)absRange
                          onHost:(id<VT100RemoteHostReading>)host
@@ -15597,7 +15483,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
         [_eventTriggerEvaluator commandStartedWithCommand:command];
     }
     if (IsSecureEventInputEnabled()) {
-        [[self appSwitchingPreventionDetector] didExecuteCommand:command];
+        [_swiftState.interactionCoordinator notifyCommandDidStart:command];
     }
     NSString *trimmedCommand =
     [command stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
@@ -15638,7 +15524,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                         outputRange:(VT100GridCoordRange)outputRange
                             command:(NSString *)command
                                mark:(id<VT100ScreenMarkReading>)mark {
-    [_appSwitchingPreventionDetector commandDidFinishWithStatus:-1];
+    [_swiftState.interactionCoordinator notifyCommandDidFinishWithStatus:-1];
     NSDictionary *userInfo = @{
         PTYCommandDidExitUserInfoKeyRemoteHost: (id)[_screen remoteHostOnLine:line] ?: (id)[NSNull null],
         PTYCommandDidExitUserInfoKeyDirectory: (id)[_screen workingDirectoryOnLine:line] ?: (id)[NSNull null],
@@ -15670,7 +15556,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
                                                                                              duration:duration];
         [_eventTriggerEvaluator commandFinishedWithInfo:info];
     }
-    [_appSwitchingPreventionDetector commandDidFinishWithStatus:code];
+    [_swiftState.interactionCoordinator notifyCommandDidFinishWithStatus:code];
 
     if (maybeMark) {
         const VT100GridRange lineRange = [_screen lineNumberRangeOfInterval:maybeMark.entry.interval];
@@ -16088,7 +15974,7 @@ typedef NS_ENUM(NSUInteger, PTYSessionTmuxReport) {
     // If you decline the offer to silence the bell, we'll stop asking for this many seconds.
     static const NSTimeInterval kTimeToWaitAfterDecline = 10;
     NSString *const identifier = @"Annoying Bell Announcement Identifier";
-    iTermAnnouncementViewController *existingAnnouncement = _announcements[identifier];
+    iTermAnnouncementViewController *existingAnnouncement = [_swiftState.announcementCoordinator announcementWithIdentifier:identifier];
     if (existingAnnouncement) {
         // Reset the auto-dismiss time each time the bell rings.
         existingAnnouncement.timeout = 10;
@@ -16574,74 +16460,57 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 #pragma mark - Announcements
 
 - (BOOL)hasAnnouncementWithIdentifier:(NSString *)identifier {
-    return _announcements[identifier] != nil;
+    return [_swiftState.announcementCoordinator hasAnnouncementWithIdentifier:identifier];
 }
 
 - (void)dismissAnnouncementWithIdentifier:(NSString *)identifier {
-    iTermAnnouncementViewController *announcement = _announcements[identifier];
-    [announcement dismiss];
+    [_swiftState.announcementCoordinator dismissAnnouncementWithIdentifier:identifier];
 }
 
 - (void)queueAnnouncement:(iTermAnnouncementViewController *)announcement
                identifier:(NSString *)identifier {
-    DLog(@"Enqueue announcement with identifier %@", identifier);
-    [self dismissAnnouncementWithIdentifier:identifier];
-
-    _announcements[identifier] = announcement;
-
-    void (^originalCompletion)(int) = [announcement.completion copy];
-    NSString *identifierCopy = [identifier copy];
-    [self setCompletion:originalCompletion inAnnouncement:announcement identifier:identifierCopy];
-    [_view addAnnouncement:announcement];
+    [_swiftState.announcementCoordinator queueAnnouncement:announcement identifier:identifier];
 }
 
 - (void)setCompletion:(void (^)(int))completion
        inAnnouncement:(iTermAnnouncementViewController *)announcement
            identifier:(NSString *)identifier {
-    __weak __typeof(self) weakSelf = self;
-    announcement.completion = ^(int selection) {
-        completion(selection);
-        if (selection == -2) {
-            [weakSelf removeAnnouncementWithIdentifier:identifier];
-        }
-    };
+    [_swiftState.announcementCoordinator setCompletion:completion inAnnouncement:announcement identifier:identifier];
 }
 
 - (void)removeAnnouncementWithIdentifier:(NSString *)identifier {
-    [_announcements removeObjectForKey:identifier];
+    [_swiftState.announcementCoordinator removeAnnouncementWithIdentifier:identifier];
 }
 
 - (iTermAnnouncementViewController *)announcementWithIdentifier:(NSString *)identifier {
-    return _announcements[identifier];
+    return [_swiftState.announcementCoordinator announcementWithIdentifier:identifier];
 }
 
 #pragma mark - PopupDelegate
 
 - (BOOL)popupShouldTakePrefixFromScreen {
-    return _textview.window.firstResponder == _textview;
+    return [_swiftState.interactionCoordinator popupShouldTakePrefixFromScreen];
 }
 
 // If the cursor is preceded by whitespace the last word will be empty. Words go in reverse order.
 - (NSArray<NSString *> *)popupWordsBeforeInsertionPoint:(int)count {
-    id<iTermPopupWindowHosting> host = [self popupHost];
-    return [host wordsBeforeInsertionPoint:count] ?: @[@""];
+    return [_swiftState.interactionCoordinator popupWordsBeforeInsertionPoint:count];
 }
 
 - (void)popupIsSearching:(BOOL)searching {
-    _textview.showSearchingCursor = searching;
-    [_textview requestDelegateRedraw];
+    [_swiftState.interactionCoordinator popupIsSearching:searching];
 }
 
 - (void)popupWillClose:(iTermPopupWindowController *)popup {
-    [[_delegate realParentWindow] popupWillClose:popup];
+    [_swiftState.interactionCoordinator popupWillClose:popup];
 }
 
 - (NSRect)popupScreenVisibleFrame {
-    return [[[[_delegate realParentWindow] window] screen] visibleFrame];
+    return [_swiftState.interactionCoordinator popupScreenVisibleFrame];
 }
 
 - (BOOL)popupWindowIsInFloatingHotkeyWindow {
-    return _delegate.realParentWindow.isFloatingHotKeyWindow;
+    return [_swiftState.interactionCoordinator popupWindowIsInFloatingHotkeyWindow];
 }
 
 - (BOOL)screenConfirmDownloadNamed:(NSString *)name canExceedSize:(NSInteger)limit {
@@ -17135,48 +17004,27 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (BOOL)popupWindowShouldAvoidChangingWindowOrderOnClose {
-    return [iTermPreferences boolForKey:kPreferenceKeyFocusFollowsMouse] && ![self.delegate sessionBelongsToHotkeyWindow:self];
+    return [_swiftState.interactionCoordinator popupWindowShouldAvoidChangingWindowOrderOnClose];
 }
 
 - (VT100Screen *)popupVT100Screen {
-    return _screen;
+    return [_swiftState.interactionCoordinator popupVT100Screen];
 }
 
 - (id<iTermPopupWindowPresenter>)popupPresenter {
-    return self;
+    return [_swiftState.interactionCoordinator popupPresenter];
 }
 
 - (void)popupInsertText:(NSString *)string popup:(iTermPopupWindowController *)popupWindowController {
-    id<iTermPopupWindowHosting> host = [self popupHost];
-    if (host) {
-        if ([popupWindowController shouldEscapeShellCharacters]) {
-            [host popupWindowHostingInsertText:[string stringWithEscapedShellCharactersIncludingNewlines:YES]];
-        } else {
-            [host popupWindowHostingInsertText:string];
-        }
-        return;
-    }
-    if (_composerManager.dropDownComposerViewIsVisible) {
-        [_composerManager insertText:string];
-        return;
-    }
-    if ([popupWindowController shouldEscapeShellCharacters] && [_screen isAtCommandPrompt]) {
-        [self insertText:[string stringWithEscapedShellCharactersIncludingNewlines:YES]];
-    } else {
-        [self insertText:string];
-    }
+    [_swiftState.interactionCoordinator popupInsertText:string popup:popupWindowController];
 }
 
 - (void)popupPreview:(NSString *)text {
-    id<iTermPopupWindowHosting> host = [self popupHost];
-    if (host) {
-        [host popupWindowHostSetPreview:[[text firstNonEmptyLine] truncatedToLength:_screen.width ellipsis:@"…"]];
-        return;
-    }
+    [_swiftState.interactionCoordinator popupPreview:text];
 }
 
 - (void)popupKeyDown:(NSEvent *)event {
-    [_textview keyDown:event];
+    [_swiftState.interactionCoordinator popupKeyDown:event];
 }
 
 #pragma mark - iTermSessionViewDelegate
@@ -17416,34 +17264,17 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (NSSize)sessionViewScrollViewWillResize:(NSSize)proposedSize {
-    if ([self isTmuxClient] && ![_delegate sessionBelongsToTmuxTabWhoseSplitsAreBeingDragged]) {
-        NSSize idealSize = [self idealScrollViewSizeWithStyle:_view.scrollview.scrollerStyle];
-        NSSize maximumSize = NSMakeSize(idealSize.width + _textview.charWidth - 1,
-                                        idealSize.height + _textview.lineHeight - 1);
-        DLog(@"is a tmux client, so tweaking the proposed size. idealSize=%@ maximumSize=%@",
-             NSStringFromSize(idealSize), NSStringFromSize(maximumSize));
-        return NSMakeSize(MIN(proposedSize.width, maximumSize.width),
-                          MIN(proposedSize.height, maximumSize.height));
-    } else {
-        return proposedSize;
-    }
+    return [_swiftState.viewBridgeCoordinator sessionViewScrollViewWillResize:proposedSize];
 }
 
 - (CGFloat)backingScaleFactor {
-    return self.delegate.realParentWindow.window.backingScaleFactor ?: self.view.window.backingScaleFactor;
+    return [_swiftState.viewBridgeCoordinator backingScaleFactor];
 }
 
 // Ensure the wrapper is at least as tall as its enclosing scroll view. Mostly this goes unnoticed
 // except in Monterey betas (see issue 9799) but it's the right thing to do regardless.
 - (NSRect)safeFrameForWrapperViewFrame:(NSRect)proposed {
-    const CGFloat minimumHeight = _view.scrollview.contentSize.height;
-    if (NSHeight(proposed) >= minimumHeight) {
-        return proposed;
-    }
-    NSRect frame = proposed;
-    frame.size.height = minimumHeight;
-    DLog(@"Convert proposed wrapper frame %@ to %@", NSStringFromRect(proposed), NSStringFromRect(frame));
-    return frame;
+    return [_swiftState.viewBridgeCoordinator safeFrameForWrapperViewFrame:proposed];
 }
 
 - (void)sessionViewScrollViewDidResize {
@@ -17472,38 +17303,15 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (CGFloat)textViewPointsOnBottomToSuppressDrawing {
-    if ([_composerManager dropDownComposerViewIsVisible] && _composerManager.isAutoComposer && !_composerManager.temporarilyHidden) {
-        const NSRect rect = _composerManager.dropDownFrame;
-        return NSMaxY(rect);
-    }
-    return 0;
+    return [_swiftState.viewBridgeCoordinator textViewPointsOnBottomToSuppressDrawing];
 }
 
 - (VT100GridRange)textViewLinesToSuppressDrawing {
-    if ([_composerManager dropDownComposerViewIsVisible] && _composerManager.isAutoComposer && !_composerManager.temporarilyHidden) {
-        const NSRect rect = _composerManager.dropDownFrame;
-        const NSRect textViewRect = [_textview convertRect:rect fromView:_view];
-        const VT100GridCoord topLeft = [_textview coordForPoint:textViewRect.origin allowRightMarginOverflow:NO];
-        const VT100GridCoord bottomRight = [_textview coordForPoint:NSMakePoint(NSMaxX(textViewRect) - 1,
-                                                                                NSMaxY(textViewRect) - 1)
-                                           allowRightMarginOverflow:NO];
-        return VT100GridRangeMake(topLeft.y, bottomRight.y - topLeft.y + 1);
-    }
-    return VT100GridRangeMake(0, 0);
+    return [_swiftState.viewBridgeCoordinator textViewLinesToSuppressDrawing];
 }
 
 - (NSRect)textViewCursorFrameInScreenCoords {
-    const int cx = [self.screen cursorX] - 1;
-    const int cy = [self.screen cursorY];
-    const CGFloat charWidth = [self.textview charWidth];
-    const CGFloat lineHeight = [self.textview lineHeight];
-    NSPoint p = NSMakePoint([iTermPreferences sideMargins] + cx * charWidth,
-                            ([self.screen numberOfLines] - [self.screen height] + cy) * lineHeight);
-    const NSPoint origin = [self.textview.window convertPointToScreen:[self.textview convertPoint:p toView:nil]];
-    return NSMakeRect(origin.x,
-                      origin.y,
-                      charWidth,
-                      lineHeight);
+    return [_swiftState.viewBridgeCoordinator textViewCursorFrameInScreenCoords];
 }
 
 - (void)textViewDidReceiveSingleClick {
@@ -17523,14 +17331,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (BOOL)textViewSelectionScrollAllowed {
-    if (![iTermProfilePreferences boolForKey:KEY_DRAG_TO_SCROLL_IN_ALTERNATE_SCREEN_MODE_DISABLED
-                                   inProfile:self.profile]) {
-        return YES;
-    }
-    const BOOL alt = [self.screen terminalSoftAlternateScreenMode];
-    const BOOL bottom = _textview.scrolledToBottom;
-    DLog(@"alt=%@ bottom=%@", @(alt), @(bottom));
-    return !(alt && bottom);
+    return [_swiftState.viewBridgeCoordinator textViewSelectionScrollAllowed];
 }
 
 - (id<VT100ScreenMarkReading>)textViewMarkForCommandAt:(VT100GridCoord)coord {
@@ -17546,39 +17347,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (void)showHorizontalScrollInfo {
-    if ([iTermSwipeTracker isSwipeTrackingDisabled]) {
-        return;
-    }
-    if ([[[_delegate realParentWindow] tabs] count] < 2) {
-        return;
-    }
-    NSString *const warningKey = @"NoSyncScrollingHorizontally";
-    if ([[iTermUserDefaults userDefaults] boolForKey:warningKey]) {
-        return;
-    }
-    NSString *identifier = @"HorizontalScrollWarning";
-    if (_announcements[identifier]) {
-        // Already showing it
-        return;
-    }
-    iTermAnnouncementViewController *announcement =
-    [iTermAnnouncementViewController announcementWithTitle:@"When mouse reporting is on, horizontal scrolling does not switch tabs.\nHold option while swiping or disable horizontal scroll reporting to switch tabs."
-                                                     style:iTermAnnouncementViewStyleWarning
-                                               withActions:@[ @"Settings…" ]
-                                                completion:^(int selection) {
-        switch (selection) {
-            case -2: // Dismiss programmatically
-            case -1:  // Closed
-                break;
-            case 0:
-                // Disable reporting
-                [[PreferencePanel sharedInstance] openToPreferenceWithKey:kPreferenceKeyReportHorizontalScrollEvents];
-                break;
-        }
-        [[iTermUserDefaults userDefaults] setBool:YES forKey:warningKey];
-    }];
-    [self queueAnnouncement:announcement identifier:identifier];
-
+    [_swiftState.announcementCoordinator showHorizontalScrollInfo];
 }
 
 - (NSCursor *)textViewDefaultPointer {
@@ -17586,33 +17355,11 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (BOOL)textViewSplitPaneWidthIsLocked:(out BOOL *)allowedPtr {
-    if (self.tmuxMode == TMUX_CLIENT) {
-        DLog(@"Tmux client");
-        *allowedPtr = NO;
-        return NO;
-    }
-    if ([[_delegate sessions] count] == 1) {
-        DLog(@"Solo");
-        *allowedPtr = NO;
-    } else {
-        // Must have a vertical splitter as ancestor
-        PTYSplitView *splitView = [PTYSplitView castFrom:_view.superview];
-        while (splitView && !splitView.isVertical) {
-            splitView = [PTYSplitView castFrom:splitView.superview];
-        }
-        *allowedPtr = splitView.isVertical;
-    }
-    return _view.preferredWidth != nil;
+    return [_swiftState.viewBridgeCoordinator textViewSplitPaneWidthIsLocked:allowedPtr];
 }
 
 - (void)textViewToggleLockSplitPaneWidth {
-    if (_view.preferredWidth) {
-        DLog(@"Unlock %@", self);
-        _view.preferredWidth = nil;
-    } else {
-        DLog(@"Lock %@", self);
-        _view.preferredWidth = @(_view.frame.size.width);
-    }
+    [_swiftState.viewBridgeCoordinator textViewToggleLockSplitPaneWidth];
 }
 
 - (BOOL)textViewWouldReportControlReturn {
@@ -17662,21 +17409,15 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 #pragma mark - iTermHotkeyNavigableSession
 
 - (void)sessionHotkeyDidNavigateToSession:(iTermShortcut *)shortcut {
-    [self reveal];
+    [_swiftState.viewBridgeCoordinator sessionHotkeyDidNavigateToSession:shortcut];
 }
 
 - (BOOL)sessionHotkeyIsAlreadyFirstResponder {
-    return ([NSApp isActive] &&
-            [NSApp keyWindow] == self.textview.window &&
-            self.textview.window.firstResponder == self.textview);
+    return [_swiftState.viewBridgeCoordinator sessionHotkeyIsAlreadyFirstResponder];
 }
 
 - (BOOL)sessionHotkeyIsAlreadyActiveInNonkeyWindow {
-    if ([NSApp isActive] &&
-        [NSApp keyWindow] == self.textview.window) {
-        return NO;
-    }
-    return [self.delegate sessionIsActiveInSelectedTab:self];
+    return [_swiftState.viewBridgeCoordinator sessionHotkeyIsAlreadyActiveInNonkeyWindow];
 }
 
 - (void)sessionViewDoubleClickOnTitleBar {
@@ -17736,20 +17477,11 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (BOOL)sessionViewUseSeparateStatusBarsPerPane {
-    if (![iTermPreferences boolForKey:kPreferenceKeySeparateStatusBarsPerPane]) {
-        return NO;
-    }
-    if (self.isTmuxClient) {
-        return NO;
-    }
-    return YES;
+    return [_swiftState.viewBridgeCoordinator sessionViewUseSeparateStatusBarsPerPane];
 }
 
 - (void)sessionViewDidChangeEffectiveAppearance {
-    [self sync];
-    if ([iTermProfilePreferences boolForKey:KEY_USE_SEPARATE_COLORS_FOR_LIGHT_AND_DARK_MODE inProfile:self.profile]) {
-        [self loadColorsFromProfile:self.profile];
-    }
+    [_swiftState.viewBridgeCoordinator sessionViewDidChangeEffectiveAppearance];
 }
 
 - (BOOL)sessionViewCaresAboutMouseMovement {
@@ -17761,8 +17493,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 }
 
 - (NSDictionary *)sessionViewStatusBarAdvancedConfigurationDictionary {
-    NSDictionary *layout = [iTermProfilePreferences objectForKey:KEY_STATUS_BAR_LAYOUT inProfile:self.profile];
-    return layout[iTermStatusBarLayoutKeyAdvancedConfiguration] ?: @{};
+    return [_swiftState.viewBridgeCoordinator sessionViewStatusBarAdvancedConfigurationDictionary];
 }
 
 - (void)sessionViewWillDraw {
@@ -17783,7 +17514,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 #pragma mark - PSMPUAFontProvider
 
 - (NSFont *)fontForPUACodePoint:(UTF32Char)codePoint {
-    return [_textview.fontTable fontForPUACodePoint:codePoint];
+    return [_swiftState.viewBridgeCoordinator fontForPUACodePoint:codePoint];
 }
 
 #pragma mark - API
@@ -17884,59 +17615,27 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 #pragma mark - iTermEchoProbeDelegate
 
 - (void)echoProbe:(iTermEchoProbe *)echoProbe writeString:(NSString *)string {
-    [self noteUserInput];
-    if (self.tmuxMode == TMUX_GATEWAY) {
-        return;
-    }
-    [self writeTaskNoBroadcast:string];
-    if ([iTermUserDefaults shouldSendReturnAfterPassword]) {
-        [_view showUnobtrusiveMessage:@"Password sent."
-                             duration:3];
-    } else {
-        [_view showUnobtrusiveMessage:@"Password sent (press Return)."
-                             duration:3];
-    }
+    [_swiftState.echoProbeCoordinator echoProbe:echoProbe writeString:string];
 }
 
 - (void)echoProbe:(iTermEchoProbe *)echoProbe writeData:(NSData *)data {
-    [self noteUserInput];
-    if (self.tmuxMode == TMUX_GATEWAY) {
-        return;
-    }
-    [self writeLatin1EncodedData:data broadcastAllowed:NO reporting:NO];
+    [_swiftState.echoProbeCoordinator echoProbe:echoProbe writeData:data];
 }
 
 - (void)echoProbeDidFail:(iTermEchoProbe *)echoProbe {
-    // Not allowed to use a runloop in a side-effect.
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self sendPasswordAfterGettingPermission];
-    });
-}
-
-- (void)sendPasswordAfterGettingPermission {
-    BOOL ok = ([iTermWarning showWarningWithTitle:@"Are you really at a password prompt? It looks "
-                @"like what you're typing is echoed to the screen."
-                                          actions:@[ @"Cancel", @"Enter Password" ]
-                                       identifier:nil
-                                      silenceable:kiTermWarningTypePersistent
-                                           window:self.view.window] == kiTermWarningSelection1);
-    if (ok) {
-        [_screen sendPasswordInEchoProbe];
-    } else {
-        [self incrementDisableFocusReporting:-1];
-        [_screen resetEchoProbe];
-    }
+    [_swiftState.echoProbeCoordinator echoProbeDidFail:echoProbe];
 }
 
 - (void)echoProbeDidSucceed:(iTermEchoProbe *)echoProbe {
-    [self incrementDisableFocusReporting:-1];
+    [_swiftState.echoProbeCoordinator echoProbeDidSucceed:echoProbe];
 }
 
 - (BOOL)echoProbeShouldSendPassword:(iTermEchoProbe *)echoProbe {
-    return YES;
+    return [_swiftState.echoProbeCoordinator echoProbeShouldSendPassword:echoProbe];
 }
 
 - (void)echoProbeDelegateWillChange:(iTermEchoProbe *)echoProbe {
+    [_swiftState.echoProbeCoordinator echoProbeDelegateWillChange:echoProbe];
 }
 
 #pragma mark - Status Bar Coordinator Bridges
@@ -17980,18 +17679,7 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 // Called on the synthetic session.
 - (void)stopFiltering {
-    [self setFilterProgress:0];
-    [self.liveSession removeContentSubscriber:_asyncFilter];
-    [_asyncFilter cancel];
-    if (_asyncFilter) {
-        CFAutorelease(CFBridgingRetain(_asyncFilter));
-    }
-    _asyncFilter = nil;
-    if ([_statusBarViewController.temporaryRightComponent isKindOfClass:[iTermStatusBarFilterComponent class]]) {
-        _statusBarViewController.temporaryRightComponent = nil;
-    }
-    [self.delegate session:self setFilter:nil];
-    [_textview.window makeFirstResponder:self.mainResponder];
+    [_swiftState.findCoordinator stopFiltering];
 }
 
 - (ProfileModel *)profileModel {
@@ -18001,20 +17689,11 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 #pragma mark - iTermBadgeLabelDelegate
 
 - (NSFont *)badgeLabelFontOfSize:(CGFloat)pointSize {
-    NSFontManager *fontManager = [NSFontManager sharedFontManager];
-    NSFont *font = [NSFont fontWithName:_badgeFontName size:pointSize];
-    if (!font) {
-        font = [NSFont fontWithName:@"Helvetica" size:pointSize];
-    }
-    if ([iTermAdvancedSettingsModel badgeFontIsBold]) {
-        font = [fontManager convertFont:font
-                            toHaveTrait:NSBoldFontMask];
-    }
-    return font;
+    return [_swiftState.interactionCoordinator badgeLabelFontOfSize:pointSize];
 }
 
 - (NSSize)badgeLabelSizeFraction {
-    return _badgeLabelSizeFraction;
+    return [_swiftState.interactionCoordinator badgeLabelSizeFraction];
 }
 
 #pragma mark - iTermObject
@@ -18170,24 +17849,21 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 #pragma mark - iTermLegacyViewDelegate
 
 - (void)legacyView:(iTermLegacyView *)legacyView drawRect:(NSRect)dirtyRect {
-    [_textview drawRect:dirtyRect inView:legacyView];
+    [_swiftState.viewBridgeCoordinator legacyView:legacyView drawRect:dirtyRect];
 }
 
 #pragma mark - iTermImmutableColorMapDelegate
 
 - (void)immutableColorMap:(id<iTermColorMapReading>)colorMap didChangeColorForKey:(iTermColorMapKey)theKey from:(NSColor *)before to:(NSColor *)after {
-    [_textview immutableColorMap:colorMap didChangeColorForKey:theKey from:before to:after];
-    [_swiftState.displayCoordinator setNeedsComposerColorUpdate:YES];
+    [_swiftState.interactionCoordinator immutableColorMap:colorMap didChangeColorForKey:theKey from:before to:after];
 }
 
 - (void)immutableColorMap:(id<iTermColorMapReading>)colorMap dimmingAmountDidChangeTo:(double)dimmingAmount {
-    [_textview immutableColorMap:colorMap dimmingAmountDidChangeTo:dimmingAmount];
-    [_swiftState.displayCoordinator setNeedsComposerColorUpdate:YES];
+    [_swiftState.interactionCoordinator immutableColorMap:colorMap dimmingAmountDidChangeTo:dimmingAmount];
 }
 
 - (void)immutableColorMap:(id<iTermColorMapReading>)colorMap mutingAmountDidChangeTo:(double)mutingAmount {
-    [_textview immutableColorMap:colorMap mutingAmountDidChangeTo:mutingAmount];
-    [_swiftState.displayCoordinator setNeedsComposerColorUpdate:YES];
+    [_swiftState.interactionCoordinator immutableColorMap:colorMap mutingAmountDidChangeTo:mutingAmount];
 }
 
 #pragma mark - Triggers Bridge
@@ -18339,14 +18015,6 @@ static const NSTimeInterval PTYSessionFocusReportBellSquelchTimeIntervalThreshol
 
 - (void)clearTabStatus {
     [_swiftState.profileAndLoggingCoordinator clearTabStatus];
-}
-
-@end
-
-@implementation PTYSession(AppSwitching)
-
-- (void)appSwitchingPreventionDetectorDidDetectFailure {
-    [_naggingController openCommandDidFailWithSecureInputEnabled];
 }
 
 @end
